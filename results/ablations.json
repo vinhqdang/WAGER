@@ -1,0 +1,73 @@
+{
+  "phi_granularity": [
+    {
+      "phi": "subj_obj_cell",
+      "RGR": 0.36825951377438826,
+      "ci": [
+        0.35580359887783775,
+        0.38054870684511893
+      ],
+      "verdict": "non-substantive"
+    },
+    {
+      "phi": "subject_only",
+      "RGR": 0.45445680300387536,
+      "ci": [
+        0.4413026495901261,
+        0.4672792542466693
+      ],
+      "verdict": "non-substantive"
+    }
+  ],
+  "clip_c": [
+    {
+      "c": "logK/2",
+      "RGR": 0.7496086958882026,
+      "verdict": "reasoning-supported"
+    },
+    {
+      "c": "logK",
+      "RGR": 0.36825951377438826,
+      "verdict": "non-substantive"
+    },
+    {
+      "c": "2logK",
+      "RGR": 0.37817890370910906,
+      "verdict": "non-substantive"
+    }
+  ],
+  "shrinkage_m": [
+    {
+      "m": 0.0,
+      "RGR": 0.3554673259492174,
+      "verdict": "non-substantive"
+    },
+    {
+      "m": 0.25,
+      "RGR": 0.36825951377438826,
+      "verdict": "non-substantive"
+    },
+    {
+      "m": 1.0,
+      "RGR": 0.3916727378863564,
+      "verdict": "non-substantive"
+    }
+  ],
+  "permutations_R": [
+    {
+      "R": 10,
+      "RGR": 0.36825951377438826,
+      "verdict": "non-substantive"
+    },
+    {
+      "R": 30,
+      "RGR": 0.36825951377438826,
+      "verdict": "non-substantive"
+    },
+    {
+      "R": 60,
+      "RGR": 0.36825951377438826,
+      "verdict": "non-substantive"
+    }
+  ]
+}

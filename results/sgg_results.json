@@ -102,7 +102,7 @@
     },
     {
       "model": "MLP-SPATIAL",
-      "e_value": Infinity,
+      "e_value": 1.0142320547350044e+304,
       "I_reason": 0.06320344299672054,
       "I_reason_lo": 0.056175681113864645,
       "I_reason_hi": 0.06642316528364778,
@@ -115,7 +115,7 @@
     },
     {
       "model": "MLP-SPATIAL+",
-      "e_value": Infinity,
+      "e_value": 1.0142320547350044e+304,
       "I_reason": 0.07195245028180197,
       "I_reason_lo": 0.06291707961471057,
       "I_reason_hi": 0.07443650920175088,
@@ -211,5 +211,5 @@
   "anchor_freq_I_reason": -0.005441869118740627,
   "anchor_freq_e_value": 0.4861616087745839,
   "anchor_pass": true,
-  "seconds": 116.84200620651245
+  "seconds": 117.50260138511658
 }
