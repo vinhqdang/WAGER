@@ -25,75 +25,111 @@ _EPS = 1e-12
 # --------------------------------------------------------------------------- #
 # Definition 1 - self-prior projection                                        #
 # --------------------------------------------------------------------------- #
-def kt_projection(q_A: np.ndarray, phi_A: np.ndarray, K: int):
+def kt_projection(q_A: np.ndarray, phi_A: np.ndarray, K: int, m: float = 1.0):
     """Estimate the self-prior projection q_bar_f on fold A (Definition 1).
+
+    The projection is the model's own predictions averaged within each prior
+    cell.  Because long-tail cells are sparse, the cell mean is shrunk toward the
+    model's *global* mean prediction (empirical-Bayes / hierarchical backoff)
+    rather than toward uniform: this keeps the projection an honest estimate of
+    E[q_f | phi] without the large upward reasoning bias that uniform-directed
+    KT smoothing introduces for sharp frequency priors.
+
+      q_bar(y|phi=c) = ( sum_{A,c} q_f(y|x) + m * g(y) ) / ( n_c + m )
+      g(y) = global mean prediction = mean over all of fold A.
 
     Parameters
     ----------
-    q_A : (Na, K) float array
-        Model predictive distributions on the projection-fit fold.
-    phi_A : (Na,) integer array
-        Prior-feature cell id for each instance in fold A.
-    K : int
-        Number of label classes.
+    q_A : (Na, K) model predictive distributions on the projection-fit fold.
+    phi_A : (Na,) prior-feature cell id for each instance in fold A.
+    K : int   number of classes.
+    m : float pseudo-count toward the global backoff (default 1; m=0 -> raw mean).
 
     Returns
     -------
-    qbar : dict[int, np.ndarray]
-        Cell-id -> KT-smoothed (add-1/2) averaged distribution.
-    unif : (K,) float array
-        Uniform reference 1/K (backoff for unseen cells).
-
-    Notes
-    -----
-    KT smoothing:  q_bar(y|phi) = (1/2 + sum_A q_f(y|x)) / (K/2 + n_phi)
+    qbar : dict[int, np.ndarray]   cell-id -> shrunk averaged distribution.
+    unif : (K,) uniform reference 1/K (the I_prior reference).
+    glob : (K,) global mean prediction (backoff for unseen cells).
     """
     q_A = np.asarray(q_A, dtype=np.float64)
     phi_A = np.asarray(phi_A)
     if q_A.ndim != 2 or q_A.shape[1] != K:
         raise ValueError(f"q_A must be (Na,{K}); got {q_A.shape}")
 
-    # Group-sum predictive vectors per cell, vectorized.
+    glob = q_A.mean(axis=0) if len(q_A) else np.full(K, 1.0 / K)
+
     uniq, inv = np.unique(phi_A, return_inverse=True)
     sums = np.zeros((len(uniq), K), dtype=np.float64)
+    sumsq = np.zeros((len(uniq), K), dtype=np.float64)
     np.add.at(sums, inv, q_A)
+    np.add.at(sumsq, inv, q_A * q_A)
     counts = np.bincount(inv, minlength=len(uniq)).astype(np.float64)
+    nc = counts[:, None]
 
-    smoothed = (0.5 + sums) / (0.5 * K + counts[:, None])
+    smoothed = (sums + m * glob) / (nc + m)
+
+    # Second-order (Jensen) bias correction for log of an estimated cell-mean:
+    #   E[log mhat(y)] ~= log m(y) - Var(mhat(y)) / (2 m(y)^2),
+    # with Var(mhat) = within-cell variance / n_c.  We add the correction back to
+    # log-projection so reasoning is not inflated by projection-estimation noise.
+    raw_mean = sums / np.maximum(nc, 1.0)
+    within_var = np.maximum(sumsq / np.maximum(nc, 1.0) - raw_mean ** 2, 0.0)
+    var_mean = within_var / np.maximum(nc, 1.0)
+    logcorr_arr = var_mean / (2.0 * np.maximum(smoothed, _EPS) ** 2)
+    # cap the correction so a near-zero projection cannot explode it
+    logcorr_arr = np.minimum(logcorr_arr, np.log(K))
+
     qbar = {int(c): smoothed[i] for i, c in enumerate(uniq)}
+    logcorr = {int(c): logcorr_arr[i] for i, c in enumerate(uniq)}
     unif = np.full(K, 1.0 / K, dtype=np.float64)
-    return qbar, unif
+    return qbar, logcorr, unif, glob
 
 
-def lookup_projection(qbar: dict, unif: np.ndarray, phi: np.ndarray) -> np.ndarray:
-    """Materialize the projected distribution for every instance (backoff to unif)."""
-    K = unif.shape[0]
+def lookup_projection(qbar: dict, backoff: np.ndarray, phi: np.ndarray) -> np.ndarray:
+    """Materialize the projected distribution for every instance (backoff if unseen)."""
+    K = backoff.shape[0]
     out = np.empty((len(phi), K), dtype=np.float64)
     for i, c in enumerate(phi):
-        out[i] = qbar.get(int(c), unif)
+        out[i] = qbar.get(int(c), backoff)
     return out
 
 
 # --------------------------------------------------------------------------- #
 # Definition 2 - prior-excess log score                                       #
 # --------------------------------------------------------------------------- #
-def prior_excess_logscore(q_f, y, phi, qbar, unif, c):
+def prior_excess_logscore(q_f, y, phi, qbar, logcorr, backoff, unif, c):
     """Compute clipped per-instance reasoning score d~ and prior score e~.
+
+    Parameters
+    ----------
+    qbar : dict cell -> shrunk projected distribution.
+    logcorr : dict cell -> additive bias correction to the log-projection.
+    backoff : (K,) distribution used for cells unseen on fold A (global mean).
+    unif : (K,) uniform reference for the prior-information channel.
 
     Returns
     -------
-    d_clip : (N,) reasoning score  log q_f(y|x) - log q_bar(y|phi), clipped to [-c,c]
-    e_clip : (N,) prior score      log q_bar(y|phi) - log u(y),     clipped to [-c,c]
+    d_clip : (N,) reasoning score  log q_f(y|x) - log~q_bar(y|phi), clipped to [-c,c]
+    e_clip : (N,) prior score      log~q_bar(y|phi) - log u(y),     clipped to [-c,c]
+
+    Note the bias correction shifts log-projection up; it cancels in d+e (=I_tot)
+    so it only reallocates mis-credited reasoning back into the prior channel.
     """
     q_f = np.asarray(q_f, dtype=np.float64)
     y = np.asarray(y).astype(int)
     phi = np.asarray(phi)
     N = len(y)
-    qbar_mat = lookup_projection(qbar, unif, phi)
+    K = unif.shape[0]
+    zero_corr = np.zeros(K)
     idx = np.arange(N)
 
+    qbar_mat = lookup_projection(qbar, backoff, phi)
+    corr_mat = np.empty((N, K))
+    for i, cc in enumerate(phi):
+        corr_mat[i] = logcorr.get(int(cc), zero_corr)
+
     log_qf = np.log(q_f[idx, y] + _EPS)
-    log_qb = np.log(qbar_mat[idx, y] + _EPS)
+    log_qb = np.log(qbar_mat[idx, y] + _EPS) + corr_mat[idx, y]
     log_u = np.log(unif[y] + _EPS)
 
     d = np.clip(log_qf - log_qb, -c, c)

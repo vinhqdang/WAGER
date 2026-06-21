@@ -125,12 +125,12 @@ def run_wager_single(
     order = _blocked_permutation(group, rng)
     A_idx, B_idx = _split_AB(order, group, split_frac)
 
-    qbar, unif = kt_projection(data.q[A_idx], data.phi[A_idx], K)
+    qbar, logcorr, unif, glob = kt_projection(data.q[A_idx], data.phi[A_idx], K)
 
     qB = data.q[B_idx]
     yB = data.y[B_idx]
     phiB = data.phi[B_idx]
-    d, e = prior_excess_logscore(qB, yB, phiB, qbar, unif, c)
+    d, e = prior_excess_logscore(qB, yB, phiB, qbar, logcorr, glob, unif, c)
 
     e_value, _, growth = wealth_process(d, c)
     return {
