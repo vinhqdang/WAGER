@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# WAGER large/derived artifacts (reproducible)
+downloads/
+data/
+results/*.npz
+scratchpad/
