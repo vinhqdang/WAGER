@@ -29,6 +29,7 @@ class ModelData:
     y: np.ndarray          # (N,)   ground-truth labels
     phi: np.ndarray        # (N,)   prior-feature cell ids
     group: np.ndarray | None = None   # (N,) image ids for blocked permutation
+    coarse: np.ndarray | None = None  # (N,) coarse backoff key (e.g. subject class)
 
     @property
     def K(self) -> int:
@@ -116,6 +117,7 @@ def run_wager_single(
     alpha: float = 0.05,
     split_frac: float = 0.4,
     ci_grid: int = 401,
+    m: float = 1.0,
 ):
     """One permutation pass for one model. Returns a dict of readouts + streams."""
     K = data.K
@@ -125,12 +127,16 @@ def run_wager_single(
     order = _blocked_permutation(group, rng)
     A_idx, B_idx = _split_AB(order, group, split_frac)
 
-    qbar, logcorr, unif, glob = kt_projection(data.q[A_idx], data.phi[A_idx], K)
+    coarse_A = data.coarse[A_idx] if data.coarse is not None else None
+    cell_proj, cell_corr, coarse_proj, glob, unif = kt_projection(
+        data.q[A_idx], data.phi[A_idx], K, m=m, coarse_A=coarse_A)
 
     qB = data.q[B_idx]
     yB = data.y[B_idx]
     phiB = data.phi[B_idx]
-    d, e = prior_excess_logscore(qB, yB, phiB, qbar, logcorr, glob, unif, c)
+    coarse_B = data.coarse[B_idx] if data.coarse is not None else None
+    d, e = prior_excess_logscore(qB, yB, phiB, cell_proj, cell_corr, coarse_proj,
+                                 glob, unif, c, coarse=coarse_B)
 
     e_value, _, growth = wealth_process(d, c)
     return {
@@ -151,6 +157,8 @@ def run_wager_permutations(
     split_frac: float = 0.4,
     seed: int = 0,
     ci_grid: int = 401,
+    ci_max_perms: int = 12,
+    m: float = 1.0,
 ) -> WagerResult:
     """Run R image-blocked permutations and aggregate (algorithm.md lines 1-13).
 
@@ -170,7 +178,7 @@ def run_wager_permutations(
     reason_cis, prior_cis = [], []
 
     for r in range(R):
-        out = run_wager_single(data, rng, c=c, alpha=alpha, split_frac=split_frac)
+        out = run_wager_single(data, rng, c=c, alpha=alpha, split_frac=split_frac, m=m)
         e_vals.append(out["e_value"])
         growths.append(out["growth"])
         d, e = out["d"], out["e"]
@@ -179,9 +187,11 @@ def run_wager_permutations(
         B_indices.append(out["B_idx"])
         I_reason_pts.append(betting_mean_point(d))
         I_prior_pts.append(betting_mean_point(e))
-        # per-permutation anytime-valid CIs (averaged below)
-        reason_cis.append(betting_mean_ci(d, c, alpha=alpha, n_grid=ci_grid))
-        prior_cis.append(betting_mean_ci(e, c, alpha=alpha, n_grid=ci_grid))
+        # per-permutation anytime-valid CIs (the costly step) only for the first
+        # ci_max_perms orders; point estimates / e-values still use all R.
+        if r < ci_max_perms:
+            reason_cis.append(betting_mean_ci(d, c, alpha=alpha, n_grid=ci_grid))
+            prior_cis.append(betting_mean_ci(e, c, alpha=alpha, n_grid=ci_grid))
 
     e_vals = np.asarray(e_vals)
     reason_cis = np.asarray(reason_cis)

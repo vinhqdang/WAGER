@@ -41,7 +41,7 @@ def gate_a_type_i(n_runs=1000, alpha=0.05, seed0=1000):
     e_values = []
     for r in range(n_runs):
         bench = make_benchmark(n_images=700, pairs_per_image=4, K=30, n_cells=120,
-                               cell_concentration=0.3, oracle_strength=0.85, seed=seed0 + r)
+                               cell_concentration=0.3, posterior_concentration=4.0, seed=seed0 + r)
         q = bench.model_prior()  # H0: prediction depends only on phi
         c = float(np.log(bench.K))
         rng = np.random.default_rng(seed0 + r)
@@ -78,7 +78,7 @@ def gate_b_coverage(n_runs=300, alpha=0.1, seed0=2000):
     widths = []
     for r in range(n_runs):
         bench = make_benchmark(n_images=900, pairs_per_image=4, K=25, n_cells=120,
-                               cell_concentration=0.3, oracle_strength=0.8, seed=seed0 + r)
+                               cell_concentration=0.3, posterior_concentration=4.0, seed=seed0 + r)
         beta = 0.6
         q = bench.model_geometric(beta)
         true = population_info(bench, q)["I_reason"]

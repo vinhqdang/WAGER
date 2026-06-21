@@ -25,31 +25,60 @@ _EPS = 1e-12
 # --------------------------------------------------------------------------- #
 # Definition 1 - self-prior projection                                        #
 # --------------------------------------------------------------------------- #
-def kt_projection(q_A: np.ndarray, phi_A: np.ndarray, K: int, m: float = 1.0):
+def _shrunk_means(q_A, key_A, K, parent_lookup, m):
+    """Per-key shrunk mean of q_A toward a per-key parent distribution.
+
+    Returns (means dict, logcorr dict).  Shrinkage:
+        mean(k) = (sum_{A,k} q + m * parent(k)) / (n_k + m).
+    The Jensen bias correction is computed from within-key variance.
+    """
+    uniq, inv = np.unique(key_A, return_inverse=True)
+    sums = np.zeros((len(uniq), K))
+    sumsq = np.zeros((len(uniq), K))
+    np.add.at(sums, inv, q_A)
+    np.add.at(sumsq, inv, q_A * q_A)
+    counts = np.bincount(inv, minlength=len(uniq)).astype(np.float64)
+    nc = counts[:, None]
+    parents = np.stack([parent_lookup(int(k)) for k in uniq])
+    smoothed = (sums + m * parents) / (nc + m)
+
+    raw_mean = sums / np.maximum(nc, 1.0)
+    within_var = np.maximum(sumsq / np.maximum(nc, 1.0) - raw_mean ** 2, 0.0)
+    var_mean = within_var / np.maximum(nc, 1.0)
+    logcorr_arr = np.minimum(var_mean / (2.0 * np.maximum(smoothed, _EPS) ** 2), np.log(K))
+
+    means = {int(k): smoothed[i] for i, k in enumerate(uniq)}
+    corr = {int(k): logcorr_arr[i] for i, k in enumerate(uniq)}
+    return means, corr
+
+
+def kt_projection(q_A, phi_A, K, m=1.0, coarse_A=None):
     """Estimate the self-prior projection q_bar_f on fold A (Definition 1).
 
     The projection is the model's own predictions averaged within each prior
-    cell.  Because long-tail cells are sparse, the cell mean is shrunk toward the
-    model's *global* mean prediction (empirical-Bayes / hierarchical backoff)
-    rather than toward uniform: this keeps the projection an honest estimate of
-    E[q_f | phi] without the large upward reasoning bias that uniform-directed
-    KT smoothing introduces for sharp frequency priors.
+    cell.  On heavy-tailed benchmarks most cells are sparse, so the cell mean is
+    shrunk through an empirical-Bayes *hierarchical backoff* rather than toward
+    uniform.  With a coarse key (e.g. subject class) the hierarchy is
 
-      q_bar(y|phi=c) = ( sum_{A,c} q_f(y|x) + m * g(y) ) / ( n_c + m )
-      g(y) = global mean prediction = mean over all of fold A.
+        cell (subj,obj)  ->  coarse (subj)  ->  global mean.
+
+    A model whose prediction is a function of phi only (FREQ, a class-only MLP)
+    uses the same backoff, so its out-of-fold reasoning score collapses to ~0 --
+    this is what makes the FREQ anchor (I_reason ~ 0) hold on real data.
 
     Parameters
     ----------
     q_A : (Na, K) model predictive distributions on the projection-fit fold.
-    phi_A : (Na,) prior-feature cell id for each instance in fold A.
-    K : int   number of classes.
-    m : float pseudo-count toward the global backoff (default 1; m=0 -> raw mean).
+    phi_A : (Na,) fine prior-feature cell id.
+    coarse_A : (Na,) optional coarser backoff key (e.g. subject class id).
+    m : float pseudo-count toward the parent in each shrinkage level.
 
     Returns
     -------
-    qbar : dict[int, np.ndarray]   cell-id -> shrunk averaged distribution.
+    cell_proj, cell_corr : dict cell -> shrunk distribution / log-bias-correction.
+    coarse_proj : dict coarse-key -> shrunk distribution (or {} if no coarse key).
+    glob : (K,) global mean prediction (final backoff).
     unif : (K,) uniform reference 1/K (the I_prior reference).
-    glob : (K,) global mean prediction (backoff for unseen cells).
     """
     q_A = np.asarray(q_A, dtype=np.float64)
     phi_A = np.asarray(phi_A)
@@ -58,62 +87,60 @@ def kt_projection(q_A: np.ndarray, phi_A: np.ndarray, K: int, m: float = 1.0):
 
     glob = q_A.mean(axis=0) if len(q_A) else np.full(K, 1.0 / K)
 
-    uniq, inv = np.unique(phi_A, return_inverse=True)
-    sums = np.zeros((len(uniq), K), dtype=np.float64)
-    sumsq = np.zeros((len(uniq), K), dtype=np.float64)
-    np.add.at(sums, inv, q_A)
-    np.add.at(sumsq, inv, q_A * q_A)
-    counts = np.bincount(inv, minlength=len(uniq)).astype(np.float64)
-    nc = counts[:, None]
+    if coarse_A is None:
+        cell_proj, cell_corr = _shrunk_means(q_A, phi_A, K, lambda k: glob, m)
+        coarse_proj = {}
+    else:
+        coarse_A = np.asarray(coarse_A)
+        # level 1: coarse keys shrink toward global
+        coarse_proj, _ = _shrunk_means(q_A, coarse_A, K, lambda k: glob, m)
+        # map each fine cell to its (unique) coarse parent
+        cell_to_coarse = {}
+        for cphi, ccoarse in zip(phi_A, coarse_A):
+            cell_to_coarse.setdefault(int(cphi), int(ccoarse))
 
-    smoothed = (sums + m * glob) / (nc + m)
+        def parent(cell):
+            return coarse_proj.get(cell_to_coarse.get(cell, -1), glob)
 
-    # Second-order (Jensen) bias correction for log of an estimated cell-mean:
-    #   E[log mhat(y)] ~= log m(y) - Var(mhat(y)) / (2 m(y)^2),
-    # with Var(mhat) = within-cell variance / n_c.  We add the correction back to
-    # log-projection so reasoning is not inflated by projection-estimation noise.
-    raw_mean = sums / np.maximum(nc, 1.0)
-    within_var = np.maximum(sumsq / np.maximum(nc, 1.0) - raw_mean ** 2, 0.0)
-    var_mean = within_var / np.maximum(nc, 1.0)
-    logcorr_arr = var_mean / (2.0 * np.maximum(smoothed, _EPS) ** 2)
-    # cap the correction so a near-zero projection cannot explode it
-    logcorr_arr = np.minimum(logcorr_arr, np.log(K))
+        # level 2: cells shrink toward their coarse parent
+        cell_proj, cell_corr = _shrunk_means(q_A, phi_A, K, parent, m)
 
-    qbar = {int(c): smoothed[i] for i, c in enumerate(uniq)}
-    logcorr = {int(c): logcorr_arr[i] for i, c in enumerate(uniq)}
     unif = np.full(K, 1.0 / K, dtype=np.float64)
-    return qbar, logcorr, unif, glob
+    return cell_proj, cell_corr, coarse_proj, glob, unif
 
 
-def lookup_projection(qbar: dict, backoff: np.ndarray, phi: np.ndarray) -> np.ndarray:
-    """Materialize the projected distribution for every instance (backoff if unseen)."""
-    K = backoff.shape[0]
-    out = np.empty((len(phi), K), dtype=np.float64)
-    for i, c in enumerate(phi):
-        out[i] = qbar.get(int(c), backoff)
+def lookup_projection(cell_proj, coarse_proj, glob, phi, coarse=None):
+    """Materialize the projection per instance: cell -> coarse -> global backoff."""
+    K = glob.shape[0]
+    N = len(phi)
+    out = np.empty((N, K), dtype=np.float64)
+    for i in range(N):
+        c = int(phi[i])
+        if c in cell_proj:
+            out[i] = cell_proj[c]
+        elif coarse is not None and int(coarse[i]) in coarse_proj:
+            out[i] = coarse_proj[int(coarse[i])]
+        else:
+            out[i] = glob
     return out
 
 
 # --------------------------------------------------------------------------- #
 # Definition 2 - prior-excess log score                                       #
 # --------------------------------------------------------------------------- #
-def prior_excess_logscore(q_f, y, phi, qbar, logcorr, backoff, unif, c):
+def prior_excess_logscore(q_f, y, phi, cell_proj, cell_corr, coarse_proj, glob, unif,
+                          c, coarse=None):
     """Compute clipped per-instance reasoning score d~ and prior score e~.
 
-    Parameters
-    ----------
-    qbar : dict cell -> shrunk projected distribution.
-    logcorr : dict cell -> additive bias correction to the log-projection.
-    backoff : (K,) distribution used for cells unseen on fold A (global mean).
-    unif : (K,) uniform reference for the prior-information channel.
+    Projection lookup is hierarchical: cell -> coarse -> global backoff.  The
+    Jensen log-bias correction is applied for cells estimated on fold A; it shifts
+    the log-projection up and cancels in d+e (=I_tot), so it only reallocates
+    mis-credited reasoning back into the prior channel.
 
     Returns
     -------
     d_clip : (N,) reasoning score  log q_f(y|x) - log~q_bar(y|phi), clipped to [-c,c]
     e_clip : (N,) prior score      log~q_bar(y|phi) - log u(y),     clipped to [-c,c]
-
-    Note the bias correction shifts log-projection up; it cancels in d+e (=I_tot)
-    so it only reallocates mis-credited reasoning back into the prior channel.
     """
     q_f = np.asarray(q_f, dtype=np.float64)
     y = np.asarray(y).astype(int)
@@ -123,10 +150,10 @@ def prior_excess_logscore(q_f, y, phi, qbar, logcorr, backoff, unif, c):
     zero_corr = np.zeros(K)
     idx = np.arange(N)
 
-    qbar_mat = lookup_projection(qbar, backoff, phi)
+    qbar_mat = lookup_projection(cell_proj, coarse_proj, glob, phi, coarse)
     corr_mat = np.empty((N, K))
-    for i, cc in enumerate(phi):
-        corr_mat[i] = logcorr.get(int(cc), zero_corr)
+    for i in range(N):
+        corr_mat[i] = cell_corr.get(int(phi[i]), zero_corr)
 
     log_qf = np.log(q_f[idx, y] + _EPS)
     log_qb = np.log(qbar_mat[idx, y] + _EPS) + corr_mat[idx, y]

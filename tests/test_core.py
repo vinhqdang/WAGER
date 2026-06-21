@@ -21,20 +21,21 @@ def test_kt_projection_normalized_and_smoothed():
     K = 4
     q = np.array([[0.7, 0.1, 0.1, 0.1], [0.6, 0.2, 0.1, 0.1]])
     phi = np.array([0, 0])
-    qbar, logcorr, unif, glob = kt_projection(q, phi, K, m=1.0)
-    assert np.isclose(qbar[0].sum(), 1.0)
+    cell_proj, cell_corr, coarse_proj, glob, unif = kt_projection(q, phi, K, m=1.0)
+    assert np.isclose(cell_proj[0].sum(), 1.0)
     assert np.allclose(unif, 0.25)
     # single cell -> global == cell mean -> shrinkage is a no-op here
     raw = q.mean(0)
-    assert np.allclose(qbar[0], raw)
+    assert np.allclose(cell_proj[0], raw)
 
 
 def test_kt_projection_unseen_cell_backs_off_to_uniform():
     K = 3
     q = np.array([[0.8, 0.1, 0.1]])
-    qbar, logcorr, unif, glob = kt_projection(q, np.array([5]), K)
+    cell_proj, cell_corr, coarse_proj, glob, unif = kt_projection(q, np.array([5]), K)
     d, e = prior_excess_logscore(
-        np.array([[0.5, 0.3, 0.2]]), np.array([0]), np.array([99]), qbar, logcorr, glob, unif, c=np.log(K)
+        np.array([[0.5, 0.3, 0.2]]), np.array([0]), np.array([99]),
+        cell_proj, cell_corr, coarse_proj, glob, unif, c=np.log(K)
     )
     # unseen cell -> projection = global backoff -> scores finite
     assert np.isfinite(d[0]) and np.isfinite(e[0])
