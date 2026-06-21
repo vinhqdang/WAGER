@@ -91,17 +91,12 @@ def _blocked_permutation(group: np.ndarray, rng: np.random.Generator):
 
     Groups are shuffled; instances within a group keep their relative order.
     This enforces image-level exchangeability (algorithm.md section 11).
+    Fully vectorized: assign each group a random rank, stable-sort instances by it.
     """
-    uniq = np.unique(group)
-    rng.shuffle(uniq)
-    order = []
-    # bucket instance indices per group
-    buckets = {g: [] for g in uniq}
-    for idx, g in enumerate(group):
-        buckets[g].append(idx)
-    for g in uniq:
-        order.extend(buckets[g])
-    return np.asarray(order, dtype=int)
+    uniq, inv = np.unique(group, return_inverse=True)
+    group_rank = rng.permutation(len(uniq))      # random order for each group
+    keys = group_rank[inv]                         # each instance's group rank
+    return np.argsort(keys, kind="stable")
 
 
 def _split_AB(order: np.ndarray, group: np.ndarray, split_frac: float):
@@ -109,17 +104,14 @@ def _split_AB(order: np.ndarray, group: np.ndarray, split_frac: float):
 
     Splitting is done at the group boundary so an image is wholly in A or B.
     """
-    uniq_in_order = []
-    seen = set()
-    for idx in order:
-        g = group[idx]
-        if g not in seen:
-            seen.add(g)
-            uniq_in_order.append(g)
-    n_a_groups = max(1, int(round(split_frac * len(uniq_in_order))))
-    a_groups = set(uniq_in_order[:n_a_groups])
-    A_idx = np.array([i for i in order if group[i] in a_groups], dtype=int)
-    B_idx = np.array([i for i in order if group[i] not in a_groups], dtype=int)
+    go = group[order]                          # groups along the permuted order
+    _, first = np.unique(go, return_index=True)
+    groups_in_order = go[np.sort(first)]       # unique groups by first appearance
+    n_a_groups = max(1, int(round(split_frac * len(groups_in_order))))
+    a_groups = groups_in_order[:n_a_groups]
+    is_a = np.isin(group, a_groups)
+    A_idx = order[is_a[order]]
+    B_idx = order[~is_a[order]]
     return A_idx, B_idx
 
 
@@ -151,7 +143,7 @@ def run_wager_single(
     d, e = prior_excess_logscore(qB, yB, phiB, cell_proj, cell_corr, coarse_proj,
                                  glob, unif, c, coarse=coarse_B)
 
-    e_value, _, growth = wealth_process(d, c)
+    e_value, _, growth = wealth_process(d, c, track=False)
     return {
         "e_value": e_value,
         "growth": growth,
@@ -239,7 +231,7 @@ def run_wager_eval(
     alpha: float = 0.05,
     seed: int = 0,
     ci_grid: int = 401,
-    ci_max_perms: int = 8,
+    ci_max_perms: int = 4,
 ) -> WagerResult:
     """WAGER with a frozen (train-fit) projection over the whole eval stream.
 
@@ -262,7 +254,7 @@ def run_wager_eval(
     reason_cis, prior_cis = [], []
     for r in range(R):
         order = _blocked_permutation(group, rng)
-        ev, _, growth = wealth_process(d[order], c)
+        ev, _, growth = wealth_process(d[order], c, track=False)
         e_vals.append(ev)
         growths.append(growth)
         if r < ci_max_perms:

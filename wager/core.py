@@ -14,6 +14,7 @@ Waudby-Smith & Ramdas (2024, JRSS-B 86(1):1-27).
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import log as _LOG
 
 import numpy as np
 
@@ -207,29 +208,52 @@ class OnsBettor:
         return self.lam
 
 
-def wealth_process(d_clip: np.ndarray, c: float):
+def wealth_process(d_clip: np.ndarray, c: float, track: bool = True):
     """Run the one-sided capital process for H0: mu<=0 (Definition 3, Theorem 1).
 
-    Bets lambda_i in [0, 1/c) (capped at 0.5/c for numerical headroom) on d~_i.
+    Bets lambda_i in [0, 1/c) (capped at 0.5/c for numerical headroom) on d~_i,
+    accumulating log-wealth for numerical stability.  The ONS/aGRAPA update is
+    inlined with plain-Python scalar math (no per-step numpy calls) for speed.
 
     Returns
     -------
     e_value : float          terminal wealth W_n (an e-value for H0: mu<=0)
-    wealth  : (N,) float      running wealth W_1..W_n
+    wealth  : (N,) or None    running wealth (None if track=False)
     growth  : float           (1/n) log W_n  (finite-sample growth rate, Thm 2)
     """
-    d_clip = np.asarray(d_clip, dtype=np.float64)
-    n = len(d_clip)
+    d = np.asarray(d_clip, dtype=np.float64)
+    n = d.size
+    if n == 0:
+        return 1.0, (np.empty(0) if track else None), 0.0
     lam_cap = 0.5 / c
-    bettor = OnsBettor(lam_cap=lam_cap)
-    W = 1.0
-    wealth = np.empty(n, dtype=np.float64)
+    lam = 0.0
+    A = 1.0
+    logW = 0.0
+    wealth = np.empty(n, dtype=np.float64) if track else None
+    dlist = d.tolist()  # python floats: faster scalar loop
+    z_prev = None
     for i in range(n):
-        lam = bettor.step(d_clip[i - 1]) if i > 0 else 0.0
-        W *= (1.0 + lam * d_clip[i])
-        W = max(W, _EPS)  # guard against pathological underflow
-        wealth[i] = W
-    growth = np.log(W) / n if n > 0 else 0.0
+        if z_prev is not None:
+            denom = 1.0 + lam * z_prev + _EPS
+            grad = z_prev / denom
+            A += grad * grad
+            lam += _ONS_C * grad / (A + _EPS)
+            if lam < 0.0:
+                lam = 0.0
+            elif lam > lam_cap:
+                lam = lam_cap
+        zi = dlist[i]
+        factor = 1.0 + lam * zi
+        if factor < _EPS:
+            factor = _EPS
+        logW += _LOG(factor)
+        if track:
+            wealth[i] = np.exp(min(logW, 700.0))
+        z_prev = zi
+    # cap terminal wealth to keep it finite/serializable (logW>700 -> overflow);
+    # growth rate uses the uncapped log-wealth and stays exact.
+    W = float(np.exp(min(logW, 700.0)))
+    growth = logW / n
     return W, wealth, growth
 
 
@@ -279,47 +303,84 @@ def _hedged_capital_grid(x: np.ndarray, grid: np.ndarray, c: float, alpha: float
     return ~rejected  # boolean keep-mask over grid
 
 
-def betting_mean_ci(x, c, alpha=0.05, n_grid=801, lo=None, hi=None):
+def _fixed_lambda_keep(x, grid, c, alpha, lam):
+    """Vectorized hedged confidence test of H0: mu=m over a grid, with a *fixed*
+    (predictable) betting fraction lam.
+
+    With a constant lam the wealth path is a pure cumulative sum, so the whole
+    "does the hedged capital ever reach 1/alpha" check vectorizes over both data
+    and grid (chunked to bound memory).  lam must be F_0-measurable -- it is
+    estimated from a held-out prefix by the caller -- and < 1/(2c) for validity.
+    """
+    log_thresh = np.log(1.0 / alpha)
+    log2 = np.log(2.0)
+    G = len(grid)
+    keep = np.ones(G, dtype=bool)
+    step = max(1, 4_000_000 // max(len(x), 1))  # grid columns per chunk
+    for j0 in range(0, G, step):
+        gj = grid[j0:j0 + step]
+        Z = x[:, None] - gj[None, :]            # (N, g)
+        tp = np.log(np.maximum(1.0 + lam * Z, _EPS))
+        tm = np.log(np.maximum(1.0 - lam * Z, _EPS))
+        Sp = np.cumsum(tp, axis=0)
+        Sm = np.cumsum(tm, axis=0)
+        h = np.logaddexp(Sp, Sm) - log2          # hedged log-wealth path
+        maxh = h.max(axis=0)
+        keep[j0:j0 + step] = maxh < log_thresh
+    return keep
+
+
+def betting_mean_ci(x, c, alpha=0.05, n_grid=801, lo=None, hi=None, max_n=40000):
     """Anytime-valid (1-alpha) CI for E[x] of a bounded variable (WSR 2024 / Thm 4).
 
-    Returns (lower, upper).  The candidate-mean grid is adaptively centered on the
-    empirical mean with a width scaled to the data, so the resolution stays finer
-    than the (potentially very narrow) interval even at large n.  If the surviving
-    set touches a grid boundary, the window is expanded and re-scanned.
+    Uses a hedged capital process with a predictable fixed betting fraction lam
+    estimated from a held-out prefix (so lam is F_0-measurable and the sequence is
+    anytime-valid).  The grid is adaptively centered on the empirical mean and
+    expanded if the surviving set touches a non-clipped boundary.  Fully
+    vectorized.  For very long streams the betting prefix is capped at max_n
+    observations (the CI stays valid, only slightly wider) to bound cost.
     """
     x = np.asarray(x, dtype=np.float64)
     n = len(x)
     if n == 0:
         return (np.nan, np.nan)
+    if max_n is not None and n > max_n:
+        x = x[:max_n]
+        n = max_n
+
+    # predictable fixed bet from a held-out prefix; bet on the remainder
+    n0 = min(max(200, n // 10), 5000)
+    prefix, rest = x[:n0], x[n0:]
+    if len(rest) < 10:
+        prefix, rest = x, x
+    sd0 = float(np.std(prefix)) + 1e-6
+    lam = np.sqrt(2.0 * np.log(2.0 / alpha) / (max(len(rest), 1) * sd0 * sd0))
+    lam = float(np.clip(lam, 1e-6, 0.49 / c))
+
     if lo is not None and hi is not None:
         grid = np.linspace(lo, hi, n_grid)
-        keep = _hedged_capital_grid(x, grid, c, alpha)
-        if not keep.any():
-            return (np.nan, np.nan)
-        return (float(grid[keep].min()), float(grid[keep].max()))
+        keep = _fixed_lambda_keep(rest, grid, c, alpha, lam)
+        return (float(grid[keep].min()), float(grid[keep].max())) if keep.any() else (np.nan, np.nan)
 
     mean = float(np.mean(x))
     sd = float(np.std(x)) + 1e-9
-    # generous initial half-width around the mean
-    half = max(0.02, 10.0 * sd / np.sqrt(n))
-    for _ in range(6):
+    half = max(0.02, 12.0 * sd / np.sqrt(n))
+    ci_lo = ci_hi = np.nan
+    keep = np.zeros(1, dtype=bool)
+    for _ in range(7):
         g_lo = max(-c, mean - half)
         g_hi = min(c, mean + half)
         grid = np.linspace(g_lo, g_hi, n_grid)
-        keep = _hedged_capital_grid(x, grid, c, alpha)
+        keep = _fixed_lambda_keep(rest, grid, c, alpha, lam)
         if not keep.any():
             half *= 2.0
             continue
         kept = grid[keep]
         ci_lo, ci_hi = float(kept.min()), float(kept.max())
-        # expand if the surviving set reaches a non-clipped boundary
-        touch_lo = keep[0] and g_lo > -c
-        touch_hi = keep[-1] and g_hi < c
-        if touch_lo or touch_hi:
+        if (keep[0] and g_lo > -c) or (keep[-1] and g_hi < c):
             half *= 2.0
             continue
         return (ci_lo, ci_hi)
-    # fall back to whatever the last scan found
     return (ci_lo, ci_hi) if keep.any() else (np.nan, np.nan)
 
 

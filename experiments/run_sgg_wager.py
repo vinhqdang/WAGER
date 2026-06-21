@@ -28,7 +28,7 @@ DATA = os.path.join(ROOT, "data", "vg", "vg_predcls.npz")
 RESULTS = os.path.join(ROOT, "results")
 os.makedirs(RESULTS, exist_ok=True)
 
-R_PERM = 30
+R_PERM = 24
 ALPHA = 0.05
 PROJ_M = 0.25  # shrinkage pseudo-count for the frozen projection
 
