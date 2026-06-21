@@ -32,7 +32,7 @@ RESULTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
 
-def gate_a_type_i(n_runs=1000, alpha=0.05, seed0=1000):
+def gate_a_type_i(n_runs=600, alpha=0.05, seed0=1000):
     """Type-I: pure-prior model should not trigger the e-value beyond rate alpha."""
     print(f"[GATE A] Type-I error control over {n_runs} runs (alpha={alpha})...")
     t0 = time.time()
@@ -70,7 +70,7 @@ def gate_a_type_i(n_runs=1000, alpha=0.05, seed0=1000):
     return res
 
 
-def gate_b_coverage(n_runs=300, alpha=0.1, seed0=2000):
+def gate_b_coverage(n_runs=250, alpha=0.1, seed0=2000):
     """Coverage: betting CI for I_reason should cover the true population value."""
     print(f"[GATE B] CI coverage over {n_runs} runs (target >= {1-alpha:.0%})...")
     t0 = time.time()

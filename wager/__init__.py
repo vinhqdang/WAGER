@@ -16,8 +16,11 @@ from .core import (
 )
 from .pipeline import (
     WagerResult,
+    ModelData,
+    build_projection,
     run_wager_single,
     run_wager_permutations,
+    run_wager_eval,
 )
 from .rgr import reasoning_gain_ratio, fieller_ratio_ci, RgrResult
 
@@ -31,8 +34,11 @@ __all__ = [
     "betting_mean_point",
     "OnsBettor",
     "WagerResult",
+    "ModelData",
+    "build_projection",
     "run_wager_single",
     "run_wager_permutations",
+    "run_wager_eval",
     "reasoning_gain_ratio",
     "fieller_ratio_ci",
     "RgrResult",

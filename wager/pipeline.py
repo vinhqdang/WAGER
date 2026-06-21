@@ -15,9 +15,22 @@ from .core import (
     betting_mean_ci,
     betting_mean_point,
     kt_projection,
+    lookup_projection,
     prior_excess_logscore,
     wealth_process,
 )
+
+
+def build_projection(q_proj, phi_proj, K, m=0.5, coarse_proj=None):
+    """Fit a frozen self-prior projection on a dedicated fold (e.g. the train set).
+
+    Returns the projection tuple consumed by prior_excess_logscore.  Because the
+    fold is disjoint from the evaluation stream, the projection is a legitimate
+    frozen forecaster (F_0-measurable) and can be estimated on a large dense set,
+    which is what makes the FREQ anchor (I_reason ~ 0) hold on heavy-tailed data.
+    """
+    return kt_projection(np.asarray(q_proj, dtype=np.float64),
+                         np.asarray(phi_proj), K, m=m, coarse_A=coarse_proj)
 
 
 @dataclass
@@ -215,4 +228,61 @@ def run_wager_permutations(
         d_streams=d_streams,
         e_streams=e_streams,
         perm_B_index=B_indices,
+    )
+
+
+def run_wager_eval(
+    data: ModelData,
+    projection,
+    R: int = 40,
+    c: float | None = None,
+    alpha: float = 0.05,
+    seed: int = 0,
+    ci_grid: int = 401,
+    ci_max_perms: int = 8,
+) -> WagerResult:
+    """WAGER with a frozen (train-fit) projection over the whole eval stream.
+
+    The per-instance reasoning/prior scores are order-independent, so they are
+    computed once; the R image-blocked permutations only reshuffle the betting
+    order to (a) build the e-value distribution and (b) average the anytime-valid
+    CIs across orders.  This is the recommended path for heavy-tailed real data.
+    """
+    K = data.K
+    c = float(np.log(K)) if c is None else c
+    cell_proj, cell_corr, coarse_proj, glob, unif = projection
+    coarse = data.coarse if data.coarse is not None else None
+
+    d, e = prior_excess_logscore(data.q, data.y, data.phi, cell_proj, cell_corr,
+                                 coarse_proj, glob, unif, c, coarse=coarse)
+    group = data.group if data.group is not None else np.arange(data.N)
+    rng = np.random.default_rng(seed)
+
+    e_vals, growths = [], []
+    reason_cis, prior_cis = [], []
+    for r in range(R):
+        order = _blocked_permutation(group, rng)
+        ev, _, growth = wealth_process(d[order], c)
+        e_vals.append(ev)
+        growths.append(growth)
+        if r < ci_max_perms:
+            reason_cis.append(betting_mean_ci(d[order], c, alpha=alpha, n_grid=ci_grid))
+            prior_cis.append(betting_mean_ci(e[order], c, alpha=alpha, n_grid=ci_grid))
+
+    e_vals = np.asarray(e_vals)
+    reason_cis = np.asarray(reason_cis)
+    prior_cis = np.asarray(prior_cis)
+    return WagerResult(
+        name=data.name,
+        e_value=float(np.mean(e_vals)),
+        e_values_per_perm=e_vals,
+        I_reason=betting_mean_point(d),
+        I_reason_ci=(float(np.nanmean(reason_cis[:, 0])), float(np.nanmean(reason_cis[:, 1]))),
+        I_prior=betting_mean_point(e),
+        I_prior_ci=(float(np.nanmean(prior_cis[:, 0])), float(np.nanmean(prior_cis[:, 1]))),
+        I_tot=betting_mean_point(d) + betting_mean_point(e),
+        growth=float(np.mean(growths)),
+        d_streams=[d],
+        e_streams=[e],
+        perm_B_index=[np.arange(data.N)],
     )

@@ -109,19 +109,40 @@ def kt_projection(q_A, phi_A, K, m=1.0, coarse_A=None):
     return cell_proj, cell_corr, coarse_proj, glob, unif
 
 
+def _gather(proj: dict, keys: np.ndarray, fallback: np.ndarray):
+    """Vectorized per-instance gather from a {key: vector} dict with a fallback.
+
+    fallback is either a (K,) vector (broadcast) or an (N,K) array.
+    Returns (out (N,K), hit mask (N,)).
+    """
+    K = fallback.shape[-1]
+    N = len(keys)
+    if not proj:
+        out = np.broadcast_to(fallback, (N, K)).copy() if fallback.ndim == 1 else fallback.copy()
+        return out, np.zeros(N, dtype=bool)
+    ids = np.fromiter(proj.keys(), dtype=np.int64, count=len(proj))
+    order = np.argsort(ids)
+    ids = ids[order]
+    mat = np.stack([proj[int(k)] for k in ids])  # (Ncell, K)
+    pos = np.searchsorted(ids, keys)
+    pos_clip = np.clip(pos, 0, len(ids) - 1)
+    hit = ids[pos_clip] == keys
+    base = np.broadcast_to(fallback, (N, K)) if fallback.ndim == 1 else fallback
+    out = np.where(hit[:, None], mat[pos_clip], base)
+    return out, hit
+
+
 def lookup_projection(cell_proj, coarse_proj, glob, phi, coarse=None):
     """Materialize the projection per instance: cell -> coarse -> global backoff."""
     K = glob.shape[0]
-    N = len(phi)
-    out = np.empty((N, K), dtype=np.float64)
-    for i in range(N):
-        c = int(phi[i])
-        if c in cell_proj:
-            out[i] = cell_proj[c]
-        elif coarse is not None and int(coarse[i]) in coarse_proj:
-            out[i] = coarse_proj[int(coarse[i])]
-        else:
-            out[i] = glob
+    phi = np.asarray(phi, dtype=np.int64)
+    # start from coarse-or-global backoff, then overlay cell hits
+    if coarse is not None and coarse_proj:
+        coarse = np.asarray(coarse, dtype=np.int64)
+        backoff, _ = _gather(coarse_proj, coarse, glob)
+    else:
+        backoff = np.broadcast_to(glob, (len(phi), K)).copy()
+    out, _ = _gather(cell_proj, phi, backoff)
     return out
 
 
@@ -151,9 +172,7 @@ def prior_excess_logscore(q_f, y, phi, cell_proj, cell_corr, coarse_proj, glob, 
     idx = np.arange(N)
 
     qbar_mat = lookup_projection(cell_proj, coarse_proj, glob, phi, coarse)
-    corr_mat = np.empty((N, K))
-    for i in range(N):
-        corr_mat[i] = cell_corr.get(int(phi[i]), zero_corr)
+    corr_mat, _ = _gather(cell_corr, np.asarray(phi, dtype=np.int64), zero_corr)
 
     log_qf = np.log(q_f[idx, y] + _EPS)
     log_qb = np.log(qbar_mat[idx, y] + _EPS) + corr_mat[idx, y]
@@ -263,20 +282,45 @@ def _hedged_capital_grid(x: np.ndarray, grid: np.ndarray, c: float, alpha: float
 def betting_mean_ci(x, c, alpha=0.05, n_grid=801, lo=None, hi=None):
     """Anytime-valid (1-alpha) CI for E[x] of a bounded variable (WSR 2024 / Thm 4).
 
-    Returns (lower, upper).  The grid spans [-c, c] by default (the support of a
-    clipped score) but can be narrowed with lo/hi for resolution.
+    Returns (lower, upper).  The candidate-mean grid is adaptively centered on the
+    empirical mean with a width scaled to the data, so the resolution stays finer
+    than the (potentially very narrow) interval even at large n.  If the surviving
+    set touches a grid boundary, the window is expanded and re-scanned.
     """
     x = np.asarray(x, dtype=np.float64)
-    if len(x) == 0:
+    n = len(x)
+    if n == 0:
         return (np.nan, np.nan)
-    lo = -c if lo is None else lo
-    hi = c if hi is None else hi
-    grid = np.linspace(lo, hi, n_grid)
-    keep = _hedged_capital_grid(x, grid, c, alpha)
-    if not keep.any():
-        return (np.nan, np.nan)
-    kept = grid[keep]
-    return (float(kept.min()), float(kept.max()))
+    if lo is not None and hi is not None:
+        grid = np.linspace(lo, hi, n_grid)
+        keep = _hedged_capital_grid(x, grid, c, alpha)
+        if not keep.any():
+            return (np.nan, np.nan)
+        return (float(grid[keep].min()), float(grid[keep].max()))
+
+    mean = float(np.mean(x))
+    sd = float(np.std(x)) + 1e-9
+    # generous initial half-width around the mean
+    half = max(0.02, 10.0 * sd / np.sqrt(n))
+    for _ in range(6):
+        g_lo = max(-c, mean - half)
+        g_hi = min(c, mean + half)
+        grid = np.linspace(g_lo, g_hi, n_grid)
+        keep = _hedged_capital_grid(x, grid, c, alpha)
+        if not keep.any():
+            half *= 2.0
+            continue
+        kept = grid[keep]
+        ci_lo, ci_hi = float(kept.min()), float(kept.max())
+        # expand if the surviving set reaches a non-clipped boundary
+        touch_lo = keep[0] and g_lo > -c
+        touch_hi = keep[-1] and g_hi < c
+        if touch_lo or touch_hi:
+            half *= 2.0
+            continue
+        return (ci_lo, ci_hi)
+    # fall back to whatever the last scan found
+    return (ci_lo, ci_hi) if keep.any() else (np.nan, np.nan)
 
 
 def betting_mean_point(x) -> float:
