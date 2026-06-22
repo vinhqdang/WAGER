@@ -1,52 +1,59 @@
 \section{Discussion, Limitations, and Future Work}\label{sec:discussion}
 
-\paragraph{What WAGER does and does not claim.}
-WAGER certifies and quantifies the \emph{usable} reasoning a given model family
-extracts beyond an annotation-frequency prior, and attributes a gain between two
-models with an anytime-valid interval. It is the right currency for gain attribution,
-but $\hat I^{\mathrm{reason}}$ is family-relative \cite{xu2020theory}: it measures what
-\emph{this} model extracts, not an information-theoretic limit, and a non-substantive
-verdict is a statement about a particular pair of forecasters, not a claim that the
-task is unsolvable. Equally, a ``reasoning-supported'' verdict certifies information
-beyond $\phi$, not correctness or robustness in any broader sense.
+WAGER provides a specific form of evidence: it measures the usable information that
+a model extracts beyond a stated annotation-frequency prior and determines how much
+of the gain between two models belongs to that residual channel. This scope is
+important when interpreting either verdict. The estimated
+$I^{\mathrm{reason}}$ is family-relative in the sense of usable-information analyses
+\cite{xu2020theory}; it describes what the evaluated model extracts, rather than the
+information-theoretic limit of the task. Consequently, a non-substantive verdict
+applies to the selected pair of forecasters and does not imply that the task cannot
+be solved through reasoning. Conversely, a reasoning-supported verdict certifies
+predictive information beyond $\phi$, but does not by itself establish correctness,
+causal understanding, or robustness under other distribution shifts.
 
-\paragraph{Relation to the benchmark-reliability crisis.}
-A growing literature argues that static leaderboards overstate capability, whether
-through frequency shortcuts, data contamination, or memorization, and especially so for
-multimodal models \cite{chen2025contamination, song2025leaked, liu2025reasoning}. Most
-remedies refresh or randomize the benchmark. WAGER is complementary: it keeps the
-benchmark fixed and instead audits a \emph{reported gain} against an explicit confound,
-returning a certificate rather than a fresh test set. The two approaches compose---a
-contamination-resistant benchmark can still be analyzed with WAGER to separate reasoning
-from prior-fitting.
+This distinction positions WAGER within the broader concern that static
+leaderboards can overstate capability through frequency shortcuts, contamination,
+or memorization, particularly for multimodal systems
+\cite{chen2025contamination,song2025leaked,liu2025reasoning}. Most proposed remedies
+refresh, randomize, or otherwise replace the benchmark. WAGER instead retains the
+benchmark and audits a reported gain against an explicit confound. These strategies
+are complementary: a dynamically refreshed or contamination-resistant benchmark may
+still contain annotation-frequency structure, and its model comparisons can be
+analyzed with WAGER to separate prior fitting from residual reasoning.
 
-\paragraph{Threats to validity.}
-\emph{(i) Exchangeability.} We assume exchangeability rather than i.i.d.\ and enforce
-it with image-blocked permutations, which also handle within-image structural leakage
-from multiple pairs per image. \emph{(ii) Estimated projection.} Exact validity uses a
-$\bar q_f$ frozen on an independent fold; cell sparsity (Table~\ref{tab:data}) is handled
-by KT smoothing and hierarchical backoff, and the Jensen correction debiases the
-log-projection. \emph{(iii) $\phi$ must capture the confound.} If a relevant frequency
-channel is omitted from $\phi$, WAGER can over-credit reasoning; we therefore report the
-most conservative (finest) $\phi$ and confirm verdict stability under coarsening
-(Section~\ref{sec:abl}). \emph{(iv) Clipping.} The clip $c$ trades robustness for
-sensitivity; the verdict is stable at the default $c=\log K$ and only flips under
-aggressive clipping, which we avoid. \emph{(v) Family-relativity.} Because the measured
-quantity depends on the model family, WAGER compares forecasters, not architectures in
-the abstract; the cached-logit interface makes the comparison reproducible and exact.
+Several conditions delimit the validity of that analysis. First, the betting result
+requires exchangeability rather than independent and identically distributed
+observations. We preserve the dependence among relations from the same image by
+permuting complete image blocks, preventing individual relations from the same scene
+from being treated as independent units. Second, exact validity depends on fitting
+the self-prior projection on a fold independent of the betting stream. Visual
+Genome's sparse class-pair cells make this estimation difficult, so the projection
+uses Krichevsky--Trofimov smoothing, hierarchical backoff, and a Jensen correction
+(Table~\ref{tab:data} and Section~\ref{sec:method}). Third, $\phi$ must represent the
+frequency channel being audited. An omitted confound may be incorrectly credited to
+reasoning; for that reason, we report the finest, most conservative specification of
+$\phi$ and verify that the verdict remains stable when it is coarsened
+(Section~\ref{sec:abl}). Fourth, clipping controls the bounded score required by the
+wealth process and therefore trades robustness against sensitivity. The conclusion
+is stable at the default $c=\log K$ and changes only under the aggressive clipping
+examined in the ablation. Finally, because the measured quantity is model-relative,
+WAGER compares concrete frozen forecasters rather than architectures in the
+abstract. The cached-probability interface is what makes this comparison exact and
+reproducible.
 
-\paragraph{Future work.}
-The cached-logit interface makes scaling out almost free; each new study requires only a
-one-time logit dump and a choice of $\phi$ (Table~\ref{tab:phi}). Three directions
-follow naturally. \emph{(a) Released SGG checkpoints.} Applying the identical pipeline to
-MOTIFS, VCTree, and the causal +TDE variant would test whether published scene-graph
-SOTA survives the RGR test, and whether TDE raises RGR as the causal account predicts.
-\emph{(b) VQA and multimodal LLMs.} With $\phi$ the question type, WAGER can audit whether
-modern vision-language gains over classical baselines reflect visual reasoning or
-language-prior fitting, where the confound is well documented
-\cite{lee2025vlind, wu2025lanp, peng2025overcoming}. \emph{(c) Long-tail detection.}
-With $\phi$ the frequency tier, the head/body/tail analysis of Section~\ref{sec:strat}
-extends directly to LVIS-style rare-category evaluation \cite{gupta2019lvis,
-zhu2024rectify}. In each case the contribution of this paper---the self-prior
-projection, the one-process certify-and-quantify result, and the certified RGR---carries
-over unchanged.
+The same interface also makes broader evaluation practical: a new application needs
+only a one-time probability dump and an appropriate definition of $\phi$. In scene
+graph generation, applying the present pipeline to released MOTIFS, VCTree, and
+causal +TDE checkpoints would reveal whether published improvements survive the RGR
+criterion and whether TDE increases the reasoning share as its causal motivation
+suggests. In VQA and multimodal language models, question type can serve as $\phi$,
+allowing gains over classical baselines to be separated into visual and
+language-prior contributions, where dependence on the latter remains well documented
+\cite{lee2025vlind,wu2025lanp,peng2025overcoming}. For LVIS-style detection,
+frequency tier provides the analogous prior feature, and the head/body/tail analysis
+of Section~\ref{sec:strat} extends directly to rare-category evaluation
+\cite{gupta2019lvis,zhu2024rectify}. Across these settings, the statistical
+construction remains unchanged: the self-prior projection defines the competing
+forecaster, one wealth process certifies and quantifies the residual signal, and RGR
+attributes the gain between systems.

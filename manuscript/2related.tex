@@ -26,7 +26,7 @@ splits \cite{agrawal2018dont}, which were then shown to be exploitable by label
 inversion \cite{teney2020value, shrestha2020negative}. The problem persists for
 modern vision-language models: benchmarks such as VLind-Bench \cite{lee2025vlind} and
 analyses like LanP \cite{wu2025lanp} document substantial reliance on language priors,
-and a steady stream of debiasing methods continues to appear
+and recent work continues to develop debiasing methods
 \cite{peng2025overcoming}. These efforts diagnose a benchmark or fix a model; WAGER
 instead certifies and quantifies a \emph{gain between two systems} with a validity
 guarantee, and instantiates uniformly across modalities through the choice of prior
@@ -44,9 +44,9 @@ metric.
 A broader reliability crisis now surrounds static benchmarks: surveys and analyses
 document that leaderboard gains can reflect data contamination and memorization rather
 than capability, especially for multimodal models where both images and text may leak
-\cite{chen2025contamination, song2025leaked, liu2025reasoning}. The community response
-has largely been \emph{dynamic} or refreshed benchmarks. WAGER is complementary and
-orthogonal: it leaves the benchmark fixed and instead asks, with a certificate, whether
+\cite{chen2025contamination, song2025leaked, liu2025reasoning}. The principal response
+has been to develop \emph{dynamic} or refreshed benchmarks. WAGER addresses a
+complementary question: it leaves the benchmark fixed and asks, with a certificate, whether
 a specific reported gain reflects information beyond a stated confound.
 
 \paragraph{Usable information.}
@@ -63,8 +63,8 @@ WAGER is built on testing-by-betting and e-values
 \cite{shafer2021testing, vovk2021evalues, ramdas2023game, grunwald2024safe}, the
 bounded-mean capital process of Waudby-Smith and Ramdas
 \cite{waudbysmith2024estimating}, and the forecaster-comparison e-process of Henzi
-and Ziegel \cite{henzi2022valid}; the area remains highly active, with recent work
-sharpening the foundations and the methodology
+and Ziegel \cite{henzi2022valid}; recent work has further developed the foundations
+and methodology
 \cite{koning2026anytime, chugg2026evalues, polson2026bayes} and extending e-values to
 applied sequential monitoring \cite{sokolova2026adaptive}. The growth-rate--information identity goes
 back to Kelly \cite{kelly1956new} and the universal-portfolio view

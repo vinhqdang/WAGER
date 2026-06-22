@@ -3,78 +3,88 @@
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig1_concept.png}
-\caption{\textbf{The question WAGER answers.}
-(a) A real Visual~Genome scene and its annotated subject--predicate--object
-relations. (b) For the ordered class pair $(\text{subject},\text{object})$, the
-training-count distribution $P(\text{predicate}\mid\text{subject},\text{object})$
-is already sharply peaked on the annotated predicate, so a lookup table predicts it
-\emph{without using a single pixel}. (c) WAGER asks how much of a reported gain from
-one method to another is genuine reasoning rather than better fitting of this
-frequency prior, and answers with a Reasoning Gain Ratio carrying a distribution-free,
+\caption{\textbf{The question addressed by WAGER.}
+(a) A scene from Visual~Genome and its annotated subject--predicate--object
+relations. (b) For a given ordered pair of subject and object classes, the training
+distribution $P(\text{predicate}\mid\text{subject},\text{object})$ can be sharply
+concentrated on the annotated predicate. A lookup table can therefore make an
+accurate prediction without examining the image. (c) WAGER determines how much of
+an improvement between two methods arises from information beyond this frequency
+prior and reports the resulting Reasoning Gain Ratio with a distribution-free,
 anytime-valid confidence interval.}
 \label{fig:concept}
 \end{figure*}
 
-\subsection{The disease}
-On the most label-imbalanced vision benchmarks, a trivial predictor that looks up the
-most frequent label given some cheap context already recovers most of the headline
-metric:
-\begin{itemize}
-    \item \textbf{Scene Graph Generation (VG150).} The FREQ baseline of Zellers et
-    al.~\cite{zellers2018neural}---predict
-    $\arg\max_{p} P(\text{predicate} \mid \text{subject}, \text{object})$ from
-    training counts---reaches $R@50 \approx 60.6$ on PredCls versus MOTIFS at
-    $65.2$. A lookup table recovers $\sim\!96\%$ of ``state-of-the-art'' recall.
-    \item \textbf{Visual Question Answering.} Answering ``yes'' blindly to ``Do you
-    see a\dots'' reaches $\sim\!87\%$ on the original unbalanced VQA
-    \cite{goyal2017making}. On the changing-prior split VQA-CP
-    \cite{agrawal2018dont}, UpDn collapses from $\sim\!63\%$ to $\sim\!40\%$.
-    Recent vision-language models remain measurably reliant on such language priors
-    \cite{lee2025vlind, wu2025lanp}.
-    \item \textbf{Long-tail detection (LVIS).} Average precision on rare categories is
-    dominated by image-frequency priors \cite{gupta2019lvis}.
-\end{itemize}
-Figure~\ref{fig:concept} illustrates the mechanism on a real annotation, and
-Section~\ref{sec:exp} (Figure~\ref{fig:longtail}) shows that on Visual~Genome the five
-most frequent predicates already account for $72\%$ of all relation instances.
+Progress on a visual benchmark is usually summarized by the difference between two
+headline scores. On strongly imbalanced datasets, however, this difference need not
+measure an improvement in visual reasoning. Annotation frequencies often provide a
+powerful prediction rule before the image is considered at all. In scene graph
+generation, for example, the FREQ baseline of Zellers et
+al.~\cite{zellers2018neural} predicts the most common predicate for each ordered
+subject--object class pair. On VG150 PredCls it reaches approximately $60.6$ R@50,
+compared with $65.2$ for MOTIFS, and thus recovers about $96\%$ of the latter's
+recall through a lookup table. Figure~\ref{fig:concept} illustrates how this occurs
+for an individual Visual~Genome annotation; in the full corpus, the five most common
+predicates account for $72\%$ of all relations (Figure~\ref{fig:longtail}).
 
-\subsection{Why existing fixes are not enough}
-\begin{itemize}
-    \item \textbf{mean Recall@K} \cite{chen2019knowledge, tang2019learning} rebalances
-    metric weight but can be gamed by suppressing head predictions, and it breaks
-    category independence \cite{li2022rethinking}.
-    \item \textbf{VQA-CP OOD splits} can be solved by \emph{inverting} known label
-    statistics; a random-answer method can beat the state of the art on some question
-    types---a textbook Goodhart failure \cite{teney2020value, shrestha2020negative}.
-    \item \textbf{Causal TDE} \cite{tang2020unbiased} and modern debiasing methods
-    \cite{gao2025informative} are training- or inference-time interventions, not
-    \emph{evaluations} that quantify how much of a reported gain is confound.
-\end{itemize}
-Every one of these is bespoke to one benchmark and gives a point estimate with no
-uncertainty quantification. None answers ``is \emph{this specific gain} real, and with
-what confidence?''
+The same issue extends beyond scene graphs. In the original, unbalanced VQA data,
+answering ``yes'' without looking at the image achieves roughly $87\%$ accuracy on
+questions beginning ``Do you see a\dots'' \cite{goyal2017making}. When answer priors
+are deliberately changed in VQA-CP \cite{agrawal2018dont}, UpDn falls from about
+$63\%$ to $40\%$, and recent vision--language models remain measurably dependent on
+language priors \cite{lee2025vlind,wu2025lanp}. Frequency effects likewise dominate
+average precision for rare categories in LVIS \cite{gupta2019lvis}. These examples
+make the interpretation of a benchmark gain ambiguous: a model may have extracted
+more information from the image, or it may simply have fitted the annotation prior
+more effectively.
 
-\subsection{The gap WAGER fills}
-We present a general, statistically principled, cross-benchmark test that decomposes a
-reported gain into a prior-recoverable part and a residual reasoning part, with a
-finite-sample validity guarantee. Our contributions are:
-\begin{enumerate}
-    \item \textbf{The self-prior projection} (Definition~\ref{def:proj}): a new
-    estimator that compares a model to its own frequency-collapsed self, making the
-    null exact without knowing the true prior and the measurement provably
-    calibration-invariant (Corollary~\ref{cor:calib}).
-    \item \textbf{One process, two readouts}
-    (Theorems~\ref{thm:evalue}--\ref{thm:growth}): a single testing-by-betting capital
-    process both \emph{certifies} that a model reasons beyond the prior (an
-    anytime-valid e-value) and \emph{quantifies} how much, via its growth rate.
-    \item \textbf{The Reasoning Gain Ratio} (Definition~\ref{def:rgr},
-    Theorem~\ref{thm:rgr}): a gain-attribution statistic with a distribution-free,
-    anytime-valid confidence interval and an operational decision rule.
-    \item \textbf{Validation}: a simulation suite establishing type-I control, nominal
-    coverage, and faithful recovery of injected reasoning, followed by a real
-    Visual~Genome study over $7.6{\times}10^5$ relations in which the framework
-    certifies the frequency baseline as non-reasoning and flags every accuracy gain
-    over it as non-substantive.
-\end{enumerate}
-The framework operates entirely on cached probability vectors, so a benchmark is
-analyzed in minutes on a CPU once logits have been dumped.
+Existing responses expose important aspects of this problem but do not resolve that
+ambiguity for a particular pair of systems. Mean Recall@K
+\cite{chen2019knowledge,tang2019learning} changes the weight assigned to each
+category, yet it can reward suppression of head predictions and compromise category
+independence \cite{li2022rethinking}. Changing-prior splits such as VQA-CP can
+themselves be exploited by reversing known label statistics; on some question types,
+a random-answer strategy can outperform the state of the art
+\cite{teney2020value,shrestha2020negative}. Causal total-direct-effect inference
+\cite{tang2020unbiased} and more recent debiasing methods
+\cite{gao2025informative} intervene during training or inference rather than
+measuring the source of an observed gain. More generally, these approaches are tied
+to particular benchmarks and return point estimates without uncertainty
+quantification. They therefore cannot answer whether a specified improvement is
+primarily attributable to reasoning, nor with what confidence.
+
+We address this gap with WAGER (Wealth-Anchored Gain Estimation of Reasoning), a
+distribution-free framework for separating a benchmark gain into a
+prior-recoverable component and a residual reasoning component. Its central device
+is a \emph{self-prior projection}: the predictions of a model are averaged over the
+features that carry the annotation-frequency prior. The resulting forecaster is the
+same model with instance-level visual information removed. Comparing a model with
+this frequency-collapsed version of itself avoids the unknown mismatch introduced by
+an external frequency baseline and makes the comparison invariant to calibration
+shared within each prior cell.
+
+WAGER turns that predictive comparison into a testing-by-betting process. The
+capital accumulated by the process has two complementary interpretations. At any
+sample size it is an e-value that certifies whether the model predicts beyond its
+self-prior projection; asymptotically, its growth rate measures the model's usable
+reasoning information. Applying the construction to two models yields the Reasoning
+Gain Ratio (RGR), the fraction of their total information gain attributable to the
+reasoning channel. An anytime-valid confidence interval supports an operational
+decision rule: when the upper confidence limit is below $0.5$, most of the gain is
+prior-recoverable and the improvement is flagged as non-substantive.
+
+This work makes four contributions. First, we introduce the self-prior projection
+(Definition~\ref{def:proj}), which provides an exact predictive null without access
+to the true prior and yields calibration invariance
+(Corollary~\ref{cor:calib}). Second, we show that one capital process both certifies
+and quantifies reasoning beyond that projection
+(Theorems~\ref{thm:evalue}--\ref{thm:growth}). Third, we define the RGR and derive
+its distribution-free, anytime-valid confidence interval
+(Definition~\ref{def:rgr}; Theorem~\ref{thm:rgr}). Finally, we validate these
+properties in simulation and conduct a Visual~Genome study containing
+$7.6{\times}10^5$ relations. The simulations show type-I control, nominal interval
+coverage, and accurate recovery of injected reasoning. In the real-data study,
+WAGER correctly identifies the frequency baseline as non-reasoning and flags every
+accuracy gain over it as non-substantive. Because the analysis consumes cached
+probability vectors, it can be run in minutes on a CPU after logits have been
+generated.

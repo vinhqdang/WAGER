@@ -1,10 +1,13 @@
 \section{Experiments}\label{sec:exp}
 
-We first describe the corpus (Section~\ref{sec:data}), validate WAGER on a simulation
-suite where ground truth is known (Section~\ref{sec:phase1}), apply it to a real
-Visual~Genome scene-graph study (Sections~\ref{sec:sgg}--\ref{sec:strat}), and finally
-probe sensitivity to design choices (Section~\ref{sec:abl}). All reported intervals are
-at $\alpha=0.05$ unless stated.
+Our evaluation proceeds from controlled validation to a real-data application. We
+first characterize the corpus and the frequency structure that motivates the study
+(Section~\ref{sec:data}). We then test WAGER in simulations for which the true
+reasoning contribution is known (Section~\ref{sec:phase1}), before applying it to
+scene graph generation on Visual~Genome
+(Sections~\ref{sec:sgg}--\ref{sec:strat}). The final ablations examine whether the
+conclusions depend on the principal design choices (Section~\ref{sec:abl}). Unless
+otherwise noted, all intervals use $\alpha=0.05$.
 
 \subsection{Dataset and statistics}\label{sec:data}
 Our study uses the Visual~Genome scene-graph corpus \cite{krishna2017visual} in the
@@ -49,7 +52,7 @@ Head / body / tail instance share & $71.6\%$ / $16.6\%$ / $11.8\%$ \\
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig3_longtail.png}
-\caption{\textbf{The confound is severe.} (a) Visual~Genome's 50 predicates follow a
+\caption{\textbf{Predicate-frequency imbalance.} (a) Visual~Genome's 50 predicates follow a
 heavy-tailed training distribution (log scale; head/body/tail). (b) The five most
 frequent predicates account for $72\%$ of all relation instances, so a frequency
 lookup already secures most of the recall metric.}
@@ -80,21 +83,20 @@ LVIS                  & Long-tail detection & category-frequency tier \\
 \end{table}
 
 \subsection{Simulation validity and power}\label{sec:phase1}
-Before touching real models we verify the framework's guarantees on synthetic data
-with known ground truth, by mixing a prior forecaster with an oracle,
-$q_f=(1-\beta)\,\text{prior}+\beta\,\text{oracle}$, so the true reasoning fraction is
-controlled by $\beta$. Figure~\ref{fig:phase1} summarizes three gates, all of which
-pass:
-\begin{itemize}
-    \item \textbf{Type-I error.} Feeding $q_f=\bar q_f$ (model $=$ prior) over $600$
-    runs, the empirical exceedance rate is $0.017\le\alpha=0.05$, and
-    $\hat I^{\mathrm{reason}}\approx 0.004$, confirming Theorem~\ref{thm:evalue}.
-    \item \textbf{Coverage.} The anytime-valid intervals attain $0.93$ empirical
-    coverage against a $0.90$ target.
-    \item \textbf{Recovery.} The estimated RGR tracks the injected ground-truth RGR
-    with Pearson $r=0.998$ and is monotone in $\beta$; $\hat I^{\mathrm{reason}}$
-    tracks the true reasoning information with $r=0.999$.
-\end{itemize}
+We begin with synthetic data because it permits direct tests of validity and power
+against known population quantities. A prior forecaster is mixed with an oracle as
+$q_f=(1-\beta)\,\text{prior}+\beta\,\text{oracle}$, making $\beta$ a controlled
+source of within-cell information. At the null, where $q_f=\bar q_f$, the wealth
+process exceeds the rejection threshold in $0.017$ of $600$ runs. This rate is below
+the nominal $\alpha=0.05$, while
+$\hat I^{\mathrm{reason}}\approx0.004$, as predicted by
+Theorem~\ref{thm:evalue}. The anytime-valid intervals attain empirical coverage of
+$0.93$ against a $0.90$ target. As $\beta$ increases, the estimated RGR changes
+monotonically and follows its ground-truth value with Pearson $r=0.998$; the
+correlation between estimated and true reasoning information is $r=0.999$.
+Figure~\ref{fig:phase1} presents these three results together. Thus, before any
+real-data claim is made, the simulations establish type-I control, interval coverage,
+and recovery of the quantity WAGER is intended to measure.
 
 \begin{figure*}[t]
 \centering
@@ -106,27 +108,27 @@ and one-minus-coverage stay within their nominal levels.}
 \end{figure*}
 
 \subsection{Real study: models and the anchor}\label{sec:sgg}
-We build five predicate predictors of increasing access to image information beyond the
-class pair: \textbf{FREQ} (training-count lookup
-$P(\text{predicate}\mid\text{subject},\text{object})$, constant within a $\phi$-cell);
-\textbf{FREQ+OVERLAP} (FREQ plus a binary box-overlap indicator);
-\textbf{MLP-CLASS} (an MLP on class embeddings only---still essentially
-$\phi$-measurable); \textbf{MLP-SPATIAL} (adds translation/scale-invariant box
-geometry: relative position, scale, aspect, IoU); and \textbf{MLP-SPATIAL+} (a larger
-spatial network). The spatial features are the ``pixels beyond $\phi$'' that
-distinguish reasoning from prior-fitting. All five are trained once; WAGER then
-consumes their cached predicate distributions.
+The real-data study uses five predicate predictors that expose progressively more
+information beyond the ordered class pair. FREQ is the training-count lookup
+$P(\text{predicate}\mid\text{subject},\text{object})$ and is therefore constant
+within a $\phi$-cell. FREQ+OVERLAP supplements it with a binary indicator of box
+overlap, whereas MLP-CLASS learns from class embeddings alone and remains essentially
+$\phi$-measurable. MLP-SPATIAL additionally observes translation- and
+scale-invariant box geometry, including relative position, scale, aspect ratio, and
+intersection over union; MLP-SPATIAL+ increases the capacity of this spatial model.
+These geometric measurements provide the information beyond $\phi$ that the study
+uses to distinguish reasoning from prior fitting. Each model is trained once, after
+which WAGER operates only on its cached predicate distributions.
 
-\paragraph{The anchor holds.}
-Table~\ref{tab:models} reports the readouts. As the credibility gate demands, FREQ
+Table~\ref{tab:models} first confirms the required anchor behavior. FREQ
 returns $\hat I^{\mathrm{reason}}=-0.005$ (CI straddling/below $0$) and e-value
 $0.49\approx 1$: WAGER correctly certifies that a lookup table performs no visual
 reasoning. FREQ+OVERLAP is likewise certified non-reasoning. The MLPs that genuinely
 consult box geometry accumulate decisive evidence (e-values up to the numerical
 ceiling $\sim\!10^{304}$) and positive $\hat I^{\mathrm{reason}}$, growing with spatial
-capacity. Crucially, test accuracy moves by under $1.3$ points across all five models,
-so accuracy alone cannot tell whether a gain is reasoning or prior-fitting---the
-distinction WAGER is built to make.
+capacity. Test accuracy, by contrast, varies by less than $1.3$ percentage points
+across all five systems. It therefore provides little indication of whether an
+improvement arises from reasoning or prior fitting.
 
 \begin{table*}[t]
 \centering
@@ -148,8 +150,7 @@ MLP-SPATIAL+  & $>10^{300}$       & $+0.071\,[+0.063,+0.074]$ & $2.710$ & $2.781
 \end{tabular}
 \end{table*}
 
-\paragraph{Almost all ``information'' is prior-fitting.}
-Figure~\ref{fig:decomp} decomposes total information into the two channels. For every
+The decomposition in Figure~\ref{fig:decomp} explains this discrepancy. For every
 model the prior channel ($I^{\mathrm{prior}}\approx 2.5$ nats) dwarfs the reasoning
 channel ($I^{\mathrm{reason}}\le 0.07$ nats): even the strongest model spends over
 $97\%$ of its information budget on frequency-fitting. Figure~\ref{fig:wealth} shows
@@ -158,8 +159,8 @@ leaves the neighborhood of its starting value, while the spatial MLPs compound c
 linearly in log-scale---visual confirmation that only those models out-predict their
 own self-prior projection. Figure~\ref{fig:proj} illustrates the mechanism inside a
 single $\phi$-cell: the projection $\bar q_f$ is the frozen cell forecaster, and the
-spread of per-instance scores $d_i$ around it is exactly what the betting process
-harvests.
+spread of per-instance scores $d_i$ around it supplies the signal accumulated by the
+betting process.
 
 \begin{figure*}[t]
 \centering
@@ -253,7 +254,7 @@ carry the reasoning signal, and it grows with spatial capacity.}
 \label{fig:strat}
 \end{figure}
 
-\subsection{Headline finding: the gains are non-substantive}\label{sec:headline}
+\subsection{Attributing model gains}\label{sec:headline}
 Figure~\ref{fig:rgr} and Table~\ref{tab:rgr} give the gain attribution. Every accuracy
 gain over the frequency baseline is flagged \emph{non-substantive}: the upper CI of its
 RGR is well below $0.5$, so most of each reported improvement is prior-recoverable

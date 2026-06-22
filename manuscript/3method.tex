@@ -36,7 +36,7 @@ averaged within each prior-feature cell,
 \end{definition}
 By construction $\bar q_f$ is the best summary of $f$ measurable with respect to the
 prior features alone: a forecaster that has discarded every pixel-level cue and kept
-only what frequency context implies. The crux is that we compare $f$ to its
+only what frequency context implies. The essential construction compares $f$ with its
 \emph{own} frequency-collapsed self rather than to an external FREQ table whose
 mismatch with the true prior would break validity; the two share calibration,
 vocabulary, and idiosyncrasies, so any out-of-fold predictive advantage of $q_f$ over
@@ -160,8 +160,9 @@ anytime-valid interval for $\mathrm{RGR}(f',f)$.
 \end{theorem}
 
 \subsection{Algorithm and implementation}
-Algorithm~\ref{alg:wager} summarizes the driver. Two practical points make it cheap
-and exact. First, the GPU is used \emph{once}, only to dump cached probability
+Algorithm~\ref{alg:wager} summarizes the driver. Two implementation choices make the
+procedure efficient while preserving the stated comparison. First, the GPU is used
+\emph{once}, only to dump cached probability
 vectors; all WAGER computation is CPU NumPy with an $O(NK)$ hot loop. Second, because
 the per-instance scores are order-independent under a frozen train-fit projection, the
 $R$ image-blocked permutations only reshuffle the betting order to build the e-value
@@ -214,8 +215,9 @@ where game-theoretic statistics gives finite-sample validity
 
 \paragraph{Clipping for boundedness.}
 The wealth factor $1+\lambda\tilde d$ must stay non-negative for the supermartingale
-argument; clipping $d$ to $[-c,c]$ and capping $\lambda<1/c$ guarantees it. The clip
-is the one knob that trades robustness against sensitivity (Section~\ref{sec:abl}); we
+argument; clipping $d$ to $[-c,c]$ and capping $\lambda<1/c$ guarantees it. The
+clipping level controls the trade-off between robustness and sensitivity
+(Section~\ref{sec:abl}); we
 fix $c=\log K$, the natural scale of a log-likelihood ratio over $K$ classes.
 
 \paragraph{Image-blocked exchangeability.}
