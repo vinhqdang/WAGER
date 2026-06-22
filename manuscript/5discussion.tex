@@ -1,0 +1,7 @@
+\section{Threats to Validity}\label{sec:discussion}
+\begin{itemize}
+    \item \textbf{Exchangeability:} We assume exchangeability, enforced by permuting the stream and averaging over $R$ permutations. Image-level blocking mitigates within-image structural leakage.
+    \item \textbf{Estimated Projection:} Cell sparsity in $\bar{q}_f$ is handled via KT smoothing and backoff. The use of a split guarantees $\bar{q}_f$ is measurable with respect to the evaluation stream.
+    \item \textbf{Confound Capture:} If a relevant frequency channel is omitted from $\phi$, WAGER can over-credit reasoning. We report results for the most conservative $\phi$.
+    \item \textbf{Family-relative Information:} Usable information is relative to the model family \cite{xu2020theory}. It measures what \textit{this} model extracts beyond the prior, which is the correct metric for gain attribution but does not bound theoretical limits.
+\end{itemize}

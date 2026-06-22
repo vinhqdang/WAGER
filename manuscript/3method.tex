@@ -1,0 +1,57 @@
+\section{Problem Setup and Methodology}\label{sec:method}
+
+\subsection{Problem Setup}
+Let $x$ be an instance, $y \in \{1,\ldots,K\}$ the ground-truth label, and $\phi(x)$ the prior features (the cheap, frequency-carrying sufficient statistic). We evaluate a model $f$'s predictive distribution $q_f(y|x)$ against its prior, $p(y|\phi)$. We never assume calibration of $q_f$, nor knowledge of the true prior. We assume only that instances on stream $B$ are exchangeable.
+
+\subsection{The New Math}
+For a fixed model $f$, define its \textbf{self-prior projection} as the model's own predictions averaged within each prior-feature cell:
+\begin{equation}
+\bar q_f(y \mid \phi) \;=\; \mathbb{E}\big[\, q_f(y \mid X)\;\big|\;\phi(X)=\phi \,\big].
+\end{equation}
+Estimate it on fold $A$ by cell-wise averaging with Krichevsky--Trofimov smoothing. Instead of comparing $f$ to an external frequency baseline, we compare $f$ to its own frequency-collapsed self. 
+
+On the evaluation stream $B$, define the \textbf{prior-excess log-score}:
+\begin{equation}
+d_i \;=\; \log q_f(y_i \mid x_i) \;-\; \log \hat{\bar q}_f(y_i \mid \phi(x_i)), \qquad \tilde d_i = \mathrm{clip}(d_i,\,-c,\,c).
+\end{equation}
+
+We test $H_0: \mu := \mathbb{E}[\tilde d_i] \le 0$ (``$f$ predicts no better than its prior-projection''). We define wealth:
+\begin{equation}
+W_0 = 1,\qquad W_n \;=\; \prod_{i=1}^{n}\Big(1 + \lambda_i\,\tilde d_i\Big)
+\end{equation}
+where $\lambda_i \in [0, 1/c)$ is predictable. Under $H_0$, $(W_n)$ is a non-negative supermartingale (e-value). Ville's inequality \cite{ville1939etude} guarantees $\Pr[\exists n: W_n \ge 1/\alpha] \le \alpha$.
+
+\subsection{Reasoning Gain Ratio}
+Decompose each model's total information over a uniform reference $u(Y)$:
+\begin{equation}
+I^{\text{prior}}_f + I^{\text{reason}}_f = I^{\text{tot}}_f.
+\end{equation}
+For a claimed improvement from $f$ to $f'$, define the \textbf{Reasoning Gain Ratio}:
+\begin{equation}
+\mathrm{RGR}(f',f) = \frac{I^{\text{reason}}_{f'} - I^{\text{reason}}_{f}}{I^{\text{tot}}_{f'} - I^{\text{tot}}_{f}}.
+\end{equation}
+If $\mathrm{RGR} < 0.5$, the majority of the reported gain is prior-recoverable. The ratio has an anytime-valid confidence interval via Fieller's method \cite{fieller1954some} under a Bonferroni split \cite{waudbysmith2024estimating}.
+
+\subsection{Algorithm}
+\begin{algorithm}
+\caption{WAGER Core Routine}\label{alg:wager}
+\begin{algorithmic}[1]
+\Require Cached predictive distributions $q_f$; prior map $\phi$; levels $\alpha$; clip $c$; $R$ permutations.
+\Ensure For each pair $(f',f)$, RGR with valid CI and verdict.
+\For{$r = 1 \dots R$}
+    \State Split indices into $A$ (40\%) and $B$ (60\%) randomly.
+    \For{each model $f$}
+        \State $\bar{q}_f \gets \text{KT-projection}(q_f \text{ over } A, \text{ key}=\phi)$
+        \State Initialize $W \gets 1$
+        \For{$i \in B$}
+            \State $d_i \gets \log q_f(y_i|x_i) - \log \bar{q}_f(y_i|\phi(x_i))$
+            \State $\tilde{d}_i \gets \text{clip}(d_i, -c, c)$
+            \State $\lambda_i \gets \text{ONS}(\tilde{d}_{1 \dots i-1})$
+            \State $W \gets W \cdot (1 + \lambda_i \tilde{d}_i)$
+        \EndFor
+        \State Compute growth rate and e-value for $f$.
+    \EndFor
+\EndFor
+\State Compute Fieller CI for RGR.
+\end{algorithmic}
+\end{algorithm}

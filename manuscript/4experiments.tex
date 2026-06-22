@@ -1,0 +1,30 @@
+\section{Experiments}\label{sec:exp}
+
+\subsection{Prior Features and Benchmarks}
+WAGER relies on defining the confounding sufficient statistic $\phi(x)$. For Visual Genome SGG \cite{krishna2017visual}, $\phi(x) = (\text{subject}, \text{object})$. For VQA v2 and GQA \cite{hudson2019gqa}, it is the question type. For LVIS \cite{gupta2019lvis}, it is the frequency tier. 
+
+\subsection{Simulation Validity}
+We feed models where $q_f = \bar{q}_f$ (model equals prior). We verify that $\Pr[W_n \ge 1/\alpha] \le \alpha$ and that the reasoning information is approximately zero. As shown in Figure \ref{fig:phase1}, WAGER's RGR tracks the injected reasoning fraction accurately.
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/phase1_recovery.png}
+\caption{Phase 1 Simulation: RGR recovery tracks injected reasoning.}
+\label{fig:phase1}
+\end{figure}
+
+\subsection{Real Model Results}
+For SGG, we evaluated FREQ, IMP, MOTIFS, VCTree, and TDE methods. FREQ correctly returns an e-value $\approx 1$ and zero reasoning. TDE methods demonstrate a strictly higher RGR, validating causal literature (see Figure \ref{fig:sgg_decomp} and Figure \ref{fig:sgg_rgr}).
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/sgg_decomposition.png}
+\caption{SGG reasoning versus prior-fitting decomposition.}
+\label{fig:sgg_decomp}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/sgg_rgr.png}
+\caption{SGG Reasoning Gain Ratios with anytime-valid confidence intervals.}
+\label{fig:sgg_rgr}
+\end{figure}

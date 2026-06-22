@@ -1,0 +1,19 @@
+\section{Introduction}\label{sec:intro}
+\subsection{The Disease}
+On the most label-imbalanced vision benchmarks, a trivial predictor that looks up the most frequent label given some cheap context already recovers most of the headline metric:
+\begin{itemize}
+    \item \textbf{Scene Graph Generation (VG150).} The FREQ baseline of Zellers et al. \cite{zellers2018neural}---predict $\text{argmax}_p P(\text{predicate} \mid \text{subject, object})$ from training counts---reaches $R@50 \approx 60.6$ on PredCls vs. MOTIFS at 65.2. A lookup table recovers $\sim 96\%$ of ``state-of-the-art'' recall.
+    \item \textbf{VQA.} Answering ``yes'' blindly to ``Do you see a\dots'' reaches $\sim 87\%$ on the original unbalanced VQA \cite{goyal2017making}. On the changing-prior split VQA-CP \cite{agrawal2018dont}, UpDn collapses from $\sim 63\%$ to $\sim 40\%$.
+    \item \textbf{Long-tail detection (LVIS).} AP on rare categories is dominated by image-frequency priors \cite{gupta2019lvis}.
+\end{itemize}
+
+\subsection{Why Existing Fixes Are Not Enough}
+\begin{itemize}
+    \item \textbf{mean Recall@K} \cite{chen2019knowledge, tang2019learning} rebalances metric weight but can be gamed by suppressing head predictions, and breaks category independence \cite{li2022rethinking}.
+    \item \textbf{VQA-CP OOD splits} can be solved by \textit{inverting} known label statistics. A random-answer method can beat SOTA on some question types---a textbook Goodhart failure \cite{teney2020value}.
+    \item \textbf{Causal TDE} \cite{tang2020unbiased} is a training/inference intervention, not an evaluation that quantifies how much of a reported gain is confound.
+\end{itemize}
+Every one of these is bespoke to one benchmark and gives a point estimate with no uncertainty quantification. None answers ``is \textit{this specific gain} real, and with what confidence?''
+
+\subsection{The Gap WAGER Fills}
+We present a general, statistically-principled, cross-benchmark test that decomposes a reported gain into a prior-recoverable part and a residual reasoning part, with a finite-sample validity guarantee. That object does not exist. WAGER is that object.
