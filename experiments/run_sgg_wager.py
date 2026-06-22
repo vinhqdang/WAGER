@@ -20,6 +20,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from wager.pipeline import ModelData, build_projection, run_wager_eval
+from wager.core import lookup_projection
 from wager.rgr import reasoning_gain_ratio
 from experiments import sgg_models as M
 
@@ -83,6 +84,7 @@ def main():
     yk, phik, imgk, coarsek = pred_te[ev], phi_te[ev], image_te[ev], subj_te[ev]
 
     results, rows = {}, []
+    figdata = {}  # per-model betting streams + materialized projection for figures
     for name, q in dists.items():
         proj = build_projection(q[in_proj], phi_te[in_proj], K, m=PROJ_M,
                                 coarse_proj=subj_te[in_proj])
@@ -91,6 +93,14 @@ def main():
         results[name] = res
         row = res.as_row(); row["test_acc"] = accs[name]
         rows.append(row)
+        # figure data: per-instance reasoning (d) and prior (e) scores on EVAL,
+        # plus the materialized self-prior projection q_bar for projection plots.
+        cell_proj, cell_corr, coarse_proj, glob, unif = proj
+        qbar_ev = lookup_projection(cell_proj, coarse_proj, glob, phik, coarsek)
+        figdata[f"d_{name}"] = res.d_streams[0].astype(np.float32)
+        figdata[f"e_{name}"] = res.e_streams[0].astype(np.float32)
+        figdata[f"qbar_{name}"] = qbar_ev.astype(np.float32)
+        figdata[f"q_{name}"] = q[ev].astype(np.float32)
         print(f"  {name:14s} e={res.e_value:.3e}  I_reason={res.I_reason:.4f} "
               f"CI[{res.I_reason_ci[0]:.3f},{res.I_reason_ci[1]:.3f}]  "
               f"I_prior={res.I_prior:.3f}  I_tot={res.I_tot:.3f}")
@@ -128,6 +138,15 @@ def main():
                         **{n: dists[n][ev] for n in dists},
                         y=yk, phi=phik, image=imgk,
                         pred_vocab=np.array(pred_vocab, dtype=object))
+    # figure data: betting streams, projection vectors, geometry of eval pairs
+    np.savez_compressed(
+        os.path.join(RESULTS, "sgg_figdata.npz"),
+        y=yk, phi=phik, image=imgk, coarse=coarsek, obj=obj_te.astype(np.int64),
+        sbox=sbox[te][ev].astype(np.float32), obox=obox[te][ev].astype(np.float32),
+        pred_train=pred[tr].astype(np.int64),
+        obj_vocab=np.array(list(d["obj_vocab"]), dtype=object),
+        pred_vocab=np.array(pred_vocab, dtype=object),
+        **figdata)
     print(f"\nAnchor gate (FREQ=>I_reason~0, e~1): {'PASS' if anchor_pass else 'FAIL'} "
           f"(I_reason={freq.I_reason:.4f}, e={freq.e_value:.3f})")
     print(f"Saved -> results/sgg_results.json  [{out['seconds']:.1f}s]")

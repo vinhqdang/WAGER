@@ -1,1 +1,27 @@
-We introduce WAGER (Wealth-Anchored Gain Estimation of Reasoning), a distribution-free, anytime-valid framework that decomposes a reported gain on computer-vision benchmarks into a prior-recoverable part and a genuine visual-reasoning part. Instead of comparing a model to an external frequency baseline, WAGER constructs a self-prior projection—the model's own predictions averaged within frequency-defining cells—and runs a testing-by-betting capital process. The growth rate of this process quantifies usable reasoning information beyond the prior, and the derived Reasoning Gain Ratio (RGR) provides a confidence interval for the substantive gain. We evaluate SGG, VQA, and LVIS models without requiring model retraining or complex distributional assumptions.
+On the most label-imbalanced computer-vision benchmarks, a trivial predictor that
+looks up the most frequent label given cheap context already recovers most of the
+headline metric, so a reported gain from one method to another may reflect better
+fitting of annotation-frequency priors rather than genuine visual reasoning.
+Existing diagnostics are bespoke to a single benchmark and report point estimates
+with no uncertainty quantification. We introduce \emph{WAGER}
+(Wealth-Anchored Gain Estimation of Reasoning), a distribution-free,
+\emph{anytime-valid} framework that decomposes a benchmark gain into a
+prior-recoverable part and a genuine-reasoning part with a finite-sample validity
+certificate. The core construction is the \emph{self-prior projection}: rather than
+comparing a model to an external frequency baseline, we collapse the model's
+\emph{own} predictions onto the frequency-defining features and treat the result as
+a frozen competing forecaster. A single testing-by-betting capital process built on
+this projection simultaneously (i) certifies, via Ville's inequality, that the model
+uses image information beyond the prior (an e-value), and (ii) quantifies, via its
+growth rate, the model's usable reasoning information; the measurement is provably
+invariant to recalibration within a prior cell. Combining two such processes yields
+the \emph{Reasoning Gain Ratio} (RGR) with an anytime-valid confidence interval and
+a decision rule (\(\mathrm{RGR}<0.5\) flags a gain as non-substantive). On a
+simulation suite WAGER controls type-I error (0.017 at \(\alpha{=}0.05\)), attains
+nominal interval coverage, and recovers an injected reasoning fraction with Pearson
+\(r{=}0.998\). On a real Visual~Genome scene-graph-generation study over
+\(7.6{\times}10^5\) relations, the frequency baseline is correctly certified to
+perform no reasoning (\(\hat I_{\mathrm{reason}}\approx 0\), e-value \(\approx 1\)),
+and every accuracy gain over it is flagged non-substantive: the bulk of measured
+``information'' is annotation-frequency prior-fitting, not reasoning. WAGER operates
+entirely on cached probability vectors, so the analysis is cheap and benchmark-agnostic.

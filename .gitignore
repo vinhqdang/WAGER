@@ -222,3 +222,24 @@ downloads/
 data/
 results/*.npz
 scratchpad/
+
+# LaTeX build artifacts (manuscript/)
+*.aux
+*.lof
+*.lot
+*.toc
+*.out
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+*.dvi
+*.idx
+*.ilg
+*.ind

@@ -1,19 +1,80 @@
 \section{Introduction}\label{sec:intro}
-\subsection{The Disease}
-On the most label-imbalanced vision benchmarks, a trivial predictor that looks up the most frequent label given some cheap context already recovers most of the headline metric:
-\begin{itemize}
-    \item \textbf{Scene Graph Generation (VG150).} The FREQ baseline of Zellers et al. \cite{zellers2018neural}---predict $\text{argmax}_p P(\text{predicate} \mid \text{subject, object})$ from training counts---reaches $R@50 \approx 60.6$ on PredCls vs. MOTIFS at 65.2. A lookup table recovers $\sim 96\%$ of ``state-of-the-art'' recall.
-    \item \textbf{VQA.} Answering ``yes'' blindly to ``Do you see a\dots'' reaches $\sim 87\%$ on the original unbalanced VQA \cite{goyal2017making}. On the changing-prior split VQA-CP \cite{agrawal2018dont}, UpDn collapses from $\sim 63\%$ to $\sim 40\%$.
-    \item \textbf{Long-tail detection (LVIS).} AP on rare categories is dominated by image-frequency priors \cite{gupta2019lvis}.
-\end{itemize}
 
-\subsection{Why Existing Fixes Are Not Enough}
-\begin{itemize}
-    \item \textbf{mean Recall@K} \cite{chen2019knowledge, tang2019learning} rebalances metric weight but can be gamed by suppressing head predictions, and breaks category independence \cite{li2022rethinking}.
-    \item \textbf{VQA-CP OOD splits} can be solved by \textit{inverting} known label statistics. A random-answer method can beat SOTA on some question types---a textbook Goodhart failure \cite{teney2020value}.
-    \item \textbf{Causal TDE} \cite{tang2020unbiased} is a training/inference intervention, not an evaluation that quantifies how much of a reported gain is confound.
-\end{itemize}
-Every one of these is bespoke to one benchmark and gives a point estimate with no uncertainty quantification. None answers ``is \textit{this specific gain} real, and with what confidence?''
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig1_concept.png}
+\caption{\textbf{The question WAGER answers.}
+(a) A real Visual~Genome scene and its annotated subject--predicate--object
+relations. (b) For the ordered class pair $(\text{subject},\text{object})$, the
+training-count distribution $P(\text{predicate}\mid\text{subject},\text{object})$
+is already sharply peaked on the annotated predicate, so a lookup table predicts it
+\emph{without using a single pixel}. (c) WAGER asks how much of a reported gain from
+one method to another is genuine reasoning rather than better fitting of this
+frequency prior, and answers with a Reasoning Gain Ratio carrying a distribution-free,
+anytime-valid confidence interval.}
+\label{fig:concept}
+\end{figure*}
 
-\subsection{The Gap WAGER Fills}
-We present a general, statistically-principled, cross-benchmark test that decomposes a reported gain into a prior-recoverable part and a residual reasoning part, with a finite-sample validity guarantee. That object does not exist. WAGER is that object.
+\subsection{The disease}
+On the most label-imbalanced vision benchmarks, a trivial predictor that looks up the
+most frequent label given some cheap context already recovers most of the headline
+metric:
+\begin{itemize}
+    \item \textbf{Scene Graph Generation (VG150).} The FREQ baseline of Zellers et
+    al.~\cite{zellers2018neural}---predict
+    $\arg\max_{p} P(\text{predicate} \mid \text{subject}, \text{object})$ from
+    training counts---reaches $R@50 \approx 60.6$ on PredCls versus MOTIFS at
+    $65.2$. A lookup table recovers $\sim\!96\%$ of ``state-of-the-art'' recall.
+    \item \textbf{Visual Question Answering.} Answering ``yes'' blindly to ``Do you
+    see a\dots'' reaches $\sim\!87\%$ on the original unbalanced VQA
+    \cite{goyal2017making}. On the changing-prior split VQA-CP
+    \cite{agrawal2018dont}, UpDn collapses from $\sim\!63\%$ to $\sim\!40\%$.
+    Recent vision-language models remain measurably reliant on such language priors
+    \cite{lee2025vlind, wu2025lanp}.
+    \item \textbf{Long-tail detection (LVIS).} Average precision on rare categories is
+    dominated by image-frequency priors \cite{gupta2019lvis}.
+\end{itemize}
+Figure~\ref{fig:concept} illustrates the mechanism on a real annotation, and
+Section~\ref{sec:exp} (Figure~\ref{fig:longtail}) shows that on Visual~Genome the five
+most frequent predicates already account for $72\%$ of all relation instances.
+
+\subsection{Why existing fixes are not enough}
+\begin{itemize}
+    \item \textbf{mean Recall@K} \cite{chen2019knowledge, tang2019learning} rebalances
+    metric weight but can be gamed by suppressing head predictions, and it breaks
+    category independence \cite{li2022rethinking}.
+    \item \textbf{VQA-CP OOD splits} can be solved by \emph{inverting} known label
+    statistics; a random-answer method can beat the state of the art on some question
+    types---a textbook Goodhart failure \cite{teney2020value, shrestha2020negative}.
+    \item \textbf{Causal TDE} \cite{tang2020unbiased} and modern debiasing methods
+    \cite{gao2025informative} are training- or inference-time interventions, not
+    \emph{evaluations} that quantify how much of a reported gain is confound.
+\end{itemize}
+Every one of these is bespoke to one benchmark and gives a point estimate with no
+uncertainty quantification. None answers ``is \emph{this specific gain} real, and with
+what confidence?''
+
+\subsection{The gap WAGER fills}
+We present a general, statistically principled, cross-benchmark test that decomposes a
+reported gain into a prior-recoverable part and a residual reasoning part, with a
+finite-sample validity guarantee. Our contributions are:
+\begin{enumerate}
+    \item \textbf{The self-prior projection} (Definition~\ref{def:proj}): a new
+    estimator that compares a model to its own frequency-collapsed self, making the
+    null exact without knowing the true prior and the measurement provably
+    calibration-invariant (Corollary~\ref{cor:calib}).
+    \item \textbf{One process, two readouts}
+    (Theorems~\ref{thm:evalue}--\ref{thm:growth}): a single testing-by-betting capital
+    process both \emph{certifies} that a model reasons beyond the prior (an
+    anytime-valid e-value) and \emph{quantifies} how much, via its growth rate.
+    \item \textbf{The Reasoning Gain Ratio} (Definition~\ref{def:rgr},
+    Theorem~\ref{thm:rgr}): a gain-attribution statistic with a distribution-free,
+    anytime-valid confidence interval and an operational decision rule.
+    \item \textbf{Validation}: a simulation suite establishing type-I control, nominal
+    coverage, and faithful recovery of injected reasoning, followed by a real
+    Visual~Genome study over $7.6{\times}10^5$ relations in which the framework
+    certifies the frequency baseline as non-reasoning and flags every accuracy gain
+    over it as non-substantive.
+\end{enumerate}
+The framework operates entirely on cached probability vectors, so a benchmark is
+analyzed in minutes on a CPU once logits have been dumped.

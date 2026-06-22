@@ -1,4 +1,4 @@
-\documentclass[sn-mathphys,Numbered]{sn-jnl}
+\documentclass[sn-mathphys-num]{sn-jnl}
 
 \usepackage{graphicx}
 \usepackage{multirow}
@@ -15,12 +15,18 @@
 \usepackage{algpseudocode}
 \usepackage{listings}
 
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
 \begin{document}
 
 \title[WAGER]{WAGER: Wealth-Anchored Gain Estimation of Reasoning}
 
-\author[1]{\fnm{Đặng Quang} \sur{Vinh}}\email{vinh@example.com}
-\affil[1]{\orgdiv{Department}, \orgname{Institution}, \city{City}, \country{Country}}
+\author[1]{\fnm{Quang-Vinh} \sur{Dang}}\email{vinh.dq4@buv.edu.vn}
+\affil[1]{\orgname{British University Vietnam}, \city{Hung Yen}, \country{Vietnam}}
 
 \abstract{\input{0abstract.tex}}
 
@@ -36,5 +42,7 @@
 \input{6conclusions.tex}
 
 \bibliography{ref}
+
+\input{7appendix.tex}
 
 \end{document}

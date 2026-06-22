@@ -346,10 +346,10 @@ mean Recall@K (Chen et al. 2019; Tang et al. 2019), Independent mean Recall (Li 
 26. Vovk, Vladimir; Wang, Ruodu. "E-values: Calibration, Combination and Applications." *The Annals of Statistics*, 2021, 49(3):1736–1754. DOI: 10.1214/20-AOS2020.
 27. Ramdas, Aaditya; Grünwald, Peter; Vovk, Vladimir; Shafer, Glenn. "Game-Theoretic Statistics and Safe Anytime-Valid Inference." *Statistical Science*, 2023, 38(4):576–601. DOI: 10.1214/23-STS894.
 28. Waudby-Smith, Ian; Ramdas, Aaditya. "Estimating Means of Bounded Random Variables by Betting." *Journal of the Royal Statistical Society: Series B*, 2024, 86(1):1–27. DOI: 10.1093/jrsssb/qkad009.
-29. ⚠ Henzi, Alexander; Ziegel, Johanna F. "Valid Sequential Inference on Probability Forecast Performance." *Biometrika*, 2022, 109(3):647–663. DOI: 10.1093/biomet/asab047. *(verify volume/pages.)*
-30. ⚠ Grünwald, Peter; de Heide, Rianne; Koolen, Wouter M. "Safe Testing." *Journal of the Royal Statistical Society: Series B*, 2024, 86(5):1091–1128. DOI: 10.1093/jrsssb/qkae011. *(verify issue/pages.)*
+29. Henzi, Alexander; Ziegel, Johanna F. "Valid Sequential Inference on Probability Forecast Performance." *Biometrika*, 2022, 109(3):647–663. DOI: 10.1093/biomet/asab047. 
+30. Grünwald, Peter; de Heide, Rianne; Koolen, Wouter M. "Safe Testing." *Journal of the Royal Statistical Society: Series B*, 2024, 86(5):1091–1128. DOI: 10.1093/jrsssb/qkae011.
 31. Fieller, Edgar C. "Some Problems in Interval Estimation." *Journal of the Royal Statistical Society: Series B*, 1954, 16(2):175–185. DOI: 10.1111/j.2517-6161.1954.tb00159.x.
-32. ⚠ Shah, Rajen D.; Peters, Jonas. "The Hardness of Conditional Independence Testing and the Generalised Covariance Measure." *The Annals of Statistics*, 2020, 48(3):1514–1538. DOI: 10.1214/19-AOS1857. *(verify pages.)*
+32. Shah, Rajen D.; Peters, Jonas. "The Hardness of Conditional Independence Testing and the Generalised Covariance Measure." *The Annals of Statistics*, 2020, 48(3):1514–1538. DOI: 10.1214/19-AOS1857. 
 
 **Calibration**
 33. Guo, Chuan; Pleiss, Geoff; Sun, Yu; Weinberger, Kilian Q. "On Calibration of Modern Neural Networks." *ICML*, 2017, *PMLR* 70:1321–1330.

@@ -1,2 +1,21 @@
 \section{Conclusion}\label{sec:conclusion}
-We establish that under a distribution-free, anytime-valid test, a substantial fraction of reported progress on biased datasets is statistically indistinguishable from improved annotation-frequency-prior fitting. By casting benchmark evaluation as a game-theoretic e-process, WAGER converts informal critique into an operational, reproducible, and verifiable metric.
+
+We introduced WAGER, a distribution-free, anytime-valid framework that decomposes a
+computer-vision benchmark gain into a prior-recoverable part and a genuine-reasoning
+part with a finite-sample certificate. Its technical core is the self-prior
+projection---comparing a model to its own frequency-collapsed self---which makes the
+null exact without knowing the true prior and the measurement provably
+calibration-invariant. A single testing-by-betting capital process built on the
+projection both certifies (an e-value, via Ville's inequality) and quantifies (a
+growth rate equal to usable reasoning information) reasoning beyond annotation
+priors, and two such processes combine into the Reasoning Gain Ratio with an
+anytime-valid interval and an operational decision rule. On simulations WAGER controls
+type-I error, attains nominal coverage, and recovers injected reasoning with Pearson
+$r=0.998$; on a real Visual~Genome study over $7.6{\times}10^5$ relations it certifies
+the frequency baseline as non-reasoning and shows that every accuracy gain over it is
+statistically indistinguishable from improved annotation-frequency-prior fitting,
+while still recognizing a genuine geometry-driven gain when one is present. By casting
+benchmark evaluation as a game-theoretic e-process, WAGER turns ``is this gain real?''
+into a reproducible, certified measurement. The framework operates on cached
+probability vectors and instantiates across SGG, VQA, and LVIS through a single design
+choice, the prior feature $\phi$.

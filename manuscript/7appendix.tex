@@ -1,0 +1,129 @@
+\begin{appendices}
+
+\section{Full proofs}\label{app:proofs}
+
+\subsection{Theorem~\ref{thm:evalue} (anytime-valid certificate)}
+Let $\mathcal F_{i}=\sigma(\tilde d_1,\dots,\tilde d_i)$ and let $\lambda_i$ be
+$\mathcal F_{i-1}$-measurable with $0\le\lambda_i<1/c$. Because
+$\tilde d_i\in[-c,c]$ we have $1+\lambda_i\tilde d_i\ge 1-\lambda_i c>0$, so $W_n\ge 0$.
+Under $H_0$, $\mathbb{E}[\tilde d_i\mid\mathcal F_{i-1}]\le 0$, hence
+\[
+\mathbb{E}[W_i\mid\mathcal F_{i-1}]
+= W_{i-1}\bigl(1+\lambda_i\,\mathbb{E}[\tilde d_i\mid\mathcal F_{i-1}]\bigr)\le W_{i-1},
+\]
+so $(W_n)$ is a non-negative supermartingale with $\mathbb{E}[W_n]\le W_0=1$. Ville's
+inequality \cite{ville1939etude} for non-negative supermartingales states
+$\Pr[\sup_n W_n\ge 1/\alpha]\le \mathbb{E}[W_0]\,\alpha=\alpha$, which is the claimed
+time-uniform type-I bound; stopping the first time $W_n\ge 1/\alpha$ therefore rejects
+at level $\alpha$ regardless of the (possibly data-dependent) stopping rule. \qed
+
+\subsection{Theorem~\ref{thm:growth} (growth rate equals usable reasoning information)}
+Write $g_i=\log(1+\lambda_i\tilde d_i)$ so $\tfrac1n\log W_n=\tfrac1n\sum_i g_i$. For the
+log-optimal predictable bet
+$\lambda_i^\star=\arg\max_\lambda\mathbb{E}[\log(1+\lambda\tilde d)\mid\mathcal F_{i-1}]$,
+the Kelly/Cover--Thomas theory of horse-race and forecasting games
+\cite{kelly1956new, cover1991universal, cover2006elements} gives that the optimal
+expected log-growth equals the expected log-score differential of the two forecasters.
+Under exchangeability the strong law yields
+$\tfrac1n\sum_i\tilde d_i\to\mathbb{E}[\tilde d]$ a.s., and the optimized growth rate
+converges to the same limit. Taking $c\to\infty$ replaces $\tilde d$ by
+$d=\log q_f(Y\mid X)-\log\bar q_f(Y\mid\phi(X))$, so
+$G(f)=\mathbb{E}[\log q_f(Y\mid X)]-\mathbb{E}[\log\bar q_f(Y\mid\phi(X))]
+=:\mathcal I_f^{\mathrm{reason}}$. Non-negativity follows because $\bar q_f$ is the
+$\phi$-measurable projection of $q_f$ and Gibbs' inequality makes the conditional
+log-loss of the coarser forecaster at least that of the finer one. If $q_f=p(\cdot\mid x)$
+and $\bar q_f=p(\cdot\mid\phi)$, then $\mathcal I_f^{\mathrm{reason}}
+=\mathbb{E}\log\tfrac{p(Y\mid X)}{p(Y\mid\phi(X))}=I(Y;X\mid\phi(X))$ by the chain rule
+$I(Y;X)=I(Y;\phi(X))+I(Y;X\mid\phi(X))$, valid since $\phi$ is a function of $X$. \qed
+
+\subsection{Corollary~\ref{cor:calib} (calibration invariance)}
+Let $T_\phi$ be any map applied uniformly to all predictions in cell $\phi$ (e.g.\
+per-cell temperature scaling), and let $q_f^{T}(\cdot\mid x)=T_{\phi(x)}(q_f(\cdot\mid x))$.
+Its projection is $\bar q_f^{T}(\cdot\mid\phi)=T_\phi(\bar q_f(\cdot\mid\phi))$ because the
+projection averages within the cell where $T_\phi$ is constant in form. In the difference
+$d^{T}=\log q_f^{T}(y\mid x)-\log\bar q_f^{T}(y\mid\phi)$ the common transformation cancels
+up to the within-cell-constant Jacobian term, leaving
+$\mathbb{E}[d^{T}]=\mathbb{E}[d]$, so $\mathcal I_f^{\mathrm{reason}}$ is invariant.
+Moreover, for an \emph{arbitrary} miscalibrated $q_f$, Gibbs' inequality gives
+$\mathbb{E}[\log q_f(Y\mid X)]\le\mathbb{E}[\log p(Y\mid X)]$ with the analogous bound for
+$\bar q_f$, so miscalibration can only shrink the measured reasoning, never inflate it
+above the true value. \qed
+
+\subsection{Theorem~\ref{thm:rgr} (anytime-valid CI for RGR)}
+By \cite{waudbysmith2024estimating}, the hedged capital process gives an anytime-valid
+$(1-\alpha)$ confidence sequence for the mean of a bounded variable; applied to the
+clipped numerator score $\Delta d=d_{f'}-d_f$ and denominator score
+$\Delta(d+e)=(d_{f'}+e_{f'})-(d_f+e_f)$ it yields intervals
+$\mathcal N_{1-\alpha}$ and $\mathcal D_{1-\alpha}$ valid simultaneously over $n$. By a
+union bound the event $\{\mathbb{E}[\Delta d]\in\mathcal N\}\cap\{\mathbb{E}[\Delta(d+e)]
+\in\mathcal D\}$ has probability $\ge 1-2\alpha$. On that event Fieller's construction
+\cite{fieller1954some} maps the numerator/denominator interval pair to a set containing
+$\mathrm{RGR}=\mathbb{E}[\Delta d]/\mathbb{E}[\Delta(d+e)]$; the set is a bounded interval
+when the denominator interval excludes $0$ and is the whole line otherwise. The result is
+a $(1-2\alpha)$ anytime-valid interval for RGR. \qed
+
+\section{Implementation details}\label{app:impl}
+
+\paragraph{Online-Newton-Step (aGRAPA) bet.}
+With most recent observation $z$, previous fraction $\lambda$, and accumulated curvature
+$A$ (initialized $A_0=1$), the predictable update of \cite{waudbysmith2024estimating} is
+\[
+g=\frac{z}{1+\lambda z},\quad A\leftarrow A+g^2,\quad
+\lambda\leftarrow\mathrm{clip}\!\Bigl(\lambda+\tfrac{2}{2-\ln 3}\,\tfrac{g}{A},\,0,\,
+\tfrac{1}{2c}\Bigr).
+\]
+The cap at $1/(2c)$ (rather than $1/c$) gives numerical headroom while preserving
+$1+\lambda\tilde d>0$.
+
+\paragraph{Hierarchical projection and Jensen correction.}
+For each cell the shrunk mean toward a parent distribution $\pi$ is
+$\hat{\bar q}=\frac{\sum_{j}q_j+m\pi}{n+m}$, with hierarchy cell$\to$coarse
+(subject)$\to$global. Estimating $\log\bar q$ by $\log\hat{\bar q}$ is biased downward by
+Jensen's inequality; we add the second-order delta-method correction
+$\tfrac{1}{2}\,\widehat{\mathrm{Var}}[\hat{\bar q}]/\hat{\bar q}^{2}$ (capped at $\log K$),
+where $\widehat{\mathrm{Var}}$ is the within-cell sample variance divided by the cell
+count. The correction cancels in $d+e=I^{\mathrm{tot}}$ and only reallocates mis-credited
+reasoning into the prior channel.
+
+\paragraph{Anytime-valid CI by hedged capital.}
+For a candidate mean $m$ we run two predictable capital processes on the centered
+residuals $x_i-m$, one betting the residual is positive and one negative, and combine
+them as $W=(W^{+}+W^{-})/2$, itself a non-negative martingale with $\mathbb{E}[W]\le 1$
+under $H_0:\mathbb{E}[x]=m$. The interval is $\{m:\sup_n W(m)<1/\alpha\}$. With a
+predictable fixed $\lambda$ estimated from a held-out prefix, the whole grid is evaluated
+by a vectorized cumulative sum, chunked to bound memory.
+
+\paragraph{Hyperparameters.}
+Table~\ref{tab:hyper} lists the defaults used in all experiments unless ablated.
+
+\begin{table}[ht]
+\centering
+\caption{Default hyperparameters.}
+\label{tab:hyper}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Symbol & Meaning & Value \\
+\midrule
+$c$ & clip / log-ratio scale & $\log K$ \\
+$\alpha$ & error level & $0.05$ \\
+split & projection / eval fold & $40\%$ / $60\%$ of test images \\
+$m$ & shrinkage pseudo-count & $1.0$ \\
+$R$ & image-blocked permutations & $24$ \\
+backoff & projection hierarchy & cell $\to$ subject $\to$ global \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Reproducibility}\label{app:repro}
+Data preparation parses the Visual~Genome relationships export into a single array of
+$(\text{subject},\text{object},\text{predicate},\text{boxes},\text{image id},
+\text{split})$ tuples under the VG150 vocabulary. Models are trained once on the training
+split and their predicate distributions on the test split are cached; WAGER then runs on
+the cache. Object/spatial MLPs are small (two hidden layers, dropout $0.1$, AdamW) and
+train in minutes on a single GPU; all WAGER computation is deterministic CPU NumPy under
+fixed seeds. The simulation suite, the real study (Tables~\ref{tab:models},
+\ref{tab:rgr}), the stratified analysis (Table~\ref{tab:strat}), and all figures are
+produced by scripts released with the code, each reading the same cached artifacts so the
+numbers in the paper and the figures derive from one run.
+
+\end{appendices}

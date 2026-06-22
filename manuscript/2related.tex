@@ -1,4 +1,77 @@
 \section{Related Work}\label{sec:related}
-Prior approaches to dataset bias and shortcut learning \cite{torralba2011unbiased, geirhos2020shortcut, misra2016seeing} typically focus on mitigating biases during training or reweighting test sets. However, WAGER is the first to cast benchmark-confound attribution as a game-theoretic e-process \cite{shafer2021testing, vovk2021evalues, ramdas2023game, waudbysmith2024estimating, henzi2022valid, grunwald2024safe}. This yields an anytime-valid, distribution-free certificate, whereas all prior critiques in SGG, VQA, and LVIS provide only point estimates.
 
-Our self-prior projection $\bar{q}_f$ serves as a new estimator. By comparing a model to its own frequency-collapsed self, rather than an external empirical baseline, the null hypothesis becomes exact without knowing the true prior, and the evaluation is provably calibration-invariant \cite{guo2017calibration}. Furthermore, the process unifies certification and quantification: the betting growth rate equals usable reasoning information beyond the prior \cite{kelly1956new, cover2006elements, cover1991universal, xu2020theory, ethayarajh2022understanding, hewitt2021conditional, voita2020information}.
+\paragraph{Dataset bias and shortcut learning.}
+The tendency of models to exploit superficial statistics rather than the intended
+signal is long documented \cite{torralba2011unbiased, misra2016seeing} and was framed
+as a general failure mode by Geirhos et al.~\cite{geirhos2020shortcut}. The standard
+responses---reweighting, resampling, or building out-of-distribution splits---change
+\emph{how models are trained or which test set is used}; they do not deliver a
+certified measurement of how much of a particular reported gain is shortcut.
+
+\paragraph{Debiasing and evaluation in scene graph generation.}
+Frequency priors dominate scene graph generation, motivating a large body of
+debiasing work: re-weighted and re-sampled losses, dynamic tree contexts
+\cite{tang2019learning}, knowledge routing \cite{chen2019knowledge}, causal
+total-direct-effect inference \cite{tang2020unbiased}, and recent informative-SGG
+methods \cite{gao2025informative}. On the evaluation side, mean Recall@K
+\cite{chen2019knowledge, tang2019learning} and its independent-mean refinement
+\cite{li2022rethinking} rebalance metric weight but remain point estimates and can be
+gamed by suppressing head predictions. WAGER is complementary: it is an
+\emph{evaluation primitive} that attributes a gain and reports an interval, rather
+than a method that improves tail recall.
+
+\paragraph{Language priors in VQA and multimodal LLMs.}
+The ``blind'' solvability of VQA \cite{goyal2017making} prompted changing-prior
+splits \cite{agrawal2018dont}, which were then shown to be exploitable by label
+inversion \cite{teney2020value, shrestha2020negative}. The problem persists for
+modern vision-language models: benchmarks such as VLind-Bench \cite{lee2025vlind} and
+analyses like LanP \cite{wu2025lanp} document substantial reliance on language priors,
+and a steady stream of debiasing methods continues to appear
+\cite{peng2025overcoming}. These efforts diagnose a benchmark or fix a model; WAGER
+instead certifies and quantifies a \emph{gain between two systems} with a validity
+guarantee, and instantiates uniformly across modalities through the choice of prior
+feature $\phi$ (Section~\ref{sec:exp}).
+
+\paragraph{Long-tail recognition and detection.}
+Closely related is long-tailed object detection, where rare-category average precision
+is dominated by frequency priors \cite{gupta2019lvis} and recent work targets the
+resulting regression and classification bias \cite{zhu2024rectify}. WAGER's
+head/body/tail stratification (Section~\ref{sec:strat}) speaks directly to this
+literature, but measures \emph{usable reasoning per tier} rather than re-weighting a
+metric.
+
+\paragraph{Benchmark reliability and contamination.}
+A broader reliability crisis now surrounds static benchmarks: surveys and analyses
+document that leaderboard gains can reflect data contamination and memorization rather
+than capability, especially for multimodal models where both images and text may leak
+\cite{chen2025contamination, song2025leaked, liu2025reasoning}. The community response
+has largely been \emph{dynamic} or refreshed benchmarks. WAGER is complementary and
+orthogonal: it leaves the benchmark fixed and instead asks, with a certificate, whether
+a specific reported gain reflects information beyond a stated confound.
+
+\paragraph{Usable information.}
+Our reasoning channel measures \emph{usable} (not information-theoretic) information,
+in the predictive, family-relative sense of $\mathcal{V}$-information
+\cite{xu2020theory, ethayarajh2022understanding}, conditional probing
+\cite{hewitt2021conditional, voita2020information}, and usable-information dataset
+diagnostics \cite{zhang2024checklist}. WAGER's novelty is to measure this quantity
+\emph{beyond a self-induced prior baseline} and to attach an anytime-valid certificate
+to it.
+
+\paragraph{Game-theoretic statistics and anytime-valid inference.}
+WAGER is built on testing-by-betting and e-values
+\cite{shafer2021testing, vovk2021evalues, ramdas2023game, grunwald2024safe}, the
+bounded-mean capital process of Waudby-Smith and Ramdas
+\cite{waudbysmith2024estimating}, and the forecaster-comparison e-process of Henzi
+and Ziegel \cite{henzi2022valid}; the area remains highly active, with recent work
+sharpening the foundations and the methodology
+\cite{koning2026anytime, chugg2026evalues, polson2026bayes} and extending e-values to
+applied sequential monitoring \cite{sokolova2026adaptive}. The growth-rate--information identity goes
+back to Kelly \cite{kelly1956new} and the universal-portfolio view
+\cite{cover1991universal, cover2006elements}. To our knowledge WAGER is the first to
+cast benchmark-confound attribution as a game-theoretic e-process, yielding a single
+object that both certifies (Theorem~\ref{thm:evalue}) and quantifies
+(Theorem~\ref{thm:growth}) reasoning beyond annotation-frequency priors. Unlike
+conditional-independence testing, which is provably hard in general
+\cite{shah2020hardness}, we run an honest predictive comparison of two fixed
+forecasters, which is exactly what betting certifies.

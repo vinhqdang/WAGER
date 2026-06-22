@@ -1,7 +1,52 @@
-\section{Threats to Validity}\label{sec:discussion}
-\begin{itemize}
-    \item \textbf{Exchangeability:} We assume exchangeability, enforced by permuting the stream and averaging over $R$ permutations. Image-level blocking mitigates within-image structural leakage.
-    \item \textbf{Estimated Projection:} Cell sparsity in $\bar{q}_f$ is handled via KT smoothing and backoff. The use of a split guarantees $\bar{q}_f$ is measurable with respect to the evaluation stream.
-    \item \textbf{Confound Capture:} If a relevant frequency channel is omitted from $\phi$, WAGER can over-credit reasoning. We report results for the most conservative $\phi$.
-    \item \textbf{Family-relative Information:} Usable information is relative to the model family \cite{xu2020theory}. It measures what \textit{this} model extracts beyond the prior, which is the correct metric for gain attribution but does not bound theoretical limits.
-\end{itemize}
+\section{Discussion, Limitations, and Future Work}\label{sec:discussion}
+
+\paragraph{What WAGER does and does not claim.}
+WAGER certifies and quantifies the \emph{usable} reasoning a given model family
+extracts beyond an annotation-frequency prior, and attributes a gain between two
+models with an anytime-valid interval. It is the right currency for gain attribution,
+but $\hat I^{\mathrm{reason}}$ is family-relative \cite{xu2020theory}: it measures what
+\emph{this} model extracts, not an information-theoretic limit, and a non-substantive
+verdict is a statement about a particular pair of forecasters, not a claim that the
+task is unsolvable. Equally, a ``reasoning-supported'' verdict certifies information
+beyond $\phi$, not correctness or robustness in any broader sense.
+
+\paragraph{Relation to the benchmark-reliability crisis.}
+A growing literature argues that static leaderboards overstate capability, whether
+through frequency shortcuts, data contamination, or memorization, and especially so for
+multimodal models \cite{chen2025contamination, song2025leaked, liu2025reasoning}. Most
+remedies refresh or randomize the benchmark. WAGER is complementary: it keeps the
+benchmark fixed and instead audits a \emph{reported gain} against an explicit confound,
+returning a certificate rather than a fresh test set. The two approaches compose---a
+contamination-resistant benchmark can still be analyzed with WAGER to separate reasoning
+from prior-fitting.
+
+\paragraph{Threats to validity.}
+\emph{(i) Exchangeability.} We assume exchangeability rather than i.i.d.\ and enforce
+it with image-blocked permutations, which also handle within-image structural leakage
+from multiple pairs per image. \emph{(ii) Estimated projection.} Exact validity uses a
+$\bar q_f$ frozen on an independent fold; cell sparsity (Table~\ref{tab:data}) is handled
+by KT smoothing and hierarchical backoff, and the Jensen correction debiases the
+log-projection. \emph{(iii) $\phi$ must capture the confound.} If a relevant frequency
+channel is omitted from $\phi$, WAGER can over-credit reasoning; we therefore report the
+most conservative (finest) $\phi$ and confirm verdict stability under coarsening
+(Section~\ref{sec:abl}). \emph{(iv) Clipping.} The clip $c$ trades robustness for
+sensitivity; the verdict is stable at the default $c=\log K$ and only flips under
+aggressive clipping, which we avoid. \emph{(v) Family-relativity.} Because the measured
+quantity depends on the model family, WAGER compares forecasters, not architectures in
+the abstract; the cached-logit interface makes the comparison reproducible and exact.
+
+\paragraph{Future work.}
+The cached-logit interface makes scaling out almost free; each new study requires only a
+one-time logit dump and a choice of $\phi$ (Table~\ref{tab:phi}). Three directions
+follow naturally. \emph{(a) Released SGG checkpoints.} Applying the identical pipeline to
+MOTIFS, VCTree, and the causal +TDE variant would test whether published scene-graph
+SOTA survives the RGR test, and whether TDE raises RGR as the causal account predicts.
+\emph{(b) VQA and multimodal LLMs.} With $\phi$ the question type, WAGER can audit whether
+modern vision-language gains over classical baselines reflect visual reasoning or
+language-prior fitting, where the confound is well documented
+\cite{lee2025vlind, wu2025lanp, peng2025overcoming}. \emph{(c) Long-tail detection.}
+With $\phi$ the frequency tier, the head/body/tail analysis of Section~\ref{sec:strat}
+extends directly to LVIS-style rare-category evaluation \cite{gupta2019lvis,
+zhu2024rectify}. In each case the contribution of this paper---the self-prior
+projection, the one-process certify-and-quantify result, and the certified RGR---carries
+over unchanged.
