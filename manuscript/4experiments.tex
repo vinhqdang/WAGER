@@ -1,27 +1,29 @@
 \section{Experiments}\label{sec:exp}
 
-Our evaluation proceeds from controlled validation to a real-data application. We
-first characterize the corpus and the frequency structure that motivates the study
+Our evaluation proceeds from controlled validation to a real-data application. We first
+describe the corpus, the prior-feature instantiation, and the models
 (Section~\ref{sec:data}). We then test WAGER in simulations for which the true
-reasoning contribution is known (Section~\ref{sec:phase1}), before applying it to
-scene graph generation on Visual~Genome
-(Sections~\ref{sec:sgg}--\ref{sec:strat}). The final ablations examine whether the
-conclusions depend on the principal design choices (Section~\ref{sec:abl}). Unless
-otherwise noted, all intervals use $\alpha=0.05$.
+reasoning contribution is known (Section~\ref{sec:phase1}), apply it to scene graph
+generation on Visual~Genome (Sections~\ref{sec:sgg}--\ref{sec:strat}), and finally ask
+whether the conclusions depend on the principal design choices
+(Section~\ref{sec:abl}). Unless otherwise noted, all intervals use $\alpha=0.05$.
 
-\subsection{Dataset and statistics}\label{sec:data}
+\subsection{Datasets and experimental setup}\label{sec:data}
 Our study uses the Visual~Genome scene-graph corpus \cite{krishna2017visual} in the
-PredCls regime (ground-truth boxes and object labels given, predicate to be
-predicted), with the standard VG150 vocabulary of $150$ object classes and $50$
-predicates. Table~\ref{tab:data} summarizes the corpus. Two properties make it an
-ideal stress test for WAGER. First, it is \emph{heavy-tailed}: the five most frequent
-predicates account for $71.6\%$ of all relation instances and the single predicate
-``on'' for $32.4\%$ (Figure~\ref{fig:longtail}), so a frequency lookup already secures
-most of any recall-style metric. Second, the prior-feature space is \emph{sparse}:
-only $49.2\%$ of the $150{\times}150$ possible ordered class pairs are observed in
-training, and $46.4\%$ of the observed cells contain fewer than five instances---which
-is exactly why a naive cell mean fails and the hierarchical backoff of
-Section~\ref{sec:method} is required.
+PredCls regime---ground-truth boxes and object labels are given and the predicate is to
+be predicted---with the standard VG150 vocabulary of $150$ object classes and $50$
+predicates. Table~\ref{tab:data} summarizes the corpus. Two properties make it an ideal
+stress test for a tool that separates reasoning from prior-fitting. First, the predicate
+distribution is heavily \emph{long-tailed}: the five most frequent predicates account
+for $71.6\%$ of all relation instances and the single predicate ``on'' for $32.4\%$
+(Figure~\ref{fig:longtail}), so a frequency lookup already secures most of any
+recall-style metric. Second, the prior-feature space is \emph{sparse}: only $49.2\%$ of
+the $150{\times}150$ possible ordered class pairs are observed in training, and $46.4\%$
+of the observed cells contain fewer than five instances. This sparsity is exactly why a
+naive cell mean fails and the hierarchical backoff of Section~\ref{sec:method} is
+required to keep the self-prior projection honest. We hold out half of the test images,
+image-blocked, as the frozen projection fold ($113{,}255$ relations) and bet on the
+remaining $116{,}350$.
 
 \begin{table}[ht]
 \centering
@@ -52,19 +54,18 @@ Head / body / tail instance share & $71.6\%$ / $16.6\%$ / $11.8\%$ \\
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig3_longtail.png}
-\caption{\textbf{Predicate-frequency imbalance.} (a) Visual~Genome's 50 predicates follow a
-heavy-tailed training distribution (log scale; head/body/tail). (b) The five most
-frequent predicates account for $72\%$ of all relation instances, so a frequency
+\caption{\textbf{Predicate-frequency imbalance.} (a) Visual~Genome's 50 predicates
+follow a heavy-tailed training distribution (log scale; head/body/tail). (b) The five
+most frequent predicates account for $72\%$ of all relation instances, so a frequency
 lookup already secures most of the recall metric.}
 \label{fig:longtail}
 \end{figure*}
 
-\subsection{Prior features and benchmark generality}\label{sec:phi}
 WAGER is instantiated through the prior feature $\phi$, the statistic through which
-annotation frequency acts (Table~\ref{tab:phi}). Our empirical study targets
-Visual~Genome PredCls, where $\phi$ is the ordered class pair; the same machinery
-applies to VQA/GQA (question type) and LVIS (frequency tier) without modification,
-which is the sense in which WAGER is benchmark-agnostic.
+annotation frequency acts. For Visual~Genome PredCls $\phi$ is the ordered class pair,
+but the same machinery applies to VQA/GQA with $\phi$ the question type and to LVIS with
+$\phi$ the frequency tier (Table~\ref{tab:phi}); this is the sense in which the method
+is benchmark-agnostic, and we return to those settings in Section~\ref{sec:discussion}.
 
 \begin{table}[ht]
 \centering
@@ -82,21 +83,32 @@ LVIS                  & Long-tail detection & category-frequency tier \\
 \end{tabular}
 \end{table}
 
+To exercise the method we construct five predicate predictors that expose progressively
+more information beyond the ordered class pair. FREQ is the training-count lookup
+$P(\text{predicate}\mid\text{subject},\text{object})$ and is therefore constant within a
+$\phi$-cell. FREQ+OVERLAP supplements it with a binary indicator of box overlap, while
+MLP-CLASS learns from class embeddings alone and so remains essentially
+$\phi$-measurable. MLP-SPATIAL additionally observes translation- and scale-invariant
+box geometry---relative position, scale, aspect ratio, and intersection over union---and
+MLP-SPATIAL+ increases the capacity of that spatial model. The geometric measurements
+are the information beyond $\phi$ that the study uses to separate reasoning from
+prior-fitting. Each model is trained once, after which WAGER operates only on its cached
+predicate distributions.
+
 \subsection{Simulation validity and power}\label{sec:phase1}
 We begin with synthetic data because it permits direct tests of validity and power
 against known population quantities. A prior forecaster is mixed with an oracle as
-$q_f=(1-\beta)\,\text{prior}+\beta\,\text{oracle}$, making $\beta$ a controlled
-source of within-cell information. At the null, where $q_f=\bar q_f$, the wealth
-process exceeds the rejection threshold in $0.017$ of $600$ runs. This rate is below
-the nominal $\alpha=0.05$, while
-$\hat I^{\mathrm{reason}}\approx0.004$, as predicted by
+$q_f=(1-\beta)\,\text{prior}+\beta\,\text{oracle}$, making $\beta$ a controlled source
+of within-cell information. At the null, where $q_f=\bar q_f$, the wealth process
+exceeds the rejection threshold in $0.017$ of $600$ runs---below the nominal
+$\alpha=0.05$---while $\hat I^{\mathrm{reason}}\approx0.004$, as predicted by
 Theorem~\ref{thm:evalue}. The anytime-valid intervals attain empirical coverage of
 $0.93$ against a $0.90$ target. As $\beta$ increases, the estimated RGR changes
-monotonically and follows its ground-truth value with Pearson $r=0.998$; the
+monotonically and follows its ground-truth value with Pearson $r=0.998$, and the
 correlation between estimated and true reasoning information is $r=0.999$.
-Figure~\ref{fig:phase1} presents these three results together. Thus, before any
-real-data claim is made, the simulations establish type-I control, interval coverage,
-and recovery of the quantity WAGER is intended to measure.
+Figure~\ref{fig:phase1} presents the three results together. Thus, before any real-data
+claim is made, the simulations establish type-I control, interval coverage, and faithful
+recovery of the quantity WAGER is intended to measure.
 
 \begin{figure*}[t]
 \centering
@@ -107,28 +119,17 @@ and one-minus-coverage stay within their nominal levels.}
 \label{fig:phase1}
 \end{figure*}
 
-\subsection{Real study: models and the anchor}\label{sec:sgg}
-The real-data study uses five predicate predictors that expose progressively more
-information beyond the ordered class pair. FREQ is the training-count lookup
-$P(\text{predicate}\mid\text{subject},\text{object})$ and is therefore constant
-within a $\phi$-cell. FREQ+OVERLAP supplements it with a binary indicator of box
-overlap, whereas MLP-CLASS learns from class embeddings alone and remains essentially
-$\phi$-measurable. MLP-SPATIAL additionally observes translation- and
-scale-invariant box geometry, including relative position, scale, aspect ratio, and
-intersection over union; MLP-SPATIAL+ increases the capacity of this spatial model.
-These geometric measurements provide the information beyond $\phi$ that the study
-uses to distinguish reasoning from prior fitting. Each model is trained once, after
-which WAGER operates only on its cached predicate distributions.
-
-Table~\ref{tab:models} first confirms the required anchor behavior. FREQ
-returns $\hat I^{\mathrm{reason}}=-0.005$ (CI straddling/below $0$) and e-value
-$0.49\approx 1$: WAGER correctly certifies that a lookup table performs no visual
-reasoning. FREQ+OVERLAP is likewise certified non-reasoning. The MLPs that genuinely
-consult box geometry accumulate decisive evidence (e-values up to the numerical
-ceiling $\sim\!10^{304}$) and positive $\hat I^{\mathrm{reason}}$, growing with spatial
-capacity. Test accuracy, by contrast, varies by less than $1.3$ percentage points
-across all five systems. It therefore provides little indication of whether an
-improvement arises from reasoning or prior fitting.
+\subsection{Results on Visual Genome}\label{sec:sgg}
+Table~\ref{tab:models} first confirms the anchor behaviour the framework requires. FREQ
+returns $\hat I^{\mathrm{reason}}=-0.005$, with a confidence interval straddling or
+below zero, and an e-value of $0.49\approx 1$: WAGER correctly certifies that a lookup
+table performs no visual reasoning, and FREQ+OVERLAP is likewise certified
+non-reasoning. The MLPs that genuinely consult box geometry instead accumulate decisive
+evidence, with e-values reaching the numerical ceiling $\sim\!10^{304}$ and positive
+$\hat I^{\mathrm{reason}}$ that grows with spatial capacity. Test accuracy, by contrast,
+varies by less than $1.3$ percentage points across all five systems, so it gives almost
+no indication of whether an improvement arises from reasoning or from prior-fitting---the
+distinction WAGER is built to make.
 
 \begin{table*}[t]
 \centering
@@ -150,17 +151,18 @@ MLP-SPATIAL+  & $>10^{300}$       & $+0.071\,[+0.063,+0.074]$ & $2.710$ & $2.781
 \end{tabular}
 \end{table*}
 
-The decomposition in Figure~\ref{fig:decomp} explains this discrepancy. For every
-model the prior channel ($I^{\mathrm{prior}}\approx 2.5$ nats) dwarfs the reasoning
-channel ($I^{\mathrm{reason}}\le 0.07$ nats): even the strongest model spends over
-$97\%$ of its information budget on frequency-fitting. Figure~\ref{fig:wealth} shows
-the testing-by-betting view directly: the capital of FREQ and FREQ+OVERLAP never
-leaves the neighborhood of its starting value, while the spatial MLPs compound capital
-linearly in log-scale---visual confirmation that only those models out-predict their
-own self-prior projection. Figure~\ref{fig:proj} illustrates the mechanism inside a
-single $\phi$-cell: the projection $\bar q_f$ is the frozen cell forecaster, and the
-spread of per-instance scores $d_i$ around it supplies the signal accumulated by the
-betting process.
+The information decomposition in Figure~\ref{fig:decomp} explains the discrepancy
+between accuracy and certified reasoning. For every model the prior channel
+($I^{\mathrm{prior}}\approx 2.5$ nats) dwarfs the reasoning channel
+($I^{\mathrm{reason}}\le 0.07$ nats): even the strongest model spends more than $97\%$
+of its information budget on frequency-fitting. The testing-by-betting view in
+Figure~\ref{fig:wealth} makes the same point dynamically---the capital of FREQ and
+FREQ+OVERLAP never leaves the neighbourhood of its starting value, while the spatial
+MLPs compound capital linearly on a log scale, the signature of a model that genuinely
+out-predicts its own self-prior projection. Figure~\ref{fig:proj} resolves the
+mechanism inside a single $\phi$-cell: the projection $\bar q_f$ is the frozen cell
+forecaster, and it is the spread of per-instance scores $d_i$ around it that the betting
+process converts into capital.
 
 \begin{figure*}[t]
 \centering
@@ -192,14 +194,14 @@ prior is the signal WAGER measures.}
 \label{fig:proj}
 \end{figure*}
 
-\subsection{Qualitative examples}\label{sec:qual}
-Figure~\ref{fig:qual} grounds the per-instance score on the actual images we process.
-For each annotated relation we show the predicted predicate, the FREQ top-1 prediction,
-and WAGER's score $d_i$ for MLP-SPATIAL. Where the geometry is informative---a relation
-whose predicate depends on the relative position or overlap of the two boxes---$d_i$ is
+These aggregate readouts have a concrete instance-level counterpart on the images
+themselves. Figure~\ref{fig:qual} overlays our subject/object boxes and relation arrows
+on the actual Visual~Genome images we process, annotating each relation with its
+predicted predicate, FREQ's top guess, and the score $d_i$ for MLP-SPATIAL. Where the
+predicate depends on the relative position or overlap of the two boxes the score is
 clearly positive (``image helps''); where the class pair alone already determines the
-likely predicate, $d_i\approx 0$ (``prior suffices''). This is the instance-level view
-of the aggregate decomposition: WAGER does not reward a confident prediction per se, only
+likely predicate it is near zero (``prior suffices''). The figure makes visible what
+the decomposition asserts: WAGER does not reward a confident prediction as such, only
 one that beats the model's own frequency-collapsed self.
 
 \begin{figure*}[t]
@@ -212,18 +214,18 @@ $d_i$ marks relations where the image adds signal beyond the class-pair prior.}
 \label{fig:qual}
 \end{figure*}
 
-\subsection{Where reasoning lives: head, body, and tail}\label{sec:strat}
-An aggregate $I^{\mathrm{reason}}$ can hide \emph{where} a model reasons. We stratify
-the per-instance scores by predicate frequency tier (head: top $5$ predicates; body:
-next $11$; tail: remaining $34$) and report the mean reasoning score $\bar d$ per tier
-in Figure~\ref{fig:strat} and Table~\ref{tab:strat}. The pattern is striking and
-consistent: \emph{head predicates are essentially won by the prior} (for the spatial
-MLPs $\bar d\le 0.026$, and for FREQ it is even slightly negative), whereas the
-\emph{body and tail carry almost all of the reasoning signal} ($\bar d=0.16$--$0.19$
-for MLP-SPATIAL/+). In other words, the small aggregate reasoning channel is not spread
-uniformly; it is concentrated on exactly the rare predicates that headline recall
-metrics underweight. This is the WAGER-native restatement of a familiar concern---that
-aggregate scores mask tail behavior \cite{li2022rethinking, zhu2024rectify}---now with a
+\subsection{Where reasoning concentrates, and whether gains are substantive}\label{sec:strat}
+An aggregate $I^{\mathrm{reason}}$ can hide \emph{where} a model reasons, so we stratify
+the per-instance scores by predicate-frequency tier (head: top $5$ predicates; body:
+next $11$; tail: remaining $34$). The mean score $\bar d$ per tier
+(Figure~\ref{fig:strat}, Table~\ref{tab:strat}) reveals a striking and consistent
+pattern: head predicates are essentially won by the prior---for the spatial MLPs
+$\bar d\le 0.026$, and for FREQ it is even slightly negative---whereas the body and tail
+carry almost all of the reasoning signal, with $\bar d=0.16$--$0.19$ for MLP-SPATIAL and
+MLP-SPATIAL+. The small aggregate reasoning channel is therefore not spread uniformly;
+it is concentrated on precisely the rare predicates that headline recall metrics
+underweight. This is the WAGER-native restatement of a familiar concern, that aggregate
+scores mask tail behaviour \cite{li2022rethinking, zhu2024rectify}, now expressed as a
 distribution-free per-tier measurement rather than a re-weighted metric.
 
 \begin{table}[ht]
@@ -254,17 +256,18 @@ carry the reasoning signal, and it grows with spatial capacity.}
 \label{fig:strat}
 \end{figure}
 
-\subsection{Attributing model gains}\label{sec:headline}
-Figure~\ref{fig:rgr} and Table~\ref{tab:rgr} give the gain attribution. Every accuracy
-gain over the frequency baseline is flagged \emph{non-substantive}: the upper CI of its
-RGR is well below $0.5$, so most of each reported improvement is prior-recoverable
-rather than reasoning. The decision rule is not vacuous---it fires positively when
-warranted: the gain from MLP-CLASS to MLP-SPATIAL, which adds genuine box geometry, is
-\emph{reasoning-supported} ($\mathrm{RGR}=0.77$, CI $[0.74,0.79]$). The further step to
-MLP-SPATIAL+ adds capacity but little new visual signal and is again non-substantive
-($\mathrm{RGR}=0.44$). WAGER thus distinguishes a gain that comes from new image
-information from one that comes from better prior-fitting or extra capacity, which raw
-accuracy (spread of under $1.3$ points across all five models) cannot.
+The decisive question---whether a reported gain is substantive---is answered by the
+Reasoning Gain Ratio (Figure~\ref{fig:rgr}, Table~\ref{tab:rgr}). Every accuracy gain
+over the frequency baseline is flagged \emph{non-substantive}, its RGR upper limit well
+below $0.5$, so most of each reported improvement is prior-recoverable rather than
+reasoning. The decision rule is not vacuous: it fires positively when warranted. The
+step from MLP-CLASS to MLP-SPATIAL, which adds genuine box geometry, is
+\emph{reasoning-supported} ($\mathrm{RGR}=0.77$, CI $[0.74,0.79]$), whereas the further
+step to MLP-SPATIAL+ adds capacity but little new visual signal and is again
+non-substantive ($\mathrm{RGR}=0.44$). WAGER thus separates a gain that comes from new
+image information from one that comes from better prior-fitting or extra capacity---a
+distinction that raw accuracy, varying by under $1.3$ points across all five models,
+cannot draw.
 
 \begin{table}[ht]
 \centering
@@ -294,16 +297,17 @@ geometry, is reasoning-supported.}
 \end{figure}
 
 \subsection{Ablations}\label{sec:abl}
-Figure~\ref{fig:abl} varies the main design choices for the MLP-SPATIAL-vs-FREQ gain.
-The verdict is stable across the prior-feature granularity (cell vs.\ subject-only),
-the shrinkage pseudo-count $m\in\{0,0.25,1\}$, and the number of permutations
-$R\in\{10,30,60\}$: all remain non-substantive. The one sensitive knob is the clip
-$c$: at the most aggressive clipping ($c=\log K/2$) the ratio crosses $0.5$, because
-clipping compresses the large prior channel more than the small reasoning channel; we
-therefore report the conservative default $c=\log K$ throughout and recommend it. The
-stability of the verdict under $\phi$ coarsening is the most important check: if a
-relevant frequency channel were missing from $\phi$, coarsening it would move the
-verdict, and it does not.
+Finally we ask whether the headline verdict survives the principal design choices, using
+the MLP-SPATIAL-versus-FREQ gain as the test case (Figure~\ref{fig:abl}). The verdict is
+stable across the prior-feature granularity (cell versus subject-only), the shrinkage
+pseudo-count $m\in\{0,0.25,1\}$, and the number of permutations $R\in\{10,30,60\}$: all
+remain non-substantive. The one sensitive knob is the clip $c$: under the most
+aggressive clipping ($c=\log K/2$) the ratio crosses $0.5$, because clipping compresses
+the large prior channel more than the small reasoning channel, so we report the
+conservative default $c=\log K$ throughout. The stability under $\phi$ coarsening is the
+most important of these checks, since a missing frequency channel in $\phi$ would move
+the verdict when $\phi$ is coarsened, and it does not.
+
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig8_ablations.png}

@@ -1,24 +1,43 @@
 \section{Related Work}\label{sec:related}
 
+WAGER sits at the intersection of four largely separate literatures: the study of
+dataset bias and shortcut learning, the benchmark-specific critiques and debiasing
+methods developed for scene graph generation and visual question answering, the
+predictive notion of usable information, and the game-theoretic statistics of e-values
+and anytime-valid inference. We review each in turn, emphasising throughout the
+distinction between work that \emph{mitigates} a bias or \emph{diagnoses} a benchmark
+and our own goal, which is to \emph{attribute a specific reported gain} to reasoning or
+prior-fitting with a finite-sample certificate.
+
 \paragraph{Dataset bias and shortcut learning.}
 The tendency of models to exploit superficial statistics rather than the intended
 signal is long documented \cite{torralba2011unbiased, misra2016seeing} and was framed
-as a general failure mode by Geirhos et al.~\cite{geirhos2020shortcut}. The standard
-responses---reweighting, resampling, or building out-of-distribution splits---change
-\emph{how models are trained or which test set is used}; they do not deliver a
-certified measurement of how much of a particular reported gain is shortcut.
+as a general failure mode by Geirhos et al.~\cite{geirhos2020shortcut}, who argued that
+shortcut features are the rule rather than the exception when a cheap cue is predictive
+on the training distribution. The standard responses---reweighting, resampling, group
+distributionally-robust training, or building out-of-distribution splits---change
+\emph{how models are trained or which test set is used}. They are valuable for building
+more robust systems, but they do not, and are not intended to, deliver a certified
+measurement of how much of a particular reported gain between two existing systems is
+shortcut. WAGER targets exactly that measurement and leaves training untouched.
 
 \paragraph{Debiasing and evaluation in scene graph generation.}
 Frequency priors dominate scene graph generation, motivating a large body of
 debiasing work: re-weighted and re-sampled losses, dynamic tree contexts
 \cite{tang2019learning}, knowledge routing \cite{chen2019knowledge}, causal
 total-direct-effect inference \cite{tang2020unbiased}, and recent informative-SGG
-methods \cite{gao2025informative}. On the evaluation side, mean Recall@K
-\cite{chen2019knowledge, tang2019learning} and its independent-mean refinement
-\cite{li2022rethinking} rebalance metric weight but remain point estimates and can be
-gamed by suppressing head predictions. WAGER is complementary: it is an
-\emph{evaluation primitive} that attributes a gain and reports an interval, rather
-than a method that improves tail recall.
+methods \cite{gao2025informative}. The very fact that this stream of methods remains
+active is evidence that the underlying confound is not resolved, only attenuated. On
+the evaluation side, mean Recall@K \cite{chen2019knowledge, tang2019learning} and its
+independent-mean refinement \cite{li2022rethinking} rebalance metric weight so that
+rare predicates count more, but they remain point estimates with no uncertainty
+quantification and can be gamed by suppressing head predictions to inflate the mean.
+WAGER is complementary to both lines: it is an \emph{evaluation primitive} that
+attributes a gain to a channel and reports an anytime-valid interval, rather than a
+training method that improves tail recall or a re-weighted scalar that can itself be
+optimised against. Its head/body/tail stratification (Section~\ref{sec:strat}) speaks
+to the same tail-collapse concern these metrics target, but measures usable reasoning
+per tier instead of re-weighting recall.
 
 \paragraph{Language priors in VQA and multimodal LLMs.}
 The ``blind'' solvability of VQA \cite{goyal2017making} prompted changing-prior
