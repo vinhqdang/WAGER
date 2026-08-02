@@ -27,6 +27,17 @@ ALPHA = 0.05
 N_RANDOMIZATIONS = 499
 
 
+def _json_safe(value):
+    """Recursively replace non-finite floats with JSON null."""
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(v) for v in value]
+    if isinstance(value, float) and not np.isfinite(value):
+        return None
+    return value
+
+
 def _build_models(d):
     subj, obj, pred = d["subj"], d["obj"], d["pred"]
     sbox, obox = d["sbox"], d["obox"]
@@ -115,7 +126,7 @@ def main():
         "seconds": time.time() - t0,
     }
     with open(os.path.join(RESULTS, "antisymmetric_results.json"), "w", encoding="utf-8") as f:
-        json.dump(out, f, indent=2)
+        json.dump(_json_safe(out), f, indent=2, allow_nan=False)
     np.savez_compressed(os.path.join(RESULTS, "antisymmetric_arrays.npz"), **arrays)
     np.savez_compressed(
         os.path.join(RESULTS, "sgg_dists.npz"),

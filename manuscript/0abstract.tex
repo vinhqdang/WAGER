@@ -1,27 +1,20 @@
-On the most label-imbalanced computer-vision benchmarks, a trivial predictor that
-looks up the most frequent label given cheap context already recovers most of the
-headline metric, so a reported gain from one method to another may reflect better
-fitting of annotation-frequency priors rather than genuine visual reasoning.
-Existing diagnostics are bespoke to a single benchmark and report point estimates
-with no uncertainty quantification. We introduce \emph{WAGER}
-(Wealth-Anchored Gain Estimation of Reasoning), a distribution-free,
-\emph{anytime-valid} framework that decomposes a benchmark gain into a
-prior-recoverable part and a genuine-reasoning part with a finite-sample validity
-certificate. The core construction is the \emph{self-prior projection}: rather than
-comparing a model to an external frequency baseline, we collapse the model's
-\emph{own} predictions onto the frequency-defining features and treat the result as
-a frozen competing forecaster. A single testing-by-betting capital process built on
-this projection simultaneously (i) certifies, via Ville's inequality, that the model
-uses image information beyond the prior (an e-value), and (ii) quantifies, via its
-growth rate, the model's usable reasoning information; the measurement is provably
-invariant to recalibration within a prior cell. Combining two such processes yields
-the \emph{Reasoning Gain Ratio} (RGR) with an anytime-valid confidence interval and
-a decision rule (\(\mathrm{RGR}<0.5\) flags a gain as non-substantive). On a
-simulation suite WAGER controls type-I error (0.017 at \(\alpha{=}0.05\)), attains
-nominal interval coverage, and recovers an injected reasoning fraction with Pearson
-\(r{=}0.998\). On a real Visual~Genome scene-graph-generation study over
-\(7.6{\times}10^5\) relations, the frequency baseline is correctly certified to
-perform no reasoning (\(\hat I_{\mathrm{reason}}\approx 0\), e-value \(\approx 1\)),
-and every accuracy gain over it is flagged non-substantive: the bulk of measured
-``information'' is annotation-frequency prior-fitting, not reasoning. WAGER operates
-entirely on cached probability vectors, so the analysis is cheap and benchmark-agnostic.
+Vision benchmarks with strong annotation priors can reward a new model even when its
+gain does not come from better instance-specific visual prediction. Existing audits
+usually compare a model with a frequency baseline, which confounds two questions: how
+well each system fits the prior, and whether the \emph{difference} between systems uses
+information beyond it. We introduce WAGER, \textbf{W}ithin-cell
+\textbf{A}ntisymmetric \textbf{G}ain \textbf{E}valuation of \textbf{R}easoning, a new
+pairwise attribution algorithm. For two frozen probabilistic models, WAGER forms their
+proper-score contrast, matches examples that share a declared prior feature, and crosses
+their labels. This yields an exact finite-sample identity: observed model gain equals a
+prior-transported gain plus an antisymmetric instance-alignment gain. The latter is an
+order-two U-statistic and, with the quadratic score, equals twice the within-prior-cell
+prediction--label covariance gained by the new model. It is computed in $O(NK)$ time,
+requires no fitted prior model or projection fold, and admits image-cluster-robust
+inference and a cell-stratified randomization test. Controlled experiments recover
+injected instance signal monotonically and obtain type-I error $0.030$ at level $0.05$.
+On 229,605 Visual Genome PredCls relations, a class-only MLP improves the frequency
+baseline entirely through the prior-transported channel, whereas adding box geometry
+produces an instance-alignment gain of $0.01439$ (95\% CI $[0.01373,0.01504]$;
+randomization $p=0.002$). WAGER therefore attributes a model-to-model improvement
+directly, without treating a separately estimated baseline as ground truth.

@@ -1,59 +1,47 @@
-\section{Discussion, Limitations, and Future Work}\label{sec:discussion}
+\section{Discussion and Limitations}\label{sec:discussion}
 
-WAGER provides a specific form of evidence: it measures the usable information that
-a model extracts beyond a stated annotation-frequency prior and determines how much
-of the gain between two models belongs to that residual channel. This scope is
-important when interpreting either verdict. The estimated
-$I^{\mathrm{reason}}$ is family-relative in the sense of usable-information analyses
-\cite{xu2020theory}; it describes what the evaluated model extracts, rather than the
-information-theoretic limit of the task. Consequently, a non-substantive verdict
-applies to the selected pair of forecasters and does not imply that the task cannot
-be solved through reasoning. Conversely, a reasoning-supported verdict certifies
-predictive information beyond $\phi$, but does not by itself establish correctness,
-causal understanding, or robustness under other distribution shifts.
+WAGER changes the unit of analysis from a model to a model-pair gain. This matters
+scientifically. A class-only network may be a better prior estimator than FREQ, but that
+fact does not become evidence of instance-specific visual use. Conversely, a model can
+improve visual alignment while losing enough prior score to obscure the improvement in
+its aggregate metric. The signed identity $\Delta T=\Delta P+\Delta R$ exposes both
+cases without a separately fitted reference forecaster.
 
-This distinction positions WAGER within the broader concern that static
-leaderboards can overstate capability through frequency shortcuts, contamination,
-or memorization, particularly for multimodal systems
-\cite{chen2025contamination,song2025leaked,liu2025reasoning}. Most proposed remedies
-refresh, randomize, or otherwise replace the benchmark. WAGER instead retains the
-benchmark and audits a reported gain against an explicit confound. These strategies
-are complementary: a dynamically refreshed or contamination-resistant benchmark may
-still contain annotation-frequency structure, and its model comparisons can be
-analyzed with WAGER to separate prior fitting from residual reasoning.
+The interpretation remains conditional on the declared audit feature $\phi$. A positive
+$\Delta R$ means the new model aligns its probability changes with the correct example
+better than the old model among examples sharing $\phi$. It does not prove causal
+reasoning, compositional understanding, or robustness. If an unrecorded shortcut varies
+inside a cell, WAGER will count its predictive use in $\Delta R$. Applications should
+therefore choose $\phi$ before looking at results, justify it from the benchmark's data
+generation process, and report finer and coarser alternatives. The observed increase
+under subject-only cells illustrates why the finest defensible prior feature is the
+conservative primary choice.
 
-Several conditions delimit the validity of that analysis. First, the betting result
-requires exchangeability rather than independent and identically distributed
-observations. We preserve the dependence among relations from the same image by
-permuting complete image blocks, preventing individual relations from the same scene
-from being treated as independent units. Second, exact validity depends on fitting
-the self-prior projection on a fold independent of the betting stream. Visual
-Genome's sparse class-pair cells make this estimation difficult, so the projection
-uses Krichevsky--Trofimov smoothing, hierarchical backoff, and a Jensen correction
-(Table~\ref{tab:data} and Section~\ref{sec:method}). Third, $\phi$ must represent the
-frequency channel being audited. An omitted confound may be incorrectly credited to
-reasoning; for that reason, we report the finest, most conservative specification of
-$\phi$ and verify that the verdict remains stable when it is coarsened
-(Section~\ref{sec:abl}). Fourth, clipping controls the bounded score required by the
-wealth process and therefore trades robustness against sensitivity. The conclusion
-is stable at the default $c=\log K$ and changes only under the aggressive clipping
-examined in the ablation. Finally, because the measured quantity is model-relative,
-WAGER compares concrete frozen forecasters rather than architectures in the
-abstract. The cached-probability interface is what makes this comparison exact and
-reproducible.
+Exact transport also has a positivity requirement: a cell needs at least two examples.
+WAGER reports the identified fraction and makes no claim for singletons. Very fine
+$\phi$ can therefore improve confound control while reducing coverage. Approximate
+matching could extend the method to continuous priors, but would replace the exact
+identity's clear intervention with modeling assumptions; we leave that extension open.
 
-The same interface also makes broader evaluation practical: a new application needs
-only a one-time probability dump and an appropriate definition of $\phi$. In scene
-graph generation, applying the present pipeline to released MOTIFS, VCTree, and
-causal +TDE checkpoints would reveal whether published improvements survive the RGR
-criterion and whether TDE increases the reasoning share as its causal motivation
-suggests. In VQA and multimodal language models, question type can serve as $\phi$,
-allowing gains over classical baselines to be separated into visual and
-language-prior contributions, where dependence on the latter remains well documented
-\cite{lee2025vlind,wu2025lanp,peng2025overcoming}. For LVIS-style detection,
-frequency tier provides the analogous prior feature, and the head/body/tail analysis
-of Section~\ref{sec:strat} extends directly to rare-category evaluation
-\cite{gupta2019lvis,zhu2024rectify}. Across these settings, the statistical
-construction remains unchanged: the self-prior projection defines the competing
-forecaster, one wealth process certifies and quantifies the residual signal, and RGR
-attributes the gain between systems.
+The image-clustered confidence interval is asymptotic. The cyclic randomization test is
+finite-group exact only under its sharper within-cell exchangeability null and treats
+relations as the randomized units, so it is secondary in the SGG analysis. A future
+image-level randomization design that preserves several relation-cell margins
+simultaneously would strengthen finite-sample inference for structured benchmarks.
+
+Finally, WAGER evaluates probability vectors, not only top-1 decisions. This is a
+feature---the method can detect useful redistribution below the argmax---but it requires
+released logits or probabilities. The quadratic score is bounded and strictly proper;
+other proper scores answer scale-dependent variants of the same question and should be
+declared in advance.
+
+\section{Broader applicability}\label{sec:broader}
+
+The algorithm needs only four aligned arrays: two models' probability vectors, labels,
+and prior-cell identifiers. For VQA, $\phi$ can be a predeclared question template; for
+long-tail recognition, it can encode collection source and frequency tier; for
+multimodal benchmarks, it can encode answer format or prompt family. In each case the
+scientific claim must remain precise: WAGER measures new prediction--label alignment
+within those cells. Its value is not that one choice of $\phi$ defines reasoning
+universally, but that every attribution becomes an explicit, reproducible
+counterfactual tied to a declared nuisance structure.

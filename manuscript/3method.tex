@@ -1,230 +1,171 @@
 \section{Method}\label{sec:method}
 
+\subsection{Setup: audit a gain, not a model}\label{sec:setup}
+
+Let $q_0(\cdot\mid x)$ and $q_1(\cdot\mid x)$ be the predictive distributions of an
+old and a new frozen model over $K$ labels. Let $S(q,y)$ be a bounded proper score,
+oriented so that larger is better, and let $C=\phi(X)$ be a declared discrete prior
+feature. For SGG, $C$ is the ordered subject--object class pair. Define the
+instance-specific \emph{gain vector}
+\begin{equation}
+H_x(y)=S(q_1(\cdot\mid x),y)-S(q_0(\cdot\mid x),y),\qquad y=1,\ldots,K.
+\label{eq:gain-vector}
+\end{equation}
+Unlike the realized gain $H_X(Y)$, this vector can be evaluated at a counterfactual
+label without rerunning either model.
+
+Our default is the quadratic score
+\begin{equation}
+S_{\rm B}(q,y)=2q_y-\lVert q\rVert_2^2,
+\label{eq:brier}
+\end{equation}
+which differs from negative Brier loss only by a label-only constant. It is strictly
+proper and bounded, avoids probability clipping, and uses the entire predictive
+distribution. A floored log score is a sensitivity analysis.
+
+\subsection{Within-cell counterfactual transport}\label{sec:transport}
+
+For a prior cell $c$, define three population quantities:
+\begin{align}
+\Delta T_c &= \mathbb E[H_X(Y)\mid C=c], \\
+\Delta P_c &= \mathbb E_{H\mid c}\,\mathbb E_{Y'\mid c}[H_X(Y')], \\
+\Delta R_c &= \Delta T_c-\Delta P_c .
+\end{align}
+Here $Y'$ is an independent label drawn from the same cell. Thus $\Delta T_c$ is the
+observed score gain, $\Delta P_c$ is the gain retained after breaking the
+instance-specific prediction--label assignment while preserving the prior cell, and
+$\Delta R_c$ is the alignment gain lost by that transport.
+
+\begin{theorem}[Transport and covariance identities]\label{thm:population}
+For any integrable score contrast $H$,
+\begin{equation}
+\Delta T_c=\Delta P_c+\Delta R_c,
+\qquad
+\Delta R_c=\sum_{y=1}^K
+\operatorname{Cov}\!\left(H_X(y),\mathbb 1\{Y=y\}\mid C=c\right).
+\label{eq:population-id}
+\end{equation}
+For the quadratic score, writing $\Delta q_y(X)=q_1(y\mid X)-q_0(y\mid X)$,
+\begin{equation}
+\Delta R_c=2\sum_{y=1}^K
+\operatorname{Cov}\!\left(\Delta q_y(X),\mathbb 1\{Y=y\}\mid C=c\right).
+\label{eq:cov-id}
+\end{equation}
+Consequently, if the gain vector is a function of $c$ alone, then $\Delta R_c=0$.
+\end{theorem}
+
+Equation~\eqref{eq:cov-id} is the operational meaning of WAGER: the new model receives
+reasoning credit only to the extent that its probability change aligns more strongly
+with the label of the correct instance within the same prior cell. Cell-constant score
+improvements, including improved fitting of the cell's label histogram, remain in
+$\Delta P$. The result does not assert that every nonzero covariance is causal reasoning;
+unrecorded within-cell shortcuts can also contribute, so $\phi$ must be declared and
+stress-tested.
+
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{figures/fig2_pipeline.png}
-\caption{\textbf{The WAGER pipeline.} Cached probabilities are split image-blocked
-into a projection fold $A$ and an evaluation stream $B$. The self-prior projection
-$\bar q_f$ is frozen on $A$ (Def.~\ref{def:proj}); on $B$ the per-instance
-prior-excess score $d_i$ (Def.~\ref{def:score}) drives an Online-Newton-Step betting
-process whose wealth $W_n$ (Def.~\ref{def:wealth}) is read two ways: as an e-value
-(Thm.~\ref{thm:evalue}) and as a growth rate equal to usable reasoning information
-(Thm.~\ref{thm:growth}). Two models combine into the RGR with an anytime-valid CI
-(Thm.~\ref{thm:rgr}).}
-\label{fig:pipeline}
+\includegraphics[width=\textwidth]{figures/fig2_pair_mechanism.png}
+\caption{\textbf{The antisymmetric pair kernel.} For two examples in the same prior
+cell, WAGER subtracts the score under crossed labels from the score under the observed
+assignment. Cell membership and label counts are unchanged; only instance alignment is
+removed.}
+\label{fig:pair}
 \end{figure*}
 
-\subsection{Setup and the self-prior projection}\label{sec:method-proj}
-Let $x$ be an instance (for scene graph generation, an ordered object pair and its
-image region), $y\in\{1,\dots,K\}$ the ground-truth label, and $\phi(x)$ the
-\emph{prior features}: the cheap, frequency-carrying sufficient statistic through which
-annotation frequency acts (for SGG, $\phi(x)=(\text{subject class},\text{object
-class})$). A model $f$ supplies a predictive distribution $q_f(y\mid x)$, the softmax
-of cached logits, and $u(y)=1/K$ is the uniform reference. We never assume that $q_f$
-is calibrated, nor that the true conditionals $p(y\mid x)$ or $p(y\mid\phi)$ are known.
-The only structural assumption is that instances on an evaluation stream $B$ are
-\emph{exchangeable}, which we enforce by randomizing their order with image-blocked
-permutations (Section~\ref{sec:exp}).
+\subsection{Exact finite-sample decomposition}\label{sec:finite}
 
-The object at the centre of the method collapses a model onto its own prior.
-
-\begin{definition}[Self-prior projection]\label{def:proj}
-For a fixed model $f$, its self-prior projection is the model's own predictions
-averaged within each prior-feature cell,
+Consider cell $c$ with $n_c\ge2$ examples. Write $H_i(y)=H_{x_i}(y)$. WAGER computes
+\begin{align}
+\widehat{\Delta T}_c
+ &=\frac1{n_c}\sum_{i\in c} H_i(y_i), \\
+\widehat{\Delta P}_c
+ &=\frac1{n_c(n_c-1)}\sum_{i\ne j\in c}H_i(y_j),
+\label{eq:sample-prior}\\
+\widehat{\Delta R}_c
+ &=\binom{n_c}{2}^{-1}\sum_{i<j\in c} A_{ij},
+\label{eq:sample-reason}
+\end{align}
+where the antisymmetric kernel is
 \begin{equation}
-\bar q_f(y \mid \phi) \;=\; \mathbb{E}\!\left[\, q_f(y \mid X)\;\middle|\;\phi(X)=\phi \,\right].
+A_{ij}=\frac12\{H_i(y_i)+H_j(y_j)-H_i(y_j)-H_j(y_i)\}.
+\label{eq:kernel}
 \end{equation}
-\end{definition}
 
-By construction $\bar q_f$ is the best summary of $f$ that is measurable with respect to
-the prior features alone: a forecaster that has discarded every pixel-level cue and
-kept only what frequency context implies. The decisive choice is to compare $f$ with
-this frequency-collapsed version of \emph{itself} rather than with an external
-frequency table. An external table $\hat p(y\mid\phi)$ built from training counts would
-make the null ``$f$ reasons no better than the prior'' hold only if the table equalled
-the true $p(y\mid\phi)$, which it never exactly does; that mismatch is a free parameter
-an adversary or an unlucky dataset could exploit to manufacture or hide reasoning.
-Freezing $\bar q_f$ from $f$'s own predictions removes the parameter, because under the
-null the two forecasters share every nuisance---calibration, vocabulary bias,
-temperature---so any out-of-fold predictive advantage of $q_f$ over $\bar q_f$ can come
-only from information beyond $\phi$.
-
-We estimate $\bar q_f$ on a fold $A$ disjoint from the evaluation stream. A naive cell
-mean is unusable when most cells are sparse (Figure~\ref{fig:longtail}), so we use a
-hierarchical empirical-Bayes backoff with Krichevsky--Trofimov-style smoothing: writing
-$n_\phi$ for the cell count and $\pi(\phi)$ for a parent distribution,
+\begin{theorem}[Finite-sample WAGER identity]\label{thm:sample}
+For every cell with $n_c\ge2$, without a distributional assumption,
 \begin{equation}
-\hat{\bar q}_f(\cdot\mid\phi)\;=\;\frac{\sum_{j\in A}q_f(\cdot\mid x_j)\,\mathbb{1}[\phi(x_j)=\phi]\;+\;m\,\pi(\phi)}{n_\phi + m},
+\widehat{\Delta T}_c=\widehat{\Delta P}_c+\widehat{\Delta R}_c.
 \end{equation}
-with the hierarchy cell~$(\text{subj},\text{obj})\to$ coarse~$(\text{subj})\to$ global
-mean. A second-order Jensen correction computed from the within-cell variance debiases
-the log-projection; it cancels in the total information $I^{\mathrm{tot}}$ and only
-re-allocates mis-credited reasoning back into the prior channel. A model whose
-predictions are a function of $\phi$ alone---FREQ, or a class-only network---uses the
-identical backoff, so its out-of-fold reasoning score collapses to $\approx 0$, which
-is exactly what makes the FREQ anchor hold on real data (Section~\ref{sec:exp}).
-
-\subsection{Certifying and quantifying reasoning by betting}\label{sec:method-bet}
-On the evaluation stream we score each instance by how much the model beats its own
-projection, and then bet on those scores.
-
-\begin{definition}[Prior-excess log-score]\label{def:score}
-On the evaluation stream, define
-\begin{equation}
-d_i \;=\; \log q_f(y_i \mid x_i) - \log \hat{\bar q}_f(y_i \mid \phi(x_i)),
-\qquad \tilde d_i = \mathrm{clip}(d_i,-c,c),
-\end{equation}
-with default clip $c=\log K$. A positive $d_i$ means that at instance $i$, using the
-image beyond $\phi$ helped predict the true label. Clipping keeps the score bounded,
-which is what licenses the betting argument below; the level $c$ trades robustness
-against sensitivity, and we fix it at $\log K$, the natural scale of a log-likelihood
-ratio over $K$ classes.
-\end{definition}
-
-\begin{definition}[Wealth process]\label{def:wealth}
-We test $H_0:\ \mu:=\mathbb{E}[\tilde d_i]\le 0$ (``$f$ predicts no better than its
-prior-projection'') against $H_1:\mu>0$ via
-\begin{equation}
-W_0=1,\qquad W_n=\prod_{i=1}^{n}\!\bigl(1+\lambda_i\,\tilde d_i\bigr),\qquad
-\lambda_i\in[0,\tfrac1c)\ \text{predictable},
-\end{equation}
-with $\lambda_i$ chosen online by the Online-Newton-Step (aGRAPA) rule of Waudby-Smith
-and Ramdas \cite{waudbysmith2024estimating}, a closed-form predictable update requiring
-no tuning.
-\end{definition}
-
-Framing the question as a bet on a predictive mean, rather than as a test of the
-conditional independence $Y\perp X\mid\phi(X)$, is deliberate: consistent
-conditional-independence testing is impossible without further assumptions
-\cite{shah2020hardness}, whereas testing $\mathbb{E}[\tilde d]\le 0$ with a betting
-martingale is precisely the regime in which game-theoretic statistics delivers
-finite-sample validity \cite{shafer2021testing, ramdas2023game,
-waudbysmith2024estimating}.
-
-\begin{theorem}[Anytime-valid certificate]\label{thm:evalue}
-Under $H_0$, $(W_n)$ is a non-negative supermartingale with $\mathbb{E}[W_n]\le 1$;
-it is therefore an e-value, and by Ville's inequality \cite{ville1939etude}, for any
-$\alpha\in(0,1)$, $\Pr[\exists n: W_n\ge 1/\alpha]\le\alpha$. Rejecting $H_0$ the
-first time $W_n\ge 1/\alpha$ controls type-I error at level $\alpha$ with no fixed
-sample size and no distributional assumption beyond exchangeability.
-\end{theorem}
-\begin{proof}[Proof sketch]
-$\lambda_i$ is $\mathcal F_{i-1}$-measurable and $1+\lambda_i\tilde d_i\ge 0$ because
-$\lambda_i<1/c$ and $\tilde d_i\ge -c$. Under $H_0$,
-$\mathbb{E}[1+\lambda_i\tilde d_i\mid\mathcal F_{i-1}]=1+\lambda_i\,\mathbb{E}[\tilde
-d_i\mid\mathcal F_{i-1}]\le 1$, so $(W_n)$ is a non-negative supermartingale;
-telescoping gives $\mathbb{E}[W_n]\le 1$ and Ville's inequality yields the bound. The
-validity holds \emph{without knowing the true prior} precisely because $\bar q_f$ is
-frozen on fold $A$ and treated as a fixed competing forecaster. A full proof is given
-in Appendix~\ref{app:proofs}.
-\end{proof}
-
-\begin{theorem}[Growth rate $=$ usable reasoning information]\label{thm:growth}
-With the log-optimal predictable bet
-$\lambda_i^\star=\arg\max_\lambda \mathbb{E}[\log(1+\lambda\tilde d)\mid\mathcal
-F_{i-1}]$, the growth rate converges almost surely, and as $c\to\infty$,
-\begin{equation}
-G(f):=\lim_{n\to\infty}\tfrac1n\log W_n
-=\mathbb{E}\!\left[\log q_f(Y\mid X)-\log\bar q_f(Y\mid\phi(X))\right]=:\mathcal I_f^{\mathrm{reason}}\ \ge 0 .
-\end{equation}
-If $q_f$ equals the true posterior and $\bar q_f$ the true $p(\cdot\mid\phi)$, then
-$\mathcal I_f^{\mathrm{reason}}=I(Y;X\mid\phi(X))$, the conditional mutual information.
-\end{theorem}
-\begin{proof}[Proof sketch]
-By Kelly \cite{kelly1956new} and Cover and Thomas \cite{cover2006elements} the
-log-optimal growth rate equals the expected log-score differential, which the strong
-law drives to $\mathbb{E}[\tilde d]$; as $c\to\infty$, $\tilde d_i\to d_i$. The chain
-rule $I(Y;X)=I(Y;\phi(X))+I(Y;X\mid\phi(X))$, valid because $\phi$ is a function of
-$X$, identifies the residual with conditional mutual information in the calibrated case
-(Appendix~\ref{app:proofs}).
-\end{proof}
-
-The same wealth process therefore \emph{certifies} reasoning (through $W_n$,
-Theorem~\ref{thm:evalue}) and \emph{quantifies} it (through $G(f)$,
-Theorem~\ref{thm:growth})---the central unification of the method. The measurement is
-moreover robust to miscalibration.
-
-\begin{corollary}[Calibration invariance]\label{cor:calib}
-$\mathcal I_f^{\mathrm{reason}}$ is invariant to any recalibration map applied
-uniformly within a $\phi$-cell (e.g.\ per-cell temperature scaling), because the map
-cancels between $q_f$ and $\bar q_f$. Hence miscalibration shared within a prior cell
-cannot inflate measured reasoning; by Gibbs' inequality an arbitrarily miscalibrated
-$q_f$ can only \emph{under}-estimate the true reasoning information, never manufacture
-it.
-\end{corollary}
-
-\subsection{The Reasoning Gain Ratio}\label{sec:method-rgr}
-We decompose each model's total information over the uniform reference into a
-prior-fitting channel and a reasoning channel,
-\begin{equation}
-\underbrace{\mathbb{E}[\log\bar q_f(Y\mid\phi)-\log u(Y)]}_{I^{\mathrm{prior}}_f}
-+\underbrace{\mathbb{E}[\log q_f(Y\mid X)-\log\bar q_f(Y\mid\phi)]}_{I^{\mathrm{reason}}_f}
-= I^{\mathrm{tot}}_f ,
-\end{equation}
-and attribute a reported improvement to one channel or the other.
-
-\begin{definition}[Reasoning Gain Ratio]\label{def:rgr}
-For a claimed improvement from $f$ to $f'$,
-\begin{equation}
-\mathrm{RGR}(f',f)=\frac{I^{\mathrm{reason}}_{f'}-I^{\mathrm{reason}}_{f}}
-{I^{\mathrm{tot}}_{f'}-I^{\mathrm{tot}}_{f}} ,
-\end{equation}
-the fraction of the information gain attributable to better reasoning rather than
-better prior-fitting. If the upper confidence limit of $\mathrm{RGR}$ is below $0.5$,
-the majority of the gain is prior-recoverable and the claim is flagged
-\emph{non-substantive}.
-\end{definition}
-
-\begin{theorem}[Anytime-valid CI for RGR]\label{thm:rgr}
-Each of $I^{\mathrm{reason}}$ and $I^{\mathrm{tot}}$ is the mean of a bounded score, so
-the betting confidence sequence of \cite{waudbysmith2024estimating} gives each an
-anytime-valid $(1-\alpha)$ interval. Combining the numerator and denominator intervals
-by Fieller's method \cite{fieller1954some} under a Bonferroni split yields a
-$(1-2\alpha)$ anytime-valid interval for $\mathrm{RGR}(f',f)$.
+Moreover, under exchangeable sampling within the cell,
+$\widehat{\Delta R}_c$ is an unbiased order-two U-statistic for $\Delta R_c$.
 \end{theorem}
 
-\subsection{Algorithm and implementation}\label{sec:method-algo}
-Algorithm~\ref{alg:wager} summarizes the driver. Two properties make it both cheap and
-exact. First, the GPU is used only once, to dump the cached probability vectors; all
-WAGER computation is deterministic CPU NumPy with an $O(NK)$ hot loop, so the full
-five-model study including $R$ permutations and every interval completes in about three
-minutes on a single core. Second, because the per-instance scores are order-independent
-under a frozen train-fit projection, the $R$ image-blocked permutations only reshuffle
-the betting order, which builds the e-value distribution and averages the anytime-valid
-intervals across orders. Blocking at the image level---all relations of an image move
-together in randomized image order---yields an exchangeable stream at the block level,
-which is all Theorem~\ref{thm:evalue} requires.
+The dataset-level quantities weight cells by their number of identified examples:
+$\widehat{\Delta Z}=N_*^{-1}\sum_{c:n_c\ge2}n_c\widehat{\Delta Z}_c$ for
+$Z\in\{T,P,R\}$. Singleton cells cannot identify a within-cell counterfactual; WAGER
+excludes and reports them instead of inventing a smoothed estimate. If
+$\widehat{\Delta T}>0$, the descriptive alignment share is
+$\widehat\rho=\widehat{\Delta R}/\widehat{\Delta T}$. It may exceed one when
+instance alignment improves while prior fitting deteriorates, and it is undefined for a
+nonpositive total gain. We therefore report $\widehat{\Delta R}$ as the primary result,
+not a thresholded ratio.
 
-A concrete instance fixes intuition. Consider a cell $\phi=(\text{man},\text{horse})$
-whose frozen projection assigns $\bar q_f(\text{riding}\mid\phi)=0.30$. If, for an
-instance whose true predicate is ``riding'', the model sees the boxes overlap with the
-man above the horse and outputs $q_f(\text{riding}\mid x)=0.62$, then
-$d=\log 0.62-\log 0.30=+0.73>0$ and the bettor profits, because the image moved the
-prediction toward the truth beyond what the class pair alone implies. If instead the
-model returns the cell-typical $0.30$, then $d=0$ and the bettor neither gains nor
-loses. A model that is merely \emph{confident} but constant within the cell earns no
-capital at all---the mechanism behind both the FREQ anchor and calibration invariance
-(Corollary~\ref{cor:calib}).
+\subsection{Linear-time computation}\label{sec:efficient}
+
+Naively evaluating Eq.~\eqref{eq:sample-prior} is quadratic in cell size. Let $m_{cy}$
+be the count of label $y$ in cell $c$. For example $i\in c$, its transported score is
+\begin{equation}
+P_i=\frac{\sum_{y=1}^K m_{cy}H_i(y)-H_i(y_i)}{n_c-1}.
+\label{eq:linear}
+\end{equation}
+Averaging $P_i$ yields Eq.~\eqref{eq:sample-prior}; averaging
+$H_i(y_i)-P_i$ yields Eq.~\eqref{eq:sample-reason}. Thus the entire estimator costs
+$O(NK)$ time and $O(NK)$ storage for cached prediction vectors. No model fitting,
+projection fold, hierarchy, or smoothing hyperparameter appears.
+
+\subsection{Inference}\label{sec:inference}
+
+For point estimation we use all unordered within-cell pairs. For uncertainty, define
+$\bar A_i=(n_c-1)^{-1}\sum_{j\ne i}A_{ij}$ and
+$\widehat{\Delta R}_c=n_c^{-1}\sum_i\bar A_i$. The estimated H\'ajek influence
+contribution for random cell membership is
+\begin{equation}
+\widehat\psi_i=2\bar A_i-\widehat{\Delta R}_c-\widehat{\Delta R}.
+\label{eq:influence}
+\end{equation}
+We sum $\widehat\psi_i$ within image and use the resulting one-way sandwich variance,
+so multiple relations from the same image are not treated as independent. Total-gain
+influence is $H_i(y_i)-\widehat{\Delta T}$; prior-gain and share intervals follow from
+the exact identity and delta method.
+
+As a complementary finite-group diagnostic, WAGER applies an independently sampled
+cyclic shift to labels inside every cell. Each shift preserves cell size and label
+histogram. Recomputing $\widehat{\Delta R}$ under $B$ shifts gives
+\begin{equation}
+p=\frac{1+\sum_{b=1}^B\mathbb 1\{\widehat{\Delta R}^{(b)}\ge
+\widehat{\Delta R}\}}{B+1}.
+\end{equation}
+This is exact under the sharp null that labels are exchangeable relative to the frozen
+model outputs within each cell. Because SGG relations share images, our primary
+real-data uncertainty statement is the image-cluster-robust interval; the randomization
+test is reported as a secondary relation-level diagnostic.
 
 \begin{algorithm}[t]
-\caption{WAGER core routine}\label{alg:wager}
+\caption{WAGER gain decomposition}\label{alg:wager}
 \begin{algorithmic}[1]
-\Require cached $q_f$ for each model; prior map $\phi$; coarse key; level $\alpha$;
-clip $c=\log K$; permutations $R$.
-\Ensure per-model e-value and $\hat I^{\mathrm{reason}},\hat I^{\mathrm{prior}}$ with
-CIs; per-pair RGR with verdict.
-\State fit frozen $\bar q_f$ on fold $A$ via hierarchical backoff (Def.~\ref{def:proj})
-\For{each model $f$ and each $i$ in stream $B$}
-    \State $d_i\gets\mathrm{clip}(\log q_f(y_i\mid x_i)-\log\bar q_f(y_i\mid\phi_i),-c,c)$;\quad
-    $e_i\gets\mathrm{clip}(\log\bar q_f(y_i\mid\phi_i)-\log u(y_i),-c,c)$
+\Require frozen $q_1,q_0$; labels $y$; prior cells $\phi$; proper score $S$
+\Ensure $\widehat{\Delta T},\widehat{\Delta P},\widehat{\Delta R}$ and uncertainty
+\State $H_i(k)\gets S(q_{1i},k)-S(q_{0i},k)$ for all $i,k$
+\For{each cell $c$ with $n_c\ge2$}
+  \State count labels $m_{c1},\ldots,m_{cK}$
+  \For{each $i\in c$}
+    \State $P_i\gets(\sum_k m_{ck}H_i(k)-H_i(y_i))/(n_c-1)$
+    \State $R_i\gets H_i(y_i)-P_i$
+  \EndFor
 \EndFor
-\For{$r=1\dots R$ (image-blocked permutations of $B$)}
-    \State $\lambda_i\gets\textsc{ONS}(\tilde d_{1:i-1})$;\quad
-    $W_n\gets\prod(1+\lambda_i d_i)$ \Comment{e-value, growth (Thm.~\ref{thm:evalue},\ref{thm:growth})}
-\EndFor
-\State $\hat I^{\mathrm{reason}}\!\gets\!\mathrm{mean}(d)$,
-$\hat I^{\mathrm{prior}}\!\gets\!\mathrm{mean}(e)$, with betting CIs
-\State for each pair: $\mathrm{RGR}\gets\Delta\hat I^{\mathrm{reason}}/\Delta\hat
-I^{\mathrm{tot}}$ with Fieller CI (Thm.~\ref{thm:rgr}); verdict by the $0.5$ rule
+\State $\widehat{\Delta T}\gets\operatorname{mean}H_i(y_i)$;
+$\widehat{\Delta P}\gets\operatorname{mean}P_i$;
+$\widehat{\Delta R}\gets\operatorname{mean}R_i$
+\State compute image-clustered H\'ajek interval and cell-shift randomization $p$
 \end{algorithmic}
 \end{algorithm}
