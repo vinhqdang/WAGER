@@ -215,19 +215,40 @@ a head/mid/tail training-frequency tier partition. Because CIFAR-100 test images
 independent (unlike VG's multiple relations per image), no cluster grouping is needed
 and the plain H\'ajek interval of Section~\ref{sec:inference} applies.
 
-\paragraph{Result.} Table~\ref{tab:cifar} gives the decomposition. The CB run is the
-more instructive case. Its aggregate quadratic-score gain over CE is essentially nil
-($\widehat{\Delta T}=+0.00143$), which in isolation would read as a harmless
-reparameterization. WAGER shows it is nothing of the sort: within superclasses the
-prior-transported channel gains $+0.19713$ while instance alignment \emph{loses}
-$-0.19569$ (95\% CI $[-0.20728,-0.18411]$), two large and nearly cancelling effects.
-Re-weighting bought a much better fit to the within-superclass class-frequency
-distribution and paid for it with per-instance discrimination, and top-1 accuracy
-confirms the damage ($0.3662\to0.2627$). The near-zero total gain is a coincidence of
-two opposing channels, exactly the confound the method exists to expose; the reason the
-score does not fall as accuracy does is that CE is badly overconfident (mean maximum
-probability $0.764$ at $0.3662$ accuracy), so CB's softer predictions recover on
-calibration what they lose on alignment.
+\paragraph{Result.} Top-1 accuracies are $0.3662$ (CE), $0.2627$ (CB), and $0.3874$
+(DRW): re-weighting from initialization degrades the classifier badly, while the
+deferred schedule delivers the expected improvement. Table~\ref{tab:cifar} decomposes
+both gains.
+
+The CB run shows the confound in its starkest form. Its aggregate quadratic-score gain
+over CE is essentially nil ($\widehat{\Delta T}=+0.00143$), which in isolation would
+read as a harmless reparameterization. WAGER shows it is nothing of the sort: within
+superclasses the prior-transported channel gains $+0.19713$ while instance alignment
+\emph{loses} $-0.19569$ (95\% CI $[-0.20728,-0.18411]$), two large and nearly
+cancelling effects. Re-weighting bought a much better fit to the within-superclass
+class-frequency distribution and paid for it with per-instance discrimination, as the
+ten-point accuracy drop confirms. The near-zero total is a coincidence of two opposing
+channels, exactly the confound the method exists to expose; the score does not fall
+with accuracy because CE is badly overconfident (mean maximum probability $0.764$ at
+$0.3662$ accuracy), so CB's softer predictions recover on calibration what they lose on
+alignment.
+
+DRW is the more representative case, because it is a real improvement of the kind a
+benchmark submission would report. Its gain of $\widehat{\Delta T}=+0.06606$ splits
+into $\widehat{\Delta P}=+0.04206$ and $\widehat{\Delta R}=+0.02400$ (95\% CI
+$[+0.01340,+0.03460]$, randomization $p=.002$). Roughly two thirds of the improvement
+is recoverable from the class-frequency prior alone, but the remaining third is a
+genuine, statistically significant gain in per-instance discrimination -- deferred
+re-weighting does more than re-rank the classes. Neither the accuracy delta nor the
+aggregate score could have separated these.
+
+The tier breakdown in Table~\ref{tab:cifar-tier} and Figure~\ref{fig:cifar} localizes
+that alignment gain. For DRW it is concentrated where the long-tail literature intends
+it: $+0.09009$ on few-shot classes and $+0.06760$ on medium-shot, against $-0.07624$ on
+many-shot classes, which lose alignment as the schedule shifts capacity away from the
+head. CB shows the same ordering with every level shifted downward, its many-shot
+alignment collapsing to $-0.41977$. WAGER thus separates not only how much of a
+long-tail gain is genuine, but which part of the frequency spectrum it comes from.
 
 This also supplies an external check on the theory. Computing the alignment term
 directly from the covariance identity of Eq.~\eqref{eq:cov-id} -- a code path that shares
@@ -249,12 +270,48 @@ $p$ is the 499-shift randomization diagnostic. ``--'' marks an undefined share
 Comparison & Audit cell $\phi$ & $\widehat{\Delta T}$ & $\widehat{\Delta P}$ &
 $\widehat{\Delta R}$ (95\% CI) & $p$ \\
 \midrule
-CB vs CE & superclass (20) & $0.00143$ & $0.19713$ & $-0.19569\,[-0.20728,-0.18411]$ & $1.000$ \\
-CB vs CE & global (1)      & $0.00143$ & $0.25573$ & $-0.25430\,[-0.26801,-0.24058]$ & $1.000$ \\
-CB vs CE & tier (3)        & $0.00143$ & $0.25247$ & $-0.25103\,[-0.26453,-0.23754]$ & $1.000$ \\
+CB vs CE  & superclass (20) & $0.00143$ & $0.19713$ & $-0.19569\,[-0.20728,-0.18411]$ & $1.000$ \\
+CB vs CE  & global (1)      & $0.00143$ & $0.25573$ & $-0.25430\,[-0.26801,-0.24058]$ & $1.000$ \\
+CB vs CE  & tier (3)        & $0.00143$ & $0.25247$ & $-0.25103\,[-0.26453,-0.23754]$ & $1.000$ \\
+\midrule
+DRW vs CE & superclass (20) & $0.06606$ & $0.04206$ & $0.02400\,[0.01340,0.03460]$ & $.002$ \\
+DRW vs CE & global (1)      & $0.06606$ & $0.03522$ & $0.03085\,[0.01860,0.04309]$ & $.002$ \\
+DRW vs CE & tier (3)        & $0.06606$ & $0.03702$ & $0.02904\,[0.01702,0.04107]$ & $.002$ \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{table}[t]
+\centering
+\caption{Alignment gain by training-frequency tier at the primary superclass audit.
+The deferred schedule concentrates its genuine per-instance improvement on rare
+classes; both methods lose alignment on the head.}
+\label{tab:cifar-tier}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+& & \multicolumn{1}{c}{CB vs CE} & \multicolumn{2}{c}{DRW vs CE} \\
+\cmidrule(l){3-3}\cmidrule(l){4-5}
+Tier & $n$ & $\widehat{\Delta R}$ & $\widehat{\Delta T}$ & $\widehat{\Delta R}$ \\
+\midrule
+Few-shot ($<20$)        & 3000 & $-0.03337$ & $0.13785$ & $0.09009$ \\
+Medium-shot ($20$--$100$) & 3500 & $-0.11075$ & $0.10799$ & $0.06760$ \\
+Many-shot ($>100$)      & 3500 & $-0.41977$ & $-0.03740$ & $-0.07624$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig5_cifar_lt.png}
+\caption{\textbf{The same attribution transfers to a second task.} Left: exact
+decomposition at the superclass audit. The CB total gain (green) is visually almost
+absent at $+0.00143$ while its two channels reach $\pm0.2$ -- a near-zero aggregate
+score concealing two large opposing effects. DRW's smaller total is genuinely split
+between both channels. Error bars are 95\% H\'ajek intervals on $\widehat{\Delta R}$.
+Right: the alignment channel by training-frequency tier, showing that DRW's genuine
+per-instance gain is concentrated on rare classes and negative on the head.}
+\label{fig:cifar}
+\end{figure*}
 
 Coarsening behaves as Proposition~\ref{prop:coarsen} predicts. Moving from the 20
 superclass cells to a single global cell changes the credited alignment from $-0.19569$

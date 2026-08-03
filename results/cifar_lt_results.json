@@ -8,10 +8,11 @@
   "n_classes": 100,
   "imbalance_ratio": 100.0,
   "epochs": 80,
-  "drw_start_epoch": null,
+  "drw_start_epoch": 60,
   "accuracy": {
     "CE": 0.3662,
-    "CB": 0.2627
+    "CB": 0.2627,
+    "DRW": 0.3874
   },
   "comparisons": [
     {
@@ -112,6 +113,105 @@
       "n_singletons": 0,
       "score": "brier",
       "randomization_p": 1.0
+    },
+    {
+      "prior_feature": "superclass",
+      "new": "ResNet32-DRW",
+      "old": "ResNet32-CE",
+      "total_gain": 0.06606472817175085,
+      "prior_gain": 0.04206429259933369,
+      "reasoning_gain": 0.024000435572417184,
+      "reasoning_share": 0.36328667712099544,
+      "reasoning_ci": [
+        0.013402268758657566,
+        0.034598602386176805
+      ],
+      "prior_ci": [
+        0.0358716943320422,
+        0.04825689086662518
+      ],
+      "total_ci": [
+        0.05368750188804493,
+        0.07844195445545678
+      ],
+      "share_ci": [
+        0.2562412414421825,
+        0.47033211279980836
+      ],
+      "standard_error": 0.005407327327112441,
+      "n_total": 10000,
+      "n_identified": 10000,
+      "coverage": 1.0,
+      "n_cells": 20,
+      "n_singletons": 0,
+      "score": "brier",
+      "randomization_p": 0.002
+    },
+    {
+      "prior_feature": "global",
+      "new": "ResNet32-DRW",
+      "old": "ResNet32-CE",
+      "total_gain": 0.06606472817175085,
+      "prior_gain": 0.03521741914788712,
+      "reasoning_gain": 0.030847309023863755,
+      "reasoning_share": 0.4669255422298703,
+      "reasoning_ci": [
+        0.018604419242159435,
+        0.043090198805568074
+      ],
+      "prior_ci": [
+        0.02913083111300671,
+        0.04130400718276753
+      ],
+      "total_ci": [
+        0.05368750188804493,
+        0.07844195445545678
+      ],
+      "share_ci": [
+        0.35059131037075775,
+        0.5832597740889829
+      ],
+      "standard_error": 0.006246487118270884,
+      "n_total": 10000,
+      "n_identified": 10000,
+      "coverage": 1.0,
+      "n_cells": 1,
+      "n_singletons": 0,
+      "score": "brier",
+      "randomization_p": 0.002
+    },
+    {
+      "prior_feature": "tier",
+      "new": "ResNet32-DRW",
+      "old": "ResNet32-CE",
+      "total_gain": 0.06606472817175085,
+      "prior_gain": 0.037023597353773835,
+      "reasoning_gain": 0.029041130817977035,
+      "reasoning_share": 0.43958601846476625,
+      "reasoning_ci": [
+        0.017017147510143382,
+        0.04106511412581069
+      ],
+      "prior_ci": [
+        0.03095343930868744,
+        0.043093755398860234
+      ],
+      "total_ci": [
+        0.05368750188804493,
+        0.07844195445545678
+      ],
+      "share_ci": [
+        0.3228469929902782,
+        0.5563250439392543
+      ],
+      "standard_error": 0.006134798089494146,
+      "n_total": 10000,
+      "n_identified": 10000,
+      "coverage": 1.0,
+      "n_cells": 3,
+      "n_singletons": 0,
+      "score": "brier",
+      "randomization_p": 0.002
     }
   ],
   "per_tier_at_superclass_phi": [
@@ -141,7 +241,34 @@
       "total_gain": -0.18510616562855917,
       "prior_gain": 0.23466266328200686,
       "alignment_gain": -0.41976882891056605
+    },
+    {
+      "new": "ResNet32-DRW",
+      "old": "ResNet32-CE",
+      "tier": "few-shot (<20)",
+      "n": 3000,
+      "total_gain": 0.13785069710079023,
+      "prior_gain": 0.04776113866094767,
+      "alignment_gain": 0.09008955843984257
+    },
+    {
+      "new": "ResNet32-DRW",
+      "old": "ResNet32-CE",
+      "tier": "medium-shot (20-100)",
+      "n": 3500,
+      "total_gain": 0.1079940403186136,
+      "prior_gain": 0.040397577283433156,
+      "alignment_gain": 0.06759646303518045
+    },
+    {
+      "new": "ResNet32-DRW",
+      "old": "ResNet32-CE",
+      "tier": "many-shot (>100)",
+      "n": 3500,
+      "total_gain": -0.037395414485717024,
+      "prior_gain": 0.03884799700527937,
+      "alignment_gain": -0.07624341149099641
     }
   ],
-  "seconds": 0.23746776580810547
+  "seconds": 0.5066661834716797
 }
