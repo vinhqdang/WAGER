@@ -121,20 +121,27 @@ T4 (15\,GB) GPU. The WAGER decomposition itself is pure NumPy and requires no
 accelerator: it consumes the resulting cached probability arrays, as in
 Section~\ref{sec:data}. All Python code runs under a pinned environment (Python 3.13).
 
-\paragraph{MLP-VISUAL (Section~\ref{sec:vgvisual}).} Subject/object crops are resized
-and CLIP-preprocessed (bicubic resize to $224\times224$, CLIP's published normalization
-constants); crops with no valid box overlap with the image use a blank crop rather than
-being dropped, so every relation contributes a feature row. CLIP ViT-B/32
-\citep{radford2021learning} runs in half precision with a batch size of $512$ crops and
-is never fine-tuned. Because an annotated object box participates in several relations,
-crops are deduplicated by (image, box) before encoding and gathered afterwards, which
-removes $35.9\%$ of the encoder work without changing any feature.
-The MLP head matches MLP-CLASS/MLP-SPATIAL's training recipe: AdamW,
-learning rate $10^{-3}$, weight decay $10^{-5}$, 15 epochs, batch size 4096, on
-standardized features. Training images are a fixed, seeded ($\text{seed}=0$) subsample of
-$150{,}000$ of the $532{,}987$ training relations, drawn without replacement uniformly
-at the relation level (not the image level); the full $229{,}605$-relation test split is
-always used for evaluation.
+\paragraph{Matched-subsample models (Section~\ref{sec:vgvisual}).} The three compared
+predictors share a fixed, seeded ($\text{seed}=0$) subsample of $100{,}000$ of the
+$532{,}987$ training relations, drawn without replacement uniformly at the relation
+level (not the image level); the full $229{,}605$-relation test split is always used for
+evaluation. All three use the identical head and optimizer -- AdamW, learning rate
+$10^{-3}$, weight decay $10^{-5}$, 15 epochs, batch size 4096, hidden sizes
+$(256,128)$, on standardized features -- so they differ only in their input features.
+
+Subject/object crops are taken from the annotated boxes and CLIP-preprocessed (bicubic
+resize to $224\times224$ with CLIP's published normalization constants); a crop with no
+valid overlap with the image falls back to a blank crop rather than being dropped, so
+every relation contributes a feature row. CLIP runs in half precision with a batch size
+of $512$ crops and is never fine-tuned. Two implementation details are worth recording.
+First, the pretrained OpenAI weights were trained with the QuickGELU activation, so the
+encoder must be instantiated as \texttt{ViT-B-32-quickgelu}; loading the same weights
+under the plain \texttt{ViT-B-32} configuration silently substitutes a standard GELU and
+degrades every embedding. Second, because an annotated object box participates in
+several relations, crops are deduplicated by (image, box) before encoding and gathered
+afterwards, which removes roughly a third of the encoder work without changing any
+feature. Only the images referenced by the audited relations are retrieved, individually
+rather than through the two bulk archives.
 
 \paragraph{ResNet-32 pair (Section~\ref{sec:cifarlt}).} CIFAR-100-LT uses the standard
 exponential-profile construction of \citet{cui2019classbalanced} at imbalance ratio

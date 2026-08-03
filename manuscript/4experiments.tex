@@ -192,20 +192,35 @@ Min.\ cell size & 20 & $0.00570$ & $0.01225\,[0.01155,0.01295]$ & 1757 \\
 
 Every model in Sections~\ref{sec:data}--\ref{sec:ablations} is a function of the
 declared class pair and, for MLP-SPATIAL(+), of box geometry derived from the
-annotation, not of the image itself. This leaves open whether WAGER's alignment
-channel behaves sensibly when a model consumes genuine pixel content rather than a
-geometric proxy for it. We add MLP-VISUAL: subject and object boxes are cropped from
-the original Visual Genome image, encoded with a frozen CLIP ViT-B/32 image encoder
-\citep{radford2021learning}, and the two 512-dimensional crop embeddings are
-concatenated with the same class embeddings used by MLP-CLASS before a small MLP head
-(256, 128 hidden units) is trained to predict the predicate. CLIP is not fine-tuned; the
-only trained parameters are the MLP head, so any alignment gain reflects information
-CLIP's pretraining already extracted from pixels, matched to the SGG label by the MLP,
-not new representation learning on VG itself. Feature extraction uses the full test
-split ($229{,}605$ relations) and a fixed, seeded subsample of $150{,}000$ of the
-$532{,}987$ training relations (capped for tractability; Appendix~\ref{app:implementation}
-reports the exact sampling procedure and the count of images with a missing or
-unreadable file).
+annotation, not of the image itself. Box geometry is a proxy for image content, and a
+sceptical reader is entitled to ask whether WAGER's alignment channel responds to
+genuine pixel evidence or only to that proxy. Figure~\ref{fig:samples} makes the
+question concrete: the cell $\phi=(\text{man},\text{surfboard})$ contains both
+``riding'' and ``carrying'', and while their box configurations do differ, what
+separates them is what the image shows.
+
+We therefore add MLP-VISUAL, which crops the annotated subject and object regions from
+the original Visual Genome image and encodes each with a frozen CLIP ViT-B/32 image
+encoder \citep{radford2021learning}. The two $512$-dimensional crop embeddings are
+concatenated with the same class embeddings used by MLP-CLASS, and only a small MLP head
+(256, 128 hidden units) is trained. CLIP is never fine-tuned, so any alignment gain
+reflects information CLIP's pretraining already extracted from pixels and the head
+merely matched to the SGG label, not representation learning on VG itself.
+
+\paragraph{Matched training data.} This comparison is reported separately from
+Table~\ref{tab:wager-results} rather than as an extra row in it, for a reason that is
+itself an instance of the paper's argument. Encoding every training relation with CLIP
+is costly, so MLP-VISUAL is trained on a subsample; comparing it against the full-data
+MLP-SPATIAL would then confound feature content with training-set size, and a
+disappointing result could not be attributed to the pixels. We instead retrain all three
+compared predictors on one fixed, seeded subsample of $100{,}000$ of the $532{,}987$
+training relations, denoting them MLP-CLASS-S, MLP-SPATIAL-S and MLP-VISUAL-S. They
+differ only in their feature set, so any difference between them isolates the features.
+The audit itself still uses the complete $229{,}605$-relation test split, the same
+class-pair $\phi$, and image-clustered intervals, so it remains directly interpretable
+alongside the main analysis. Appendix~\ref{app:implementation} gives the sampling
+procedure, the crop-deduplication scheme, and the count of images that could not be
+retrieved.
 
 % TODO(results): fill in once experiments/run_vg_visual_wager.py finishes on real VG images.
 % Report: MLP-VISUAL accuracy; WAGER decomposition of MLP-VISUAL vs FREQ and vs
