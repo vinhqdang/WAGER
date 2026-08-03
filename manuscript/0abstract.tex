@@ -9,9 +9,13 @@ proper-score contrast, matches examples that share a declared prior feature, and
 their labels. This yields an exact finite-sample identity: observed model gain equals a
 prior-transported gain plus an antisymmetric instance-alignment gain. The latter is an
 order-two U-statistic and, with the quadratic score, equals twice the within-prior-cell
-prediction--label covariance gained by the new model. It is computed in $O(NK)$ time,
-requires no fitted prior model or projection fold, and admits image-cluster-robust
-inference and a cell-stratified randomization test. Controlled experiments recover
+prediction--label covariance gained by the new model, connecting it to the classical
+resolution term of proper-score decomposition. It is computed in $O(NK)$ time, requires
+no fitted prior model or projection fold, and admits image-cluster-robust inference and a
+cell-stratified randomization test. We prove two further exact results: the leave-one-out
+transport removes a finite-sample attenuation bias of $(n_c-1)/n_c$ that a naive
+in-sample plug-in prior would incur, and coarsening the audit cell changes the estimate
+by a between-cell covariance term identified from first principles. Controlled experiments recover
 injected instance signal monotonically and obtain type-I error $0.030$ at level $0.05$.
 On 229,605 Visual Genome PredCls relations, a class-only MLP improves the frequency
 baseline entirely through the prior-transported channel, whereas adding box geometry

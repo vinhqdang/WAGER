@@ -35,3 +35,29 @@ exchangeability sequentially \cite{saha2024testing}; WAGER is a fixed-sample gai
 decomposition and makes no sequential-validity claim. Its new element is the
 gain-contrast transport identity and the resulting attribution algorithm, rather than
 permutation or U-statistic theory by itself.
+
+\subsection{Relation to classical proper-score decompositions}\label{sec:related-decomposition}
+The covariance identity in Eq.~\eqref{eq:cov-id} is a relative of the reliability
+resolution--uncertainty partition of a single proper score
+\cite{murphy1973vector,degroot1983comparison}, later generalized and made
+conditioning-set explicit by \citet{brocker2009reliability}: conditioned on a chosen
+grouping variable, a proper score splits into a calibration term and a resolution term,
+and the resolution term is a covariance between the forecast and the outcome indicator
+within groups. We deliberately build on this fact rather than obscure it. WAGER is not a
+new proper score, and $\Delta R_c$ is best understood as a \emph{resolution
+difference}, not a new quantity to be evaluated on its own. Two things distinguish WAGER
+from applying the classical decomposition to $q_0$ and $q_1$ separately and subtracting
+the two resolutions. First, that indirect route requires two resolution estimates, each
+of which is generally biased in finite samples by the same self-prediction mechanism
+formalized in Section~\ref{sec:attenuation}; the bias does not cancel under subtraction
+because it scales with each model's own cell counts. WAGER instead forms the paired
+gain vector $H_x(y)$ first and decomposes the \emph{contrast} in one pass, which is what
+makes the exact finite-sample identity and the antisymmetric U-statistic kernel possible.
+Second, the classical decomposition is a diagnostic for a single forecaster's calibration
+and sharpness; it neither targets nor equips a specific pairwise comparison with
+inference. WAGER supplies image-cluster-robust confidence intervals and a
+cell-stratified randomization test for exactly the gain a benchmark submission claims.
+The technical contribution here is narrower than a new form of score decomposition: it is
+the transport construction and finite-sample identity that convert a known resolution
+concept into a model-to-model attribution algorithm with an exactness and inference
+guarantee that the single-model decomposition does not provide.

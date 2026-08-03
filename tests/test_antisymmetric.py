@@ -126,3 +126,72 @@ def test_gain_matrix_supports_floored_log_score():
     h = gain_matrix(q1, q0, score="log", eps=1e-4)
     assert np.all(np.isfinite(h))
     assert h[0, 0] > 0 and h[0, 1] < 0
+
+
+def test_attenuation_proposition_matches_insample_plugin():
+    """Proposition (exact attenuation): the naive in-sample plug-in transported
+    score P_tilde_i = mean_j H_i(y_j) over the WHOLE cell (including i) equals
+    WAGER's leave-one-out P_i plus R_i / n_c, so the plug-in's implied alignment
+    is shrunk by exactly (n_c - 1) / n_c relative to WAGER's."""
+    rng = np.random.default_rng(7)
+    n, k = 500, 5
+    phi = rng.integers(0, 40, size=n)
+    y = rng.integers(k, size=n)
+    q0 = rng.dirichlet(np.ones(k), size=n)
+    q1 = rng.dirichlet(np.ones(k), size=n)
+    result = decompose_gain(q1, q0, y, phi)
+
+    h = gain_matrix(q1, q0)
+    _, inv, counts = np.unique(phi, return_inverse=True, return_counts=True)
+    nc = counts[inv].astype(np.float64)
+    idx = np.flatnonzero(counts[inv] >= 2)
+
+    label_counts_by_cell = np.zeros((len(counts), k))
+    np.add.at(label_counts_by_cell, (inv, y), 1.0)
+    m_cy = label_counts_by_cell[inv]
+    p_tilde = (h * m_cy).sum(axis=1) / nc
+    r_tilde = h[np.arange(n), y] - p_tilde
+
+    hat_p, hat_r = result.transported, result.alignment
+    assert np.allclose(p_tilde[idx], hat_p[idx] + hat_r[idx] / nc[idx], atol=1e-9)
+    assert np.allclose(r_tilde[idx], (nc[idx] - 1.0) / nc[idx] * hat_r[idx], atol=1e-9)
+
+
+def test_coarsening_proposition_law_of_total_covariance():
+    """Proposition (coarsening decomposition): merging two prior cells changes
+    the population alignment gain by exactly the between-cell covariance term
+    predicted by the law of total covariance. Verified on an explicit discrete
+    population (exact expectations, no sampling noise)."""
+    atoms = [
+        (0, 1.0, np.array([0.10, -0.10]), np.array([0.9, 0.1])),
+        (0, 1.0, np.array([0.30, 0.10]), np.array([0.3, 0.7])),
+        (1, 1.0, np.array([-0.20, 0.40]), np.array([0.6, 0.4])),
+        (1, 1.0, np.array([0.05, 0.05]), np.array([0.2, 0.8])),
+    ]
+    fine_cells = sorted({a[0] for a in atoms})
+
+    def cell_stats(atom_list):
+        w_raw = np.array([a[1] for a in atom_list], dtype=float)
+        wtot = w_raw.sum()
+        w = w_raw / wtot
+        H = np.array([a[2] for a in atom_list])
+        pY = np.array([a[3] for a in atom_list])
+        e_h = (w[:, None] * H).sum(0)
+        p_y = (w[:, None] * pY).sum(0)
+        e_hy = (w[:, None] * H * pY).sum(0)
+        delta_r = (e_hy - e_h * p_y).sum()
+        return wtot, e_h, p_y, delta_r
+
+    fine_stats = {c: cell_stats([a for a in atoms if a[0] == c]) for c in fine_cells}
+    total_w = sum(v[0] for v in fine_stats.values())
+    e_delta_r = sum(v[0] / total_w * v[3] for v in fine_stats.values())
+
+    probs_c = np.array([fine_stats[c][0] / total_w for c in fine_cells])
+    e_h_mat = np.array([fine_stats[c][1] for c in fine_cells])
+    p_y_mat = np.array([fine_stats[c][2] for c in fine_cells])
+    mean_e_h = (probs_c[:, None] * e_h_mat).sum(0)
+    mean_p_y = (probs_c[:, None] * p_y_mat).sum(0)
+    cov_between = (probs_c[:, None] * (e_h_mat - mean_e_h) * (p_y_mat - mean_p_y)).sum()
+
+    _, _, _, delta_r_coarse = cell_stats(atoms)
+    assert np.isclose(delta_r_coarse, e_delta_r + cov_between, atol=1e-12)

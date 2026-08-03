@@ -22,6 +22,20 @@ within-cell label transport, and obtains an exact finite-sample identity. There 
 projection fold, smoothing model, clipping constant, betting order, or thresholded gain
 ratio.
 
+The covariance identity is a model-pair relative of the classical resolution term in
+proper-score decomposition (Murphy 1973; DeGroot & Fienberg 1983; Brocker 2009), applied
+to a gain contrast rather than to one forecaster. Two exact results go beyond that
+classical decomposition and beyond the rejected precursor:
+
+- **Attenuation.** A naive in-sample plug-in prior (fit the cell's own label frequency
+  and use it as the counterfactual, with no held-out evaluation fold) is provably biased
+  by a factor `(n_c - 1)/n_c` relative to WAGER's leave-one-out estimate, worst in small
+  cells. This is the formal reason the redesign needs no projection/evaluation split.
+- **Coarsening.** Merging prior cells changes the estimated alignment gain by an exact
+  between-cell covariance term (law of total covariance), which is not sign-definite.
+  This explains, rather than just reports, why the finest defensible audit feature is the
+  conservative default.
+
 ## Reproduce
 
 ```powershell

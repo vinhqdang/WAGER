@@ -34,6 +34,36 @@ This is deterministic. Under exchangeable sampling, the average of the symmetric
 order-two kernel is the standard unbiased U-statistic for its population expectation
 \cite{hoeffding1948class}. \qed
 
+\subsection{Proof of Proposition~\ref{prop:coarsen}}
+Fix $y$ and condition throughout on $\bar\phi=\bar c$. The law of total covariance
+applied to the pair $(H_X(y),\mathbb 1\{Y=y\})$ with the finer conditioning variable $C$
+nested inside $\bar c$ gives
+\[
+\operatorname{Cov}\!\left(H_X(y),\mathbb 1\{Y=y\}\mid\bar\phi=\bar c\right)
+=\mathbb E\!\left[\operatorname{Cov}(H_X(y),\mathbb 1\{Y=y\}\mid C)\mid\bar\phi=\bar c\right]
++\operatorname{Cov}\!\left(\mathbb E[H_X(y)\mid C],\Pr(Y=y\mid C)\mid\bar\phi=\bar c\right),
+\]
+using $\mathbb E[\mathbb 1\{Y=y\}\mid C]=\Pr(Y=y\mid C)$. Summing over $y=1,\ldots,K$ and
+applying the population identity of Theorem~\ref{thm:population} to the left side (at
+$\bar\phi=\bar c$) and to the first term on the right side (at $C=c$, then averaged over
+$c$ within $\bar c$) yields Eq.~\eqref{eq:coarsen}. \qed
+
+\subsection{Proof of Proposition~\ref{prop:attenuate}}
+Fix a cell $c$ with $n_c\ge2$ and $i\in c$. By definition of the label count,
+$\sum_{y=1}^K m_{cy}H_i(y)=\sum_{j\in c}H_i(y_j)=H_i(y_i)+\sum_{j\ne i}H_i(y_j)$, and
+Eq.~\eqref{eq:linear} gives $\sum_{j\ne i}H_i(y_j)=(n_c-1)\hat P_i$. Hence
+\[
+\tilde P_i=\frac1{n_c}\sum_{y}m_{cy}H_i(y)
+=\frac{H_i(y_i)+(n_c-1)\hat P_i}{n_c}.
+\]
+Substituting $H_i(y_i)=\hat P_i+\hat R_i$ gives
+$\tilde P_i=\hat P_i+n_c^{-1}\hat R_i$, and $\tilde R_i=H_i(y_i)-\tilde P_i
+=\hat R_i-n_c^{-1}\hat R_i=(n_c-1)n_c^{-1}\hat R_i$. Averaging $\tilde R_i$ within cell
+$c$ and reweighting by $n_c$ across cells, as in the dataset-level definition of
+$\widehat{\Delta Z}$, gives
+$\widetilde{\Delta R}=N_*^{-1}\sum_{c}n_c\cdot\frac{n_c-1}{n_c}\widehat{\Delta R}_c
+=N_*^{-1}\sum_c(n_c-1)\widehat{\Delta R}_c$. \qed
+
 \section{Efficient influence computation}\label{app:influence}
 
 The implementation does not instantiate all pairs. In addition to Eq.~\eqref{eq:linear},
@@ -77,6 +107,9 @@ driver is \texttt{experiments/run\_sgg\_wager.py}; controlled validation and sen
 checks are in \texttt{experiments/antisymmetric\_simulation.py} and
 \texttt{experiments/antisymmetric\_ablations.py}. All random seeds are fixed. Unit tests
 cover the decomposition identity, quadratic covariance identity, cell-constant null,
-singleton reporting, cluster inference, randomization power, and log-score path.
+singleton reporting, cluster inference, randomization power, and log-score path, plus
+direct numerical checks of Propositions~\ref{prop:attenuate} and~\ref{prop:coarsen}
+(the latter against an explicit discrete population with exact expectations, independent
+of the estimator's own code path).
 
 \end{appendices}
