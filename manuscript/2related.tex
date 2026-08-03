@@ -6,10 +6,39 @@ Dataset bias has long complicated comparisons between visual recognition systems
 $p(\text{predicate}\mid\text{subject},\text{object})$ and is surprisingly competitive
 \cite{zellers2018neural}; mean recall and causal interventions were proposed to reduce
 this dependence \cite{chen2019knowledge,tang2019learning,tang2020unbiased}, although
-metric pathologies remain \cite{li2022rethinking}. VQA-CP changes language priors
-between train and test \cite{agrawal2018dont}, but changing-prior splits can themselves
-be exploited \cite{teney2020value}. These methods alter training, data, or metrics.
-WAGER instead audits a fixed pair of probabilistic predictors on a fixed test set.
+metric pathologies remain \cite{li2022rethinking}. More recent SGG work continues this
+line under open-vocabulary and knowledge-enhanced settings
+\cite{li2024pixels,zhang2024hiker,sun2024unbiased}, and still reports gains as a single
+aggregate score rather than attributing them to prior fitting versus instance-specific
+evidence. VQA-CP changes language priors between train and test
+\cite{agrawal2018dont}, but changing-prior splits can themselves be exploited
+\cite{teney2020value}; recent VQA work continues to target the same language-prior
+shortcut through contrastive and relation-aware objectives
+\cite{xu2025qirl,kuang2024debiasing}. Benchmark-level audits of exploitable non-visual
+shortcuts have also expanded beyond VQA to broader multimodal evaluation
+\cite{brown2025benchmark,zhou2025shortcut}, reinforcing the same diagnosis WAGER
+targets: an aggregate score can rise for reasons unrelated to instance-specific visual
+evidence. These methods alter training, data, or metrics, or audit a single model's
+exploitability against a benchmark's own structure. WAGER instead audits a fixed pair of
+probabilistic predictors on a fixed test set, attributing their score difference rather
+than characterizing either model alone.
+
+\subsection{Long-tailed recognition}\label{sec:related-longtail}
+A structurally identical shortcut appears outside SGG: in long-tailed visual
+recognition, a classifier can improve aggregate accuracy by fitting the training-time
+class-frequency prior more precisely, without improving instance-specific
+discrimination on any individual class \cite{ma2024geometric,duan2024longtailed}.
+Class-balanced re-weighting, logit adjustment, and feature-fusion methods address this
+by rebalancing the training objective or representation toward rare classes
+\cite{ma2024geometric,li2026pih2t,luo2025rebalancing}, analogous to how mean-recall and
+causal-intervention methods rebalance SGG training. As in SGG, these methods change how
+a model is trained; they do not attribute a fixed pair of trained models' accuracy gap
+to frequency-fitting versus instance-specific improvement. Section~\ref{sec:cifarlt}
+applies WAGER unchanged to this setting, using class identity (and its coarsening to a
+head/mid/tail frequency tier) as the declared prior feature $\phi$, and shows that the
+gain from a class-balanced re-weighting scheme over a vanilla cross-entropy baseline
+decomposes the same way an SGG gain does: partly recoverable from the class-frequency
+prior alone, and partly attributable to genuine per-instance realignment.
 
 \subsection{Information and predictive probing}
 Usable-information analyses measure information accessible to a chosen predictor family
@@ -21,20 +50,34 @@ positive residual establishes causal or compositional reasoning.
 
 \subsection{Proper scores, randomization, and U-statistics}
 Strictly proper scoring rules reward honest predictive distributions
-\cite{gneiting2007proper}; WAGER uses their model-pair contrast. Permutation methods have
-been used to assess classifier performance and conditional independence
-\cite{ojala2010permutation,berrett2020conditional}. Conditional permutation tests
-typically estimate or assume a conditional distribution when confounders are continuous
-or high-dimensional. WAGER exploits a different setting: the benchmark supplies a
-discrete audit cell $\phi$, and the target is not generic conditional independence but a
-specific model-to-model score gain. This permits exact within-cell transport without
-estimating a nuisance law. The antisymmetric residual is an order-two U-statistic in the
-sense of Hoeffding \cite{hoeffding1948class}, enabling an efficient all-pairs estimator
-and influence-function inference. Pairwise betting has also been used to test
-exchangeability sequentially \cite{saha2024testing}; WAGER is a fixed-sample gain
-decomposition and makes no sequential-validity claim. Its new element is the
-gain-contrast transport identity and the resulting attribution algorithm, rather than
-permutation or U-statistic theory by itself.
+\cite{gneiting2007proper}; WAGER uses their model-pair contrast. A recent survey
+revisits estimation and forecast evaluation under proper scoring rules broadly
+\cite{waghmare2026proper}, and the reliability--resolution--uncertainty partition
+itself continues to be re-derived and extended: to general strictly proper scores and
+multiclass outcomes \cite{charpentier2026decomposing}, to entropy/divergence-based
+uncertainty quantification \cite{hofman2025uncertainty}, and via an alternative
+covariance rearrangement for the Brier score specifically \cite{vieira2026yates}. WAGER
+uses the same partition but applies it to a paired gain contrast rather than to one
+forecaster, as detailed in Section~\ref{sec:related-decomposition}. Permutation methods
+have been used to assess classifier performance and conditional independence
+\cite{ojala2010permutation,berrett2020conditional}, with recent work characterizing when
+generalized permutation tests attain optimal power \cite{kim2026dispersion} and
+extending conditional-independence testing via ball-divergence measures
+\cite{banerjee2024ball} and transport-map reductions to the unconditional case
+\cite{he2025conditional}. Conditional permutation tests typically estimate or assume a
+conditional distribution when confounders are continuous or high-dimensional. WAGER
+exploits a different setting: the benchmark supplies a discrete audit cell $\phi$, and
+the target is not generic conditional independence but a specific model-to-model score
+gain. This permits exact within-cell transport without estimating a nuisance law. The
+antisymmetric residual is an order-two U-statistic in the sense of Hoeffding
+\cite{hoeffding1948class}; its Hájek-projection inference is part of the same broader
+program of finite- and large-sample U-statistic theory that recent work extends to
+anytime-valid confidence sequences \cite{cai2026anytime}, enabling an efficient
+all-pairs estimator and influence-function inference here. Pairwise betting has also
+been used to test exchangeability sequentially \cite{saha2024testing}; WAGER is a
+fixed-sample gain decomposition and makes no sequential-validity claim. Its new element
+is the gain-contrast transport identity and the resulting attribution algorithm, rather
+than permutation or U-statistic theory by itself.
 
 \subsection{Relation to classical proper-score decompositions}\label{sec:related-decomposition}
 The covariance identity in Eq.~\eqref{eq:cov-id} is a relative of the reliability

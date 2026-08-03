@@ -41,10 +41,17 @@ declared in advance.
 \section{Broader applicability}\label{sec:broader}
 
 The algorithm needs only four aligned arrays: two models' probability vectors, labels,
-and prior-cell identifiers. For VQA, $\phi$ can be a predeclared question template; for
-long-tail recognition, it can encode collection source and frequency tier; for
-multimodal benchmarks, it can encode answer format or prompt family. In each case the
-scientific claim must remain precise: WAGER measures new prediction--label alignment
-within those cells. Its value is not that one choice of $\phi$ defines reasoning
-universally, but that every attribution becomes an explicit, reproducible
-counterfactual tied to a declared nuisance structure.
+and prior-cell identifiers, and nothing in Sections~\ref{sec:setup}--\ref{sec:inference}
+is specific to relation prediction. Section~\ref{sec:cifarlt} tests this directly outside
+SGG, on long-tailed image classification, using class identity (and a head/mid/tail
+coarsening) as $\phi$; the resulting decomposition of the class-balanced-versus-vanilla
+gain gives this claim empirical content rather than leaving it as an analogy. For VQA,
+$\phi$ can similarly be a predeclared question template; for other multimodal
+benchmarks, it can encode answer format or prompt family -- we do not evaluate these
+here, and flag them as the natural next domains rather than claim coverage we have not
+tested. In every case the scientific claim must remain precise: WAGER measures new
+prediction--label alignment within the declared cells. Its value is not that one choice
+of $\phi$ defines reasoning universally, but that every attribution becomes an explicit,
+reproducible counterfactual tied to a declared nuisance structure, and that this same
+construction produces a sensible answer on at least two structurally different tasks
+without modification.

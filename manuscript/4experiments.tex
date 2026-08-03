@@ -161,3 +161,58 @@ Min.\ cell size & 20 & $0.00570$ & $0.01225\,[0.01155,0.01295]$ & 1757 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\subsection{Real-pixel signal on Visual Genome}\label{sec:vgvisual}
+
+Every model in Sections~\ref{sec:data}--\ref{sec:ablations} is a function of the
+declared class pair and, for MLP-SPATIAL(+), of box geometry derived from the
+annotation, not of the image itself. This leaves open whether WAGER's alignment
+channel behaves sensibly when a model consumes genuine pixel content rather than a
+geometric proxy for it. We add MLP-VISUAL: subject and object boxes are cropped from
+the original Visual Genome image, encoded with a frozen CLIP ViT-B/32 image encoder
+\citep{radford2021learning}, and the two 512-dimensional crop embeddings are
+concatenated with the same class embeddings used by MLP-CLASS before a small MLP head
+(256, 128 hidden units) is trained to predict the predicate. CLIP is not fine-tuned; the
+only trained parameters are the MLP head, so any alignment gain reflects information
+CLIP's pretraining already extracted from pixels, matched to the SGG label by the MLP,
+not new representation learning on VG itself. Feature extraction uses the full test
+split ($229{,}605$ relations) and a fixed, seeded subsample of $150{,}000$ of the
+$532{,}987$ training relations (capped for tractability; Appendix~\ref{app:implementation}
+reports the exact sampling procedure and the count of images with a missing or
+unreadable file).
+
+% TODO(results): fill in once experiments/run_vg_visual_wager.py finishes on real VG images.
+% Report: MLP-VISUAL accuracy; WAGER decomposition of MLP-VISUAL vs FREQ and vs
+% MLP-SPATIAL (table row(s) matching tab:wager-results' schema); one sentence
+% interpreting whether real-pixel evidence adds alignment gain beyond box geometry, and
+% by how much; a figure analogous to fig4_new_results for this comparison.
+
+\subsection{Cross-domain validation: long-tailed image classification}\label{sec:cifarlt}
+
+Sections~\ref{sec:data}--\ref{sec:vgvisual} are all instances of one task (predicate
+classification on an ordered object pair). Section~\ref{sec:related-longtail} argued
+that long-tailed image classification poses a structurally identical question: a
+class-frequency prior can be fit better without any per-instance improvement. We test
+this directly on CIFAR-100-LT \citep{cui2019classbalanced}, an exponential-imbalance
+(ratio $100$) subsample of CIFAR-100's training split with the original, balanced test
+split retained for evaluation. We train two real classifiers with no other differences:
+a ResNet-32 \citep{he2016deep} baseline with vanilla cross-entropy, and the same
+architecture trained with the class-balanced (effective-number) re-weighting of
+\citet{cui2019classbalanced}. Both are trained from random initialization for the same
+number of epochs with the same optimizer, schedule, and data augmentation (Appendix
+\ref{app:implementation} lists all hyperparameters); the only difference is the per-class loss
+weight. The declared prior feature $\phi$ is the class label itself, so every test cell
+has exactly $100$ examples by construction (CIFAR-100's balanced test split); we also
+report a coarsened $\phi$ that groups classes into head/mid/tail training-frequency
+tiers, mirroring the coarsening analysis of Section~\ref{sec:coarsening} in a second
+domain. Because CIFAR-100 test images are independent (unlike VG's multiple relations
+per image), no image-cluster grouping is needed and the plain H\'ajek interval of
+Section~\ref{sec:inference} applies directly.
+
+% TODO(results): fill in once experiments/run_cifar_lt_wager.py finishes (predictions
+% pulled back from Colab). Report: baseline vs CB test accuracy; WAGER decomposition of
+% CB vs baseline gain at the class-id phi and at the head/mid/tail coarsening (table);
+% one sentence on whether the CB gain is mostly prior-transported (expected, since CB
+% reweights training by class frequency) or partly instance-alignment (would indicate CB
+% also improves per-instance discrimination, not only frequency fitting); a bar figure of
+% per-tier alignment gain.

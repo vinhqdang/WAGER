@@ -112,4 +112,40 @@ direct numerical checks of Propositions~\ref{prop:attenuate} and~\ref{prop:coars
 (the latter against an explicit discrete population with exact expectations, independent
 of the estimator's own code path).
 
+\subsection{Compute environment for Sections~\ref{sec:vgvisual}--\ref{sec:cifarlt}}\label{app:compute}
+
+Model training and feature extraction for both new experiments ran on a single
+cloud GPU runtime (NVIDIA T4, 15\,GB) provisioned and driven from the command line via
+the \texttt{google-colab-cli} tool, so that no GPU-hours were spent on the authors'
+local machine; the WAGER decomposition itself is pure NumPy and was run locally on the
+resulting cached probability arrays, as in Section~\ref{sec:data}. All Python code runs
+under a pinned \texttt{conda} environment (Python 3.13).
+
+\paragraph{MLP-VISUAL (Section~\ref{sec:vgvisual}).} Subject/object crops are resized
+and CLIP-preprocessed (bicubic resize to $224\times224$, CLIP's published normalization
+constants); crops with no valid box overlap with the image use a blank crop rather than
+being dropped, so every relation contributes a feature row. CLIP ViT-B/32
+\citep{radford2021learning} runs in half precision with a batch size of $384$ crops and
+is never fine-tuned. The MLP head matches MLP-CLASS/MLP-SPATIAL's training recipe: AdamW,
+learning rate $10^{-3}$, weight decay $10^{-5}$, 15 epochs, batch size 4096, on
+standardized features. Training images are a fixed, seeded ($\text{seed}=0$) subsample of
+$150{,}000$ of the $532{,}987$ training relations, drawn without replacement uniformly
+at the relation level (not the image level); the full $229{,}605$-relation test split is
+always used for evaluation.
+
+\paragraph{ResNet-32 pair (Section~\ref{sec:cifarlt}).} CIFAR-100-LT uses the standard
+exponential-profile construction of \citet{cui2019classbalanced} at imbalance ratio
+$100$: class $c$ (zero-indexed, $0,\ldots,99$) keeps
+$n_c=\lfloor 500\cdot\mu^{c}\rfloor$ training images, where
+$\mu=100^{-1/99}$, so class $0$ keeps all $500$ images and class $99$ keeps $5$; the
+balanced $10{,}000$-image test split is untouched. Both models are a from-scratch,
+randomly initialized CIFAR ResNet-32 (three stages of five basic residual blocks,
+$16/32/64$ channels) trained for $80$ epochs with SGD (momentum $0.9$, Nesterov,
+weight decay $2\times10^{-4}$), batch size $128$, standard crop-and-flip augmentation,
+and a cosine learning-rate schedule (peak $0.1$, five-epoch linear warmup). The only
+difference between the two runs is the per-example loss weight: uniform for the
+baseline, and the effective-number class-balanced weight
+$w_c\propto(1-\beta)/(1-\beta^{n_c})$ with $\beta=0.9999$ for the class-balanced model,
+renormalized to average to one across classes.
+
 \end{appendices}
