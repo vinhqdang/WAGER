@@ -38,17 +38,46 @@ classical decomposition and beyond the rejected precursor:
 
 ## Reproduce
 
-```powershell
-conda run -n py313 python -m pytest tests/test_antisymmetric.py -q
+The estimator and every analysis step are pure NumPy and need no GPU. Only the model
+training that *produces* the probability matrices does.
+
+```bash
+conda run -n py313 python -m pytest tests -q
 conda run -n py313 python experiments/antisymmetric_simulation.py
-conda run -n py313 python experiments/run_sgg_wager.py
-conda run -n py313 python experiments/antisymmetric_ablations.py
+conda run -n py313 python experiments/run_sgg_wager.py           # main VG study
+conda run -n py313 python experiments/antisymmetric_ablations.py # sensitivity checks
 conda run -n py313 python experiments/make_antisymmetric_figures.py
 ```
 
-The Visual Genome driver trains five controlled PredCls predictors and writes
-`results/antisymmetric_results.json`. The core estimator runs on cached probabilities
-in `O(NK)` time.
+`run_sgg_wager.py` trains the five controlled PredCls predictors and writes
+`results/antisymmetric_results.json`; if `results/sgg_dists.npz` is already present it
+loads those cached distributions instead, so the analysis can be rerun without
+retraining. Because every model in a comparison must come from the same run, the cache
+is used wholesale or not at all.
+
+### Analyses driven by cached model outputs
+
+```bash
+conda run -n py313 python experiments/run_cifar_lt_wager.py       # cross-domain study
+conda run -n py313 python experiments/make_cifar_figures.py
+conda run -n py313 python experiments/run_vg_visual_wager.py      # real-pixel study
+conda run -n py313 python experiments/make_vg_visual_figure.py
+conda run -n py313 python experiments/make_dataset_samples_figure.py
+```
+
+Each expects the corresponding `.npz` of cached test probabilities under `data/`
+(`data/cifar_lt/`, `data/vg_visual/`). Those are produced by the GPU-side scripts in
+`experiments/colab_*.py`, which train the models and write only the small probability
+caches back:
+
+| script | produces |
+|---|---|
+| `colab_cifar_lt_train.py` | CIFAR-100-LT cross-entropy and class-balanced ResNet-32 |
+| `colab_cifar_drw_train.py` | adds the deferred-reweighting arm |
+| `colab_vg_visual.py` | matched-subsample CLIP / geometry / class-only VG models |
+
+`make_dataset_samples_figure.py` fetches its handful of source images on demand, so it
+needs no bulk download.
 
 ## Main API
 

@@ -222,11 +222,12 @@ alongside the main analysis. Appendix~\ref{app:implementation} gives the samplin
 procedure, the crop-deduplication scheme, and the count of images that could not be
 retrieved.
 
-% TODO(results): fill in once experiments/run_vg_visual_wager.py finishes on real VG images.
-% Report: MLP-VISUAL accuracy; WAGER decomposition of MLP-VISUAL vs FREQ and vs
-% MLP-SPATIAL (table row(s) matching tab:wager-results' schema); one sentence
-% interpreting whether real-pixel evidence adds alignment gain beyond box geometry, and
-% by how much; a figure analogous to fig4_new_results for this comparison.
+% PENDING(results): filled from results/vg_visual_results.json once the matched-subsample
+% job completes. Report the three accuracies; a table of the three pairs
+% (SPATIAL-S vs CLASS-S, VISUAL-S vs CLASS-S, VISUAL-S vs SPATIAL-S) with T/P/R, CI and
+% p; fig7_vg_visual.png; and one paragraph on whether real pixel content buys alignment
+% beyond box geometry -- reporting the sign honestly either way, since a null result here
+% is itself informative about what the geometry proxy already captures.
 
 \subsection{Cross-domain validation: long-tailed image classification}\label{sec:cifarlt}
 
