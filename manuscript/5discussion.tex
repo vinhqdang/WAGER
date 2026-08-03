@@ -45,9 +45,14 @@ declared in advance.
 The algorithm needs only four aligned arrays: two models' probability vectors, labels,
 and prior-cell identifiers, and nothing in Sections~\ref{sec:setup}--\ref{sec:inference}
 is specific to relation prediction. Section~\ref{sec:cifarlt} tests this directly outside
-SGG, on long-tailed image classification, using class identity (and a head/mid/tail
-coarsening) as $\phi$; the resulting decomposition of the class-balanced-versus-vanilla
-gain gives this claim empirical content rather than leaving it as an analogy. For VQA,
+SGG, on long-tailed image classification, taking the benchmark's own coarse superclasses
+as $\phi$; the resulting decomposition separates a re-weighting schedule whose near-zero
+aggregate score hides two large cancelling channels from one whose genuine improvement
+is part prior-refitting and part rare-class alignment, which gives this claim empirical
+content rather than leaving it as an analogy. That case also illustrates the constraint
+on $\phi$ in a second domain: the fine class label cannot serve as the audit cell,
+because it would make every cell label-homogeneous and force $\Delta R$ to zero as an
+algebraic artifact rather than as a finding. For VQA,
 $\phi$ can similarly be a predeclared question template; for other multimodal
 benchmarks, it can encode answer format or prompt family -- we do not evaluate these
 here, and flag them as the natural next domains rather than claim coverage we have not
