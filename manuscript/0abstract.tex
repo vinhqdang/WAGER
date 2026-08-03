@@ -1,31 +1,26 @@
 Vision benchmarks with strong annotation priors can reward a new model even when its
 gain does not come from better instance-specific visual prediction. Existing audits
-usually compare a model with a frequency baseline, which confounds two questions: how
-well each system fits the prior, and whether the \emph{difference} between systems uses
-information beyond it. We introduce WAGER, \textbf{W}ithin-cell
-\textbf{A}ntisymmetric \textbf{G}ain \textbf{E}valuation of \textbf{R}easoning, a new
-pairwise attribution algorithm. For two frozen probabilistic models, WAGER forms their
-proper-score contrast, matches examples that share a declared prior feature, and crosses
-their labels. This yields an exact finite-sample identity: observed model gain equals a
-prior-transported gain plus an antisymmetric instance-alignment gain. The latter is an
-order-two U-statistic and, with the quadratic score, equals twice the within-prior-cell
-prediction--label covariance gained by the new model, connecting it to the classical
-resolution term of proper-score decomposition. It is computed in $O(NK)$ time, requires
-no fitted prior model or projection fold, and admits image-cluster-robust inference and a
-cell-stratified randomization test. We prove two further exact results: the leave-one-out
-transport removes a finite-sample attenuation bias of $(n_c-1)/n_c$ that a naive
-in-sample plug-in prior would incur, and coarsening the audit cell changes the estimate
-by a between-cell covariance term identified from first principles. Controlled experiments recover
-injected instance signal monotonically and obtain type-I error $0.030$ at level $0.05$.
-On 229,605 Visual Genome PredCls relations, a class-only MLP improves the frequency
-baseline entirely through the prior-transported channel, whereas adding box geometry
-produces an instance-alignment gain of $0.01439$ (95\% CI $[0.01373,0.01504]$;
-randomization $p=0.002$). Applying the same estimator unchanged to long-tailed image
-classification on CIFAR-100-LT separates two re-weighting schedules that aggregate
-scores cannot: class-balanced re-weighting from initialization yields a near-zero total
-gain ($+0.00143$) that conceals a $+0.19713$ prior gain cancelling a $-0.19569$
-alignment loss, while the deferred schedule's genuine $+0.06606$ improvement is roughly
-two-thirds prior-recoverable and one-third instance alignment ($+0.02400$, 95\% CI
-$[0.01340,0.03460]$), concentrated on rare classes. WAGER therefore attributes a
-model-to-model improvement directly, without treating a separately estimated baseline
-as ground truth.
+compare a model with a frequency baseline, which confounds two questions: how well each
+system fits the prior, and whether the \emph{difference} between systems uses information
+beyond it. We introduce WAGER, \textbf{W}ithin-cell \textbf{A}ntisymmetric \textbf{G}ain
+\textbf{E}valuation of \textbf{R}easoning, a pairwise attribution algorithm. For two
+frozen probabilistic models, WAGER forms their proper-score contrast, matches examples
+sharing a declared prior feature, and crosses their labels. This yields an exact
+finite-sample identity: observed gain equals a prior-transported gain plus an
+antisymmetric instance-alignment gain. The latter is an order-two U-statistic and, under
+the quadratic score, equals twice the within-cell prediction--label covariance gained by
+the new model, connecting it to the classical resolution term of proper-score
+decomposition. It costs $O(NK)$ time, needs no fitted prior model or projection fold, and
+admits cluster-robust inference and a cell-stratified randomization test. We prove two
+further exact results: leave-one-out transport removes a finite-sample attenuation bias
+of $(n_c-1)/n_c$ that a naive in-sample plug-in prior incurs, and coarsening the audit
+cell shifts the estimate by an explicit between-cell covariance term. On 229,605 Visual
+Genome relations, a class-only network improves the frequency baseline entirely through
+the prior channel, whereas box geometry adds an alignment gain of $0.01439$
+(95\% CI $[0.01373,0.01504]$). Applied unchanged to long-tailed classification, WAGER
+separates two re-weighting schedules that aggregate scores cannot: one whose near-zero
+total gain ($+0.00143$) conceals a $+0.19713$ prior gain cancelling a $-0.19569$
+alignment loss, and one whose genuine $+0.06606$ improvement is two-thirds
+prior-recoverable and one-third instance alignment, concentrated on rare classes. WAGER
+therefore attributes a model-to-model improvement directly, without treating a separately
+estimated baseline as ground truth.
