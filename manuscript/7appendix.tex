@@ -5,7 +5,7 @@
 \subsection{Proof of Theorem~\ref{thm:population}}
 Condition throughout on $C=c$. Expanding over labels gives
 \[
-\Delta T_c=\sum_y\mathbb E[H_X(y)\mathbb 1\{Y=y\}],\qquad
+\Delta T_c=\sum_y\mathbb E[H_X(y)\ind \{Y=y\}],\qquad
 \Delta P_c=\sum_y\mathbb E[H_X(y)]\Pr(Y=y).
 \]
 Subtracting yields the covariance sum in Eq.~\eqref{eq:population-id}; the first
@@ -15,7 +15,7 @@ H_X(y)=2\Delta q_y(X)-\{\lVert q_1(\cdot\mid X)\rVert_2^2-
 \lVert q_0(\cdot\mid X)\rVert_2^2\}.
 \]
 The bracketed term is independent of the label index. Its contribution summed over $y$
-is $\operatorname{Cov}(B(X),\sum_y\mathbb1\{Y=y\})=
+is $\operatorname{Cov}(B(X),\sum_y\ind \{Y=y\})=
 \operatorname{Cov}(B(X),1)=0$. The remaining terms give Eq.~\eqref{eq:cov-id}. If
 $H_X(y)=H_c(y)$ almost surely, every covariance is zero. \qed
 
@@ -36,14 +36,16 @@ order-two kernel is the standard unbiased U-statistic for its population expecta
 
 \subsection{Proof of Proposition~\ref{prop:coarsen}}
 Fix $y$ and condition throughout on $\bar\phi=\bar c$. The law of total covariance
-applied to the pair $(H_X(y),\mathbb 1\{Y=y\})$ with the finer conditioning variable $C$
+applied to the pair $(H_X(y),\ind \{Y=y\})$ with the finer conditioning variable $C$
 nested inside $\bar c$ gives
-\[
-\operatorname{Cov}\!\left(H_X(y),\mathbb 1\{Y=y\}\mid\bar\phi=\bar c\right)
-=\mathbb E\!\left[\operatorname{Cov}(H_X(y),\mathbb 1\{Y=y\}\mid C)\mid\bar\phi=\bar c\right]
-+\operatorname{Cov}\!\left(\mathbb E[H_X(y)\mid C],\Pr(Y=y\mid C)\mid\bar\phi=\bar c\right),
-\]
-using $\mathbb E[\mathbb 1\{Y=y\}\mid C]=\Pr(Y=y\mid C)$. Summing over $y=1,\ldots,K$ and
+\begin{align*}
+\operatorname{Cov}\!\left(H_X(y),\ind \{Y=y\}\mid\bar\phi=\bar c\right)
+&=\mathbb E\!\left[\operatorname{Cov}(H_X(y),\ind \{Y=y\}\mid C)
+   \;\middle|\;\bar\phi=\bar c\right]\\
+&\quad+\operatorname{Cov}\!\left(\mathbb E[H_X(y)\mid C],\,
+   \Pr(Y=y\mid C)\;\middle|\;\bar\phi=\bar c\right),
+\end{align*}
+using $\mathbb E[\ind \{Y=y\}\mid C]=\Pr(Y=y\mid C)$. Summing over $y=1,\ldots,K$ and
 applying the population identity of Theorem~\ref{thm:population} to the left side (at
 $\bar\phi=\bar c$) and to the first term on the right side (at $C=c$, then averaged over
 $c$ within $\bar c$) yields Eq.~\eqref{eq:coarsen}. \qed
@@ -114,19 +116,20 @@ of the estimator's own code path).
 
 \subsection{Compute environment for Sections~\ref{sec:vgvisual}--\ref{sec:cifarlt}}\label{app:compute}
 
-Model training and feature extraction for both new experiments ran on a single
-cloud GPU runtime (NVIDIA T4, 15\,GB) provisioned and driven from the command line via
-the \texttt{google-colab-cli} tool, so that no GPU-hours were spent on the authors'
-local machine; the WAGER decomposition itself is pure NumPy and was run locally on the
-resulting cached probability arrays, as in Section~\ref{sec:data}. All Python code runs
-under a pinned \texttt{conda} environment (Python 3.13).
+Model training and feature extraction for both new experiments ran on a single NVIDIA
+T4 (15\,GB) GPU. The WAGER decomposition itself is pure NumPy and requires no
+accelerator: it consumes the resulting cached probability arrays, as in
+Section~\ref{sec:data}. All Python code runs under a pinned environment (Python 3.13).
 
 \paragraph{MLP-VISUAL (Section~\ref{sec:vgvisual}).} Subject/object crops are resized
 and CLIP-preprocessed (bicubic resize to $224\times224$, CLIP's published normalization
 constants); crops with no valid box overlap with the image use a blank crop rather than
 being dropped, so every relation contributes a feature row. CLIP ViT-B/32
-\citep{radford2021learning} runs in half precision with a batch size of $384$ crops and
-is never fine-tuned. The MLP head matches MLP-CLASS/MLP-SPATIAL's training recipe: AdamW,
+\citep{radford2021learning} runs in half precision with a batch size of $512$ crops and
+is never fine-tuned. Because an annotated object box participates in several relations,
+crops are deduplicated by (image, box) before encoding and gathered afterwards, which
+removes $35.9\%$ of the encoder work without changing any feature.
+The MLP head matches MLP-CLASS/MLP-SPATIAL's training recipe: AdamW,
 learning rate $10^{-3}$, weight decay $10^{-5}$, 15 epochs, batch size 4096, on
 standardized features. Training images are a fixed, seeded ($\text{seed}=0$) subsample of
 $150{,}000$ of the $532{,}987$ training relations, drawn without replacement uniformly

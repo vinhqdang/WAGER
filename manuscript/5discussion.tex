@@ -1,5 +1,7 @@
 \section{Discussion and Limitations}\label{sec:discussion}
 
+\subsection{What the decomposition does and does not establish}
+
 WAGER changes the unit of analysis from a model to a model-pair gain. This matters
 scientifically. A class-only network may be a better prior estimator than FREQ, but that
 fact does not become evidence of instance-specific visual use. Conversely, a model can
@@ -38,7 +40,7 @@ released logits or probabilities. The quadratic score is bounded and strictly pr
 other proper scores answer scale-dependent variants of the same question and should be
 declared in advance.
 
-\section{Broader applicability}\label{sec:broader}
+\subsection{Broader applicability}\label{sec:broader}
 
 The algorithm needs only four aligned arrays: two models' probability vectors, labels,
 and prior-cell identifiers, and nothing in Sections~\ref{sec:setup}--\ref{sec:inference}

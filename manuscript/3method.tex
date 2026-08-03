@@ -42,13 +42,13 @@ For any integrable score contrast $H$,
 \Delta T_c=\Delta P_c+\Delta R_c,
 \qquad
 \Delta R_c=\sum_{y=1}^K
-\operatorname{Cov}\!\left(H_X(y),\mathbb 1\{Y=y\}\mid C=c\right).
+\operatorname{Cov}\!\left(H_X(y),\ind \{Y=y\}\mid C=c\right).
 \label{eq:population-id}
 \end{equation}
 For the quadratic score, writing $\Delta q_y(X)=q_1(y\mid X)-q_0(y\mid X)$,
 \begin{equation}
 \Delta R_c=2\sum_{y=1}^K
-\operatorname{Cov}\!\left(\Delta q_y(X),\mathbb 1\{Y=y\}\mid C=c\right).
+\operatorname{Cov}\!\left(\Delta q_y(X),\ind \{Y=y\}\mid C=c\right).
 \label{eq:cov-id}
 \end{equation}
 Consequently, if the gain vector is a function of $c$ alone, then $\Delta R_c=0$.
@@ -215,7 +215,7 @@ As a complementary finite-group diagnostic, WAGER applies an independently sampl
 cyclic shift to labels inside every cell. Each shift preserves cell size and label
 histogram. Recomputing $\widehat{\Delta R}$ under $B$ shifts gives
 \begin{equation}
-p=\frac{1+\sum_{b=1}^B\mathbb 1\{\widehat{\Delta R}^{(b)}\ge
+p=\frac{1+\sum_{b=1}^B\ind \{\widehat{\Delta R}^{(b)}\ge
 \widehat{\Delta R}\}}{B+1}.
 \end{equation}
 This is exact under the sharp null that labels are exchangeable relative to the frozen

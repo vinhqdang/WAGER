@@ -1,9 +1,15 @@
 \section{Experiments}\label{sec:exp}
 
-We evaluate three questions: (i) does WAGER remain centered under the null and respond
+We evaluate five questions: (i) does WAGER remain centered under the null and respond
 monotonically to known instance signal; (ii) does it distinguish class-prior fitting
-from spatial evidence on a real long-tailed benchmark; and (iii) are conclusions stable
-to score, cell granularity, and sparse-cell filtering? All confidence intervals are 95\%.
+from spatial evidence on a real long-tailed benchmark; (iii) are conclusions stable to
+score, cell granularity, and sparse-cell filtering; (iv) does the alignment channel
+behave sensibly when a model consumes real image pixels rather than annotation-derived
+geometry; and (v) does the same estimator, unchanged, produce a meaningful attribution
+on a structurally different task in another domain? Questions (i)--(iii) use Visual
+Genome and controlled simulations; (iv) adds a frozen CLIP encoder on real VG images;
+(v) moves to long-tailed image classification on CIFAR-100-LT. All confidence intervals
+are 95\%.
 
 \subsection{Controlled validation}\label{sec:simulation}
 

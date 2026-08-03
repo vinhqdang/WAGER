@@ -8,6 +8,10 @@ total, prior-transported, and instance-alignment gains. The residual is an inter
 U-statistic, equals a conditional covariance gain under the quadratic score, and is
 computable in $O(NK)$ time. Controlled experiments support null calibration and signal
 recovery. On Visual Genome, the method assigns a class-only improvement entirely to the
-prior channel and identifies the added alignment produced by spatial geometry. This
-gain-specific mechanism, rather than a combination of a frequency baseline and a
-generic significance test, is the paper's technical contribution.
+prior channel and identifies the added alignment produced by spatial geometry. Applied
+unchanged to long-tailed classification, it distinguishes a re-weighting schedule whose
+near-zero aggregate score hides two large cancelling channels from one whose genuine
+improvement is part prior-refitting and part rare-class alignment -- a separation no
+aggregate score or accuracy delta can make. This gain-specific mechanism, rather than a
+combination of a frequency baseline and a generic significance test, is the paper's
+technical contribution.

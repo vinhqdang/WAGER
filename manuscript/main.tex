@@ -3,6 +3,10 @@
 \usepackage{graphicx}
 \usepackage{multirow}
 \usepackage{amsmath,amssymb,amsfonts}
+\usepackage{dsfont}
+% amssymb's \mathbb covers letters only, so \mathbb 1 renders a wrong glyph for the
+% indicator. \mathds{1} (doublestroke) is a real blackboard-bold digit.
+\newcommand{\ind}{\mathds{1}}
 \usepackage{amsthm}
 \usepackage{mathrsfs}
 \usepackage[title]{appendix}

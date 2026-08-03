@@ -20,5 +20,12 @@ injected instance signal monotonically and obtain type-I error $0.030$ at level 
 On 229,605 Visual Genome PredCls relations, a class-only MLP improves the frequency
 baseline entirely through the prior-transported channel, whereas adding box geometry
 produces an instance-alignment gain of $0.01439$ (95\% CI $[0.01373,0.01504]$;
-randomization $p=0.002$). WAGER therefore attributes a model-to-model improvement
-directly, without treating a separately estimated baseline as ground truth.
+randomization $p=0.002$). Applying the same estimator unchanged to long-tailed image
+classification on CIFAR-100-LT separates two re-weighting schedules that aggregate
+scores cannot: class-balanced re-weighting from initialization yields a near-zero total
+gain ($+0.00143$) that conceals a $+0.19713$ prior gain cancelling a $-0.19569$
+alignment loss, while the deferred schedule's genuine $+0.06606$ improvement is roughly
+two-thirds prior-recoverable and one-third instance alignment ($+0.02400$, 95\% CI
+$[0.01340,0.03460]$), concentrated on rare classes. WAGER therefore attributes a
+model-to-model improvement directly, without treating a separately estimated baseline
+as ground truth.
