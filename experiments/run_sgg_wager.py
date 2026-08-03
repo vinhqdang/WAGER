@@ -73,21 +73,61 @@ def _build_models(d):
     return models
 
 
+CACHE = os.path.join(RESULTS, "sgg_dists.npz")
+
+# Order matters only for reporting.  MLP-VISUAL rows are appended when its cached
+# probabilities are present; the decisive comparison is MLP-VISUAL vs MLP-SPATIAL,
+# which asks whether real pixel content adds alignment beyond box geometry.
+BASE_PAIRS = [
+    ("FREQ+OVERLAP", "FREQ"),
+    ("MLP-CLASS", "FREQ"),
+    ("MLP-SPATIAL", "FREQ"),
+    ("MLP-SPATIAL+", "FREQ"),
+    ("MLP-SPATIAL", "MLP-CLASS"),
+    ("MLP-SPATIAL+", "MLP-SPATIAL"),
+]
+VISUAL_PAIRS = [
+    ("MLP-VISUAL", "FREQ"),
+    ("MLP-VISUAL", "MLP-CLASS"),
+    ("MLP-VISUAL", "MLP-SPATIAL"),
+]
+
+
+def _load_cached_models():
+    """Load frozen test distributions produced elsewhere (e.g. on a GPU runtime).
+
+    Every model in a comparison must come from the same run, so the cache is used
+    wholesale or not at all.  Rows are renormalized because they are stored as float32
+    and the estimator requires exact probability vectors.
+    """
+    if not os.path.exists(CACHE):
+        return None
+    d = np.load(CACHE, allow_pickle=True)
+    names = [k for k in d.files if k.upper() == k and k not in
+             {"Y", "PHI"} and d[k].ndim == 2]
+    models = {}
+    for name in names:
+        q = d[name].astype(np.float64)
+        models[name] = q / q.sum(axis=1, keepdims=True)
+    return models, d["y"].astype(np.int64), d["phi"], d["image"]
+
+
 def main():
     t0 = time.time()
-    d = np.load(DATA, allow_pickle=True)
-    pred, phi, image = d["pred"][~d["is_train"]], d["phi"][~d["is_train"]], d["image"][~d["is_train"]]
-    models = _build_models(d)
+    cached = _load_cached_models()
+    if cached is not None:
+        models, pred, phi, image = cached
+        print(f"Loaded cached distributions for {len(models)} models from {CACHE}",
+              flush=True)
+    else:
+        d = np.load(DATA, allow_pickle=True)
+        te = ~d["is_train"]
+        pred, phi, image = d["pred"][te], d["phi"][te], d["image"][te]
+        models = _build_models(d)
     accuracy = {name: float(np.mean(q.argmax(1) == pred)) for name, q in models.items()}
 
-    pairs = [
-        ("FREQ+OVERLAP", "FREQ"),
-        ("MLP-CLASS", "FREQ"),
-        ("MLP-SPATIAL", "FREQ"),
-        ("MLP-SPATIAL+", "FREQ"),
-        ("MLP-SPATIAL", "MLP-CLASS"),
-        ("MLP-SPATIAL+", "MLP-SPATIAL"),
-    ]
+    pairs = [p for p in BASE_PAIRS + VISUAL_PAIRS
+             if p[0] in models and p[1] in models]
     rows = []
     arrays = {"y": pred, "phi": phi, "image": image}
     for seed, (new, old) in enumerate(pairs):
@@ -128,11 +168,14 @@ def main():
     with open(os.path.join(RESULTS, "antisymmetric_results.json"), "w", encoding="utf-8") as f:
         json.dump(_json_safe(out), f, indent=2, allow_nan=False)
     np.savez_compressed(os.path.join(RESULTS, "antisymmetric_arrays.npz"), **arrays)
-    np.savez_compressed(
-        os.path.join(RESULTS, "sgg_dists.npz"),
-        **models, y=pred, phi=phi, image=image,
-        pred_vocab=np.array(list(d["pred_vocab"]), dtype=object),
-    )
+    if cached is None:
+        # Only write the cache when this run produced the distributions; loading and
+        # re-saving would just round-trip someone else's models through float64.
+        np.savez_compressed(
+            os.path.join(RESULTS, "sgg_dists.npz"),
+            **models, y=pred, phi=phi, image=image,
+            pred_vocab=np.array(list(d["pred_vocab"]), dtype=object),
+        )
     print(f"Saved redesigned results in {time.time() - t0:.1f}s", flush=True)
     return out
 
