@@ -34,11 +34,11 @@ by rebalancing the training objective or representation toward rare classes
 causal-intervention methods rebalance SGG training. As in SGG, these methods change how
 a model is trained; they do not attribute a fixed pair of trained models' accuracy gap
 to frequency-fitting versus instance-specific improvement. Section~\ref{sec:cifarlt}
-applies WAGER unchanged to this setting, using class identity (and its coarsening to a
-head/mid/tail frequency tier) as the declared prior feature $\phi$, and shows that the
-gain from a class-balanced re-weighting scheme over a vanilla cross-entropy baseline
-decomposes the same way an SGG gain does: partly recoverable from the class-frequency
-prior alone, and partly attributable to genuine per-instance realignment.
+applies WAGER unchanged to this setting, taking the benchmark's own coarse superclasses
+as the declared prior feature $\phi$, and separates two re-weighting schedules that
+aggregate scores cannot tell apart: one whose near-zero total gain conceals a large
+prior improvement cancelling an equally large alignment loss, and one whose genuine
+improvement is part prior-refitting and part rare-class alignment.
 
 \subsection{Information and predictive probing}
 Usable-information analyses measure information accessible to a chosen predictor family
@@ -63,7 +63,7 @@ have been used to assess classifier performance and conditional independence
 \cite{ojala2010permutation,berrett2020conditional}, with recent work characterizing when
 generalized permutation tests attain optimal power \cite{kim2026dispersion} and
 extending conditional-independence testing via ball-divergence measures
-\cite{banerjee2024ball} and transport-map reductions to the unconditional case
+\cite{banerjee2026ball} and transport-map reductions to the unconditional case
 \cite{he2025conditional}. Conditional permutation tests typically estimate or assume a
 conditional distribution when confounders are continuous or high-dimensional. WAGER
 exploits a different setting: the benchmark supplies a discrete audit cell $\phi$, and
