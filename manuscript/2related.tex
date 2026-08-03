@@ -24,21 +24,24 @@ probabilistic predictors on a fixed test set, attributing their score difference
 than characterizing either model alone.
 
 \subsection{Long-tailed recognition}\label{sec:related-longtail}
-A structurally identical shortcut appears outside SGG: in long-tailed visual
-recognition, a classifier can improve aggregate accuracy by fitting the training-time
-class-frequency prior more precisely, without improving instance-specific
-discrimination on any individual class \cite{ma2024geometric,duan2024longtailed}.
-Class-balanced re-weighting, logit adjustment, and feature-fusion methods address this
-by rebalancing the training objective or representation toward rare classes
-\cite{ma2024geometric,li2026pih2t,luo2025rebalancing}, analogous to how mean-recall and
-causal-intervention methods rebalance SGG training. As in SGG, these methods change how
-a model is trained; they do not attribute a fixed pair of trained models' accuracy gap
-to frequency-fitting versus instance-specific improvement. Section~\ref{sec:cifarlt}
-applies WAGER unchanged to this setting, taking the benchmark's own coarse superclasses
-as the declared prior feature $\phi$, and separates two re-weighting schedules that
-aggregate scores cannot tell apart: one whose near-zero total gain conceals a large
-prior improvement cancelling an equally large alignment loss, and one whose genuine
-improvement is part prior-refitting and part rare-class alignment.
+The same shortcut, in a structurally identical form, appears well outside scene graph
+generation. A long-tailed classifier can raise its aggregate accuracy simply by fitting
+the training-time class-frequency prior more precisely, without becoming any better at
+discriminating instances within a class \cite{ma2024geometric,duan2024longtailed}, and
+the remedies proposed for this -- class-balanced re-weighting, logit adjustment,
+feature fusion -- all work by rebalancing the training objective or the learned
+representation toward rare classes \cite{ma2024geometric,li2026pih2t,luo2025rebalancing},
+much as mean-recall and causal-intervention methods rebalance SGG training. What such
+remedies share with their SGG counterparts is that they intervene on how a model is
+trained rather than on how a trained pair is compared, so none of them attributes an
+observed accuracy gap between two finished models to frequency-fitting on the one hand
+and instance-specific improvement on the other. That is the question
+Section~\ref{sec:cifarlt} puts to WAGER, using the benchmark's own coarse superclasses
+as the declared prior feature $\phi$; the estimator turns out to separate two
+re-weighting schedules whose aggregate scores would not distinguish them at all, one
+whose near-zero total gain conceals a large prior improvement cancelling an equally
+large alignment loss, the other whose genuine improvement is part prior-refitting and
+part rare-class alignment.
 
 \subsection{Information and predictive probing}
 Usable-information analyses measure information accessible to a chosen predictor family

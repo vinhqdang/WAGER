@@ -7,11 +7,12 @@ counterfactual from the evaluated data themselves and obtains an exact identity 
 total, prior-transported, and instance-alignment gains. The residual is an interpretable
 U-statistic, equals a conditional covariance gain under the quadratic score, and is
 computable in $O(NK)$ time. Controlled experiments support null calibration and signal
-recovery. On Visual Genome, the method assigns a class-only improvement entirely to the
-prior channel and identifies the added alignment produced by spatial geometry. Applied
-unchanged to long-tailed classification, it distinguishes a re-weighting schedule whose
-near-zero aggregate score hides two large cancelling channels from one whose genuine
-improvement is part prior-refitting and part rare-class alignment -- a separation no
-aggregate score or accuracy delta can make. This gain-specific mechanism, rather than a
-combination of a frequency baseline and a generic significance test, is the paper's
-technical contribution.
+recovery, and on Visual Genome the method assigns a class-only improvement entirely to
+the prior channel while identifying the additional alignment that spatial geometry
+supplies. Carried over without modification to long-tailed classification, it goes on to
+distinguish a re-weighting schedule whose near-zero aggregate score conceals two large
+cancelling channels from one whose genuine improvement proves to be part prior-refitting
+and part rare-class alignment, a separation that neither an aggregate score nor an
+accuracy difference can make. It is this gain-specific mechanism, rather than the
+familiar combination of a frequency baseline with a generic significance test, that
+constitutes the paper's technical contribution.

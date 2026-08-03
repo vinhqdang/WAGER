@@ -13,19 +13,20 @@ are 95\%.
 
 \subsection{Controlled validation}\label{sec:simulation}
 
-We generate 24 prior cells with five labels and draw each cell's label distribution from
-a Dirichlet law. The old model is exactly the cell prior. The new model is
-$q_1=(1-\beta)q_0+\beta q_{\rm oracle}$, where $q_{\rm oracle}$ assigns $0.98$ to the
-realized label. Forty repetitions are run at each $\beta\in\{0,.1,\ldots,.8\}$. The
-estimated alignment gain grows linearly and monotonically with the injected signal
-(Figure~\ref{fig:simulation}, left).
+We generate 24 prior cells over five labels, drawing each cell's label distribution from
+a Dirichlet law and taking the old model to be exactly the cell prior. The new model
+interpolates toward an oracle, $q_1=(1-\beta)q_0+\beta q_{\rm oracle}$ with
+$q_{\rm oracle}$ placing $0.98$ on the realized label, and forty repetitions are run at
+each $\beta\in\{0,.1,\ldots,.8\}$. Across that range the estimated alignment gain grows
+linearly and monotonically with the injected signal (Figure~\ref{fig:simulation}, left).
 
-For type-I evaluation, we add mean-zero perturbations to prior predictions and randomly
-reassign the perturbed prediction vectors within each cell, ensuring no systematic
-prediction--label alignment. Across 200 datasets, the 99-shift randomization test rejects
-in $0.030$ of runs at level $0.05$; the mean estimated alignment gain is
-$-8.97\times10^{-5}$. The null $p$-values are approximately uniform and null estimates
-remain centered at zero (Figure~\ref{fig:simulation}, center and right).
+Type-I behaviour is assessed by perturbing the prior predictions with mean-zero noise
+and then randomly reassigning the perturbed vectors within each cell, which guarantees
+that no systematic prediction--label alignment survives. Over 200 such datasets the
+99-shift randomization test rejects in $0.030$ of runs at level $0.05$, with a mean
+estimated alignment gain of $-8.97\times10^{-5}$; the null $p$-values come out
+approximately uniform and the null estimates stay centred at zero
+(Figure~\ref{fig:simulation}, centre and right).
 
 \begin{figure*}[t]
 \centering
@@ -38,23 +39,26 @@ randomization $p$-values, and controls type-I error in 200 null runs.}
 
 \subsection{Visual Genome setup}\label{sec:data}
 
-We use Visual Genome \cite{krishna2017visual} in the standard VG150 PredCls regime:
-ground-truth boxes and object labels are supplied, and the model predicts one of 50
-predicate labels for each ordered object pair. The training/test split contains
-532,987/229,605 relations from 65,228/27,955 images. The prior cell is
-$\phi=(\text{subject class},\text{object class})$; Figure~\ref{fig:samples} shows two
-real examples from one such cell. Of 8,614 test cells, 6,346 contain
-at least two relations. WAGER identifies 227,337 test relations (99.0\%); the 2,268
-singleton cells are reported and excluded.
+We work with Visual Genome \cite{krishna2017visual} in the standard VG150 PredCls
+regime, where ground-truth boxes and object labels are supplied and the model has only
+to predict one of 50 predicate labels for each ordered object pair. The split provides
+532,987 training and 229,605 test relations, drawn from 65,228 and 27,955 images
+respectively, and the prior cell throughout is
+$\phi=(\text{subject class},\text{object class})$, two real examples of which appear in
+Figure~\ref{fig:samples}. Of the 8,614 cells present in the test split, 6,346 contain at
+least two relations and are therefore identified; the remaining 2,268 are singletons,
+which WAGER excludes and reports rather than smoothing over, leaving 227,337 relations
+(99.0\%) under audit.
 
-Five deliberately controlled predictors expose different information. FREQ is the
-training-count distribution conditioned on the class pair. FREQ+OVERLAP additionally
-uses a binary box-overlap indicator. MLP-CLASS consumes fixed subject/object class
-embeddings and is therefore a function of $\phi$ alone. MLP-SPATIAL adds 12 normalized
-box-geometry features (relative center, scale, aspect, intersection, containment, and
-IoU); MLP-SPATIAL+ increases its capacity. All models are trained once on the training
-split. WAGER consumes only their cached test distributions. We use the quadratic score,
-image-clustered intervals, and 499 within-cell cyclic randomizations.
+The five predictors are deliberately constructed so that each exposes a different kind
+of information. FREQ is simply the training-count distribution conditioned on the class
+pair, and FREQ+OVERLAP adds to it a single binary box-overlap indicator. MLP-CLASS
+consumes fixed subject and object class embeddings, which makes it a function of $\phi$
+alone; MLP-SPATIAL extends those embeddings with 12 normalized box-geometry features
+covering relative centre, scale, aspect, intersection, containment and IoU, while
+MLP-SPATIAL+ merely increases capacity. Each is trained once on the training split, and
+WAGER thereafter consumes nothing but their cached test distributions, scored
+quadratically with image-clustered intervals and 499 within-cell cyclic randomizations.
 
 \begin{figure*}[t]
 \centering
@@ -95,25 +99,28 @@ MLP-SPATIAL+ & 0.6674 \\
 
 \subsection{Direct gain attribution}\label{sec:results}
 
-Table~\ref{tab:wager-results} and Figure~\ref{fig:results} give the central result.
-MLP-CLASS improves the quadratic score over FREQ by $0.03386$, but its gain vector is
-constant inside every class-pair cell. WAGER therefore assigns the entire improvement
-to prior transport and exactly zero to instance alignment. This is an algebraic
-consequence of the estimator, not a learned baseline passing a sanity check.
+The central result is collected in Table~\ref{tab:wager-results} and
+Figure~\ref{fig:results}. MLP-CLASS improves on FREQ by $0.03386$ of quadratic score,
+yet because its gain vector is constant inside every class-pair cell, the estimator
+assigns that entire improvement to prior transport and precisely nothing to instance
+alignment. The zero is worth dwelling on: it follows algebraically from the construction
+rather than from a learned baseline happening to pass a sanity check.
 
-MLP-SPATIAL versus FREQ gains $0.04270$ in total: $0.02832$ is retained after label
-transport and $0.01439$ is instance alignment (CI $[0.01373,0.01504]$). The direct
-comparison MLP-SPATIAL versus MLP-CLASS is more revealing. Its total gain is only
-$0.00885$, because prior fitting deteriorates by $0.00554$, while spatial alignment
-improves by $0.01439$. Thus the alignment share is 1.63: the useful instance-specific
-change is partially hidden by a worse prior component. A ratio constrained to $[0,1]$
-or thresholded at $0.5$ would misdescribe this tradeoff.
+Adding box geometry changes the picture. MLP-SPATIAL gains $0.04270$ over FREQ, of which
+$0.02832$ survives label transport and $0.01439$ is instance alignment (CI
+$[0.01373,0.01504]$). More revealing still is the direct comparison against MLP-CLASS,
+where the total gain falls to $0.00885$ only because prior fitting deteriorates by
+$0.00554$ even as spatial alignment improves by $0.01439$. The resulting alignment share
+of 1.63 records a genuinely useful instance-specific change that the aggregate score
+partly conceals behind a worse prior component, and it is exactly the configuration that
+a ratio confined to $[0,1]$, or thresholded at $0.5$, would misdescribe.
 
-MLP-SPATIAL+ adds $0.00374$ over MLP-SPATIAL, of which $0.00321$ is alignment (CI
-$[0.00289,0.00353]$). FREQ+OVERLAP illustrates the opposite caution: overlap creates a
-small positive alignment term, but its negative prior term is larger, so the model is
-worse overall. WAGER does not label any use of image-derived information as an
-improvement; it reports both channels and their sign.
+The remaining two comparisons bracket the interesting range. MLP-SPATIAL+ adds $0.00374$
+over MLP-SPATIAL, nearly all of it alignment at $0.00321$ (CI $[0.00289,0.00353]$),
+whereas FREQ+OVERLAP supplies the opposite caution: its overlap indicator does create a
+small positive alignment term, but the accompanying negative prior term is larger, so
+the model ends up worse overall. Using image-derived information is thus never treated
+as an improvement in itself; both channels are reported, signs included.
 
 \begin{table*}[t]
 \centering
@@ -190,37 +197,39 @@ Min.\ cell size & 20 & $0.00570$ & $0.01225\,[0.01155,0.01295]$ & 1757 \\
 
 \subsection{Real-pixel signal on Visual Genome}\label{sec:vgvisual}
 
-Every model in Sections~\ref{sec:data}--\ref{sec:ablations} is a function of the
-declared class pair and, for MLP-SPATIAL(+), of box geometry derived from the
-annotation, not of the image itself. Box geometry is a proxy for image content, and a
-sceptical reader is entitled to ask whether WAGER's alignment channel responds to
-genuine pixel evidence or only to that proxy. Figure~\ref{fig:samples} makes the
-question concrete: the cell $\phi=(\text{man},\text{surfboard})$ contains both
-``riding'' and ``carrying'', and while their box configurations do differ, what
-separates them is what the image shows.
+None of the models in Sections~\ref{sec:data}--\ref{sec:ablations} ever sees an image.
+They are functions of the declared class pair and, in the case of MLP-SPATIAL(+), of box
+coordinates recorded in the annotation. Since box geometry serves only as a proxy for
+what an image contains, a sceptical reader is entitled to ask whether the alignment
+channel is responding to genuine pixel evidence or merely to that proxy.
+Figure~\ref{fig:samples} sharpens the question: the cell
+$\phi=(\text{man},\text{surfboard})$ holds both ``riding'' and ``carrying'', and although
+their box configurations certainly differ, what actually distinguishes the two relations
+is what the photograph shows.
 
-We therefore add MLP-VISUAL, which crops the annotated subject and object regions from
-the original Visual Genome image and encodes each with a frozen CLIP ViT-B/32 image
-encoder \citep{radford2021learning}. The two $512$-dimensional crop embeddings are
-concatenated with the same class embeddings used by MLP-CLASS, and only a small MLP head
-(256, 128 hidden units) is trained. CLIP is never fine-tuned, so any alignment gain
-reflects information CLIP's pretraining already extracted from pixels and the head
-merely matched to the SGG label, not representation learning on VG itself.
+MLP-VISUAL is introduced to answer it. Subject and object regions are cropped from the
+original Visual Genome image and each is encoded by a frozen CLIP ViT-B/32 image encoder
+\citep{radford2021learning}, after which the two $512$-dimensional embeddings are
+concatenated with the class embeddings that MLP-CLASS already uses and passed to a small
+trained head of 256 and 128 units. Because CLIP itself is never fine-tuned, whatever
+alignment the model gains reflects information its pretraining had already recovered
+from pixels and the head has merely matched to an SGG label, rather than representation
+learning performed on Visual Genome.
 
-\paragraph{Matched training data.} This comparison is reported separately from
-Table~\ref{tab:wager-results} rather than as an extra row in it, for a reason that is
-itself an instance of the paper's argument. Encoding every training relation with CLIP
-is costly, so MLP-VISUAL is trained on a subsample; comparing it against the full-data
-MLP-SPATIAL would then confound feature content with training-set size, and a
-disappointing result could not be attributed to the pixels. We instead retrain all three
-compared predictors on one fixed, seeded subsample of $100{,}000$ of the $532{,}987$
-training relations, denoting them MLP-CLASS-S, MLP-SPATIAL-S and MLP-VISUAL-S. They
-differ only in their feature set, so any difference between them isolates the features.
-The audit itself still uses the complete $229{,}605$-relation test split, the same
-class-pair $\phi$, and image-clustered intervals, so it remains directly interpretable
-alongside the main analysis. Appendix~\ref{app:implementation} gives the sampling
-procedure, the crop-deduplication scheme, and the count of images that could not be
-retrieved.
+\paragraph{Matched training data.} We report this comparison apart from
+Table~\ref{tab:wager-results} rather than as an additional row, for a reason that is
+itself an instance of the paper's argument. Encoding every training relation with CLIP is
+expensive enough that MLP-VISUAL must be trained on a subsample, and setting a subsampled
+model against the full-data MLP-SPATIAL would confound feature content with training-set
+size so thoroughly that a disappointing result could not honestly be attributed to the
+pixels. All three compared predictors are therefore retrained on a single fixed, seeded
+subsample of $100{,}000$ of the $532{,}987$ training relations, and are written
+MLP-CLASS-S, MLP-SPATIAL-S and MLP-VISUAL-S to mark the fact. Differing only in their
+feature sets, any gap between them isolates the features. The audit continues to use the
+complete $229{,}605$-relation test split with the same class-pair $\phi$ and
+image-clustered intervals, so its numbers remain directly comparable with the main
+analysis. The sampling procedure, the crop-deduplication scheme and the count of images
+that could not be retrieved are given in Appendix~\ref{app:implementation}.
 
 % PENDING(results): filled from results/vg_visual_results.json once the matched-subsample
 % job completes. Report the three accuracies; a table of the three pairs
@@ -244,61 +253,72 @@ class-balanced effective-number re-weighting applied from initialization (CB)
 epochs (DRW) \citep{cao2019learning}. Optimizer, schedule, augmentation, epoch budget,
 and seed are identical across runs (Appendix~\ref{app:implementation}).
 
-\paragraph{Choosing $\phi$.} The declared prior feature must predict the label without
-determining it. Taking $\phi$ to be the fine class label itself would make every audit
-cell label-homogeneous, so within-cell transport would be vacuous and $\widehat{\Delta
-R}$ would be identically zero as an algebraic artifact rather than as a finding. We
-therefore use CIFAR-100's own 20 coarse superclasses, each containing five fine labels
--- structurally the same situation as a VG class-pair cell containing several
-predicates (Figure~\ref{fig:samples}). Each superclass cell holds $500$ balanced test images. We additionally
-report the trivial coarsening to a single global cell, which audits against the global
-class marginal and instantiates Proposition~\ref{prop:coarsen} in a second domain, and
-a head/mid/tail training-frequency tier partition. Because CIFAR-100 test images are
-independent (unlike VG's multiple relations per image), no cluster grouping is needed
-and the plain H\'ajek interval of Section~\ref{sec:inference} applies.
+\paragraph{Choosing $\phi$.} A declared prior feature has to predict the label without
+determining it, and this second benchmark makes the constraint unusually easy to
+violate. Were $\phi$ taken to be the fine class label itself, every audit cell would be
+label-homogeneous, within-cell transport would have nothing to cross, and
+$\widehat{\Delta R}$ would come out identically zero -- an algebraic artifact wearing the
+appearance of a finding. CIFAR-100's own 20 coarse superclasses avoid this, each
+gathering five fine labels into a cell of $500$ balanced test images, which is
+structurally the situation of a VG class-pair cell holding several predicates
+(Figure~\ref{fig:samples}). Alongside the superclass audit we report two further
+declared priors: the trivial coarsening to a single global cell, which audits against
+the global class marginal and so instantiates Proposition~\ref{prop:coarsen} in a second
+domain, and a partition into head, medium and tail training-frequency tiers. CIFAR-100
+test images are independent, unlike the several relations VG draws from one photograph,
+so no cluster grouping is required and the plain H\'ajek interval of
+Section~\ref{sec:inference} applies directly.
 
-\paragraph{Result.} Top-1 accuracies are $0.3662$ (CE), $0.2627$ (CB), and $0.3874$
-(DRW): re-weighting from initialization degrades the classifier badly, while the
-deferred schedule delivers the expected improvement. Table~\ref{tab:cifar} decomposes
-both gains.
+\paragraph{Result.} The three classifiers reach top-1 accuracies of $0.3662$ (CE),
+$0.2627$ (CB) and $0.3874$ (DRW), so re-weighting from initialization degrades the
+classifier substantially while the deferred schedule delivers the improvement it was
+designed to produce. Table~\ref{tab:cifar} decomposes both gains against the superclass
+audit.
 
-The CB run shows the confound in its starkest form. Its aggregate quadratic-score gain
-over CE is essentially nil ($\widehat{\Delta T}=+0.00143$), which in isolation would
-read as a harmless reparameterization. WAGER shows it is nothing of the sort: within
-superclasses the prior-transported channel gains $+0.19713$ while instance alignment
-\emph{loses} $-0.19569$ (95\% CI $[-0.20728,-0.18411]$), two large and nearly
-cancelling effects. Re-weighting bought a much better fit to the within-superclass
-class-frequency distribution and paid for it with per-instance discrimination, as the
-ten-point accuracy drop confirms. The near-zero total is a coincidence of two opposing
-channels, exactly the confound the method exists to expose; the score does not fall
-with accuracy because CE is badly overconfident (mean maximum probability $0.764$ at
-$0.3662$ accuracy), so CB's softer predictions recover on calibration what they lose on
-alignment.
+Of the two, the class-balanced run is the more instructive, precisely because its
+aggregate score conceals almost everything of interest. On the quadratic score it gains
+$+0.00143$ over the baseline, a difference small enough that a reader working from the
+headline number alone would reasonably conclude that re-weighting had changed very
+little. The decomposition tells another story entirely: within superclasses the
+prior-transported channel improves by $+0.19713$ while instance alignment deteriorates
+by $-0.19569$ (95\% CI $[-0.20728,-0.18411]$), so the near-zero total is not a small
+effect but two large ones that happen to cancel. What re-weighting bought was a much
+closer fit to the within-superclass frequency distribution, and what it paid for that
+was per-instance discrimination, a trade the ten-point accuracy drop confirms
+independently. Even the apparent paradox of a proper score that fails to fall with
+accuracy has a straightforward explanation. The baseline is badly overconfident,
+assigning a mean maximum probability of $0.764$ while being correct on only $0.3662$ of
+the test set, so the softer predictions of the re-weighted model recover on calibration
+roughly what they surrender on alignment.
 
-DRW is the more representative case, because it is a real improvement of the kind a
-benchmark submission would report. Its gain of $\widehat{\Delta T}=+0.06606$ splits
-into $\widehat{\Delta P}=+0.04206$ and $\widehat{\Delta R}=+0.02400$ (95\% CI
-$[+0.01340,+0.03460]$, randomization $p=.002$). Roughly two thirds of the improvement
-is recoverable from the class-frequency prior alone, but the remaining third is a
-genuine, statistically significant gain in per-instance discrimination -- deferred
-re-weighting does more than re-rank the classes. Neither the accuracy delta nor the
-aggregate score could have separated these.
+DRW is the more representative case, since it is an improvement of the kind a benchmark
+submission would actually claim. Its total gain of $+0.06606$ divides into $+0.04206$ of
+prior-transported gain and $+0.02400$ of instance alignment (95\% CI
+$[+0.01340,+0.03460]$; randomization $p=.002$). Roughly two thirds of what presents
+itself as a uniform improvement is therefore recoverable from the class-frequency prior
+alone, while the remaining third is a genuine and statistically significant gain in
+per-instance discrimination, so deferring the re-weighting evidently does more than
+re-rank the classes. Neither an accuracy difference nor an aggregate score can make that
+separation, which is the practical argument for reporting the two channels instead of
+their sum.
 
-The tier breakdown in Table~\ref{tab:cifar-tier} and Figure~\ref{fig:cifar} localizes
-that alignment gain. For DRW it is concentrated where the long-tail literature intends
-it: $+0.09009$ on few-shot classes and $+0.06760$ on medium-shot, against $-0.07624$ on
-many-shot classes, which lose alignment as the schedule shifts capacity away from the
-head. CB shows the same ordering with every level shifted downward, its many-shot
-alignment collapsing to $-0.41977$. WAGER thus separates not only how much of a
-long-tail gain is genuine, but which part of the frequency spectrum it comes from.
+Where the alignment gain sits is visible in Table~\ref{tab:cifar-tier} and
+Figure~\ref{fig:cifar}. For DRW it falls where the long-tail literature intends it to,
+reaching $+0.09009$ on few-shot classes and $+0.06760$ on medium-shot ones, while
+many-shot classes lose $-0.07624$ as the schedule shifts capacity away from the head.
+The class-balanced run reproduces that same ordering with every level displaced
+downward, its many-shot alignment collapsing to $-0.41977$. What the decomposition
+supplies, then, is not only how much of a long-tail gain is real but where in the
+frequency spectrum it was earned.
 
-This also supplies an external check on the theory. Computing the alignment term
-directly from the covariance identity of Eq.~\eqref{eq:cov-id} -- a code path that shares
-nothing with the transport estimator -- gives $-0.19530$, and multiplying by the exact
-factor $n_c/(n_c-1)$ of Proposition~\ref{prop:attenuate} at $n_c=500$ gives
-$-0.195693$, matching the estimator's $-0.19569$. Theorem~\ref{thm:population} and
-Proposition~\ref{prop:attenuate} are thus confirmed numerically on real trained models,
-not only on the synthetic populations of the unit tests.
+These numbers happen to provide an external check on the theory as well. Computing the
+alignment term directly from the covariance identity of Eq.~\eqref{eq:cov-id}, through a
+code path that shares nothing with the transport estimator, gives $-0.19530$; multiplying
+by the factor $n_c/(n_c-1)$ that Proposition~\ref{prop:attenuate} predicts, at the
+$n_c=500$ of a balanced superclass cell, returns $-0.195693$ against the estimator's
+$-0.19569$. Theorem~\ref{thm:population} and Proposition~\ref{prop:attenuate} are in
+that sense confirmed on real trained models, and not only on the synthetic populations
+used in the unit tests.
 
 \begin{table}[t]
 \centering

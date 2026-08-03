@@ -42,23 +42,24 @@ declared in advance.
 
 \subsection{Broader applicability}\label{sec:broader}
 
-The algorithm needs only four aligned arrays: two models' probability vectors, labels,
-and prior-cell identifiers, and nothing in Sections~\ref{sec:setup}--\ref{sec:inference}
-is specific to relation prediction. Section~\ref{sec:cifarlt} tests this directly outside
-SGG, on long-tailed image classification, taking the benchmark's own coarse superclasses
-as $\phi$; the resulting decomposition separates a re-weighting schedule whose near-zero
-aggregate score hides two large cancelling channels from one whose genuine improvement
-is part prior-refitting and part rare-class alignment, which gives this claim empirical
-content rather than leaving it as an analogy. That case also illustrates the constraint
-on $\phi$ in a second domain: the fine class label cannot serve as the audit cell,
-because it would make every cell label-homogeneous and force $\Delta R$ to zero as an
-algebraic artifact rather than as a finding. For VQA,
-$\phi$ can similarly be a predeclared question template; for other multimodal
-benchmarks, it can encode answer format or prompt family -- we do not evaluate these
-here, and flag them as the natural next domains rather than claim coverage we have not
-tested. In every case the scientific claim must remain precise: WAGER measures new
-prediction--label alignment within the declared cells. Its value is not that one choice
-of $\phi$ defines reasoning universally, but that every attribution becomes an explicit,
-reproducible counterfactual tied to a declared nuisance structure, and that this same
-construction produces a sensible answer on at least two structurally different tasks
-without modification.
+Four aligned arrays are all the algorithm requires -- two models' probability vectors,
+the labels, and the prior-cell identifiers -- and nothing in
+Sections~\ref{sec:setup}--\ref{sec:inference} is specific to relation prediction.
+Section~\ref{sec:cifarlt} puts that generality to the test on long-tailed image
+classification, where taking the benchmark's coarse superclasses as $\phi$ lets the
+decomposition distinguish a re-weighting schedule whose near-zero aggregate score hides
+two large cancelling channels from one whose genuine improvement is part prior-refitting
+and part rare-class alignment. The claim of breadth thereby acquires empirical content
+instead of resting on analogy. That second domain is also where the constraint on $\phi$
+shows its teeth, since the fine class label cannot serve as an audit cell: it would leave
+every cell label-homogeneous and drive $\Delta R$ to zero by construction, producing an
+artifact that reads exactly like a null result. Elsewhere the natural choices are easy
+enough to name -- a predeclared question template for VQA, an answer format or prompt
+family for other multimodal benchmarks -- though we have not evaluated them, and we flag
+them as the obvious next domains rather than claim a coverage we have not earned.
+Whatever the setting, the scientific claim has to stay precise, because what WAGER
+measures is new prediction--label alignment within the declared cells and nothing more.
+Its value lies not in any single $\phi$ defining reasoning once and for all, but in
+making every attribution an explicit and reproducible counterfactual tied to a declared
+nuisance structure, one that the same unmodified construction has now answered sensibly
+on two structurally different tasks.
