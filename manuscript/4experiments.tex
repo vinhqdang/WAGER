@@ -195,24 +195,71 @@ that long-tailed image classification poses a structurally identical question: a
 class-frequency prior can be fit better without any per-instance improvement. We test
 this directly on CIFAR-100-LT \citep{cui2019classbalanced}, an exponential-imbalance
 (ratio $100$) subsample of CIFAR-100's training split with the original, balanced test
-split retained for evaluation. We train two real classifiers with no other differences:
-a ResNet-32 \citep{he2016deep} baseline with vanilla cross-entropy, and the same
-architecture trained with the class-balanced (effective-number) re-weighting of
-\citet{cui2019classbalanced}. Both are trained from random initialization for the same
-number of epochs with the same optimizer, schedule, and data augmentation (Appendix
-\ref{app:implementation} lists all hyperparameters); the only difference is the per-class loss
-weight. The declared prior feature $\phi$ is the class label itself, so every test cell
-has exactly $100$ examples by construction (CIFAR-100's balanced test split); we also
-report a coarsened $\phi$ that groups classes into head/mid/tail training-frequency
-tiers, mirroring the coarsening analysis of Section~\ref{sec:coarsening} in a second
-domain. Because CIFAR-100 test images are independent (unlike VG's multiple relations
-per image), no image-cluster grouping is needed and the plain H\'ajek interval of
-Section~\ref{sec:inference} applies directly.
+split retained for evaluation. We train ResNet-32 \citep{he2016deep} classifiers that
+differ only in their per-class loss weighting: a vanilla cross-entropy baseline (CE);
+class-balanced effective-number re-weighting applied from initialization (CB)
+\citep{cui2019classbalanced}; and the same re-weighting deferred to the final twenty
+epochs (DRW) \citep{cao2019learning}. Optimizer, schedule, augmentation, epoch budget,
+and seed are identical across runs (Appendix~\ref{app:implementation}).
 
-% TODO(results): fill in once experiments/run_cifar_lt_wager.py finishes (predictions
-% pulled back from Colab). Report: baseline vs CB test accuracy; WAGER decomposition of
-% CB vs baseline gain at the class-id phi and at the head/mid/tail coarsening (table);
-% one sentence on whether the CB gain is mostly prior-transported (expected, since CB
-% reweights training by class frequency) or partly instance-alignment (would indicate CB
-% also improves per-instance discrimination, not only frequency fitting); a bar figure of
-% per-tier alignment gain.
+\paragraph{Choosing $\phi$.} The declared prior feature must predict the label without
+determining it. Taking $\phi$ to be the fine class label itself would make every audit
+cell label-homogeneous, so within-cell transport would be vacuous and $\widehat{\Delta
+R}$ would be identically zero as an algebraic artifact rather than as a finding. We
+therefore use CIFAR-100's own 20 coarse superclasses, each containing five fine labels
+-- structurally the same situation as a VG class-pair cell containing several
+predicates. Each superclass cell holds $500$ balanced test images. We additionally
+report the trivial coarsening to a single global cell, which audits against the global
+class marginal and instantiates Proposition~\ref{prop:coarsen} in a second domain, and
+a head/mid/tail training-frequency tier partition. Because CIFAR-100 test images are
+independent (unlike VG's multiple relations per image), no cluster grouping is needed
+and the plain H\'ajek interval of Section~\ref{sec:inference} applies.
+
+\paragraph{Result.} Table~\ref{tab:cifar} gives the decomposition. The CB run is the
+more instructive case. Its aggregate quadratic-score gain over CE is essentially nil
+($\widehat{\Delta T}=+0.00143$), which in isolation would read as a harmless
+reparameterization. WAGER shows it is nothing of the sort: within superclasses the
+prior-transported channel gains $+0.19713$ while instance alignment \emph{loses}
+$-0.19569$ (95\% CI $[-0.20728,-0.18411]$), two large and nearly cancelling effects.
+Re-weighting bought a much better fit to the within-superclass class-frequency
+distribution and paid for it with per-instance discrimination, and top-1 accuracy
+confirms the damage ($0.3662\to0.2627$). The near-zero total gain is a coincidence of
+two opposing channels, exactly the confound the method exists to expose; the reason the
+score does not fall as accuracy does is that CE is badly overconfident (mean maximum
+probability $0.764$ at $0.3662$ accuracy), so CB's softer predictions recover on
+calibration what they lose on alignment.
+
+This also supplies an external check on the theory. Computing the alignment term
+directly from the covariance identity of Eq.~\eqref{eq:cov-id} -- a code path that shares
+nothing with the transport estimator -- gives $-0.19530$, and multiplying by the exact
+factor $n_c/(n_c-1)$ of Proposition~\ref{prop:attenuate} at $n_c=500$ gives
+$-0.195693$, matching the estimator's $-0.19569$. Theorem~\ref{thm:population} and
+Proposition~\ref{prop:attenuate} are thus confirmed numerically on real trained models,
+not only on the synthetic populations of the unit tests.
+
+\begin{table}[t]
+\centering
+\caption{WAGER decomposition on the 10,000-image balanced CIFAR-100-LT test split.
+Gains use the quadratic score; CI is the H\'ajek interval on $\widehat{\Delta R}$;
+$p$ is the 499-shift randomization diagnostic. ``--'' marks an undefined share
+(non-positive total gain).}
+\label{tab:cifar}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Comparison & Audit cell $\phi$ & $\widehat{\Delta T}$ & $\widehat{\Delta P}$ &
+$\widehat{\Delta R}$ (95\% CI) & $p$ \\
+\midrule
+CB vs CE & superclass (20) & $0.00143$ & $0.19713$ & $-0.19569\,[-0.20728,-0.18411]$ & $1.000$ \\
+CB vs CE & global (1)      & $0.00143$ & $0.25573$ & $-0.25430\,[-0.26801,-0.24058]$ & $1.000$ \\
+CB vs CE & tier (3)        & $0.00143$ & $0.25247$ & $-0.25103\,[-0.26453,-0.23754]$ & $1.000$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Coarsening behaves as Proposition~\ref{prop:coarsen} predicts. Moving from the 20
+superclass cells to a single global cell changes the credited alignment from $-0.19569$
+to $-0.25430$; the difference is the between-cell covariance term, which is negative
+here, so the coarse audit overstates the alignment loss by attributing to it structure
+that the superclass partition correctly assigns to $\Delta P$. The finer partition is
+again the conservative reading, for the same reason as in Section~\ref{sec:ablations}
+and now in a second domain.
