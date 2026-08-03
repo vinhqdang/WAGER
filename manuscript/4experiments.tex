@@ -126,11 +126,38 @@ with image-cluster-robust intervals.}
 \subsection{Sensitivity analyses}\label{sec:ablations}
 
 For MLP-SPATIAL versus MLP-CLASS, the conclusion survives every planned sensitivity
-check. Changing from the quadratic to a probability-floored log score changes scale
-($0.01439$ to $0.06536$) but not sign or significance. Coarsening $\phi$ from the
-class pair to subject class increases the credited alignment to $0.02181$, as expected:
-the coarser audit removes less prior structure and is less conservative. Raising the
-minimum cell size from 2 to 5, 10, and 20 yields $0.01395$, $0.01330$, and $0.01225$;
-all cluster-robust lower limits remain positive. Unlike the rejected projection-based
-formulation, there is no smoothing strength, split fraction, clipping constant, betting
-order, or gain-ratio decision threshold to tune.
+check (Table~\ref{tab:sensitivity}). Changing from the quadratic to a probability-floored
+log score changes scale ($0.01439$ to $0.06536$) but not sign or significance.
+Coarsening $\phi$ from the class pair to subject class increases the credited alignment
+to $0.02181$. Proposition~\ref{prop:coarsen} identifies why: the coarser cell's estimate
+equals the class-pair estimate's conditional average plus a between-class-pair covariance
+term, and that term is positive here, meaning some of the credited gain reflects
+class-pair-level structure that the finer audit had already correctly assigned to
+$\Delta P$. This is precisely the sense in which the class-pair audit is the conservative
+choice: it is not that coarsening is wrong, but that it cannot be assumed neutral, and
+only the finer partition's estimate isolates alignment gain net of every prior regularity
+expressible in $\phi$. Raising the minimum cell size from 2 to 5, 10, and 20 yields
+$0.01395$, $0.01330$, and $0.01225$; all cluster-robust lower limits remain positive.
+Unlike the rejected projection-based formulation, there is no smoothing strength, split
+fraction, clipping constant, betting order, or gain-ratio decision threshold to tune.
+
+\begin{table}[t]
+\centering
+\caption{Sensitivity of the MLP-SPATIAL vs.\ MLP-CLASS decomposition to score, audit
+granularity, and minimum cell size. CI is image-cluster robust on $\widehat{\Delta R}$.}
+\label{tab:sensitivity}
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Factor & Setting & $\widehat{\Delta T}$ & $\widehat{\Delta R}$ (95\% CI) & Cells \\
+\midrule
+Score & Brier (default) & $0.00885$ & $0.01439\,[0.01373,0.01504]$ & 6346 \\
+Score & Log (floored) & $0.04297$ & $0.06536\,[0.06294,0.06779]$ & 6346 \\
+Audit cell & class pair (default) & $0.00885$ & $0.01439\,[0.01373,0.01504]$ & 6346 \\
+Audit cell & subject only & $0.00943$ & $0.02181\,[0.02079,0.02283]$ & 150 \\
+Min.\ cell size & 2 (default) & $0.00885$ & $0.01439\,[0.01373,0.01504]$ & 6346 \\
+Min.\ cell size & 5 & $0.00772$ & $0.01395\,[0.01329,0.01462]$ & 4060 \\
+Min.\ cell size & 10 & $0.00683$ & $0.01330\,[0.01262,0.01398]$ & 2744 \\
+Min.\ cell size & 20 & $0.00570$ & $0.01225\,[0.01155,0.01295]$ & 1757 \\
+\bottomrule
+\end{tabular}
+\end{table}

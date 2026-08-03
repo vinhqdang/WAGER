@@ -47,3 +47,39 @@ paper treats signed alignment gain as primary and does not threshold a ratio.
 - Simulation: `experiments/antisymmetric_simulation.py`
 - Ablations: `experiments/antisymmetric_ablations.py`
 - Final manuscript: `manuscript/main.pdf`
+
+## Addendum: response to desk rejection for insufficient novelty
+
+The manuscript above was desk-rejected a second time for lacking new knowledge. The
+gain-transport algorithm itself was unchanged, but its *technical contribution* was
+underspecified: the covariance identity is a model-pair relative of the classical
+reliability/resolution decomposition of a proper score (Murphy 1973; DeGroot & Fienberg
+1983; Brocker 2009), and the paper did not say so or state what is new relative to it.
+This pass adds:
+
+1. An explicit Related Work subsection positioning WAGER against that classical
+   decomposition and stating precisely what it adds: a paired-contrast construction,
+   an exact finite-sample identity, and inference for a specific model-to-model gain,
+   none of which the single-model decomposition supplies.
+2. **Proposition (exact attenuation of the in-sample plug-in).** The naive in-sample
+   plug-in prior (fit a cell's own label frequency and use it as the counterfactual) is
+   biased by a deterministic factor `(n_c - 1)/n_c` relative to WAGER's leave-one-out
+   estimate. This gives a closed-form reason -- not just a design choice -- for why the
+   redesign needs no projection/evaluation fold: leave-one-out transport removes the
+   bias exactly, at the full sample, for every `phi`-cell with `n_c >= 2`.
+3. **Proposition (coarsening decomposition).** Merging prior cells changes the
+   population alignment gain by an exact between-cell covariance term (law of total
+   covariance), not sign-definite. This explains, rather than merely reports, why
+   coarsening `phi` from class-pair to subject-only cells raised the estimated alignment
+   gain in the sensitivity analysis, and formalizes why the finest identified partition
+   is the conservative default.
+4. A new sensitivity table (`Table 3` in the manuscript) replacing inline prose numbers,
+   and two new unit tests verifying both propositions
+   (`test_attenuation_proposition_matches_insample_plugin`,
+   `test_coarsening_proposition_law_of_total_covariance`), the second against an
+   explicit discrete population computed independently of the estimator's own code path.
+5. A bibliography cleanup removing 32 uncited entries left over from the pre-redesign
+   (betting/e-value) draft.
+
+Both propositions are proved in Appendix A of the manuscript and verified numerically in
+`tests/test_antisymmetric.py`; see `algorithm.md` §5 for a plain-language summary.

@@ -62,6 +62,40 @@ $\Delta P$. The result does not assert that every nonzero covariance is causal r
 unrecorded within-cell shortcuts can also contribute, so $\phi$ must be declared and
 stress-tested.
 
+\subsection{Coarsening the audit cell}\label{sec:coarsening}
+
+Section~\ref{sec:ablations} reports that replacing the class-pair cell with a coarser
+subject-only cell changes the estimated alignment gain. The following result gives that
+sensitivity an exact population-level mechanism rather than treating it as an empirical
+curiosity.
+
+\begin{proposition}[Coarsening decomposition]\label{prop:coarsen}
+Let $\bar\phi=g(\phi)$ be any coarsening of the audit feature, so that each cell
+$\bar c$ of $\bar\phi$ is a union of cells of $\phi$. Then
+\begin{equation}
+\Delta R_{\bar c}
+=\mathbb E\!\left[\Delta R_C \mid \bar\phi=\bar c\right]
++\sum_{y=1}^K\operatorname{Cov}\!\left(\mathbb E[H_X(y)\mid C],\,
+\Pr(Y=y\mid C)\ \middle|\ \bar\phi=\bar c\right).
+\label{eq:coarsen}
+\end{equation}
+\end{proposition}
+
+The first term is the coarse cell's share of the fine-grained alignment gain the paper
+already reports; it is the quantity a reader would expect a coarser audit to recover on
+average. The second term is new: it is a between-cell covariance, taken over the finer
+cells nested inside $\bar c$, between each fine cell's typical gain at label $y$ and its
+label-$y$ frequency. It is generally not sign definite, so coarsening $\phi$ can inflate
+or deflate the credited alignment gain relative to the finer audit, and Table
+\ref{tab:sensitivity} shows the empirically inflating case. Because this second term
+vanishes identically once $\phi$ is refined to make it constant on every non-vanishing
+fine cell (in particular, in the limit where $\phi$ is the finest cell that remains
+non-singleton for every example), Proposition~\ref{prop:coarsen} formalizes why the
+finest defensible audit feature is the conservative default: coarsening can only add
+cross-cell prior structure into $\Delta R$, never remove genuine within-cell alignment
+that the fine partition already isolates. The proof is a per-label application of the
+law of total covariance, summed over $y$ (Appendix~\ref{app:proofs}).
+
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig2_pair_mechanism.png}
@@ -122,6 +156,45 @@ Averaging $P_i$ yields Eq.~\eqref{eq:sample-prior}; averaging
 $H_i(y_i)-P_i$ yields Eq.~\eqref{eq:sample-reason}. Thus the entire estimator costs
 $O(NK)$ time and $O(NK)$ storage for cached prediction vectors. No model fitting,
 projection fold, hierarchy, or smoothing hyperparameter appears.
+
+\subsection{Why leave-one-out transport, not a fitted-in-sample prior}\label{sec:attenuation}
+
+Equation~\eqref{eq:linear} excludes example $i$'s own label from its transported score.
+It is natural to ask what is lost by the simpler alternative of fitting the cell's
+empirical label frequency on all $n_c$ examples, including $i$, and using that fitted
+frequency as the counterfactual, i.e.\ treating $\hat p_c(y)=m_{cy}/n_c$ as a prior model
+and setting $\tilde P_i=\sum_y \hat p_c(y)H_i(y)=n_c^{-1}\sum_y m_{cy}H_i(y)$. This is
+the natural plug-in estimator, and it is what a frequency-collapsed projection baseline
+computes when no separate evaluation fold is withheld from fitting.
+
+\begin{proposition}[Exact attenuation of the in-sample plug-in]\label{prop:attenuate}
+For every cell with $n_c\ge2$ and every $i\in c$, writing $\hat P_i$ for
+Eq.~\eqref{eq:linear} and $\hat R_i=H_i(y_i)-\hat P_i$,
+\begin{equation}
+\tilde P_i=\hat P_i+\frac1{n_c}\hat R_i,
+\qquad
+\tilde R_i:=H_i(y_i)-\tilde P_i=\frac{n_c-1}{n_c}\,\hat R_i.
+\label{eq:attenuation}
+\end{equation}
+Consequently the in-sample plug-in's dataset-level statistic obeys
+$\widetilde{\Delta R}=N_*^{-1}\sum_{c:n_c\ge2}(n_c-1)\widehat{\Delta R}_c$, a
+multiplicative shrinkage of every cell's leave-one-out alignment gain by the factor
+$(n_c-1)/n_c$.
+\end{proposition}
+
+The shrinkage in Eq.~\eqref{eq:attenuation} is deterministic, not a variance statement:
+whenever $\widehat{\Delta R}_c\neq0$, the in-sample plug-in is biased for it at every
+finite $n_c$, with the largest relative attenuation exactly in the smallest identified
+cells (50\% at $n_c=2$, vanishing only as $n_c\to\infty$). This is why the redesign
+removes the projection/evaluation split that the rejected precursor of WAGER used to
+control the same self-prediction bias: a held-out fold restores unbiasedness by fitting
+$\hat p_c$ on data disjoint from the scored examples, but it does so by discarding
+examples from both stages and by introducing a split-fraction hyperparameter and,
+typically, higher variance. WAGER's leave-one-out U-statistic removes the bias exactly,
+at the full sample, for every $\phi$-cell with $n_c\ge2$, without a fitted nuisance
+distribution at all. Section~\ref{sec:related-decomposition} situates this result
+against the classical single-model score decomposition, where the analogous
+self-prediction bias affects each model's resolution estimate separately.
 
 \subsection{Inference}\label{sec:inference}
 

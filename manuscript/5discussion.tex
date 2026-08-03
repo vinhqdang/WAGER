@@ -14,8 +14,11 @@ reasoning, compositional understanding, or robustness. If an unrecorded shortcut
 inside a cell, WAGER will count its predictive use in $\Delta R$. Applications should
 therefore choose $\phi$ before looking at results, justify it from the benchmark's data
 generation process, and report finer and coarser alternatives. The observed increase
-under subject-only cells illustrates why the finest defensible prior feature is the
-conservative primary choice.
+under subject-only cells illustrates Proposition~\ref{prop:coarsen}: coarsening adds a
+between-cell covariance term of either sign, so it cannot be assumed to leave the
+estimate unchanged, and only the finest identified partition isolates alignment gain net
+of every prior regularity expressible in $\phi$. This is why the finest defensible prior
+feature is the conservative primary choice, not merely an empirical convention.
 
 Exact transport also has a positivity requirement: a cell needs at least two examples.
 WAGER reports the identified fraction and makes no claim for singletons. Very fine

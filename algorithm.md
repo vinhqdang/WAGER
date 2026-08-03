@@ -82,7 +82,35 @@ is exact under the sharp null that labels are exchangeable relative to frozen mo
 outputs within each cell; for datasets with multiple observations per image, the
 image-clustered interval is primary.
 
-## 5. Interpretation
+## 5. Relation to classical score decomposition and two new identities
+
+`R_c` is a model-pair relative of the classical reliability/resolution/uncertainty
+partition of a single proper score (Murphy 1973; DeGroot & Fienberg 1983; Brocker 2009):
+conditioned on a grouping variable, a proper score splits into calibration and
+resolution, and resolution is a within-group covariance between forecast and outcome.
+WAGER forms the paired gain vector `H_x(y)` first and decomposes the *contrast* between
+two models in one pass, rather than decomposing each model separately and subtracting.
+This buys two exact results the single-model decomposition does not have:
+
+- **Attenuation.** The naive in-sample plug-in transported score
+  `P_tilde_i = mean_j H_i(y_j)` over the whole cell (including `i`) relates to WAGER's
+  leave-one-out `P_i` by `P_tilde_i = P_i + R_i / n_c`, so the plug-in's implied
+  alignment `H_i(y_i) - P_tilde_i` is exactly `(n_c - 1)/n_c` times WAGER's `R_i` --
+  biased at every finite `n_c`, worst at small cells. This is why the redesign needs no
+  projection/evaluation split: leave-one-out transport removes the self-prediction bias
+  exactly, at the full sample.
+- **Coarsening.** If `phi_bar` is any coarsening of `phi` (so each `phi_bar`-cell is a
+  union of `phi`-cells), then `R_{c_bar} = E[R_C | phi_bar = c_bar] + between-cell
+  covariance term`, by the law of total covariance applied per label and summed. The
+  second term is not sign-definite, so coarsening the audit cell is never guaranteed
+  neutral -- only the finest identified partition isolates alignment gain net of every
+  prior regularity expressible in `phi`.
+
+Proofs and unit tests: `manuscript/7appendix.tex` (Appendix A) and
+`tests/test_antisymmetric.py` (`test_attenuation_proposition_matches_insample_plugin`,
+`test_coarsening_proposition_law_of_total_covariance`).
+
+## 6. Interpretation
 
 - `R > 0`: the new model improves prediction-label alignment within the declared prior
   cells.
