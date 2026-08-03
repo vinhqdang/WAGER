@@ -18,7 +18,7 @@ twice the within-cell covariance gained between probability changes and the corr
 
 ## Validation
 
-- New unit suite: **8/8 passed**; complete repository suite: **16/16 passed**.
+- Complete repository suite: **18/18 passed**.
 - Controlled null: type-I error **0.030** at level 0.05 over 200 runs.
 - Signal recovery: monotone for injected signal `beta = 0.0, ..., 0.8`.
 - Visual Genome coverage: **227,337 / 229,605 = 99.0%** test relations.
@@ -47,6 +47,62 @@ paper treats signed alignment gain as primary and does not threshold a ratio.
 - Simulation: `experiments/antisymmetric_simulation.py`
 - Ablations: `experiments/antisymmetric_ablations.py`
 - Final manuscript: `manuscript/main.pdf`
+
+## Addendum: second revision (2026-08)
+
+Responding to a further desk rejection citing stale references, insufficient length, and
+experiments too simple to support the claims.
+
+**References.** Twenty-two verified 2024--2026 entries added across SGG debiasing,
+long-tailed recognition, proper-score decomposition, U-statistics/permutation testing and
+shortcut learning. Forty-four of forty-five entries now carry a DOI, each confirmed
+against an individual CrossRef or arXiv record rather than constructed from a publisher
+pattern; `ojala2010permutation` is deliberately left without one, since JMLR registers no
+DOIs and CrossRef's nearest match is a different paper by the same authors. Four metadata
+errors were corrected in passing, the most consequential being an entry still recorded as
+a preprint that has since appeared in Biometrika under a changed title.
+
+**Cross-domain experiment (new).** The estimator is applied unchanged to long-tailed
+image classification on CIFAR-100-LT, using the benchmark's own coarse superclasses as
+the audit cell. Taking the fine class label as `phi` would make every cell
+label-homogeneous and force the alignment gain to zero as an algebraic artifact, so the
+superclass partition is the meaningful choice.
+
+| Comparison | Accuracy | Total | Prior | Alignment |
+|---|---|---:|---:|---:|
+| CB vs CE  | 0.3662 -> 0.2627 | +0.00143 | +0.19713 | **-0.19569** |
+| DRW vs CE | 0.3662 -> 0.3874 | +0.06606 | +0.04206 | **+0.02400** (p=.002) |
+
+Class-balanced re-weighting from initialization produces a near-zero aggregate gain that
+conceals two large cancelling channels -- precisely the confound the method exists to
+expose -- while the deferred schedule's genuine improvement is roughly two-thirds
+prior-refitting and one-third instance alignment, concentrated on rare classes (+0.09009
+few-shot against -0.07624 many-shot).
+
+This also yielded an external check on the theory: computing the alignment term from the
+covariance identity through an independent code path gives -0.19530, which matches the
+estimator's -0.19569 only after applying the `(n_c-1)/n_c` factor of the attenuation
+proposition at `n_c = 500`. Theorem 1 and Proposition 1 are thereby confirmed on real
+trained models rather than only on synthetic populations.
+
+**Manuscript.** Expanded from 17 to 27 pages and restructured to six numbered sections.
+New figures show the decomposition and per-tier alignment, and real dataset samples
+illustrating what an audit cell contains. Prose was revised for sentence-length variety
+after a mechanical, uniformly short-sentence cadence was identified: mean sentence length
+in the experiments section rose from 22.7 to 26.9 words and sentences under thirteen words
+fell from 31.8% to 10.8%.
+
+**Defects found and fixed.** `\mathbb 1` was rendering a wrong glyph for every indicator
+in the paper, since `amssymb` defines blackboard-bold letters only. An over-wide display
+in Appendix A.3 has been broken across lines, leaving the document with no overfull
+boxes. Two passages still described an audit-cell design that had been abandoned.
+
+**Outstanding.** A real-pixel Visual Genome study, in which a frozen CLIP encoder replaces
+annotation-derived box geometry, is implemented (`experiments/colab_vg_visual.py`,
+`experiments/run_vg_visual_wager.py`, both validated) but not yet run to completion: the
+GPU runtime was reclaimed three times mid-job and the account's GPU quota is currently
+exhausted. The manuscript carries the design and methodology for that study with its
+results section pending.
 
 ## Addendum: response to desk rejection for insufficient novelty
 
