@@ -42,7 +42,8 @@ We use Visual Genome \cite{krishna2017visual} in the standard VG150 PredCls regi
 ground-truth boxes and object labels are supplied, and the model predicts one of 50
 predicate labels for each ordered object pair. The training/test split contains
 532,987/229,605 relations from 65,228/27,955 images. The prior cell is
-$\phi=(\text{subject class},\text{object class})$. Of 8,614 test cells, 6,346 contain
+$\phi=(\text{subject class},\text{object class})$; Figure~\ref{fig:samples} shows two
+real examples from one such cell. Of 8,614 test cells, 6,346 contain
 at least two relations. WAGER identifies 227,337 test relations (99.0\%); the 2,268
 singleton cells are reported and excluded.
 
@@ -54,6 +55,25 @@ box-geometry features (relative center, scale, aspect, intersection, containment
 IoU); MLP-SPATIAL+ increases its capacity. All models are trained once on the training
 split. WAGER consumes only their cached test distributions. We use the quadratic score,
 image-clustered intervals, and 499 within-cell cyclic randomizations.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig6_dataset_samples.png}
+\caption{\textbf{What an audit cell contains, on both benchmarks.} Each row shows two
+real test examples that share the same declared prior feature $\phi$ but carry
+different labels -- precisely the configuration within-cell transport exploits.
+\emph{Top:} two Visual Genome relations from the cell $\phi=(\text{man},
+\text{surfboard})$. The class pair is identical and therefore cannot distinguish
+``riding'' from ``carrying''; only the image content can, which is what
+$\Delta R$ is designed to credit. Boxes are the annotated subject (red) and object
+(blue) regions that MLP-SPATIAL turns into geometry features and MLP-VISUAL crops and
+encodes with CLIP. \emph{Bottom:} two CIFAR-100 test images from the superclass
+$\phi=\text{aquatic\_mammals}$, drawn from opposite ends of the long-tailed training
+distribution ($415$ versus $6$ training images). Crossing the labels within a row
+preserves the cell and its label histogram while destroying which prediction belongs
+with which instance.}
+\label{fig:samples}
+\end{figure*}
 
 \begin{table}[t]
 \centering
@@ -214,7 +234,7 @@ cell label-homogeneous, so within-cell transport would be vacuous and $\widehat{
 R}$ would be identically zero as an algebraic artifact rather than as a finding. We
 therefore use CIFAR-100's own 20 coarse superclasses, each containing five fine labels
 -- structurally the same situation as a VG class-pair cell containing several
-predicates. Each superclass cell holds $500$ balanced test images. We additionally
+predicates (Figure~\ref{fig:samples}). Each superclass cell holds $500$ balanced test images. We additionally
 report the trivial coarsening to a single global cell, which audits against the global
 class marginal and instantiates Proposition~\ref{prop:coarsen} in a second domain, and
 a head/mid/tail training-frequency tier partition. Because CIFAR-100 test images are
