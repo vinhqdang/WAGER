@@ -97,12 +97,41 @@ in the paper, since `amssymb` defines blackboard-bold letters only. An over-wide
 in Appendix A.3 has been broken across lines, leaving the document with no overfull
 boxes. Two passages still described an audit-cell design that had been abandoned.
 
-**Outstanding.** A real-pixel Visual Genome study, in which a frozen CLIP encoder replaces
-annotation-derived box geometry, is implemented (`experiments/colab_vg_visual.py`,
-`experiments/run_vg_visual_wager.py`, both validated) but not yet run to completion: the
-GPU runtime was reclaimed three times mid-job and the account's GPU quota is currently
-exhausted. The manuscript carries the design and methodology for that study with its
-results section pending.
+**Real-pixel experiment (new).** A frozen CLIP ViT-B/32 encoder replaces
+annotation-derived box geometry. All three compared predictors train on the same 100,000
+relations and differ only in features, so a difference between them isolates feature
+content rather than training-set size; the audit uses the full 229,605-relation test
+split.
+
+| Comparison | Accuracy | Total | Prior | Alignment (95% CI) |
+|---|---|---:|---:|---:|
+| SPATIAL-S vs CLASS-S | 0.6467 / 0.6416 | +0.00503 | -0.00520 | +0.01023 [0.00967, 0.01079] |
+| VISUAL-S vs CLASS-S  | 0.6161 / 0.6416 | -0.04152 | -0.05816 | **+0.01665** [0.01534, 0.01796] |
+| VISUAL-S vs SPATIAL-S| 0.6161 / 0.6467 | -0.04655 | -0.05296 | **+0.00641** [0.00514, 0.00769] |
+
+By every aggregate measure the CLIP model is the worst of the three, scoring 0.04655
+below the box-geometry model and three accuracy points lower; an evaluator reading either
+number would discard it. The decomposition shows its entire deficit sits in the prior
+channel while its instance alignment is significantly *better* (p=.002), and that pixels
+buy more alignment over the class-only baseline than box geometry does (+0.01665 versus
++0.01023, well-separated intervals). Real image content therefore carries more
+instance-specific signal than the geometric proxy standing in for it.
+
+Together with the CIFAR-100-LT case the two experiments bracket the failure mode from
+both sides: there a near-zero total gain concealed a large alignment loss, here a clearly
+negative total conceals a real alignment gain. In both the aggregate score is not merely
+imprecise but actively misleading.
+
+**Venue.** Reformatted for Computer Vision and Image Understanding (Elsevier
+`elsarticle`): anonymized manuscript plus separate title page for double-anonymized
+review, abstract held to 249 of 250 permitted words, highlights file with each bullet
+inside the 85-character limit, and declarations of generative AI use, CRediT
+contributions, competing interests and funding.
+
+**Reproduction cost, for planning.** The real-pixel job takes roughly an hour end to end
+on one T4: 17 minutes to fetch 10.14 GB covering 71,990 images (3 unavailable upstream),
+about 35 minutes to encode 422,143 unique crops at ~207/s, then training. Crops are
+deduplicated by (image, box) beforehand, which removes 36.0% of the encoder work.
 
 ## Addendum: response to desk rejection for insufficient novelty
 
