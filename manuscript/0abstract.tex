@@ -1,26 +1,22 @@
-Vision benchmarks with strong annotation priors can reward a new model even when its
-gain does not come from better instance-specific visual prediction. Existing audits
-compare a model with a frequency baseline, which confounds two questions: how well each
-system fits the prior, and whether the \emph{difference} between systems uses information
-beyond it. We introduce WAGER, \textbf{W}ithin-cell \textbf{A}ntisymmetric \textbf{G}ain
-\textbf{E}valuation of \textbf{R}easoning, a pairwise attribution algorithm. For two
-frozen probabilistic models, WAGER forms their proper-score contrast, matches examples
-sharing a declared prior feature, and crosses their labels. This yields an exact
-finite-sample identity: observed gain equals a prior-transported gain plus an
-antisymmetric instance-alignment gain. The latter is an order-two U-statistic and, under
-the quadratic score, equals twice the within-cell prediction--label covariance gained by
-the new model, connecting it to the classical resolution term of proper-score
-decomposition. It costs $O(NK)$ time, needs no fitted prior model or projection fold, and
-admits cluster-robust inference and a cell-stratified randomization test. We prove two
-further exact results: leave-one-out transport removes a finite-sample attenuation bias
-of $(n_c-1)/n_c$ that a naive in-sample plug-in prior incurs, and coarsening the audit
-cell shifts the estimate by an explicit between-cell covariance term. On 229,605 Visual
-Genome relations, a class-only network improves the frequency baseline entirely through
-the prior channel, whereas box geometry adds an alignment gain of $0.01439$
-(95\% CI $[0.01373,0.01504]$). Applied unchanged to long-tailed classification, WAGER
-separates two re-weighting schedules that aggregate scores cannot: one whose near-zero
-total gain ($+0.00143$) conceals a $+0.19713$ prior gain cancelling a $-0.19569$
-alignment loss, and one whose genuine $+0.06606$ improvement is two-thirds
-prior-recoverable and one-third instance alignment, concentrated on rare classes. WAGER
-therefore attributes a model-to-model improvement directly, without treating a separately
-estimated baseline as ground truth.
+Vision benchmarks with strong annotation priors can reward a new model whose gain does
+not come from better instance-specific visual prediction. Existing audits
+compare a model against a frequency baseline, which confounds how well each system fits
+the prior with whether the \emph{difference} between them uses information beyond it. We
+introduce WAGER, a pairwise attribution algorithm. For two frozen probabilistic models it
+forms their proper-score contrast, matches examples sharing a declared prior feature, and
+crosses their labels, yielding an exact finite-sample identity: observed gain equals a
+prior-transported gain plus an antisymmetric instance-alignment gain. The residual is an
+order-two U-statistic which, under the quadratic score, equals twice the within-cell
+prediction--label covariance gained by the new model, linking it to the classical
+resolution term of proper-score decomposition. It costs $O(NK)$ time, needs no fitted
+prior model, and admits cluster-robust inference and a randomization test. Two further
+exact results follow: leave-one-out transport removes an attenuation bias of
+$(n_c-1)/n_c$ that a naive in-sample plug-in incurs, and coarsening the audit cell shifts
+the estimate by an explicit between-cell covariance term. On 229,605 Visual Genome
+relations, a class-only network improves the frequency baseline entirely through the
+prior channel, whereas box geometry adds an alignment gain of $0.01439$ (95\% CI
+$[0.01373,0.01504]$). Applied unchanged to long-tailed classification, WAGER separates
+two re-weighting schedules that aggregate scores cannot: one whose near-zero total gain
+conceals a $+0.19713$ prior gain cancelling a $-0.19569$ alignment loss, and one whose
+genuine improvement is two-thirds prior-recoverable and one-third instance alignment,
+concentrated on rare classes.

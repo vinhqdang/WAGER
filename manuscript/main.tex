@@ -1,4 +1,7 @@
-\documentclass[sn-mathphys-num]{sn-jnl}
+% Computer Vision and Image Understanding (Elsevier) submission.
+% Previously typeset with the Springer Nature sn-jnl class; see git history if that
+% version is ever needed again.
+\documentclass[preprint,times]{elsarticle}
 
 \usepackage{graphicx}
 \usepackage{multirow}
@@ -9,15 +12,13 @@
 \newcommand{\ind}{\mathds{1}}
 \usepackage{amsthm}
 \usepackage{mathrsfs}
-\usepackage[title]{appendix}
 \usepackage{xcolor}
 \usepackage{textcomp}
-\usepackage{manyfoot}
 \usepackage{booktabs}
 \usepackage{algorithm}
 \usepackage{algorithmicx}
 \usepackage{algpseudocode}
-\usepackage{listings}
+\usepackage{url}
 
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}
@@ -26,18 +27,29 @@
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}
 
+\journal{Computer Vision and Image Understanding}
+
 \begin{document}
+\sloppy
 
-\title[WAGER]{WAGER: Within-cell Antisymmetric Gain Evaluation of Reasoning}
+\begin{frontmatter}
 
-\author[1]{\fnm{Quang-Vinh} \sur{Dang}}\email{vinh.dq4@buv.edu.vn}
-\affil[1]{\orgname{British University Vietnam}, \city{Hung Yen}, \country{Vietnam}}
+\title{WAGER: Within-cell Antisymmetric Gain Evaluation of Reasoning}
 
-\abstract{\input{0abstract.tex}}
+%% Double-anonymized review: author, affiliation and contact details are supplied in the
+%% separate title page file (title_page.tex), not here.
+\author{}
 
-\keywords{Visual Reasoning, Dataset Bias, Counterfactual Evaluation, U-statistics, Randomization Tests, Scene Graph Generation}
+\begin{abstract}
+\input{0abstract.tex}
+\end{abstract}
 
-\maketitle
+\begin{keyword}
+Visual Reasoning \sep Dataset Bias \sep Counterfactual Evaluation \sep
+U-statistics \sep Randomization Tests \sep Scene Graph Generation
+\end{keyword}
+
+\end{frontmatter}
 
 \input{1intro.tex}
 \input{2related.tex}
@@ -46,10 +58,21 @@
 \input{5discussion.tex}
 \input{6conclusions.tex}
 
-\section*{Data Availability}
-All code and data used in this study are publicly available at
-\url{https://github.com/vinhqdang/WAGER}.
+\section*{Data availability}
+All code, cached model outputs and scripts needed to reproduce every number and figure
+in this paper are publicly available in a repository whose URL is withheld here to
+preserve anonymity during review; it is given on the title page and will be stated in
+the published version.
 
+\section*{Declaration of generative AI and AI-assisted technologies in the manuscript
+preparation process}
+During the preparation of this work the author used a large language model assistant to
+help draft and edit prose, write experiment and figure scripts, and check numerical
+consistency between the reported values and the stored result files. After using this
+tool the author reviewed and edited the content as needed and takes full responsibility
+for the content of the published article.
+
+\bibliographystyle{elsarticle-harv}
 \bibliography{ref}
 
 \input{7appendix.tex}

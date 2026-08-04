@@ -1,4 +1,4 @@
-\begin{appendices}
+\appendix
 
 \section{Proofs}\label{app:proofs}
 
@@ -105,9 +105,9 @@ The NumPy implementation is in \texttt{wager/antisymmetric.py}. The primary rout
 \texttt{decompose\_gain} validates probability matrices, forms score contrasts, excludes
 singleton cells, computes all three components, verifies the identity numerically, and
 returns per-instance transported/alignment values plus intervals. The Visual Genome
-driver is \texttt{experiments/run\_sgg\_wager.py}; controlled validation and sensitivity
-checks are in \texttt{experiments/antisymmetric\_simulation.py} and
-\texttt{experiments/antisymmetric\_ablations.py}. All random seeds are fixed. Unit tests
+driver is \texttt{experiments/\allowbreak run\_sgg\_wager.py}; controlled validation and sensitivity
+checks are in \texttt{experiments/\allowbreak antisymmetric\_simulation.py} and
+\texttt{experiments/\allowbreak antisymmetric\_ablations.py}. All random seeds are fixed. Unit tests
 cover the decomposition identity, quadratic covariance identity, cell-constant null,
 singleton reporting, cluster inference, randomization power, and log-score path, plus
 direct numerical checks of Propositions~\ref{prop:attenuate} and~\ref{prop:coarsen}
@@ -157,5 +157,3 @@ difference between the two runs is the per-example loss weight: uniform for the
 baseline, and the effective-number class-balanced weight
 $w_c\propto(1-\beta)/(1-\beta^{n_c})$ with $\beta=0.9999$ for the class-balanced model,
 renormalized to average to one across classes.
-
-\end{appendices}

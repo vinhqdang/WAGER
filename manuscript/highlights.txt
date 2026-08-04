@@ -1,0 +1,8 @@
+Highlights
+(CVIU requires 3-5 bullets, each at most 85 characters including spaces.)
+
+Exact finite-sample identity splits a model-pair score gain into prior and alignment
+Residual is an order-two U-statistic equal to a within-cell covariance gain
+Leave-one-out transport removes an exact (n_c-1)/n_c plug-in attenuation bias
+On Visual Genome a class-only gain is provably all prior, zero instance alignment
+Exposes a long-tail method whose near-zero score hides two large cancelling channels
