@@ -9,7 +9,11 @@ U-statistic, equals a conditional covariance gain under the quadratic score, and
 computable in $O(NK)$ time. Controlled experiments support null calibration and signal
 recovery, and on Visual Genome the method assigns a class-only improvement entirely to
 the prior channel while identifying the additional alignment that spatial geometry
-supplies. Carried over without modification to long-tailed classification, it goes on to
+supplies. Substituting a frozen CLIP encoder for that geometry produces the sharpest
+illustration of why the two channels are worth separating: the resulting model scores
+and ranks worse by every aggregate measure, yet is shown to align with individual
+instances significantly better than the model it appears to lose to, its whole deficit
+lying in the annotation prior. Carried over without modification to long-tailed classification, it goes on to
 distinguish a re-weighting schedule whose near-zero aggregate score conceals two large
 cancelling channels from one whose genuine improvement proves to be part prior-refitting
 and part rare-class alignment, a separation that neither an aggregate score nor an

@@ -1,0 +1,117 @@
+{
+  "algorithm": "WAGER-within-cell-antisymmetric",
+  "dataset": "VisualGenome-PredCls (matched training subsample)",
+  "score": "quadratic/Brier",
+  "alpha": 0.05,
+  "n_randomizations": 499,
+  "n_test": 229605,
+  "n_images": 27955,
+  "n_train_relations": 100000,
+  "n_unique_crops": 422143,
+  "n_images_fetched": 71990,
+  "n_missing_images": 3,
+  "accuracy": {
+    "MLP-CLASS-S": 0.6416105921038305,
+    "MLP-SPATIAL-S": 0.6467498530084275,
+    "MLP-VISUAL-S": 0.61605801267394
+  },
+  "comparisons": [
+    {
+      "new": "MLP-SPATIAL-S",
+      "old": "MLP-CLASS-S",
+      "total_gain": 0.005030909552878723,
+      "prior_gain": -0.005202119839137439,
+      "reasoning_gain": 0.010233029392016162,
+      "reasoning_share": 2.0340316764710566,
+      "reasoning_ci": [
+        0.009672224803140167,
+        0.010793833980892157
+      ],
+      "prior_ci": [
+        -0.0059014322227049,
+        -0.004502807455569978
+      ],
+      "total_ci": [
+        0.00415963957154243,
+        0.0059021795342150156
+      ],
+      "share_ci": [
+        1.734808894605335,
+        2.3332544583367785
+      ],
+      "standard_error": 0.00028613004794963043,
+      "n_total": 229605,
+      "n_identified": 227337,
+      "coverage": 0.9901221663291304,
+      "n_cells": 6346,
+      "n_singletons": 2268,
+      "score": "brier",
+      "randomization_p": 0.002
+    },
+    {
+      "new": "MLP-VISUAL-S",
+      "old": "MLP-CLASS-S",
+      "total_gain": -0.04151666218967051,
+      "prior_gain": -0.05816464648785732,
+      "reasoning_gain": 0.016647984298186792,
+      "reasoning_share": null,
+      "reasoning_ci": [
+        0.015338089226427633,
+        0.017957879369945952
+      ],
+      "prior_ci": [
+        -0.059647218972153894,
+        -0.05668207400356074
+      ],
+      "total_ci": [
+        -0.04348186516749622,
+        -0.0395514592118448
+      ],
+      "share_ci": [
+        null,
+        null
+      ],
+      "standard_error": 0.0006683260927708088,
+      "n_total": 229605,
+      "n_identified": 227337,
+      "coverage": 0.9901221663291304,
+      "n_cells": 6346,
+      "n_singletons": 2268,
+      "score": "brier",
+      "randomization_p": 0.002
+    },
+    {
+      "new": "MLP-VISUAL-S",
+      "old": "MLP-SPATIAL-S",
+      "total_gain": -0.04654757174254924,
+      "prior_gain": -0.05296252664871988,
+      "reasoning_gain": 0.006414954906170632,
+      "reasoning_share": null,
+      "reasoning_ci": [
+        0.005141018755780093,
+        0.007688891056561171
+      ],
+      "prior_ci": [
+        -0.054458065622922464,
+        -0.051466987674517295
+      ],
+      "total_ci": [
+        -0.04851413397218318,
+        -0.0445810095129153
+      ],
+      "share_ci": [
+        null,
+        null
+      ],
+      "standard_error": 0.000649979367192043,
+      "n_total": 229605,
+      "n_identified": 227337,
+      "coverage": 0.9901221663291304,
+      "n_cells": 6346,
+      "n_singletons": 2268,
+      "score": "brier",
+      "randomization_p": 0.002
+    }
+  ],
+  "seconds": 15.302030801773071
+}

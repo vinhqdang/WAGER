@@ -139,9 +139,11 @@ encoder must be instantiated as \texttt{ViT-B-32-quickgelu}; loading the same we
 under the plain \texttt{ViT-B-32} configuration silently substitutes a standard GELU and
 degrades every embedding. Second, because an annotated object box participates in
 several relations, crops are deduplicated by (image, box) before encoding and gathered
-afterwards, which removes roughly a third of the encoder work without changing any
-feature. Only the images referenced by the audited relations are retrieved, individually
-rather than through the two bulk archives.
+afterwards: the $659{,}210$ crops implied by the audited relations collapse to
+$422{,}143$ unique ones, removing $36.0\%$ of the encoder work without changing any
+feature. Only the images referenced by those relations are retrieved, individually rather
+than through the two bulk archives; of the $71{,}990$ required, three were unavailable
+upstream and fall back to a blank crop.
 
 \paragraph{ResNet-32 pair (Section~\ref{sec:cifarlt}).} CIFAR-100-LT uses the standard
 exponential-profile construction of \citet{cui2019classbalanced} at imbalance ratio

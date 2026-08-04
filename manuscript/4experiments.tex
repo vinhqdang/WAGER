@@ -231,12 +231,71 @@ image-clustered intervals, so its numbers remain directly comparable with the ma
 analysis. The sampling procedure, the crop-deduplication scheme and the count of images
 that could not be retrieved are given in Appendix~\ref{app:implementation}.
 
-% PENDING(results): filled from results/vg_visual_results.json once the matched-subsample
-% job completes. Report the three accuracies; a table of the three pairs
-% (SPATIAL-S vs CLASS-S, VISUAL-S vs CLASS-S, VISUAL-S vs SPATIAL-S) with T/P/R, CI and
-% p; fig7_vg_visual.png; and one paragraph on whether real pixel content buys alignment
-% beyond box geometry -- reporting the sign honestly either way, since a null result here
-% is itself informative about what the geometry proxy already captures.
+\paragraph{Result.} Judged by any aggregate measure, the CLIP model is the worst of the
+three. Its top-1 accuracy is $0.6161$ against $0.6467$ for MLP-SPATIAL-S and $0.6416$ for
+MLP-CLASS-S, and its quadratic score is lower still, falling $0.04655$ below
+MLP-SPATIAL-S. An evaluator working from either number would conclude that replacing box
+geometry with pixel content had simply made the predictor worse, and would discard it.
+
+The decomposition in Table~\ref{tab:vgvisual} and Figure~\ref{fig:vgvisual} contradicts
+that reading on the axis the paper cares about. Against MLP-SPATIAL-S the CLIP model
+loses $0.05296$ of prior-transported gain while \emph{gaining} $0.00641$ of instance
+alignment (95\% CI $[0.00514,0.00769]$, randomization $p=.002$), so its entire deficit
+sits in the prior channel and its instance-level discrimination is significantly better,
+not worse. The comparison against the class-only baseline tells the same story more
+plainly: pixels buy $0.01665$ of alignment where box geometry buys $0.01023$, and the
+two intervals are far apart. Real image content therefore carries more instance-specific
+signal than the geometric proxy standing in for it, which is precisely what
+Section~\ref{sec:vgvisual} set out to test.
+
+Why the prior channel collapses is not mysterious. The $1024$ CLIP dimensions dominate
+the $64$ dimensions of class embedding that the head also receives, so the model fits the
+class-pair frequency structure of VG150 markedly less well than a predictor built around
+that structure. A benchmark whose headline metric rewards prior fitting will punish this
+model, and the aggregate numbers duly do. What WAGER adds is the observation that the
+punishment is not for failing to use the image; it is for failing to reproduce the
+annotation prior, while using the image better than either competitor.
+
+This is the paper's argument running in the opposite direction from
+Section~\ref{sec:cifarlt}. There a near-zero total gain concealed a large alignment
+\emph{loss}; here a clearly negative total gain conceals a real alignment \emph{gain}. In
+both cases the aggregate score is not merely imprecise but actively misleading about the
+thing a vision benchmark is meant to measure, and in both cases the two channels recover
+what it hides.
+
+\begin{table}[t]
+\centering
+\caption{Matched-subsample real-pixel study on the full VG150 test split (coverage
+$99.0\%$, as in Table~\ref{tab:wager-results}). All three predictors are trained on the
+same $100{,}000$ relations and differ only in features. CI is image-cluster robust on
+$\widehat{\Delta R}$; $p$ is the 499-shift randomization diagnostic.}
+\label{tab:vgvisual}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+New model & Old model & $\widehat{\Delta T}$ & $\widehat{\Delta P}$ &
+$\widehat{\Delta R}$ (95\% CI) & $p$ \\
+\midrule
+MLP-SPATIAL-S & MLP-CLASS-S   & $0.00503$  & $-0.00520$ & $0.01023\,[0.00967,0.01079]$ & .002 \\
+MLP-VISUAL-S  & MLP-CLASS-S   & $-0.04152$ & $-0.05816$ & $0.01665\,[0.01534,0.01796]$ & .002 \\
+MLP-VISUAL-S  & MLP-SPATIAL-S & $-0.04655$ & $-0.05296$ & $0.00641\,[0.00514,0.00769]$ & .002 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig7_vg_visual.png}
+\caption{\textbf{Pixels beat geometry on alignment while losing on the aggregate.}
+Left: the exact decomposition for the three matched-subsample pairs. Both comparisons
+involving the CLIP model have strongly negative totals (green) driven entirely by the
+prior channel (blue), while their alignment channel (red) is positive in every case.
+Right: the alignment channel alone, with 95\% image-clustered intervals. Replacing box
+geometry with real image content raises instance alignment from $0.01023$ to $0.01665$
+over the same class-only baseline.}
+\label{fig:vgvisual}
+\end{figure*}
 
 \subsection{Cross-domain validation: long-tailed image classification}\label{sec:cifarlt}
 
