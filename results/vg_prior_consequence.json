@@ -1,0 +1,100 @@
+{
+  "n_randomizations": 999,
+  "smooth": 0.1,
+  "brier": {
+    "SPATIAL-S": 0.5081404706643748,
+    "VISUAL-S": 0.5550369290450512,
+    "SPATIAL-S-pm": 0.4967937865472752,
+    "VISUAL-S-pm": 0.5297222453489161
+  },
+  "accuracy": {
+    "SPATIAL-S": 0.6467498530084275,
+    "VISUAL-S": 0.61605801267394,
+    "SPATIAL-S-pm": 0.6580823588336491,
+    "VISUAL-S-pm": 0.6363885803880578
+  },
+  "temperatures": {
+    "SPATIAL-S": 1.0,
+    "VISUAL-S": 1.175
+  },
+  "rows": [
+    {
+      "name": "VISUAL' vs VISUAL",
+      "total": 0.025118771375464657,
+      "prior": 0.024010390494019807,
+      "reasoning": 0.0011083808814448559,
+      "reasoning_ci": [
+        0.0006773957124049732,
+        0.0015393660504847385
+      ],
+      "randomization_p": null
+    },
+    {
+      "name": "SPATIAL' vs SPATIAL",
+      "total": 0.011828165208913862,
+      "prior": 0.010932379680168582,
+      "reasoning": 0.0008957855287452804,
+      "reasoning_ci": [
+        0.000671807316394193,
+        0.0011197637410963676
+      ],
+      "randomization_p": null
+    },
+    {
+      "name": "VISUAL vs SPATIAL (paper)",
+      "total": -0.04654757174254924,
+      "prior": -0.05296252664871988,
+      "reasoning": 0.006414954906170632,
+      "reasoning_ci": [
+        0.005141018755780093,
+        0.007688891056561171
+      ],
+      "randomization_p": 0.001
+    },
+    {
+      "name": "VISUAL' vs SPATIAL",
+      "total": -0.021428800367084576,
+      "prior": -0.02895213615470006,
+      "reasoning": 0.007523335787615487,
+      "reasoning_ci": [
+        0.006185261962262892,
+        0.008861409612968081
+      ],
+      "randomization_p": 0.001
+    },
+    {
+      "name": "VISUAL' vs SPATIAL' (both corrected)",
+      "total": -0.033256965575998436,
+      "prior": -0.03988451583486864,
+      "reasoning": 0.006627550258870208,
+      "reasoning_ci": [
+        0.00529079707180393,
+        0.007964303445936485
+      ],
+      "randomization_p": 0.001
+    },
+    {
+      "name": "VISUAL vs SPATIAL raw (audit half)",
+      "total": -0.04498853760348668,
+      "prior": -0.05121516336425693,
+      "reasoning": 0.006226625760770245,
+      "reasoning_ci": [
+        0.004512884298431061,
+        0.007940367223109429
+      ],
+      "randomization_p": null
+    },
+    {
+      "name": "VISUAL vs SPATIAL cal-both (audit half)",
+      "total": -0.042600304222784,
+      "prior": -0.04727470566344212,
+      "reasoning": 0.004674401440658135,
+      "reasoning_ci": [
+        0.0031389314128300364,
+        0.006209871468486233
+      ],
+      "randomization_p": null
+    }
+  ],
+  "seconds": 52.133999824523926
+}

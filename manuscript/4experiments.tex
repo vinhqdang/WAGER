@@ -171,8 +171,8 @@ choice: it is not that coarsening is wrong, but that it cannot be assumed neutra
 only the finer partition's estimate isolates alignment gain net of every prior regularity
 expressible in $\phi$. Raising the minimum cell size from 2 to 5, 10, and 20 yields
 $0.01395$, $0.01330$, and $0.01225$; all cluster-robust lower limits remain positive.
-Unlike the rejected projection-based formulation, there is no smoothing strength, split
-fraction, clipping constant, betting order, or gain-ratio decision threshold to tune.
+The procedure itself has no smoothing strength, split fraction, or decision threshold
+to tune.
 
 \begin{table}[t]
 \centering
@@ -248,13 +248,32 @@ two intervals are far apart. Real image content therefore carries more instance-
 signal than the geometric proxy standing in for it, which is precisely what
 Section~\ref{sec:vgvisual} set out to test.
 
-Why the prior channel collapses is not mysterious. The $1024$ CLIP dimensions dominate
+Why the prior channel collapses has a plausible mechanism, though we state it as a
+hypothesis rather than a finding. The $1024$ CLIP dimensions dominate
 the $64$ dimensions of class embedding that the head also receives, so the model fits the
 class-pair frequency structure of VG150 markedly less well than a predictor built around
 that structure. A benchmark whose headline metric rewards prior fitting will punish this
 model, and the aggregate numbers duly do. What WAGER adds is the observation that the
 punishment is not for failing to use the image; it is for failing to reproduce the
 annotation prior, while using the image better than either competitor.
+
+\paragraph{The deficit and the advantage respond to different interventions.} If the
+two channels measure what they claim, they should respond asymmetrically to a post-hoc
+correction that supplies prior information but no instance information. We test this by
+prior matching: within each class-pair cell, a model's predictions are reweighted so
+that their cell mean matches the training-count histogram, a label-shift-style
+correction that uses no test labels. The correction registers, as it must, almost
+entirely in the prior channel ($\Delta P=+0.02401$ against $\Delta R=+0.00111$ for the
+CLIP model relative to its uncorrected self), and it cuts the CLIP model's aggregate
+deficit roughly in half ($-0.04655$ to $-0.02143$) while leaving the alignment advantage
+intact ($+0.00752$, or $+0.00663$ with both models corrected). A calibration-matched
+audit -- temperatures fitted on a held-out image split, $T^*=1.18$ against $1.00$, so
+these heads are nearly calibrated to begin with -- likewise leaves the advantage
+significant at $+0.00467$ $[+0.00314,+0.00621]$. The alignment channel is therefore
+neither manufacturable by prior correction nor an artifact of confidence scaling.
+Conversely, the part of the deficit that prior matching removes is exactly the part a
+deployment could restore by re-weighting; the remainder reflects differences in
+within-cell prediction dispersion rather than in the fitted cell histogram.
 
 This is the paper's argument running in the opposite direction from
 Section~\ref{sec:cifarlt}. There a near-zero total gain concealed a large alignment
@@ -326,7 +345,13 @@ the global class marginal and so instantiates Proposition~\ref{prop:coarsen} in 
 domain, and a partition into head, medium and tail training-frequency tiers. CIFAR-100
 test images are independent, unlike the several relations VG draws from one photograph,
 so no cluster grouping is required and the plain H\'ajek interval of
-Section~\ref{sec:inference} applies directly.
+Section~\ref{sec:inference} applies directly. One semantic point matters in this domain:
+transport uses each cell's \emph{test} label histogram, which on CIFAR-100-LT is
+balanced. A positive $\Delta P$ here therefore records movement \emph{toward} the
+balanced test marginal -- undoing the training-frequency skew -- which is precisely the
+adjustment long-tailed evaluation is designed to reward; a prior-transported gain is a
+description of where score was earned, not an accusation
+(Section~\ref{sec:discussion}).
 
 \paragraph{Result.} The three classifiers reach top-1 accuracies of $0.3662$ (CE),
 $0.2627$ (CB) and $0.3874$ (DRW), so re-weighting from initialization degrades the
@@ -338,31 +363,71 @@ Of the two, the class-balanced run is the more instructive, precisely because it
 aggregate score conceals almost everything of interest. On the quadratic score it gains
 $+0.00143$ over the baseline, a difference small enough that a reader working from the
 headline number alone would reasonably conclude that re-weighting had changed very
-little. The decomposition tells another story entirely: within superclasses the
+little. The decomposition tells another story: within superclasses the
 prior-transported channel improves by $+0.19713$ while instance alignment deteriorates
 by $-0.19569$ (95\% CI $[-0.20728,-0.18411]$), so the near-zero total is not a small
-effect but two large ones that happen to cancel. What re-weighting bought was a much
-closer fit to the within-superclass frequency distribution, and what it paid for that
-was per-instance discrimination, a trade the ten-point accuracy drop confirms
-independently. Even the apparent paradox of a proper score that fails to fall with
-accuracy has a straightforward explanation. The baseline is badly overconfident,
-assigning a mean maximum probability of $0.764$ while being correct on only $0.3662$ of
-the test set, so the softer predictions of the re-weighted model recover on calibration
-roughly what they surrender on alignment.
+effect but two large ones that happen to cancel.
 
-DRW is the more representative case, since it is an improvement of the kind a benchmark
-submission would actually claim. Its total gain of $+0.06606$ divides into $+0.04206$ of
-prior-transported gain and $+0.02400$ of instance alignment (95\% CI
-$[+0.01340,+0.03460]$; randomization $p=.002$). Roughly two thirds of what presents
-itself as a uniform improvement is therefore recoverable from the class-frequency prior
-alone, while the remaining third is a genuine and statistically significant gain in
-per-instance discrimination, so deferring the re-weighting evidently does more than
-re-rank the classes. Neither an accuracy difference nor an aggregate score can make that
-separation, which is the practical argument for reporting the two channels instead of
+\paragraph{A calibration-matched regime.} A channel split of that shape could, however,
+be produced by confidence scaling alone. Under the quadratic score the alignment channel
+is a covariance between probability movements and labels
+(Eq.~\eqref{eq:cov-id}), and a monotone recalibration moves it: softening an
+overconfident model transfers score mass from the alignment to the prior channel while
+adding no information about any individual image. The baseline invites exactly this
+concern, assigning a mean maximum probability of $0.764$ while being correct on only
+$0.3662$ of the test set. We therefore repeat the audit in a calibration-matched regime:
+each model's temperature is chosen by held-out likelihood on a calibration half of the
+test split ($T^*=2.85$ for CE, $3.51$ for CB, $2.61$ for DRW), the decomposition is
+computed on the disjoint audit half, and the whole procedure is repeated over twenty
+random splits (Table~\ref{tab:cifar-cal}). The regime's necessity is quantified by its
+control row: recalibrating the baseline alone -- a transformation carrying no instance
+information -- moves the channels by $+0.380$ (prior) and $-0.175$ (alignment), so the
+raw split does mix calibration with discrimination.
+
+The calibration-matched rows then separate the two schedules cleanly, and more sharply
+than the raw ones. CB's alignment deficit does not shrink but widens, to
+$-0.23991\,(0.00491)$: the model re-weighted from initialization has genuinely lost
+within-superclass discrimination -- a real degradation that the ten-point accuracy drop
+records independently -- and its near-zero raw total reflects that loss offset by its
+softer, better-calibrated confidence. DRW inverts the reading its raw split suggests.
+Raw, its $+0.06712$ gain divides roughly two-thirds prior to one-third alignment;
+calibration-matched, the improvement is $+0.02173\,(0.00275)$ of which
+$+0.01957\,(0.00329)$ is instance alignment while the prior channel is close to zero
+($+0.00216\,(0.00410)$). What survives calibration matching is precisely the component
+the deferred schedule was designed to buy -- per-instance discrimination, concentrated
+on rare classes (Table~\ref{tab:cifar-tier}) -- while the apparently prior-recoverable
+share of its raw gain was largely the calibration difference between the two runs.
+Neither an accuracy difference nor an aggregate score exposes either composition, which
+is the practical argument for reporting the two channels, in both regimes, instead of
 their sum.
 
+\begin{table}[t]
+\centering
+\caption{Raw and calibration-matched decompositions on CIFAR-100-LT at the superclass
+audit. Temperatures are fitted by likelihood on a held-out calibration half of the test
+split; every decomposition uses the disjoint audit half; entries are means (sd) over
+twenty random splits. The final row is the control: recalibrating the baseline alone
+carries no instance information yet moves both channels substantially.}
+\label{tab:cifar-cal}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Comparison & Regime & $\widehat{\Delta T}$ & $\widehat{\Delta P}$ &
+$\widehat{\Delta R}$ \\
+\midrule
+CB vs CE  & raw                 & $+0.00208\,(0.00642)$ & $+0.19635\,(0.00369)$ & $-0.19427\,(0.00632)$ \\
+CB vs CE  & calibration-matched & $-0.12912\,(0.00373)$ & $+0.11079\,(0.00372)$ & $-0.23991\,(0.00491)$ \\
+DRW vs CE & raw                 & $+0.06712\,(0.00865)$ & $+0.04258\,(0.00463)$ & $+0.02454\,(0.00685)$ \\
+DRW vs CE & calibration-matched & $+0.02173\,(0.00275)$ & $+0.00216\,(0.00410)$ & $+0.01957\,(0.00329)$ \\
+\midrule
+CE recalibrated vs CE & control & $+0.20495\,(0.00420)$ & $+0.37960\,(0.00268)$ & $-0.17464\,(0.00455)$ \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
 Where the alignment gain sits is visible in Table~\ref{tab:cifar-tier} and
-Figure~\ref{fig:cifar}. For DRW it falls where the long-tail literature intends it to,
+Figure~\ref{fig:cifar} (raw regime). For DRW it falls where the long-tail literature intends it to,
 reaching $+0.09009$ on few-shot classes and $+0.06760$ on medium-shot ones, while
 many-shot classes lose $-0.07624$ as the schedule shifts capacity away from the head.
 The class-balanced run reproduces that same ordering with every level displaced
@@ -370,14 +435,16 @@ downward, its many-shot alignment collapsing to $-0.41977$. What the decompositi
 supplies, then, is not only how much of a long-tail gain is real but where in the
 frequency spectrum it was earned.
 
-These numbers happen to provide an external check on the theory as well. Computing the
+These numbers also provide an implementation check on real inputs. Computing the
 alignment term directly from the covariance identity of Eq.~\eqref{eq:cov-id}, through a
 code path that shares nothing with the transport estimator, gives $-0.19530$; multiplying
 by the factor $n_c/(n_c-1)$ that Proposition~\ref{prop:attenuate} predicts, at the
 $n_c=500$ of a balanced superclass cell, returns $-0.195693$ against the estimator's
-$-0.19569$. Theorem~\ref{thm:population} and Proposition~\ref{prop:attenuate} are in
-that sense confirmed on real trained models, and not only on the synthetic populations
-used in the unit tests.
+$-0.19569$. The identities of Theorem~\ref{thm:population} and
+Proposition~\ref{prop:attenuate} are algebraic, so this verifies the implementation
+rather than the theory; the point of the check is that two independent code paths agree
+to the fifth decimal on real trained models, not only on the synthetic populations used
+in the unit tests.
 
 \begin{table}[t]
 \centering

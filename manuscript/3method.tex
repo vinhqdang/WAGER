@@ -185,12 +185,11 @@ $(n_c-1)/n_c$.
 The shrinkage in Eq.~\eqref{eq:attenuation} is deterministic, not a variance statement:
 whenever $\widehat{\Delta R}_c\neq0$, the in-sample plug-in is biased for it at every
 finite $n_c$, with the largest relative attenuation exactly in the smallest identified
-cells (50\% at $n_c=2$, vanishing only as $n_c\to\infty$). This is why the redesign
-removes the projection/evaluation split that the rejected precursor of WAGER used to
-control the same self-prediction bias: a held-out fold restores unbiasedness by fitting
-$\hat p_c$ on data disjoint from the scored examples, but it does so by discarding
-examples from both stages and by introducing a split-fraction hyperparameter and,
-typically, higher variance. WAGER's leave-one-out U-statistic removes the bias exactly,
+cells (50\% at $n_c=2$, vanishing only as $n_c\to\infty$). The standard remedy for this
+kind of self-prediction bias is a projection/evaluation split: a held-out fold restores
+unbiasedness by fitting $\hat p_c$ on data disjoint from the scored examples, but it
+does so by discarding examples from both stages and by introducing a split-fraction
+hyperparameter and, typically, higher variance. WAGER's leave-one-out U-statistic removes the bias exactly,
 at the full sample, for every $\phi$-cell with $n_c\ge2$, without a fitted nuisance
 distribution at all. Section~\ref{sec:related-decomposition} situates this result
 against the classical single-model score decomposition, where the analogous

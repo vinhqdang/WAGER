@@ -22,6 +22,23 @@ estimate unchanged, and only the finest identified partition isolates alignment 
 of every prior regularity expressible in $\phi$. This is why the finest defensible prior
 feature is the conservative primary choice, not merely an empirical convention.
 
+Two further interpretation limits deserve explicit statement. First, $\Delta R$ is not
+invariant to monotone recalibration: because the alignment channel is a covariance
+between probability movements and labels, sharpening or softening a fixed model shifts
+score mass between the two channels while adding no information about any individual
+example. Section~\ref{sec:cifarlt} quantifies the effect on real models and adopts the
+corresponding control -- decompose calibration-matched model pairs, with temperatures
+chosen on data disjoint from the audit -- which we recommend whenever the compared
+systems differ visibly in confidence. Second, a prior-transported gain is not evidence
+of anything illegitimate. Fitting the deployment label distribution better is genuine,
+decision-relevant skill whenever that distribution matches the benchmark's; it is
+fragile precisely under label shift, where prior-transported gain can be added or
+removed post hoc by re-weighting, as the prior-matching experiment of
+Section~\ref{sec:vgvisual} demonstrates directly.
+% PENDING(refs): add label-shift citations (Saerens et al. 2002; Lipton et al. 2018) in the P3 literature pass.
+The decomposition reports where a gain lives; whether the prior channel is worth paying
+for is a property of the deployment, not of the model pair.
+
 Exact transport also has a positivity requirement: a cell needs at least two examples.
 WAGER reports the identified fraction and makes no claim for singletons. Very fine
 $\phi$ can therefore improve confound control while reducing coverage. Approximate

@@ -15,8 +15,10 @@ in-sample plug-in incurs, and coarsening the audit cell shifts the estimate by a
 between-cell covariance term. On 229,605 Visual Genome relations a class-only network
 improves the frequency baseline entirely through the prior channel, while a frozen-CLIP
 model scoring $0.04655$ \emph{worse} overall has significantly \emph{better} instance
-alignment ($+0.00641$, $p=.002$) than the box-geometry model it loses to. Applied
-unchanged to long-tailed classification, it separates two re-weighting schedules that
-aggregate scores cannot: one whose near-zero total gain conceals a $+0.19713$ prior gain
-cancelling a $-0.19569$ alignment loss, and one whose genuine improvement is two-thirds
-prior-recoverable and one-third instance alignment.
+alignment ($+0.00641$, $p=.002$) than the box-geometry model it loses to -- an advantage
+that survives both post-hoc prior matching and calibration matching. Applied unchanged
+to long-tailed classification, it exposes the composition of two re-weighting schedules'
+gains that aggregate scores leave hidden: a near-zero total that decomposes into two
+large cancelling channels, which a calibration-matched reanalysis traces to a genuine
+loss of within-class discrimination, and a real improvement that the same reanalysis
+shows to be almost entirely instance alignment rather than prior refitting.
