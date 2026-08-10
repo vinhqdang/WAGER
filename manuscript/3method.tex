@@ -87,13 +87,14 @@ average. The second term is new: it is a between-cell covariance, taken over the
 cells nested inside $\bar c$, between each fine cell's typical gain at label $y$ and its
 label-$y$ frequency. It is generally not sign definite, so coarsening $\phi$ can inflate
 or deflate the credited alignment gain relative to the finer audit, and Table
-\ref{tab:sensitivity} shows the empirically inflating case. Because this second term
-vanishes identically once $\phi$ is refined to make it constant on every non-vanishing
-fine cell (in particular, in the limit where $\phi$ is the finest cell that remains
-non-singleton for every example), Proposition~\ref{prop:coarsen} formalizes why the
-finest defensible audit feature is the conservative default: coarsening can only add
-cross-cell prior structure into $\Delta R$, never remove genuine within-cell alignment
-that the fine partition already isolates. The proof is a per-label application of the
+\ref{tab:sensitivity} shows the empirically inflating case. The second term vanishes
+exactly when the quantities it correlates do not vary across the fine cells nested in
+$\bar c$ -- that is, when $\mathbb E[H_X(y)\mid C]$ or $\Pr(Y=y\mid C)$ is constant
+within each coarse cell. Proposition~\ref{prop:coarsen} thereby formalizes why the
+finest defensible audit feature is the conservative default: relative to the finer
+audit, coarsening changes the estimate only by adding cross-cell prior structure into
+$\Delta R$, while the finer partition's alignment gain is preserved on average through
+the first term. The proof is a per-label application of the
 law of total covariance, summed over $y$ (Appendix~\ref{app:proofs}).
 
 \begin{figure*}[t]
@@ -130,8 +131,12 @@ For every cell with $n_c\ge2$, without a distributional assumption,
 \begin{equation}
 \widehat{\Delta T}_c=\widehat{\Delta P}_c+\widehat{\Delta R}_c.
 \end{equation}
-Moreover, under exchangeable sampling within the cell,
+Moreover, when the cell's examples are drawn i.i.d.\ from the cell population,
 $\widehat{\Delta R}_c$ is an unbiased order-two U-statistic for $\Delta R_c$.
+Independence, not exchangeability alone, is what unbiasedness requires: the
+independent-coupling definition of $\Delta P_c$ pairs an example with a label drawn
+independently from the same cell, so $\mathbb E[H_1(Y_2)]$ matches it only for
+independent within-cell draws.
 \end{theorem}
 
 The dataset-level quantities weight cells by their number of identified examples:

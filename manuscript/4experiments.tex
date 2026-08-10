@@ -28,6 +28,36 @@ estimated alignment gain of $-8.97\times10^{-5}$; the null $p$-values come out
 approximately uniform and the null estimates stay centred at zero
 (Figure~\ref{fig:simulation}, centre and right).
 
+\paragraph{Coverage of the primary interval.} The oracle-signal and null designs above
+validate the estimator's centering and the randomization diagnostic, but the paper's
+primary uncertainty statement is the image-clustered H\'ajek interval, so we validate
+its coverage directly in the regime that stresses it: relations grouped into images
+(one to about thirty per image) whose oracle weight shares a latent per-image effect,
+and Zipf-distributed cell sizes in which most identified cells hold exactly two
+examples. Against the design expectation estimated from 4{,}000 independent
+replications, the cluster-robust interval covers in $94.0\%$ of 500 runs, while an
+interval that wrongly treats relations as independent covers in only $88.6\%$ --
+quantifying both the mild finite-sample undercoverage of the asymptotic interval and
+the necessity of clustering.
+
+\paragraph{Discriminant validity.} Three further designs test that the channels
+separate what they claim to separate. First, a \emph{calibration-only} alternative:
+the new model is a temperature-softened copy of an overconfident informative model, so
+the pair contains identical instance information. The raw decomposition credits it with
+a large negative alignment gain (mean $-0.488$) -- the confound analyzed in
+Section~\ref{sec:cifarlt} -- while the calibration-matched protocol used there reduces
+it to $-0.0003$ (sd $0.0017$ over 200 runs), confirming that the protocol removes
+exactly the confidence-scaling channel. Second, a \emph{prior-only} improvement (the
+new model corrects a heteroscedastically noisy estimate of the cell prior, adding no
+instance information) yields an alignment gain centred at zero ($0.0002$, sd $0.0035$)
+with a clearly positive prior channel: prior improvements do not leak into
+$\widehat{\Delta R}$ beyond the algebraic guarantee of Theorem~\ref{thm:population}.
+Third, an \emph{unrecorded within-cell shortcut} (a binary feature, varying inside each
+cell, that shifts the label distribution and is used by the new model) is credited to
+alignment ($+0.041$, sd $0.004$), quantifying the stated limitation that
+$\widehat{\Delta R}$ measures all within-cell predictive signal relative to the
+declared $\phi$, shortcut or otherwise, and cannot by itself distinguish the two.
+
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig3_new_simulation.png}
@@ -51,14 +81,22 @@ which WAGER excludes and reports rather than smoothing over, leaving 227,337 rel
 (99.0\%) under audit.
 
 The five predictors are deliberately constructed so that each exposes a different kind
-of information. FREQ is simply the training-count distribution conditioned on the class
-pair, and FREQ+OVERLAP adds to it a single binary box-overlap indicator. MLP-CLASS
-consumes fixed subject and object class embeddings, which makes it a function of $\phi$
-alone; MLP-SPATIAL extends those embeddings with 12 normalized box-geometry features
-covering relative centre, scale, aspect, intersection, containment and IoU, while
-MLP-SPATIAL+ merely increases capacity. Each is trained once on the training split, and
-WAGER thereafter consumes nothing but their cached test distributions, scored
-quadratically with image-clustered intervals and 499 within-cell cyclic randomizations.
+of information. FREQ is the training-count distribution conditioned on the class pair,
+with add-one smoothing and a subject-marginal and then global backoff for class pairs
+unseen in training; FREQ+OVERLAP adds to it a single binary box-overlap indicator.
+MLP-CLASS consumes fixed subject and object class embeddings, which makes it a function
+of $\phi$ alone; MLP-SPATIAL extends those embeddings with 12 normalized box-geometry
+features covering relative centre, scale, aspect, intersection, containment and IoU,
+while MLP-SPATIAL+ both widens the network and trains longer (Appendix
+\ref{app:implementation} lists every architecture and schedule), so its increment over
+MLP-SPATIAL reflects capacity and optimization jointly rather than capacity alone. Each
+is trained once on the training split, and WAGER thereafter consumes nothing but their
+cached test distributions, scored quadratically with image-clustered intervals and 499
+within-cell cyclic randomizations, whose smallest attainable $p$-value is
+$1/500=.002$; table entries of $.002$ are at this resolution floor and should be read
+as $p\le.002$. With confidence intervals as the primary uncertainty statement and every
+significant effect many standard errors from zero, we do not additionally adjust the
+diagnostic $p$-values for the number of reported comparisons.
 
 \begin{figure*}[t]
 \centering
@@ -126,8 +164,11 @@ as an improvement in itself; both channels are reported, signs included.
 \centering
 \caption{WAGER decomposition on 227,337 identified VG150 PredCls relations. Gains use
 the quadratic score. CI is image-cluster robust; $p$ is the 499-shift relation-level
-randomization diagnostic. ``--'' denotes an undefined share because total gain is
-negative.}
+randomization diagnostic (resolution floor $.002$). ``--'' denotes an undefined share
+because total gain is negative. The MLP-CLASS row's zero-width interval is exact by
+construction, not a sampling statement: a gain vector constant within every cell makes
+the antisymmetric kernel identically zero (Theorem~\ref{thm:population}), so no
+variability exists for the interval to measure.}
 \label{tab:wager-results}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llrrrrr@{}}

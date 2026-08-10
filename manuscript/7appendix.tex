@@ -30,9 +30,12 @@ Since $\binom{n_c}{2}=n_c(n_c-1)/2$,
 -\frac1{n_c(n_c-1)}\sum_{i\ne j}H_i(y_j)
 =\widehat{\Delta T}_c-\widehat{\Delta P}_c.
 \]
-This is deterministic. Under exchangeable sampling, the average of the symmetric
-order-two kernel is the standard unbiased U-statistic for its population expectation
-\cite{hoeffding1948class}. \qed
+This is deterministic. When the cell's examples are i.i.d.\ draws from the cell
+population, the average of the symmetric order-two kernel is the standard unbiased
+U-statistic for its population expectation \cite{hoeffding1948class}; independence is
+used, not merely exchangeability, because $\Delta P_c$ is defined through an independent
+label coupling, so $\mathbb E[H_1(Y_2)]=\mathbb E[H_X(Y')]$ requires the two draws to be
+independent. \qed
 
 \subsection{Proof of Proposition~\ref{prop:coarsen}}
 Fix $y$ and condition throughout on $\bar\phi=\bar c$. The law of total covariance
@@ -66,9 +69,46 @@ $\widehat{\Delta Z}$, gives
 $\widetilde{\Delta R}=N_*^{-1}\sum_{c}n_c\cdot\frac{n_c-1}{n_c}\widehat{\Delta R}_c
 =N_*^{-1}\sum_c(n_c-1)\widehat{\Delta R}_c$. \qed
 
-\section{Efficient influence computation}\label{app:influence}
+\section{Influence function: estimand and derivation}\label{app:influence}
 
-The implementation does not instantiate all pairs. In addition to Eq.~\eqref{eq:linear},
+\paragraph{The estimand under singleton exclusion.} Cells with $n_c=1$ identify no
+within-cell counterfactual and are excluded, so the dataset-level statistic targets the
+\emph{identified-subpopulation} quantity: writing $\pi_c$ for the cell probabilities,
+the target of $\widehat{\Delta R}$ is the $\pi$-weighted mean
+$\theta=\sum_c\pi_c\,\Delta R_c/\sum_c\pi_c$ taken over cells that appear with at least
+two examples. At finite $N$ the identified set is random; we treat the interval as
+conditional on identification and report the identified fraction alongside every
+estimate (99.0\% of relations on VG150, 100\% on CIFAR-100-LT), so the gap between the
+conditional and full-population targets is bounded by the reported coverage.
+
+\paragraph{Derivation of Eq.~\eqref{eq:influence}.} Fix a cell $c$ and let
+$\theta_c=\Delta R_c$ with $g_c(z)=\mathbb E[A(z,Z')\mid Z'\in c]$ the kernel
+projection. The classical H\'ajek projection of the order-two U-statistic
+$\widehat{\Delta R}_c$ is
+\[
+\widehat{\Delta R}_c=\theta_c+\frac{2}{n_c}\sum_{i\in c}\bigl(g_c(Z_i)-\theta_c\bigr)
++o_p(n_c^{-1/2}).
+\]
+The dataset statistic weights cells by their example counts,
+$\widehat{\Delta R}=N_*^{-1}\sum_c n_c\widehat{\Delta R}_c$, and cell membership is
+itself random (multinomial over cells), so an example $i$ contributes both through the
+within-cell projection and through the between-cell composition term
+$\theta_{C_i}-\theta$. Combining the two sources,
+\[
+\widehat{\Delta R}-\theta
+=\frac{1}{N_*}\sum_{i}\Bigl[2\bigl(g_{C_i}(Z_i)-\theta_{C_i}\bigr)
++\bigl(\theta_{C_i}-\theta\bigr)\Bigr]+o_p(N_*^{-1/2}).
+\]
+Estimating $g_{C_i}(Z_i)$ by the pair-kernel mean $\bar A_i$, $\theta_c$ by
+$\widehat{\Delta R}_c$, and $\theta$ by $\widehat{\Delta R}$ gives the plug-in
+influence contribution
+$\widehat\psi_i=2(\bar A_i-\widehat{\Delta R}_{c})+(\widehat{\Delta R}_{c}
+-\widehat{\Delta R})=2\bar A_i-\widehat{\Delta R}_{c}-\widehat{\Delta R}$, which is
+Eq.~\eqref{eq:influence} and has exactly zero sample mean by construction. Its empirical
+95\% coverage in a VG-like regime (image-clustered examples, Zipf cell sizes dominated
+by $n_c=2$) is validated in Section~\ref{sec:simulation}.
+
+\paragraph{Efficient computation.} The implementation does not instantiate all pairs. In addition to Eq.~\eqref{eq:linear},
 let $G_c(y)=\sum_{j\in c}H_j(y)$ and $O_c=\sum_{j\in c}H_j(y_j)$. The pair-kernel mean
 for observation $i$ is
 \[
@@ -112,7 +152,31 @@ cover the decomposition identity, quadratic covariance identity, cell-constant n
 singleton reporting, cluster inference, randomization power, and log-score path, plus
 direct numerical checks of Propositions~\ref{prop:attenuate} and~\ref{prop:coarsen}
 (the latter against an explicit discrete population with exact expectations, independent
-of the estimator's own code path).
+of the estimator's own code path). The covariance-identity cross-check quoted in
+Section~\ref{sec:cifarlt} is reproduced by
+\texttt{experiments/\allowbreak cifar\_covariance\_check.py}; the calibration-matched
+protocol and the prior-matching experiment are
+\texttt{experiments/\allowbreak cifar\_recalibration\_control.py} and
+\texttt{experiments/\allowbreak vg\_prior\_consequence.py}.
+
+\paragraph{Full-data VG predictors (Sections~\ref{sec:results}--\ref{sec:ablations}).}
+FREQ uses add-one smoothing over the $50$ predicates within each training class pair,
+backing off to the subject-marginal and then the global predicate histogram for pairs
+unseen in training. The MLPs consume fixed random class embeddings
+($32$ dimensions per class, seed $0$, concatenated for subject and object) on
+standardized features and train with AdamW (learning rate $10^{-3}$, weight decay
+$10^{-5}$, batch size $4096$): MLP-CLASS with hidden sizes $(256,128)$ for $12$ epochs,
+MLP-SPATIAL with $(256,128)$ for $15$ epochs, and MLP-SPATIAL+ with $(512,256,128)$ for
+$20$ epochs -- the ``+'' variant differs in both width and schedule, as noted in
+Section~\ref{sec:data}.
+
+\paragraph{Data availability.} The repository ships the estimator, every driver script,
+and the cached results files that every printed number traces to
+(\texttt{results/*.json}). The cached per-relation probability arrays that the drivers
+consume (\texttt{sgg\_dists.npz}, \texttt{vg\_visual\_models.npz},
+\texttt{cifar\_lt\_results.npz}) are regenerable from the committed training scripts
+with fixed seeds and are archived alongside the code release, so exact reproduction
+does not require retraining.
 
 \subsection{Compute environment for Sections~\ref{sec:vgvisual}--\ref{sec:cifarlt}}\label{app:compute}
 
@@ -145,17 +209,19 @@ feature. Only the images referenced by those relations are retrieved, individual
 than through the two bulk archives; of the $71{,}990$ required, three were unavailable
 upstream and fall back to a blank crop.
 
-\paragraph{ResNet-32 pair (Section~\ref{sec:cifarlt}).} CIFAR-100-LT uses the standard
+\paragraph{ResNet-32 triple (Section~\ref{sec:cifarlt}).} CIFAR-100-LT uses the standard
 exponential-profile construction of \citet{cui2019classbalanced} at imbalance ratio
 $100$: class $c$ (zero-indexed, $0,\ldots,99$) keeps
 $n_c=\lfloor 500\cdot\mu^{c}\rfloor$ training images, where
 $\mu=100^{-1/99}$, so class $0$ keeps all $500$ images and class $99$ keeps $5$; the
-balanced $10{,}000$-image test split is untouched. Both models are a from-scratch,
+balanced $10{,}000$-image test split is untouched. All three models are a from-scratch,
 randomly initialized CIFAR ResNet-32 (three stages of five basic residual blocks,
 $16/32/64$ channels) trained for $80$ epochs with SGD (momentum $0.9$, Nesterov,
 weight decay $2\times10^{-4}$), batch size $128$, standard crop-and-flip augmentation,
 and a cosine learning-rate schedule (peak $0.1$, five-epoch linear warmup). The only
-difference between the two runs is the per-example loss weight: uniform for the
-baseline, and the effective-number class-balanced weight
-$w_c\propto(1-\beta)/(1-\beta^{n_c})$ with $\beta=0.9999$ for the class-balanced model,
-renormalized to average to one across classes.
+difference between the runs is the per-example loss weight. CE uses uniform weights
+throughout. CB applies the effective-number class-balanced weight
+$w_c\propto(1-\beta)/(1-\beta^{n_c})$ with $\beta=0.9999$, renormalized to average to
+one across classes, from initialization. DRW trains with uniform weights until epoch
+$60$ and switches to exactly the CB weights for the final twenty epochs
+\citep{cao2019learning}; no other hyperparameter changes at the switch.
