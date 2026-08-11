@@ -8,40 +8,49 @@ $p(\text{predicate}\mid\text{subject},\text{object})$ and is surprisingly compet
 this dependence \cite{chen2019knowledge,tang2019learning,tang2020unbiased}, although
 metric pathologies remain \cite{li2022rethinking}. More recent SGG work continues this
 line under open-vocabulary and knowledge-enhanced settings
-\cite{li2024pixels,zhang2024hiker,sun2024unbiased}, and still reports gains as a single
-aggregate score rather than attributing them to prior fitting versus instance-specific
-evidence. VQA-CP changes language priors between train and test
-\cite{agrawal2018dont}, but changing-prior splits can themselves be exploited
-\cite{teney2020value}; recent VQA work continues to target the same language-prior
-shortcut through contrastive and relation-aware objectives
+\cite{li2024pixels,zhang2024hiker,sun2024unbiased}. The community's reporting standards
+have themselves responded to the shortcut: mean recall is reported alongside recall,
+often broken down by predicate-frequency group \cite{tang2020unbiased,li2022rethinking},
+and zero-shot recall -- introduced with the earliest language-prior models
+\cite{lu2016visual} -- checks whether a gain survives on triplets absent from training,
+exactly the frequency-exploitation worry \cite{tang2020unbiased}. In VQA, GQA-OOD
+stratifies evaluation by answer rarity within question groups \cite{kervadec2021roses},
+and VQA-CP changes language priors between train and test \cite{agrawal2018dont},
+though changing-prior splits can themselves be exploited \cite{teney2020value}; recent
+VQA work continues to target the same language-prior shortcut
 \cite{xu2025qirl,kuang2024debiasing}. Benchmark-level audits of exploitable non-visual
-shortcuts have also expanded beyond VQA to broader multimodal evaluation
-\cite{brown2025benchmark,zhou2025shortcut}, reinforcing the same diagnosis WAGER
-targets: an aggregate score can rise for reasons unrelated to instance-specific visual
-evidence. These methods alter training, data, or metrics, or audit a single model's
-exploitability against a benchmark's own structure. WAGER instead audits a fixed pair of
-probabilistic predictors on a fixed test set, attributing their score difference rather
-than characterizing either model alone.
+shortcuts have also expanded to broader multimodal evaluation
+\cite{brown2025benchmark,zhou2025shortcut}. All of these are prior-aware slicings,
+splits, or stress tests of a \emph{single} model's performance, and they are effective
+as far as they go. What none of them provides is what WAGER targets: an exact
+decomposition, with uncertainty, of the score difference between two submitted systems
+into a prior-transported channel and an instance-alignment channel. A stratified or
+zero-shot metric can show \emph{that} a gain is uneven across the prior; it does not
+attribute the pairwise gain itself, on the full evaluation set, into the two channels
+with a finite-sample identity and inference.
 
 \subsection{Long-tailed recognition}\label{sec:related-longtail}
 The same shortcut, in a structurally identical form, appears well outside scene graph
 generation. A long-tailed classifier can raise its aggregate accuracy simply by fitting
 the training-time class-frequency prior more precisely, without becoming any better at
-discriminating instances within a class \cite{ma2024geometric,duan2024longtailed}, and
-the remedies proposed for this -- class-balanced re-weighting, logit adjustment,
-feature fusion -- all work by rebalancing the training objective or the learned
-representation toward rare classes \cite{ma2024geometric,li2026pih2t,luo2025rebalancing},
-much as mean-recall and causal-intervention methods rebalance SGG training. What such
-remedies share with their SGG counterparts is that they intervene on how a model is
-trained rather than on how a trained pair is compared, so none of them attributes an
-observed accuracy gap between two finished models to frequency-fitting on the one hand
-and instance-specific improvement on the other. That is the question
+discriminating instances within a class \cite{ma2024geometric,duan2024longtailed}. The
+canonical remedies rebalance the training objective or the classifier itself:
+effective-number class-balanced re-weighting \cite{cui2019classbalanced}, deferred
+re-weighting \cite{cao2019learning}, logit adjustment \cite{menon2021long}, and
+post-hoc re-training or re-scaling of a decoupled classifier \cite{kang2020decoupling},
+with a continuing stream of recent variants
+\cite{ma2024geometric,li2026pih2t,luo2025rebalancing}, much as mean-recall and
+causal-intervention methods rebalance SGG training. What such remedies share with their
+SGG counterparts is that they intervene on how a model is trained or adjusted rather
+than on how a trained pair is compared, so none of them attributes an observed score
+gap between two finished models to frequency-fitting on the one hand and
+instance-specific improvement on the other. That is the question
 Section~\ref{sec:cifarlt} puts to WAGER, using the benchmark's own coarse superclasses
-as the declared prior feature $\phi$; the estimator turns out to separate two
-re-weighting schedules whose aggregate scores would not distinguish them at all, one
-whose near-zero total gain conceals a large prior improvement cancelling an equally
-large alignment loss, the other whose genuine improvement is part prior-refitting and
-part rare-class alignment.
+as the declared prior feature $\phi$; the estimator exposes the composition of two
+re-weighting schedules' gains that their aggregate scores leave hidden -- one whose
+near-zero total conceals a large prior improvement cancelling an equally large
+alignment loss, the other whose calibration-matched improvement is almost entirely
+rare-class instance alignment.
 
 \subsection{Information and predictive probing}
 Usable-information analyses measure information accessible to a chosen predictor family
@@ -78,9 +87,28 @@ program of finite- and large-sample U-statistic theory that recent work extends 
 anytime-valid confidence sequences \cite{cai2026anytime}, enabling an efficient
 all-pairs estimator and influence-function inference here. Pairwise betting has also
 been used to test exchangeability sequentially \cite{saha2024testing}; WAGER is a
-fixed-sample gain decomposition and makes no sequential-validity claim. Its new element
+fixed-sample gain decomposition and makes no sequential-validity claim -- the
+sequential variant a live leaderboard would need, with anytime validity as submissions
+arrive, is a distinct open problem. Its new element
 is the gain-contrast transport identity and the resulting attribution algorithm, rather
 than permutation or U-statistic theory by itself.
+
+Three adjacent literatures locate the same object from different directions. Inference
+on a paired score differential is the classical territory of comparative forecast
+evaluation: the Diebold--Mariano test \cite{diebold1995comparing} and conditional
+predictive ability tests \cite{giacomini2006tests} ask whether one forecaster beats
+another, optionally conditional on covariates -- the closest existing relative of a
+gain evaluated conditional on $\phi$. WAGER adds to that tradition an exact
+decomposition of the differential itself. Second, the prior channel is precisely the
+component that label-shift procedures manipulate post hoc: re-weighting a classifier's
+outputs to a new label distribution \cite{saerens2002adjusting,lipton2018detecting} can
+add or remove prior-transported gain without touching instance-level evidence, which is
+what the prior-matching experiment of Section~\ref{sec:vgvisual} exploits as a
+falsification test. Third, evaluating calibration within cells of a declared grouping,
+uniformly over many candidate groupings, is the subject of multicalibration
+\cite{hebert2018multicalibration}; that literature is the formal treatment of the
+multiplicity question raised by the choice of $\phi$
+(Section~\ref{sec:discussion}).
 
 \subsection{Relation to classical proper-score decompositions}\label{sec:related-decomposition}
 The covariance identity in Eq.~\eqref{eq:cov-id} is a relative of the reliability

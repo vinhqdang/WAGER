@@ -33,15 +33,34 @@ systems differ visibly in confidence. Second, a prior-transported gain is not ev
 of anything illegitimate. Fitting the deployment label distribution better is genuine,
 decision-relevant skill whenever that distribution matches the benchmark's; it is
 fragile precisely under label shift, where prior-transported gain can be added or
-removed post hoc by re-weighting, as the prior-matching experiment of
-Section~\ref{sec:vgvisual} demonstrates directly.
-% PENDING(refs): add label-shift citations (Saerens et al. 2002; Lipton et al. 2018) in the P3 literature pass.
+removed post hoc by re-weighting \citep{saerens2002adjusting,lipton2018detecting}, as
+the prior-matching experiment of Section~\ref{sec:vgvisual} demonstrates directly.
 The decomposition reports where a gain lives; whether the prior channel is worth paying
 for is a property of the deployment, not of the model pair.
 
+``Choose $\phi$ before looking'' is stated advice, not an enforced mechanism, and the
+analyst-chosen-subgroup problem has structural answers that WAGER should inherit. Our
+recommendation is that the \emph{benchmark}, not the submitting author, declare the
+audit feature -- the annotation prior is a property of the dataset, and
+maintainer-declared $\phi$ removes the incentive to report only the most favorable of
+several candidates. Where several defensible priors exist, all pre-declared candidates
+should be reported, as our sensitivity tables do; guarantees that hold uniformly over a
+class of groupings are the subject of multicalibration
+\citep{hebert2018multicalibration}, and porting that style of guarantee to pairwise
+gain attribution is a natural extension. To make reports comparable across papers, we
+suggest a fixed reporting block per audited pair: the declared $\phi$ and its
+rationale, the identified coverage, both channels signed with the alignment interval,
+the calibration-matched row when the models differ visibly in confidence, and the
+granularity sensitivity rows.
+
 Exact transport also has a positivity requirement: a cell needs at least two examples.
 WAGER reports the identified fraction and makes no claim for singletons. Very fine
-$\phi$ can therefore improve confound control while reducing coverage. Approximate
+$\phi$ can therefore improve confound control while reducing coverage. One further
+subtlety: cells identified at a fine granularity need not coincide with those at a
+coarse one, so cross-granularity comparisons mix the between-cell covariance term of
+Proposition~\ref{prop:coarsen} with a change of identified subpopulation -- immaterial
+at VG150's $99.0\%$ coverage, but worth restricting to a common identified subsample
+when coverage is low. Approximate
 matching could extend the method to continuous priors, but would replace the exact
 identity's clear intervention with modeling assumptions; we leave that extension open.
 

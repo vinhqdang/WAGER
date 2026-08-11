@@ -10,7 +10,9 @@ label. This is not merely hypothetical: frequency baselines are competitive on V
 Genome \cite{zellers2018neural}, VQA systems fail under changed answer priors
 \cite{goyal2017making,agrawal2018dont}, standard metrics obscure tail behavior
 \cite{li2022rethinking}, and the same diagnosis continues to reappear in current work:
-open-vocabulary and knowledge-enhanced SGG methods still report a single aggregate score
+open-vocabulary and knowledge-enhanced SGG methods report aggregate scores --
+increasingly sliced by predicate frequency, but with the composition of any given
+model-pair improvement left unattributed
 \cite{li2024pixels,zhang2024hiker,sun2024unbiased}, long-tailed recognition methods
 rebalance training toward rare classes without attributing a resulting gain to the
 frequency prior versus instance-specific evidence
@@ -79,4 +81,9 @@ leaving it as an untested hypothesis.
 
 WAGER is also defined by what it avoids: it fits no prior baseline model, requires no
 projection/evaluation split, and imposes no decision threshold on a gain ratio. The
-primary quantity is the signed instance-alignment gain with uncertainty.
+primary quantity is the signed instance-alignment gain with uncertainty. Its scope is
+correspondingly concrete: WAGER audits closed-set probabilistic prediction, requiring
+both models' full probability vectors and a discrete, declarable prior feature. Any
+benchmark meeting those three conditions is in reach; generative or free-form
+evaluations, where no $K$-way probability vector exists, are not, and we do not claim
+them.
