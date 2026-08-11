@@ -8,6 +8,7 @@ TDE mR@50 ~ 25-26. Prints R@K lines from the eval log.
 """
 import glob
 import os
+import re
 import subprocess
 import sys
 import time
@@ -25,6 +26,25 @@ T0 = time.time()
 
 def log(msg):
     print(f"[stage2 +{time.time()-T0:.0f}s] {msg}", flush=True)
+
+
+# Idempotent re-assert of the DATA_DIR patch: the upstream paths_catalog hardcodes a
+# contributor's absolute path, and every dataset path resolves against it. Applied
+# here too so this stage is self-sufficient if stage 1 ran from an older revision.
+_pc = f"{SGG}/maskrcnn_benchmark/config/paths_catalog.py"
+_s = open(_pc).read()
+if f'DATA_DIR = "{SGG}/datasets"' not in _s:
+    _s = re.sub(r'^(\s*)DATA_DIR\s*=\s*".*?"',
+                lambda m: f'{m.group(1)}DATA_DIR = "{SGG}/datasets"', _s,
+                count=1, flags=re.M)
+    open(_pc, "w").write(_s)
+    log("DATA_DIR repointed")
+for _rel in ("vg/VG_100K", "vg/VG-SGG-with-attri.h5",
+             "vg/VG-SGG-dicts-with-attri.json", "vg/image_data.json"):
+    _p = f"{SGG}/datasets/{_rel}"
+    if not os.path.exists(_p):
+        raise SystemExit(f"missing dataset path {_p} -- rerun stage 1")
+log("dataset paths verified")
 
 
 # ---- locate checkpoint ----

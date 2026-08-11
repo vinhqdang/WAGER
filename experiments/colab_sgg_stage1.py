@@ -14,6 +14,7 @@ other _C consumer is stubbed so imports succeed but use raises.
 import base64
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -245,8 +246,21 @@ open(f"{L}/dcn/deform_pool_module.py", "w").write(
         for c in ("DeformRoIPooling", "DeformRoIPoolingPack",
                   "ModulatedDeformRoIPoolingPack")))
 
+# paths_catalog ships with a contributor's absolute DATA_DIR ("/media/rafi/...");
+# every dataset path is resolved against it, so it must point at our tree.
+pc = f"{SGG}/maskrcnn_benchmark/config/paths_catalog.py"
+s = open(pc).read()
+s = re.sub(r'^(\s*)DATA_DIR\s*=\s*".*?"',
+           lambda m: f'{m.group(1)}DATA_DIR = "{SGG}/datasets"', s,
+           count=1, flags=re.M)
+open(pc, "w").write(s)
+log("DATA_DIR repointed at " + f"{SGG}/datasets")
+for rel in ("vg/VG_100K", "vg/VG-SGG-with-attri.h5",
+            "vg/VG-SGG-dicts-with-attri.json", "vg/image_data.json"):
+    p = f"{SGG}/datasets/{rel}"
+    log(f"  {'OK ' if os.path.exists(p) else 'MISSING'} {p}")
+
 # torch._six and numpy-deprecation fixes across the tree
-import re
 
 n_patched = 0
 for base in (f"{SGG}/maskrcnn_benchmark", f"{SGG}/tools"):
