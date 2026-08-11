@@ -1,3 +1,6 @@
+STALE - regenerate from the final abstract in the last QA pass before submission.
+See manuscript/0abstract.tex and main.tex keywords.
+
 TITLE
 -----
 WAGER: Within-cell Antisymmetric Gain Evaluation of Reasoning

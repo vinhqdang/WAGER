@@ -1,4 +1,4 @@
-% Cover letter for submission to Computer Vision and Image Understanding.
+% Cover letter for submission to Array (Elsevier).
 % Not anonymized: the cover letter accompanies the title page, not the blinded manuscript.
 \documentclass[11pt,a4paper]{article}
 \usepackage[margin=1in]{geometry}
@@ -17,57 +17,66 @@ Hung Yen, Vietnam\\
 \vspace{1em}
 \noindent
 To the Editors,\\
-\emph{Computer Vision and Image Understanding}
+\emph{Array}
 
 \vspace{1em}
 
 Dear Editors,
 
 I am submitting the manuscript ``WAGER: Within-cell Antisymmetric Gain Evaluation of
-Reasoning'' for consideration as a regular paper in \emph{Computer Vision and Image
-Understanding}.
+Reasoning'' for consideration as a regular paper in \emph{Array}.
 
-The paper concerns how progress is measured on vision benchmarks whose annotations carry
-a strong prior. In Visual Genome scene graph generation, the ordered object-class pair
-predicts the relation label well enough that a model can raise its headline score by
-fitting that annotation regularity more precisely, without becoming any better at reading
-the image. The standard audit compares a model against a frequency baseline, but that
-cannot answer the question a benchmark result actually poses: when system B outscores
-system A, how much of the gain came from the image rather than from the prior?
+The paper addresses a measurement problem that recurs across machine learning: when a
+benchmark's labels are strongly predictable from a known nuisance feature, a new model
+can raise its headline score by fitting that regularity more precisely rather than by
+predicting individual examples better. Scene graph generation, visual question
+answering and long-tailed recognition all have this structure. The usual response is to
+compare a model against a prior-only baseline, but that does not answer the question a
+benchmark result actually poses: when system B outscores system A, how much of the gain
+came from the instances and how much from the prior?
 
-WAGER answers that question directly. Given two frozen probabilistic models, it forms
-their proper-score contrast, matches test examples that share a declared prior feature,
-and crosses their labels. This yields an exact finite-sample identity --- the observed
-gain equals a prior-transported gain plus an antisymmetric instance-alignment gain --- in
-which the residual is an order-two U-statistic that, under the quadratic score, equals
-the within-cell prediction--label covariance the new model has gained. The estimator runs
-in $O(NK)$ time on cached predictions, fits no baseline model, and comes with
-image-cluster-robust intervals and a cell-stratified randomization test. Two further
-exact results are proved: leave-one-out transport removes an attenuation bias of
-$(n_c-1)/n_c$ that a naive in-sample plug-in incurs, and coarsening the audit cell shifts
-the estimate by an explicit between-cell covariance term.
+WAGER answers that question directly, and the contribution is primarily methodological.
+Given two frozen probabilistic models, it forms their proper-score contrast, matches
+test examples sharing a declared prior feature, and crosses their labels. This yields an
+exact finite-sample identity --- the observed gain equals a prior-transported gain plus
+an antisymmetric instance-alignment gain --- whose residual is an order-two U-statistic
+that, under the quadratic score, equals the within-cell prediction--label covariance the
+new model has gained, linking it to the classical resolution term of proper-score
+decomposition. The estimator runs in $O(NK)$ time on cached predictions, fits no
+baseline model, has no tunable hyperparameter, and comes with cluster-robust intervals
+and a cell-stratified randomization test. Two further exact results are proved:
+leave-one-out transport removes an attenuation bias of $(n_c-1)/n_c$ that a naive
+in-sample plug-in incurs, and coarsening the audit cell shifts the estimate by an
+explicit between-cell covariance term.
 
-The empirical findings are, I believe, of direct interest to this readership. On 229,605
-VG150 PredCls relations, a class-only network's entire improvement over the frequency
-baseline is provably prior-transported, with exactly zero instance alignment. More
-strikingly, when a frozen CLIP encoder replaces annotation-derived box geometry, the
-resulting model scores $0.04655$ \emph{lower} and is three accuracy points worse --- an
-evaluator reading either number would discard it --- yet it is shown to align with
-individual instances significantly \emph{better} than the model that beats it
-($+0.00641$, $p=.002$), its entire deficit lying in the annotation prior. Applying the
-same estimator unchanged to long-tailed classification reproduces the pathology from the
-opposite side: a re-weighting schedule whose near-zero aggregate gain conceals a
-$+0.197$ prior improvement cancelling a $-0.196$ alignment loss. In both cases the
-aggregate score is not merely imprecise but actively misleading about what the benchmark
-is meant to measure.
+Because the method is a measuring instrument, the paper takes its validation seriously.
+Beyond recovery and null designs, we verify the coverage of the primary interval in a
+regime that stresses it, and we report discriminant-validity experiments establishing
+what the two channels do and do not separate --- including an honest limitation, that a
+monotone recalibration moves score mass between the channels, together with the
+calibration-matched protocol that removes it and a demonstration that the protocol
+works.
 
-I believe the work fits the journal's scope under Theory, and speaks to matching and
-recognition through what it establishes about a widely used vision benchmark. It is a
-measurement contribution rather than a new recognition architecture: it makes no
-state-of-the-art claim, and its value lies in an exact identity, the inference built on
-it, and the concrete findings about VG150 and CLIP features reported above. All code,
-cached model outputs and scripts needed to reproduce every number and figure are publicly
-available, and the repository URL is given on the title page.
+The empirical results show the instrument earning its keep. On 229,605 Visual Genome
+relations, a class-only network's entire improvement over the frequency baseline is
+provably prior-transported, with exactly zero instance alignment. More strikingly, when
+a frozen CLIP encoder replaces annotation-derived box geometry, the resulting model
+scores $0.04655$ \emph{lower} overall --- an evaluator reading that number would discard
+it --- yet aligns with individual instances significantly \emph{better} than the model
+that beats it ($+0.00641$, $p\le.002$), its entire deficit lying in the annotation
+prior; the advantage survives both post-hoc prior correction and calibration matching.
+Applied unchanged to long-tailed image classification, the same estimator separates two
+re-weighting schedules whose aggregate scores hide their composition, and a
+calibration-matched reanalysis overturns what the raw decomposition appears to say about
+each of them.
+% PENDING(sgg): add the MOTIFS/MOTIFS-TDE audit sentence once the numbers land.
+
+I believe the work suits \emph{Array}'s broad computer-science scope: it is a
+methodological and measurement contribution, with proofs, a reference implementation,
+and validation on two structurally different benchmark families, rather than a new
+architecture competing for state-of-the-art accuracy. All code, cached model outputs and
+scripts needed to reproduce every number and figure are publicly available, and the
+repository URL is given on the title page.
 
 The manuscript is original, has not been published previously, and is not under
 consideration for publication elsewhere. I am the sole author and approve its submission.
@@ -75,7 +84,7 @@ I declare no competing financial or personal interests, and the work received no
 grant from any funding agency. In accordance with the journal's policy, the manuscript
 includes a declaration of generative AI use in its preparation. Author details are
 supplied on the separate title page, with the manuscript itself anonymized for the
-double-anonymized review process.
+review process.
 
 Thank you for your consideration.
 
