@@ -111,6 +111,27 @@ CHECKS += [
      cif["accuracy"]["DRW"], 1e-4),
 ]
 
+
+# seed/ratio robustness table
+ms = load("cifar_multiseed.json")
+CHECKS += [
+    ("robust CB r10 dR", "4experiments.tex", "-0.06903", ms["r10_s0"]["CB cal"]["dR"], 1e-5),
+    ("robust CB r50 dR", "4experiments.tex", "-0.24409", ms["r50_s0"]["CB cal"]["dR"], 1e-5),
+    ("robust DRW r100s1 dR", "4experiments.tex", "+0.00748",
+     ms["r100_s1"]["DRW cal"]["dR"], 1e-5),
+    ("robust DRW r100s2 dR", "4experiments.tex", "+0.03124",
+     ms["r100_s2"]["DRW cal"]["dR"], 1e-5),
+    ("robust LA r50 dR", "4experiments.tex", "+0.03768", ms["r50_s0"]["LA cal"]["dR"], 1e-5),
+    ("robust CB mean", "4experiments.tex", "-0.25108",
+     ms["across_seeds_r100"]["CB cal.dR"]["mean"], 1e-5),
+    ("robust DRW mean", "4experiments.tex", "+0.01953",
+     ms["across_seeds_r100"]["DRW cal.dR"]["mean"], 1e-5),
+    ("robust r10 CE acc", "4experiments.tex", "0.5388",
+     ms["r10_s0"]["accuracy"]["CE"], 1e-4),
+    ("robust r50 LA acc", "4experiments.tex", "0.4550",
+     ms["r50_s0"]["accuracy"]["LA"], 1e-4),
+]
+
 fails = []
 for label, fname, literal, actual, tol in CHECKS:
     text = (MS / fname).read_text()

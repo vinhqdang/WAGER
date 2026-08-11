@@ -224,4 +224,11 @@ throughout. CB applies the effective-number class-balanced weight
 $w_c\propto(1-\beta)/(1-\beta^{n_c})$ with $\beta=0.9999$, renormalized to average to
 one across classes, from initialization. DRW trains with uniform weights until epoch
 $60$ and switches to exactly the CB weights for the final twenty epochs
-\citep{cao2019learning}; no other hyperparameter changes at the switch.
+\citep{cao2019learning}; no other hyperparameter changes at the switch. The robustness
+matrix of Table~\ref{tab:cifar-robust} repeats this recipe verbatim at seeds $1$ and $2$
+(ratio $100$) and at ratios $10$ and $50$ (seed $0$), re-drawing the long-tailed subset
+with the configuration's own seed and initializing all three arms of a configuration
+identically (\texttt{experiments/colab\_cifar\_multiseed.py}). The post-hoc LA arm is not
+trained: it rescales the baseline's test probabilities by the inverse training class
+prior, $q_{\mathrm{LA}}(y\mid x)\propto q_{\mathrm{CE}}(y\mid x)/\pi_{\mathrm{train}}(y)$,
+renormalized.

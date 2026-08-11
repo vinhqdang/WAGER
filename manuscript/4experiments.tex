@@ -482,8 +482,69 @@ CE recalibrated vs CE & control & $+0.20495\,(0.00420)$ & $+0.37960\,(0.00268)$ 
 }
 \end{table}
 
+\paragraph{Seeds, imbalance ratios, and a post-hoc arm.} A decomposition computed from
+one trained pair carries only test-set sampling uncertainty, which is not the uncertainty
+relevant to a claim about a training \emph{method}. We therefore retrained the triple at
+two further seeds at the primary ratio and at imbalance ratios $10$ and $50$, and added a
+fourth arm: post-hoc logit adjustment (LA), which divides the baseline's predictions by
+the training class prior without retraining \citep{menon2021long}. Every configuration is
+audited in both regimes; Table~\ref{tab:cifar-robust} reports the calibration-matched
+alignment channel, which is the one the preceding paragraphs interpret.
+
+Three things follow. First, the class-balanced run's alignment loss is not a
+misconfiguration but a systematic function of imbalance severity: $-0.069$ at ratio $10$,
+$-0.244$ at $50$, and $-0.251\,(0.011)$ across three seeds at $100$, tracking an accuracy
+penalty that grows from $2.3$ to $10.4$ points over the same range. Second, the deferred
+schedule's alignment gain is positive at every ratio and in every seed, but its magnitude
+varies roughly fourfold across seeds at ratio $100$ ($+0.007$ to $+0.031$). We therefore
+report the spread rather than a seed-level interval: the direction replicates, the
+magnitude is seed-sensitive, and the gap between the tight within-run intervals of
+Table~\ref{tab:cifar} and this across-seed spread is exactly why a method-level claim
+needs replication rather than a single audit.
+
+Third, LA is an instructive falsification of a natural expectation. A purely post-hoc
+prior correction might be expected to register as almost pure prior channel, as the
+within-cell prior matching of Section~\ref{sec:vgvisual} does. It does not:
+calibration-matched, LA reads as almost entirely alignment ($+0.022$ to $+0.038$) with a
+prior channel near zero, while achieving the best balanced accuracy of any arm at every
+ratio. The reason is visible in the construction. Dividing by the \emph{global} class
+prior is not a within-superclass histogram move, because fine classes inside a superclass
+differ in training frequency, and the correction it applies is multiplicative in each
+example's own predicted probabilities --- it changes rankings where the model already
+carried latent evidence. The two post-hoc corrections in this paper therefore land in
+opposite channels, and correctly so: transport separates adjustments that act on the
+cell's label histogram from adjustments that act on individual predictions.
+
+\begin{table}[t]
+\centering
+\caption{Calibration-matched alignment gain across seeds and imbalance ratios, with
+balanced test accuracy for each arm. LA is post-hoc logit adjustment applied to the
+baseline. The class-balanced deficit scales with imbalance severity; the deferred
+schedule's gain is positive throughout but seed-sensitive in magnitude; the post-hoc
+correction lands in the alignment channel rather than the prior channel.}
+\label{tab:cifar-robust}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llrrrrrrr@{}}
+\toprule
+& & \multicolumn{4}{c}{Top-1 accuracy} & \multicolumn{3}{c}{$\widehat{\Delta R}$ vs.\ CE (calibration-matched)} \\
+\cmidrule(lr){3-6}\cmidrule(l){7-9}
+Ratio & Seed & CE & CB & DRW & LA & CB & DRW & LA \\
+\midrule
+$10$  & 0 & $0.5388$ & $0.5154$ & $0.5447$ & $0.5497$ & $-0.06903$ & $+0.00617$ & $+0.02222$ \\
+$50$  & 0 & $0.4256$ & $0.3242$ & $0.4399$ & $0.4550$ & $-0.24409$ & $+0.01903$ & $+0.03768$ \\
+$100$ & 0 & $0.3662$ & $0.2627$ & $0.3874$ & $0.3959$ & $-0.23936$ & $+0.01987$ & $+0.03449$ \\
+$100$ & 1 & $0.3614$ & $0.2287$ & $0.3762$ & $0.3877$ & $-0.26176$ & $+0.00748$ & $+0.02672$ \\
+$100$ & 2 & $0.3687$ & $0.2481$ & $0.3968$ & $0.4024$ & $-0.25213$ & $+0.03124$ & $+0.03601$ \\
+\midrule
+\multicolumn{2}{@{}l}{$100$, mean (sd)} & & & & &
+$-0.25108\,(0.01124)$ & $+0.01953\,(0.01188)$ & $+0.03241\,(0.00498)$ \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
 Where the alignment gain sits is visible in Table~\ref{tab:cifar-tier} and
-Figure~\ref{fig:cifar} (raw regime). For DRW it falls where the long-tail literature intends it to,
+Figure~\ref{fig:cifar} (raw regime, primary seed). For DRW it falls where the long-tail literature intends it to,
 reaching $+0.09009$ on few-shot classes and $+0.06760$ on medium-shot ones, while
 many-shot classes lose $-0.07624$ as the schedule shifts capacity away from the head.
 The class-balanced run reproduces that same ordering with every level displaced
