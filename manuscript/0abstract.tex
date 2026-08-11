@@ -1,24 +1,23 @@
-Vision benchmarks with strong annotation priors can reward a new model whose gain does
-not come from better instance-specific visual prediction. Existing audits compare a model
-against a frequency baseline, confounding how well each system fits the prior with
-whether the \emph{difference} between them uses information beyond it. We introduce
-WAGER, a pairwise attribution algorithm. For two frozen probabilistic models it forms
-their proper-score contrast, matches examples sharing a declared prior feature and
-crosses their labels, giving an exact finite-sample identity: observed gain equals a
+Benchmarks whose labels are strongly predictable from a known nuisance feature can
+reward a model that fits that regularity better rather than one that predicts individual
+examples better. Existing audits compare a single model against a prior-only baseline,
+which does not answer the question a benchmark result actually poses: when one system
+outscores another, how much of the gain came from the instances? We introduce WAGER, a
+pairwise attribution algorithm. For two frozen probabilistic models it forms their
+proper-score contrast, matches test examples sharing a declared prior feature, and
+crosses their labels, giving an exact finite-sample identity: the observed gain equals a
 prior-transported gain plus an antisymmetric instance-alignment gain. The residual is an
-order-two U-statistic which, under the quadratic score, equals twice the within-cell
-prediction--label covariance gained by the new model, linking it to the classical
-resolution term of proper-score decomposition. It costs $O(NK)$ time, needs no fitted
-prior model, and admits cluster-robust inference. Two further exact results follow:
-leave-one-out transport removes an attenuation bias of $(n_c-1)/n_c$ that a naive
-in-sample plug-in incurs, and coarsening the audit cell shifts the estimate by a
-between-cell covariance term. On 229,605 Visual Genome relations a class-only network
-improves the frequency baseline entirely through the prior channel, while a frozen-CLIP
-model scoring $0.04655$ \emph{worse} overall has significantly \emph{better} instance
-alignment ($+0.00641$, $p=.002$) than the box-geometry model it loses to -- an advantage
-that survives both post-hoc prior matching and calibration matching. Applied unchanged
-to long-tailed classification, it exposes the composition of two re-weighting schedules'
-gains that aggregate scores leave hidden: a near-zero total that decomposes into two
-large cancelling channels, which a calibration-matched reanalysis traces to a genuine
-loss of within-class discrimination, and a real improvement that the same reanalysis
-shows to be almost entirely instance alignment rather than prior refitting.
+order-two U-statistic that, under the quadratic score, equals the within-cell
+prediction--label covariance the new model has gained, connecting it to the classical
+resolution term of proper-score decomposition. It runs in $O(NK)$ time, fits no baseline
+model, has no tunable hyperparameter, and admits cluster-robust inference. Two further
+exact results follow: leave-one-out transport removes an $(n_c-1)/n_c$ attenuation bias
+that a naive in-sample plug-in incurs, and coarsening the audit cell shifts the estimate
+by an explicit between-cell covariance term. On 229,605 Visual Genome relations, a
+class-only network's entire improvement over the frequency baseline is prior-transported,
+with exactly zero instance alignment; a model reading real pixels through a frozen CLIP
+encoder scores clearly worse overall, yet aligns with individual instances significantly
+better than the box-geometry model beating it, an advantage surviving both post-hoc prior
+correction and calibration matching. Applied unchanged to long-tailed classification, a
+calibration-matched audit overturns what the raw scores suggest two re-weighting
+schedules bought.
