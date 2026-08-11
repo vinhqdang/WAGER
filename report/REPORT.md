@@ -1,6 +1,6 @@
 # WAGER redesign report
 
-_Within-cell Antisymmetric Gain Evaluation of Reasoning_
+_Within-cell Antisymmetric Gain Evaluation of Resolution_
 
 ## What changed
 
@@ -168,3 +168,106 @@ This pass adds:
 
 Both propositions are proved in Appendix A of the manuscript and verified numerically in
 `tests/test_antisymmetric.py`; see `algorithm.md` §5 for a plain-language summary.
+
+---
+
+## Addendum: third revision (2026-08-11), after the CVIU desk rejection
+
+The manuscript was desk-rejected by CVIU with only the boilerplate that it "does not meet
+the required quality standards." With no reviewer report to work from, a five-perspective
+review panel was simulated (editor, methodologist, domain expert, cross-disciplinary
+reviewer, devil's advocate) and its findings drove this revision. The reports and the
+resulting roadmap are in `reviews/2026-08-10-panel/`. Two independent checks in that pass
+found the proofs correct and every printed number traceable to a committed results file,
+so the work below is about identification, coverage, and framing rather than corrections.
+
+### The calibration confound (the panel's one critical finding)
+
+The alignment channel is a covariance between probability movements and labels, so it is
+**not invariant to monotone recalibration**: softening an overconfident model moves score
+mass from alignment to prior while adding no information about any individual example.
+Temperature-scaling the CIFAR baseline alone reproduces almost exactly the channel split
+the paper had attributed to class-balanced re-weighting.
+
+The fix is a protocol, not a retraction. Each model's temperature is now fitted by
+held-out likelihood on half the test split and the audit runs on the disjoint half, over
+twenty random splits (`experiments/cifar_recalibration_control.py`). The corrected reading
+is stronger than the original:
+
+| Comparison | Regime | Total | Prior | Alignment |
+|---|---|---:|---:|---:|
+| CB vs CE | raw | +0.00208 | +0.19635 | -0.19427 |
+| CB vs CE | calibration-matched | -0.12912 | +0.11079 | **-0.23991** |
+| DRW vs CE | raw | +0.06712 | +0.04258 | +0.02454 |
+| DRW vs CE | calibration-matched | +0.02173 | +0.00216 | **+0.01957** |
+| CE recalibrated vs CE | control | +0.20495 | +0.37960 | -0.17464 |
+
+Class-balanced re-weighting has genuinely lost within-class discrimination rather than
+trading it for prior fit, and the deferred schedule's improvement is almost entirely
+instance alignment -- the "two-thirds prior-recoverable" claim of the previous revision
+was itself a calibration artifact.
+
+### Consequence and falsification tests
+
+- **Prior matching on Visual Genome** (`experiments/vg_prior_consequence.py`). Correcting
+  a model's within-cell prior toward the training histogram registers as almost pure
+  prior channel (+0.02401 prior against +0.00111 alignment), as a correction carrying no
+  instance information must. It halves the CLIP model's aggregate deficit
+  (-0.04655 to -0.02143) while its alignment advantage persists (+0.00752), and the
+  advantage also survives calibration matching (+0.00467, CI [+0.00314, +0.00621]).
+- **Logit adjustment on CIFAR** falsifies the natural guess in an instructive direction:
+  it is *not* a pure prior move at the superclass audit. Its within-cell component is
+  multiplicative in each example's own probabilities, so calibration-matched it reads as
+  almost pure alignment (+0.032) while achieving the best balanced accuracy of any arm.
+  Together the two corrections show transport separating histogram-level from
+  instance-coupled adjustments.
+
+### Validation of the instrument itself
+
+`experiments/antisymmetric_simulation.py` gained four arms:
+
+- **Interval coverage** in a VG-like regime (image-clustered examples, Zipf cell sizes
+  dominated by `n_c = 2`): the cluster-robust interval covers in 94.0% of 500 runs; an
+  interval ignoring clustering covers in 88.6%.
+- **Calibration-only alternative**: raw alignment -0.488, calibration-matched -0.0003.
+- **Prior-only improvement**: alignment centred at zero (0.0002) with a clearly positive
+  prior channel -- no leakage.
+- **Unrecorded within-cell shortcut**: credited to alignment (+0.041), quantifying the
+  documented limitation that the channel measures all within-cell signal relative to the
+  declared `phi`.
+
+### Seeds and imbalance ratios
+
+Single-seed intervals cannot support method-level claims, so the CIFAR triple was
+retrained across seeds and imbalance ratios (`experiments/colab_cifar_multiseed.py`,
+`experiments/run_cifar_multiseed_wager.py`). The corrected conclusions replicate, and the
+across-seed spread is larger than test-set sampling error -- which is the honest
+uncertainty for any statement about a training method.
+
+### Statistical completeness
+
+Influence function derived (it was asserted) and the identified-subpopulation estimand
+defined, both in Appendix B; Theorem 2 now states i.i.d.-within-cell where exchangeability
+was too weak for the claimed unbiasedness; the coarsening prose states its vanishing
+condition precisely; the exact-zero interval is footnoted as exact by construction; the
+`p = .002` randomization floor and the absence of multiplicity adjustment are stated.
+Training details the tables relied on (FREQ smoothing and backoff, per-arm MLP schedules,
+the DRW switch epoch) are now in the appendix, and the covariance cross-check the paper
+quotes is committed as `experiments/cifar_covariance_check.py`.
+
+### Positioning and presentation
+
+The claim that the field reports "a single aggregate score" was a strawman and is
+replaced: mean recall by frequency group, zero-shot recall and GQA-OOD all slice a single
+model's performance, but none decomposes a fixed pair's gain with an exact identity and
+inference. Canonical references are now cited where their methods are named (Cui, Cao,
+Menon, Kang; Xu 2017 for the VG150 PredCls protocol; Lu 2016 for zero-shot recall), and
+three adjacent literatures are bridged: comparative forecast evaluation
+(Diebold-Mariano, Giacomini-White), label shift (Saerens, Lipton) as the post-hoc face of
+the prior channel, and multicalibration for the many-`phi` question. Figure 1 was rebuilt
+around two real Visual Genome relations with their labels crossed, replacing a text-only
+flowchart. The acronym's R now expands to **Resolution**, which is what the residual
+provably is; "Reasoning" over-claimed and travelled without its disclaimer.
+
+`experiments/verify_manuscript_numbers.py` asserts every quoted value against the
+committed results files, so a transcription slip fails loudly.
