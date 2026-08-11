@@ -1,4 +1,4 @@
-# WAGER — Within-cell Antisymmetric Gain Evaluation of Reasoning
+# WAGER — Within-cell Antisymmetric Gain Evaluation of Resolution
 
 WAGER attributes the proper-score improvement between two frozen vision models
 without fitting a separate prior baseline. It matches examples that share a declared

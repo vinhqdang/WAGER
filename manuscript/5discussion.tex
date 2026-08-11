@@ -12,7 +12,7 @@ cases without a separately fitted reference forecaster.
 The interpretation remains conditional on the declared audit feature $\phi$. A positive
 $\Delta R$ means the new model aligns its probability changes with the correct example
 better than the old model among examples sharing $\phi$. It does not prove causal
-reasoning, compositional understanding, or robustness. If an unrecorded shortcut varies
+inference, compositional understanding, or robustness. If an unrecorded shortcut varies
 inside a cell, WAGER will count its predictive use in $\Delta R$. Applications should
 therefore choose $\phi$ before looking at results, justify it from the benchmark's data
 generation process, and report finer and coarser alternatives. The observed increase
@@ -95,7 +95,7 @@ family for other multimodal benchmarks -- though we have not evaluated them, and
 them as the obvious next domains rather than claim a coverage we have not earned.
 Whatever the setting, the scientific claim has to stay precise, because what WAGER
 measures is new prediction--label alignment within the declared cells and nothing more.
-Its value lies not in any single $\phi$ defining reasoning once and for all, but in
+Its value lies not in any single $\phi$ settling what counts as understanding, but in
 making every attribution an explicit and reproducible counterfactual tied to a declared
 nuisance structure, one that the same unmodified construction has now answered sensibly
 on two structurally different tasks.
