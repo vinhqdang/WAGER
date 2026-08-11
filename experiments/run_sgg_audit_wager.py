@@ -1,22 +1,18 @@
-"""WAGER audit of released MOTIFS checkpoints: align the Colab eval dumps to
-the repo's canonical VG150 test rows and decompose TDE's gain over the biased
-baseline.
+"""Audit two released scene-graph checkpoints on the canonical VG150 test split.
 
-Alignment is content-based (the two pipelines filter test images slightly
-differently): images are matched by the multiset of (subject class, object
-class, predicate) triplets, with box-geometry disambiguation -- dump boxes are
-normalized by the resized frame recorded in the npz, ours by the original
-image sizes from image_data.json. Within an image, relations are matched by
-triplet, ties broken by nearest normalized subject box.
+Both variants come from Tang et al.'s causal MOTIFS PredCls release: the biased
+MOTIFS-SUM baseline (CAUSAL.EFFECT_TYPE none) and its Total Direct Effect
+debiased counterpart (TDE), evaluated by the original codebase so that the two
+prediction sets are aligned relation-for-relation by construction.
 
-Inputs (downloaded from the Colab session):
-  data/vg_motifs/motifs_none_predcls.npz   MOTIFS-SUM baseline
-  data/vg_motifs/motifs_TDE_predcls.npz    MOTIFS-TDE
-  data/vg_motifs/image_data.json           VG image metadata (id -> w,h)
+Everything the audit needs is inside the evaluation dumps -- subject class,
+object class, predicate, image id and the predicate distribution -- so this is
+self-contained on the standard split and its standard vocabulary, independent of
+the VG150-style reconstruction used elsewhere in the paper.
 
-The 51-way dump softmax includes the background predicate at index 0; the
-audit restricts to the 50 real predicates and renormalizes, which is the
-probability-space analogue of ranking real predicates only.
+The dumps carry a 51-way distribution whose index 0 is the background class;
+PredCls scores the 50 real predicates, so that column is dropped and the rest
+renormalized. Classes and predicates are 1-indexed in the dump.
 
 Run: conda run -n py313 python experiments/run_sgg_audit_wager.py
 """
@@ -25,7 +21,6 @@ from __future__ import annotations
 import json
 import pathlib
 import sys
-from collections import defaultdict
 
 import numpy as np
 
@@ -35,148 +30,143 @@ from wager.antisymmetric import cyclic_randomization_test, decompose_gain
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 MDIR = ROOT / "data/vg_motifs"
 N_RANDOMIZATIONS = 999
+N_OBJ = 150
+ALPHA = 0.05
 
 
-def load_dump(effect: str):
+def load(effect: str):
     d = np.load(MDIR / f"motifs_{effect}_predcls.npz")
     q = d["probs"].astype(np.float64)[:, 1:]          # drop background column
     q /= q.sum(axis=1, keepdims=True)
     return {
-        "img": d["image_index"].astype(int),
-        "sbox": d["sbox"].astype(float), "obox": d["obox"].astype(float),
-        "wh": d["img_wh"].astype(float),
-        "subj": d["subj"].astype(int) - 1,            # 1..150 -> 0..149
-        "obj": d["obj"].astype(int) - 1,
-        "pred": d["pred"].astype(int) - 1,            # 1..50 -> 0..49
         "q": q,
+        "y": d["pred"].astype(np.int64) - 1,          # 1..50 -> 0..49
+        "subj": d["subj"].astype(np.int64) - 1,       # 1..150 -> 0..149
+        "obj": d["obj"].astype(np.int64) - 1,
+        "image": d["image_index"].astype(np.int64),
     }
 
 
-def fingerprint(subj, obj, pred):
-    return tuple(sorted(zip(subj.tolist(), obj.tolist(), pred.tolist())))
+def recalls(effect: str):
+    p = MDIR / f"motifs_{effect}_recalls.json"
+    if not p.exists():
+        return {}
+    raw = json.loads(p.read_text())
+    out = {}
+    for k, v in raw.items():
+        for kk, vv in v.items():
+            out[f"{k}@{kk}"] = vv
+    return out
+
+
+def temp_scale(p, T, eps=1e-12):
+    z = np.log(np.clip(p, eps, None)) / T
+    z -= z.max(axis=1, keepdims=True)
+    e = np.exp(z)
+    return e / e.sum(axis=1, keepdims=True)
+
+
+def fit_temperature(p, labels, eps=1e-12):
+    grid = np.geomspace(0.05, 20.0, 240)
+    nll = [float(-np.mean(np.log(np.clip(
+        temp_scale(p, t)[np.arange(len(labels)), labels], eps, None)))) for t in grid]
+    return float(grid[int(np.argmin(nll))])
 
 
 def main():
-    raw = np.load(ROOT / "data/vg/vg_predcls.npz")
-    te = np.flatnonzero(~raw["is_train"])
-    ours = {k: raw[k][te] for k in ("subj", "obj", "pred", "sbox", "obox",
-                                    "image", "phi")}
-    sizes = {int(r["image_id"]): (float(r["width"]), float(r["height"]))
-             for r in json.load(open(MDIR / "image_data.json"))}
+    base, tde = load("none"), load("TDE")
+    for k in ("y", "subj", "obj", "image"):
+        assert np.array_equal(base[k], tde[k]), f"variants disagree on {k}"
+    y, image = base["y"], base["image"]
+    phi = base["subj"] * N_OBJ + base["obj"]
+    n_cells = len(np.unique(phi))
+    print(f"{len(y)} relations, {len(np.unique(image))} images, {n_cells} class-pair cells")
 
-    our_groups = defaultdict(list)
-    for row, img in enumerate(ours["image"]):
-        our_groups[int(img)].append(row)
-    our_fp = defaultdict(list)
-    for img, rows in our_groups.items():
-        r = np.asarray(rows)
-        our_fp[fingerprint(ours["subj"][r], ours["obj"][r], ours["pred"][r])
-               ].append(img)
+    acc = {"MOTIFS": float((base["q"].argmax(1) == y).mean()),
+           "MOTIFS-TDE": float((tde["q"].argmax(1) == y).mean())}
+    print(f"top-1 predicate accuracy: {acc}")
 
-    base = load_dump("none")
-    tde = load_dump("TDE")
-    assert np.array_equal(base["img"], tde["img"]) and \
-        np.array_equal(base["pred"], tde["pred"]), "variant dumps differ in layout"
-
-    dump_groups = defaultdict(list)
-    for row, i in enumerate(base["img"]):
-        dump_groups[int(i)].append(row)
-
-    # ---- image-level matching ----
-    n_img_matched = n_img_ambiguous = n_img_unmatched = 0
-    aligned_ours, aligned_dump = [], []
-    used_imgs: set[int] = set()
-    for di, drows in dump_groups.items():
-        dr = np.asarray(drows)
-        fp = fingerprint(base["subj"][dr], base["obj"][dr], base["pred"][dr])
-        cands = [c for c in our_fp.get(fp, []) if c not in used_imgs]
-        if not cands:
-            n_img_unmatched += 1
-            continue
-        if len(cands) > 1:
-            # disambiguate by normalized subject-box geometry
-            def geo_cost(img_id):
-                r = np.asarray(our_groups[img_id])
-                w, h = sizes.get(img_id, (None, None))
-                if w is None:
-                    return np.inf
-                ob = ours["sbox"][r] / np.array([w, h, w, h])
-                db = base["sbox"][dr] / np.repeat(base["wh"][dr], 2, axis=1)
-                # compare sorted normalized top-left corners
-                return float(np.abs(np.sort(ob[:, 0]) - np.sort(db[:, 0])).sum()
-                             + np.abs(np.sort(ob[:, 1]) - np.sort(db[:, 1])).sum())
-            cands.sort(key=geo_cost)
-            n_img_ambiguous += 1
-        img_id = cands[0]
-        used_imgs.add(img_id)
-        n_img_matched += 1
-
-        # ---- relation-level matching inside the image ----
-        r = np.asarray(our_groups[img_id])
-        w, h = sizes.get(img_id, (1.0, 1.0))
-        ob_norm = ours["sbox"][r] / np.array([w, h, w, h])
-        db_norm = base["sbox"][dr] / np.repeat(base["wh"][dr], 2, axis=1)
-        by_triplet = defaultdict(list)
-        for k, rd in enumerate(dr):
-            by_triplet[(base["subj"][rd], base["obj"][rd], base["pred"][rd])
-                       ].append(k)
-        taken: set[int] = set()
-        for j, ro in enumerate(r):
-            key = (int(ours["subj"][ro]), int(ours["obj"][ro]),
-                   int(ours["pred"][ro]))
-            avail = [k for k in by_triplet.get(key, []) if k not in taken]
-            if not avail:
-                continue
-            if len(avail) > 1:
-                # dump xyxy top-left vs our xywh top-left
-                d0 = db_norm[avail][:, :2]
-                o0 = ob_norm[j][:2]
-                avail = [avail[int(np.abs(d0 - o0).sum(axis=1).argmin())]]
-            k = avail[0]
-            taken.add(k)
-            aligned_ours.append(ro)
-            aligned_dump.append(dr[k])
-
-    aligned_ours = np.asarray(aligned_ours)
-    aligned_dump = np.asarray(aligned_dump)
-    n = len(aligned_ours)
-    print(f"images: matched {n_img_matched} (ambiguous {n_img_ambiguous}), "
-          f"unmatched {n_img_unmatched} of {len(dump_groups)}")
-    print(f"relations aligned: {n} of {len(te)} ours / {len(base['img'])} dump "
-          f"({n/len(te):.1%} of ours)")
-    agree = np.mean(ours["pred"][aligned_ours] == base["pred"][aligned_dump])
-    assert agree == 1.0, f"label mismatch rate {1-agree:.4f}"
-
-    y = ours["pred"][aligned_ours].astype(np.int64)
-    phi = ours["phi"][aligned_ours].astype(np.int64)
-    groups = ours["image"][aligned_ours]
-    q_base = base["q"][aligned_dump]
-    q_tde = tde["q"][aligned_dump]
-    acc = {"MOTIFS": float((q_base.argmax(1) == y).mean()),
-           "MOTIFS-TDE": float((q_tde.argmax(1) == y).mean())}
-    print(f"top-1 on aligned relations: {acc}")
-
+    rows = []
     with np.errstate(divide="ignore", over="ignore", invalid="ignore"):
-        g = decompose_gain(q_tde, q_base, y, phi, groups=groups, score="brier")
-        p, _ = cyclic_randomization_test(q_tde, q_base, y, phi, score="brier",
-                                         n_randomizations=N_RANDOMIZATIONS,
-                                         seed=0)
-    print(f"TDE vs MOTIFS: dT={g.total_gain:+.5f} dP={g.prior_gain:+.5f} "
-          f"dR={g.reasoning_gain:+.5f} "
-          f"CI=[{g.reasoning_ci[0]:+.5f},{g.reasoning_ci[1]:+.5f}] p={p:.4g} "
-          f"coverage={g.coverage:.3f} cells={g.n_cells}")
+        g = decompose_gain(tde["q"], base["q"], y, phi, groups=image,
+                           score="brier", alpha=ALPHA)
+        p, _ = cyclic_randomization_test(tde["q"], base["q"], y, phi,
+                                         score="brier",
+                                         n_randomizations=N_RANDOMIZATIONS, seed=0)
+        print(f"TDE vs MOTIFS  dT={g.total_gain:+.5f}  dP={g.prior_gain:+.5f}  "
+              f"dR={g.alignment_gain:+.5f}  CI=[{g.alignment_ci[0]:+.5f},"
+              f"{g.alignment_ci[1]:+.5f}]  p={p:.4g}  coverage={g.coverage:.3f}")
+        rows.append({"comparison": "MOTIFS-TDE vs MOTIFS", "score": "brier",
+                     **g.as_row(), "randomization_p": p})
 
-    out = {"aligned_relations": int(n), "of_ours": int(len(te)),
-           "images_matched": n_img_matched, "images_unmatched": n_img_unmatched,
-           "accuracy": acc,
-           "decomposition": {"total": g.total_gain, "prior": g.prior_gain,
-                             "reasoning": g.reasoning_gain,
-                             "reasoning_ci": list(g.reasoning_ci),
-                             "randomization_p": p,
-                             "n_cells": g.n_cells,
-                             "coverage": g.coverage}}
+        # log score as a declared sensitivity, as elsewhere in the paper
+        gl = decompose_gain(tde["q"], base["q"], y, phi, groups=image, score="log")
+        print(f"  (log score)  dT={gl.total_gain:+.5f}  dP={gl.prior_gain:+.5f}  "
+              f"dR={gl.alignment_gain:+.5f}")
+        rows.append({"comparison": "MOTIFS-TDE vs MOTIFS", "score": "log",
+                     **gl.as_row(), "randomization_p": None})
+
+        # coarser audit cell: subject class only (Proposition 2 in a third setting)
+        gs = decompose_gain(tde["q"], base["q"], y, base["subj"], groups=image)
+        print(f"  (phi=subject) dT={gs.total_gain:+.5f}  dP={gs.prior_gain:+.5f}  "
+              f"dR={gs.alignment_gain:+.5f}")
+        rows.append({"comparison": "MOTIFS-TDE vs MOTIFS", "score": "brier",
+                     "prior_feature": "subject class", **gs.as_row(),
+                     "randomization_p": None})
+
+        # calibration-matched regime: TDE's counterfactual logit subtraction changes
+        # the shape of the distribution, and the alignment channel is not invariant
+        # to that, so temperatures are fitted on images held out from the audit.
+        rng = np.random.default_rng(20260811)
+        imgs = np.unique(image)
+        cal_imgs = set(imgs[rng.permutation(len(imgs))[: len(imgs) // 2]].tolist())
+        cal = np.array([i in cal_imgs for i in image])
+        aud = np.where(~cal)[0]
+        t_base = fit_temperature(base["q"][cal], y[cal])
+        t_tde = fit_temperature(tde["q"][cal], y[cal])
+        gc = decompose_gain(temp_scale(tde["q"], t_tde)[aud],
+                            temp_scale(base["q"], t_base)[aud],
+                            y[aud], phi[aud], groups=image[aud])
+        gr = decompose_gain(tde["q"][aud], base["q"][aud], y[aud], phi[aud],
+                            groups=image[aud])
+        print(f"  T*(MOTIFS)={t_base:.2f}  T*(TDE)={t_tde:.2f}")
+        print(f"  (audit half, raw)  dT={gr.total_gain:+.5f} dP={gr.prior_gain:+.5f} "
+              f"dR={gr.alignment_gain:+.5f}")
+        print(f"  (calibration-matched) dT={gc.total_gain:+.5f} "
+              f"dP={gc.prior_gain:+.5f} dR={gc.alignment_gain:+.5f} "
+              f"CI=[{gc.alignment_ci[0]:+.5f},{gc.alignment_ci[1]:+.5f}]")
+        rows.append({"comparison": "MOTIFS-TDE vs MOTIFS", "score": "brier",
+                     "regime": "audit-half raw", **gr.as_row(),
+                     "randomization_p": None})
+        rows.append({"comparison": "MOTIFS-TDE vs MOTIFS", "score": "brier",
+                     "regime": "calibration-matched", "T_old": t_base,
+                     "T_new": t_tde, **gc.as_row(), "randomization_p": None})
+
+        gcl = decompose_gain(temp_scale(tde["q"], t_tde)[aud],
+                             temp_scale(base["q"], t_base)[aud],
+                             y[aud], phi[aud], groups=image[aud], score="log")
+        print(f"  (cal-matched, log) dT={gcl.total_gain:+.5f} "
+              f"dP={gcl.prior_gain:+.5f} dR={gcl.alignment_gain:+.5f}")
+        rows.append({"comparison": "MOTIFS-TDE vs MOTIFS", "score": "log",
+                     "regime": "calibration-matched", **gcl.as_row(),
+                     "randomization_p": None})
+
+        p_cal, _ = cyclic_randomization_test(
+            temp_scale(tde["q"], t_tde)[aud], temp_scale(base["q"], t_base)[aud],
+            y[aud], phi[aud], score="brier", n_randomizations=N_RANDOMIZATIONS,
+            seed=1)
+        print(f"  (cal-matched randomization p={p_cal:.4g})")
+        rows[-2]["randomization_p"] = p_cal
+
+    out = {
+        "dataset": "VG150 PredCls (canonical split, Tang et al. released checkpoints)",
+        "n_relations": int(len(y)), "n_images": int(len(np.unique(image))),
+        "n_cells": int(n_cells), "accuracy": acc,
+        "recalls": {"MOTIFS": recalls("none"), "MOTIFS-TDE": recalls("TDE")},
+        "comparisons": rows,
+    }
     dest = ROOT / "results/sgg_audit_motifs.json"
-    dest.write_text(json.dumps(out, indent=2))
+    dest.write_text(json.dumps(out, indent=2, default=float))
     print(f"wrote {dest}")
 
 

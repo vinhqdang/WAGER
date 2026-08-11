@@ -132,6 +132,52 @@ CHECKS += [
      ms["r50_s0"]["accuracy"]["LA"], 1e-4),
 ]
 
+
+# SGG checkpoint audit
+sgg = load("sgg_audit_motifs.json")
+def sgg_row(score, regime=None, phi=None):
+    for r in sgg["comparisons"]:
+        if r["score"] != score:
+            continue
+        if regime is not None and r.get("regime") != regime:
+            continue
+        if regime is None and "regime" in r:
+            continue
+        if phi is not None and r.get("prior_feature") != phi:
+            continue
+        if phi is None and "prior_feature" in r:
+            continue
+        return r
+    raise KeyError((score, regime, phi))
+
+CHECKS += [
+    ("sgg n relations", "4experiments.tex", "183{,}639", sgg["n_relations"], 0),
+    ("sgg n images", "4experiments.tex", "26{,}446", sgg["n_images"], 0),
+    ("sgg n cells", "4experiments.tex", "7{,}127", sgg["n_cells"], 0),
+    ("sgg base acc", "4experiments.tex", "0.6981", sgg["accuracy"]["MOTIFS"], 5e-5),
+    ("sgg tde acc", "4experiments.tex", "0.5577", sgg["accuracy"]["MOTIFS-TDE"], 5e-5),
+    ("sgg raw dT", "4experiments.tex", "-0.11651", sgg_row("brier")["total_gain"], 1e-5),
+    ("sgg raw dP", "4experiments.tex", "-0.10296", sgg_row("brier")["prior_gain"], 1e-5),
+    ("sgg raw dR", "4experiments.tex", "-0.01355",
+     sgg_row("brier")["reasoning_gain"], 1e-5),
+    ("sgg cal dR", "4experiments.tex", "-0.00006",
+     sgg_row("brier", "calibration-matched")["reasoning_gain"], 1e-5),
+    ("sgg cal dP", "4experiments.tex", "-0.18258",
+     sgg_row("brier", "calibration-matched")["prior_gain"], 1e-5),
+    ("sgg cal log dR", "4experiments.tex", "+0.04396",
+     sgg_row("log", "calibration-matched")["reasoning_gain"], 1e-5),
+    ("sgg subject dR", "4experiments.tex", "-0.21711",
+     sgg_row("brier", None, "subject class")["reasoning_gain"], 1e-5),
+    ("sgg base R@50", "4experiments.tex", "0.6612",
+     sgg["recalls"]["MOTIFS"]["predcls_recall@50"], 5e-5),
+    ("sgg tde mR@50", "4experiments.tex", "0.2476",
+     sgg["recalls"]["MOTIFS-TDE"]["predcls_mean_recall@50"], 5e-5),
+    ("sgg base mR@50", "4experiments.tex", "0.1459",
+     sgg["recalls"]["MOTIFS"]["predcls_mean_recall@50"], 5e-5),
+    ("sgg tde zR@50", "4experiments.tex", "0.1432",
+     sgg["recalls"]["MOTIFS-TDE"]["predcls_zeroshot_recall@50"], 5e-5),
+]
+
 fails = []
 for label, fname, literal, actual, tol in CHECKS:
     text = (MS / fname).read_text()
@@ -140,7 +186,8 @@ for label, fname, literal, actual, tol in CHECKS:
         ok_val = True
     else:
         try:
-            quoted = float(literal.replace(",", "").replace("+", ""))
+            quoted = float(literal.replace("{,}", "").replace(",", "")
+                           .replace("+", ""))
             ok_val = abs(abs(quoted) - abs(float(actual))) <= tol
         except ValueError:
             ok_val = False

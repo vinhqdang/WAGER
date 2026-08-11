@@ -27,7 +27,10 @@ sys.path.insert(0, f"{ROOT}/pylib")
 sys.path.insert(0, SGG)
 
 EFFECT = os.environ.get("WAGER_EFFECT", "none")
-OUTDIR = {"none": f"{ROOT}/out_none", "TDE": f"{ROOT}/out_tde"}[EFFECT]
+# relation_test_net writes under OUTPUT_DIR/inference/<dataset name>/, not OUTPUT_DIR
+DATASET = "VG_stanford_filtered_with_attribute_test"
+OUTDIR = os.path.join({"none": f"{ROOT}/out_none", "TDE": f"{ROOT}/out_tde"}[EFFECT],
+                      "inference", DATASET)
 DST = f"{ROOT}/motifs_{EFFECT}_predcls.npz"
 PART = f"{ROOT}/motifs_{EFFECT}_partial.npz"
 CHUNK = 4000

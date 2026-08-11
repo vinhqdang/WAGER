@@ -69,11 +69,19 @@ randomization $p$-values, and controls type-I error in 200 null runs.}
 
 \subsection{Visual Genome setup}\label{sec:data}
 
-We work with Visual Genome \cite{krishna2017visual} in the standard VG150 PredCls
-regime \cite{xu2017scene}, where ground-truth boxes and object labels are supplied and
-the model has only to predict one of 50 predicate labels for each ordered object pair. The split provides
-532,987 training and 229,605 test relations, drawn from 65,228 and 27,955 images
-respectively, and the prior cell throughout is
+We work with Visual Genome \cite{krishna2017visual} in the PredCls regime
+\cite{xu2017scene}, where ground-truth boxes and object labels are supplied and
+the model has only to predict one of 50 predicate labels for each ordered object pair.
+The predictors of this section are audited on a VG150-\emph{style} dataset we build
+directly from the released relationship annotations: the 150 most frequent object
+classes and 50 most frequent predicates form the vocabulary, and images are split
+$70/30$ into a pool for fitting the compared predictors and a pool on which the audit
+runs. We use this reconstruction rather than the canonical VG150 release because these
+predictors are trained here from annotations alone; Section~\ref{sec:sggaudit} audits
+\emph{released third-party checkpoints} on the canonical split itself, so both settings
+appear in the paper and neither is asked to stand for the other. The reconstruction
+provides 532,987 training and 229,605 test relations, drawn from 65,228 and 27,955
+images respectively, and the prior cell throughout is
 $\phi=(\text{subject class},\text{object class})$, two real examples of which appear in
 Figure~\ref{fig:samples}. Of the 8,614 cells present in the test split, 6,346 contain at
 least two relations and are therefore identified; the remaining 2,268 are singletons,
@@ -249,6 +257,85 @@ Min.\ cell size & 10 & $0.00683$ & $0.01330\,[0.01262,0.01398]$ & 2744 \\
 Min.\ cell size & 20 & $0.00570$ & $0.01225\,[0.01155,0.01295]$ & 1757 \\
 \bottomrule
 \end{tabular}
+\end{table}
+
+\subsection{Auditing a published debiasing method}\label{sec:sggaudit}
+
+The predictors audited so far were built to expose particular kinds of information. The
+question the method exists to answer, however, concerns systems that other people
+release and that the field already compares, so we now apply WAGER unchanged to a
+published pair. Tang et al.\ \cite{tang2020unbiased} release a causal MOTIFS PredCls
+checkpoint that yields two models from one set of weights: the biased baseline
+(MOTIFS-SUM) and its Total Direct Effect counterpart (MOTIFS-TDE), which subtracts a
+context-only counterfactual at inference. TDE is among the most cited debiasing methods
+in scene graph generation, and it is reported through mean recall, so it is exactly the
+kind of claimed improvement whose composition is at issue.
+
+We evaluate both variants with the authors' own code on the canonical VG150 test split,
+which fixes the vocabulary, the split and the relation set, and makes the two prediction
+sets aligned relation-for-relation by construction. Our reproduction matches the
+published behaviour: the baseline reaches $R@50=0.6612$ with $mR@50=0.1459$, and TDE
+trades the former for the latter, reaching $R@50=0.4588$ with $mR@50=0.2476$ and raising
+zero-shot recall from $zR@50=0.1102$ to $0.1432$. Top-1 predicate accuracy falls from
+$0.6981$ to $0.5577$. The audit uses $183{,}639$ relations over $26{,}446$ images and
+$7{,}127$ class-pair cells, of which $98.9\%$ are identified.
+
+\paragraph{Result.} Table~\ref{tab:sggaudit} decomposes the pair. Read raw, TDE loses
+$0.11651$ of quadratic score, of which $0.10296$ sits in the prior channel and a small
+but significant $0.01355$ in instance alignment. That reading does not survive the
+control this paper insists on. The two models differ sharply in confidence --- the
+baseline is overconfident at $T^*=2.50$ while TDE, having subtracted a counterfactual,
+is already near-calibrated at $T^*=0.92$ --- and once temperatures are fitted on a
+held-out half of the images and the audit runs on the other half, the alignment channel
+is indistinguishable from zero: $\widehat{\Delta R}=-0.00006$ with a $95\%$ interval of
+$[-0.00120,+0.00109]$ and a randomization $p$ of $.555$. Essentially the entire
+proper-score difference, $-0.18258$ of $-0.18264$, is prior-transported.
+
+This is a precise and, we think, fair characterization of what TDE does. Its own
+construction subtracts the context-only prediction, so a method that operates on the
+prior channel is what its authors built; WAGER quantifies that the intervention is
+almost purely of that kind, and that the model's ability to tell which relation belongs
+to which image within a class-pair cell is left essentially untouched. The consequence
+for evaluation is the paper's thesis in a published setting: an improvement of $10.2$
+points of mean recall, a metric the field reads as evidence of better handling of rare
+predicates, is compatible with no measurable change in within-cell instance alignment.
+Mean recall and the alignment channel are answering different questions, and only the
+latter is a statement about instance-level evidence.
+
+Two honest qualifications. First, the alignment conclusion is stable in sign under the
+audit cell but not in magnitude under the score: the calibration-matched log-score
+decomposition puts alignment at $+0.04396$ against a prior channel of $-0.59157$, so
+the claim we make is the one both scores support --- that the prior channel carries the
+overwhelming majority of the difference --- rather than a precise value for the
+remainder. Second, TDE is designed to change the decision rule rather than to emit
+calibrated probabilities, and a proper score evaluates the latter; the
+calibration-matched regime is what makes the comparison meaningful at all, and its
+necessity here is the clearest practical argument for the protocol of
+Section~\ref{sec:cifarlt}.
+
+\begin{table}[t]
+\centering
+\caption{WAGER audit of released checkpoints on the canonical VG150 PredCls split:
+MOTIFS-TDE against the MOTIFS-SUM baseline it debiases, both evaluated with the
+original authors' code. Raw rows use all identified relations; the calibration-matched
+rows fit each model's temperature on a held-out half of the images and audit the
+disjoint half. CI is image-cluster robust on $\widehat{\Delta R}$.}
+\label{tab:sggaudit}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lllrrr@{}}
+\toprule
+Regime & Score & Audit cell $\phi$ & $\widehat{\Delta T}$ & $\widehat{\Delta P}$ &
+$\widehat{\Delta R}$ (95\% CI) \\
+\midrule
+raw & quadratic & class pair & $-0.11651$ & $-0.10296$ & $-0.01355\,[-0.01504,-0.01206]$ \\
+raw & log       & class pair & $+0.03277$ & $+0.15897$ & $-0.12619$ \\
+raw & quadratic & subject    & $-0.11536$ & $+0.10175$ & $-0.21711$ \\
+\midrule
+calibration-matched & quadratic & class pair & $-0.18264$ & $-0.18258$ & $-0.00006\,[-0.00120,+0.00109]$ \\
+calibration-matched & log       & class pair & $-0.54760$ & $-0.59157$ & $+0.04396$ \\
+\bottomrule
+\end{tabular}
+}
 \end{table}
 
 \subsection{Real-pixel signal on Visual Genome}\label{sec:vgvisual}
