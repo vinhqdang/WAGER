@@ -15,6 +15,7 @@ import base64
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -130,11 +131,17 @@ with zipfile.ZipFile(f"{ROOT}/image_data.json.zip") as z:
     z.extractall(f"{ROOT}/imgmeta")
 
 # ---- 3. repo clone + deps ---------------------------------------------------
-import shutil
-
 if not os.path.exists(SGG + "/.git"):
-    sh(["git", "clone", "--depth", "1",
-        "https://github.com/KaihuaTang/Scene-Graph-Benchmark.pytorch", SGG])
+    # SGG already holds the extracted images (step 2), and git refuses to clone into a
+    # non-empty directory, so clone aside and merge over the existing tree.
+    tmp = f"{ROOT}/_sgg_clone"
+    if not os.path.exists(tmp + "/.git"):
+        shutil.rmtree(tmp, ignore_errors=True)
+        sh(["git", "clone", "--depth", "1",
+            "https://github.com/KaihuaTang/Scene-Graph-Benchmark.pytorch", tmp])
+    shutil.copytree(tmp, SGG, dirs_exist_ok=True)
+    shutil.rmtree(tmp, ignore_errors=True)
+    log(f"repo merged into {SGG}")
 sh(["pip", "-q", "install", "yacs", "ninja", "cython", "overrides", "h5py",
     "numpy<2"])
 
