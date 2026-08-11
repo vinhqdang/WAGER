@@ -70,6 +70,17 @@ relations as the randomized units, so it is secondary in the SGG analysis. A fut
 image-level randomization design that preserves several relation-cell margins
 simultaneously would strengthen finite-sample inference for structured benchmarks.
 
+The audit of Section~\ref{sec:sggaudit} indicates what adoption actually requires. Two
+released checkpoints, evaluated with their authors' own code, were enough: the method
+consumed the resulting probability arrays and returned a decomposition with intervals in
+seconds. Nothing about that workflow is specific to scene graph generation, and the
+practical obstacle is neither compute nor complexity but disclosure --- benchmarks
+overwhelmingly collect ranked predictions rather than predictive distributions. A
+benchmark that archived per-example probabilities alongside its leaderboard would make
+this kind of audit routine for every submitted pair. Where several audit features are
+defensible, we would further recommend that the benchmark, rather than the submitting
+author, declare $\phi$, and that all pre-declared candidates be reported.
+
 Finally, WAGER evaluates probability vectors, not only top-1 decisions. This is a
 feature---the method can detect useful redistribution below the argmax---but it requires
 released logits or probabilities. The quadratic score is bounded and strictly proper;

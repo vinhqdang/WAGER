@@ -13,8 +13,17 @@ channel, unrecorded within-cell shortcuts enter it, and a monotone recalibration
 score between the channels, which is why calibration-matched auditing is part of the
 protocol rather than an afterthought.
 
-On Visual Genome the method assigns a class-only improvement entirely to
-the prior channel while identifying the additional alignment that spatial geometry
+Pointed at two released scene-graph checkpoints rather than at predictors of our own,
+the method returns a precise account of a widely used causal debiasing technique: its
+ten-point mean-recall improvement is accompanied, once calibration is matched, by an
+instance-alignment change indistinguishable from zero, with essentially the entire
+proper-score difference lying in the prior channel. That is what its construction
+subtracts, so the finding characterizes the method rather than indicting it -- and it
+shows that a metric the field reads as evidence about rare predicates can move ten
+points without any measurable change in instance-level evidence.
+
+On our own Visual Genome predictors the method assigns a class-only improvement entirely
+to the prior channel while identifying the additional alignment that spatial geometry
 supplies. Substituting a frozen CLIP encoder for that geometry produces the sharpest
 illustration of why the two channels are worth separating: the resulting model scores
 and ranks worse by every aggregate measure, yet is shown to align with individual

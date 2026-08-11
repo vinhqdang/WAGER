@@ -100,7 +100,7 @@ vgv_rows = {f"{r['new']}|{r['old']}": r for r in vgv["comparisons"]}
 CHECKS += [
     ("VG relations audited", "4experiments.tex", "227,337",
      vg["comparisons"][0]["n_identified"], 0),
-    ("VG test relations", "0abstract.tex", "229,605", vgv["n_test"], 0),
+    ("VG test relations", "4experiments.tex", "229,605", vgv["n_test"], 0),
     ("CLIP total gain", "4experiments.tex", "-0.04655",
      vgv_rows["MLP-VISUAL-S|MLP-SPATIAL-S"]["total_gain"], 1e-5),
     ("CLIP alignment gain", "4experiments.tex", "0.00641",

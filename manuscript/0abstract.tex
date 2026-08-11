@@ -13,11 +13,12 @@ resolution term of proper-score decomposition. It runs in $O(NK)$ time, fits no 
 model, has no tunable hyperparameter, and admits cluster-robust inference. Two further
 exact results follow: leave-one-out transport removes an $(n_c-1)/n_c$ attenuation bias
 that a naive in-sample plug-in incurs, and coarsening the audit cell shifts the estimate
-by an explicit between-cell covariance term. On 229,605 Visual Genome relations, a
-class-only network's entire improvement over the frequency baseline is prior-transported,
-with exactly zero instance alignment; a model reading real pixels through a frozen CLIP
-encoder scores clearly worse overall, yet aligns with individual instances significantly
-better than the box-geometry model beating it, an advantage surviving both post-hoc prior
-correction and calibration matching. Applied unchanged to long-tailed classification, a
-calibration-matched audit overturns what the raw scores suggest two re-weighting
-schedules bought.
+by an explicit between-cell covariance term. Auditing two released scene-graph
+checkpoints on the standard Visual Genome benchmark, we find that a widely used causal
+debiasing method buys ten points of mean recall with no measurable change in within-cell
+instance alignment: calibration-matched, its entire proper-score difference is
+prior-transported. A model reading real pixels through a frozen CLIP encoder shows the
+opposite pattern, scoring clearly worse overall yet aligning with individual instances
+significantly better than the model beating it. Applied unchanged to long-tailed
+classification, a calibration-matched audit overturns what raw scores suggest two
+re-weighting schedules bought.
