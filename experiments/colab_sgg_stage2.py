@@ -150,7 +150,8 @@ for effect, outdir in VARIANTS.items():
     if os.path.exists(dst):
         continue
     log(f"converting {outdir}/eval_results.pytorch")
-    d = torch.load(f"{outdir}/eval_results.pytorch", map_location="cpu")
+    d = torch.load(f"{outdir}/eval_results.pytorch", map_location="cpu",
+                   weights_only=False)  # dump holds BoxList objects
     gts, preds = d["groundtruths"], d["predictions"]
     log(f"{len(gts)} images; gt fields: {gts[0].fields()}; "
         f"pred fields: {preds[0].fields()}; gt size {gts[0].size}, "
@@ -197,7 +198,7 @@ for effect, outdir in VARIANTS.items():
     log(f"wrote {dst}: {len(rows_y)} relations, {n_miss} unmatched")
     rd_path = f"{outdir}/result_dict.pytorch"
     if os.path.exists(rd_path):
-        rd = torch.load(rd_path, map_location="cpu")
+        rd = torch.load(rd_path, map_location="cpu", weights_only=False)
         summary = {}
         for k, v in rd.items():
             try:
