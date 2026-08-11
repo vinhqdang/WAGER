@@ -6,17 +6,26 @@ labels among examples with the same prior feature, WAGER constructs the prior-on
 counterfactual from the evaluated data themselves and obtains an exact identity between
 total, prior-transported, and instance-alignment gains. The residual is an interpretable
 U-statistic, equals a conditional covariance gain under the quadratic score, and is
-computable in $O(NK)$ time. Controlled experiments support null calibration and signal
-recovery, and on Visual Genome the method assigns a class-only improvement entirely to
+computable in $O(NK)$ time. Controlled experiments support null calibration, signal
+recovery, and the coverage of the reported intervals, and establish what the two
+channels do and do not separate: prior-only improvements stay out of the alignment
+channel, unrecorded within-cell shortcuts enter it, and a monotone recalibration moves
+score between the channels, which is why calibration-matched auditing is part of the
+protocol rather than an afterthought.
+
+On Visual Genome the method assigns a class-only improvement entirely to
 the prior channel while identifying the additional alignment that spatial geometry
 supplies. Substituting a frozen CLIP encoder for that geometry produces the sharpest
 illustration of why the two channels are worth separating: the resulting model scores
 and ranks worse by every aggregate measure, yet is shown to align with individual
 instances significantly better than the model it appears to lose to, its whole deficit
-lying in the annotation prior. Carried over without modification to long-tailed classification, it goes on to
-distinguish a re-weighting schedule whose near-zero aggregate score conceals two large
-cancelling channels from one whose genuine improvement proves to be part prior-refitting
-and part rare-class alignment, a separation that neither an aggregate score nor an
-accuracy difference can make. It is this gain-specific mechanism, rather than the
-familiar combination of a frequency baseline with a generic significance test, that
-constitutes the paper's technical contribution.
+lying in the annotation prior and its advantage surviving both post-hoc prior correction
+and calibration matching. Carried over without modification to long-tailed
+classification, the estimator exposes the composition of two re-weighting schedules'
+gains, and the calibration-matched reading overturns what the raw scores suggest about
+each: the schedule whose aggregate barely moves has genuinely lost within-class
+discrimination, while the one that improves has bought almost purely instance alignment
+rather than the prior refitting its raw decomposition implies. Neither an aggregate
+score nor an accuracy difference can make that separation. It is this gain-specific
+mechanism, rather than the familiar combination of a frequency baseline with a generic
+significance test, that constitutes the paper's technical contribution.

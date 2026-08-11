@@ -160,6 +160,21 @@ small positive alignment term, but the accompanying negative prior term is large
 the model ends up worse overall. Using image-derived information is thus never treated
 as an improvement in itself; both channels are reported, signs included.
 
+\paragraph{Reading the magnitudes.} Quadratic-score units are not ones most readers
+calibrate by eye, so it is worth anchoring them in the rank-based metrics this
+literature reports. Where both channels point the same way the correspondence is
+straightforward: MLP-SPATIAL-S's $\widehat{\Delta R}=+0.01023$ over MLP-CLASS-S
+accompanies $+0.51$ points of top-1 predicate accuracy, $+0.60$ of mean reciprocal rank
+and $+0.86$ of recall@5, so in these data a hundredth of quadratic-score gain is worth
+roughly half an accuracy point. The alignment channel is not, however, a re-description
+of any rank metric, and the real-pixel comparison of Section~\ref{sec:vgvisual} is
+where that becomes visible: there $\widehat{\Delta R}=+0.00641$ while top-1 accuracy
+falls by $3.07$ points and recall@5 by $2.21$. Prior-matching both models before scoring
+narrows the accuracy gap to $2.17$ points without closing it. The rank metrics aggregate
+the two channels into one number; when the channels carry opposite signs, as they do
+here, no single such number can represent both, which is precisely the situation the
+decomposition exists to report.
+
 \begin{table*}[t]
 \centering
 \caption{WAGER decomposition on 227,337 identified VG150 PredCls relations. Gains use
