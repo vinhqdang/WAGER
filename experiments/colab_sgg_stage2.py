@@ -46,6 +46,48 @@ for _rel in ("vg/VG_100K", "vg/VG-SGG-with-attri.h5",
         raise SystemExit(f"missing dataset path {_p} -- rerun stage 1")
 log("dataset paths verified")
 
+# --- torch/numpy API drift since the codebase was written (PyTorch 1.4 era) -------
+# Applied tree-wide and idempotently, then verified by actually importing the entry
+# point, so an unknown rename fails in seconds instead of after a multi-hour run.
+SUBS = [
+    (r"\b_download_url_to_file\b", "download_url_to_file"),
+    (r"torch\._six\.PY3", "True"),
+    (r"from torch\._six import string_classes", "string_classes = str"),
+    (r"from torch\._six import int_classes", "int_classes = int"),
+    (r"torch\._six\.string_classes", "str"),
+    (r"torch\._six\.int_classes", "int"),
+    (r"np\.float\b(?!\d|_)", "float"),
+    (r"np\.bool\b(?!\d|_)", "bool"),
+    (r"np\.int\b(?!\d|_|e)", "int"),
+    (r"np\.object\b(?!\d|_)", "object"),
+    (r"from collections import Iterable", "from collections.abc import Iterable"),
+    (r"from collections import Sequence", "from collections.abc import Sequence"),
+]
+_n = 0
+for _dir, _sub, _files in os.walk(f"{SGG}/maskrcnn_benchmark"):
+    for _fn in _files:
+        if not _fn.endswith(".py"):
+            continue
+        _fp = os.path.join(_dir, _fn)
+        _txt = open(_fp, encoding="utf-8", errors="replace").read()
+        _new = _txt
+        for _pat, _rep in SUBS:
+            _new = re.sub(_pat, _rep, _new)
+        if _new != _txt:
+            open(_fp, "w", encoding="utf-8").write(_new)
+            _n += 1
+log(f"compat substitutions touched {_n} files")
+
+_probe = subprocess.run(
+    ["python", "-c",
+     "import sys; sys.path[:0]=['/content/pylib','/content/sgg'];"
+     "import tools.relation_test_net as t; print('entry point imports OK')"],
+    cwd=SGG, capture_output=True, text=True,
+    env=dict(os.environ, PYTHONPATH=f"{ROOT}/pylib:{SGG}"))
+print(_probe.stdout.strip() or _probe.stderr[-2500:], flush=True)
+if _probe.returncode != 0:
+    raise SystemExit("entry point still does not import -- fix before evaluating")
+
 
 # ---- locate checkpoint ----
 pths = sorted(glob.glob(f"{ROOT}/ckpt/**/*.pth", recursive=True))
