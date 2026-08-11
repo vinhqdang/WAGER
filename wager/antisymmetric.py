@@ -55,6 +55,25 @@ class GainDecomposition:
     def coverage(self) -> float:
         return self.n_identified / self.n_total if self.n_total else float("nan")
 
+    # The paper calls this channel the instance-alignment gain (the "R" of WAGER
+    # expands to Resolution). The ``reasoning_*`` field names predate that wording
+    # and are kept so existing scripts and cached results keep working.
+    @property
+    def alignment_gain(self) -> float:
+        return self.reasoning_gain
+
+    @property
+    def alignment_share(self) -> float:
+        return self.reasoning_share
+
+    @property
+    def alignment_ci(self) -> tuple[float, float]:
+        return self.reasoning_ci
+
+    @property
+    def influence_alignment(self) -> np.ndarray:
+        return self.influence_reasoning
+
     def as_row(self) -> dict:
         return {
             "total_gain": self.total_gain,

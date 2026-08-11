@@ -89,14 +89,20 @@ result = decompose_gain(
     groups=image_ids,       # cluster-robust inference
     score="brier",
 )
-print(result.total_gain, result.prior_gain, result.reasoning_gain)
+print(result.total_gain, result.prior_gain, result.alignment_gain)
 ```
 
 Cells with fewer than two observations cannot identify a within-cell counterfactual;
 WAGER excludes them and reports coverage explicitly. The interpretation is always
 conditional on the chosen `phi`: a positive alignment gain is evidence of improved
 instance-specific prediction beyond that declared prior, not proof of causal or
-human-like reasoning.
+compositional understanding. Two caveats the paper documents and tests: the channel
+also credits any unrecorded signal that varies inside a cell, and it is not invariant
+to recalibration, so compare calibration-matched models when they differ visibly in
+confidence (see `experiments/cifar_recalibration_control.py`).
+
+`alignment_gain`, `alignment_ci` and `alignment_share` are the names used in the paper;
+the older `reasoning_*` fields remain as aliases.
 
 See [`algorithm.md`](algorithm.md) for the mathematics and
 [`manuscript/main.pdf`](manuscript/main.pdf) for the paper.
