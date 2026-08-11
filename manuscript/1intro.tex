@@ -38,10 +38,12 @@ improves this instance-level alignment. Figure~\ref{fig:concept} summarizes the 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig1_new_concept.png}
-\caption{\textbf{WAGER audits the gain directly.} Prediction contrasts from two frozen
-models are matched within a declared prior cell, evaluated under observed and crossed
-label assignments, and separated exactly into prior-transported and instance-alignment
-components.}
+\caption{\textbf{WAGER audits the gain directly, on the benchmark's own examples.} Two
+VG150 test relations share the audit cell $\phi=(\text{man},\text{surfboard})$ yet
+carry different labels. Crossing the labels within the cell (arrows) preserves the cell
+and its label histogram while destroying which prediction meets which image. Scoring
+two frozen models under the observed and transported assignments splits their score
+difference exactly into a prior-transported gain and an instance-alignment gain.}
 \label{fig:concept}
 \end{figure*}
 
