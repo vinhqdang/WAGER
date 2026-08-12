@@ -1,8 +1,9 @@
-"""WAGER: Within-cell Antisymmetric Gain Evaluation of Reasoning.
+"""WAGER: Within-cell Antisymmetric Gain Evaluation of Resolution.
 
-The current public API is implemented in :mod:`wager.antisymmetric`.  The older
-``core``, ``pipeline``, and ``rgr`` modules are retained only to reproduce the
-desk-rejected projection/betting formulation and should not be used for new work.
+Attributes the proper-score difference between two frozen probabilistic models
+into a prior-transported component and an instance-alignment residual, using
+within-cell label transport. The public API is :func:`decompose_gain`; see
+``algorithm.md`` for the mathematics and ``README.md`` for usage.
 """
 
 from .antisymmetric import (

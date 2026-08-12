@@ -1,108 +1,135 @@
 # WAGER — Within-cell Antisymmetric Gain Evaluation of Resolution
 
-WAGER attributes the proper-score improvement between two frozen vision models
-without fitting a separate prior baseline. It matches examples that share a declared
-prior feature `phi`, crosses their labels, and decomposes the observed gain exactly:
+When two models are compared on a benchmark whose labels are partly determined by a
+feature both of them observe, the score difference confounds two things: a closer fit to
+that feature's conditional label distribution, and better prediction of individual cases.
+WAGER separates them exactly. It matches test examples sharing a declared feature `phi`,
+crosses their labels, and splits the observed gain:
 
 ```text
-total model gain = prior-transported gain + instance-alignment gain
+total gain = prior-transported gain + instance-alignment gain
 ```
 
-The instance-alignment term is an order-two U-statistic. With the quadratic/Brier
-score, it equals twice the within-cell covariance gained between probability changes
-and the correct label. A class-only change that is constant inside each prior cell has
-exactly zero alignment gain.
+The alignment term is an order-two U-statistic. Under the quadratic score it equals the
+within-cell covariance the new model has gained between its probability changes and the
+label, which identifies it with the resolution term of the classical proper-score
+decomposition (Murphy 1973; DeGroot & Fienberg 1983; Bröcker 2009) applied to a model
+*pair* rather than to one forecaster. A change that is constant inside each cell — a pure
+prior refit — has exactly zero alignment gain, by construction rather than by
+approximation.
 
-## Why this is a new algorithm
+There is no fitted nuisance model, no sample splitting, and no tuning parameter. Two
+exact results follow from the construction:
 
-The rejected version of WAGER estimated each model's frequency-collapsed projection
-and attached a generic betting process. The redesigned method removes that stack. It
-operates on the *difference between two models*, creates its counterfactual by
-within-cell label transport, and obtains an exact finite-sample identity. There is no
-projection fold, smoothing model, clipping constant, betting order, or thresholded gain
-ratio.
+- **Attenuation.** Using the cell's own label frequency as the counterfactual (the
+  in-sample plug-in) is biased by exactly `(n_c - 1)/n_c` relative to leave-one-out
+  transport, worst in small cells. This is why no held-out fold is needed.
+- **Coarsening.** Merging cells changes the estimand by an explicit between-cell
+  covariance term (law of total covariance), which is not sign-definite — so a coarser
+  audit feature cannot be assumed neutral.
 
-The covariance identity is a model-pair relative of the classical resolution term in
-proper-score decomposition (Murphy 1973; DeGroot & Fienberg 1983; Brocker 2009), applied
-to a gain contrast rather than to one forecaster. Two exact results go beyond that
-classical decomposition and beyond the rejected precursor:
+Inference is by Hájek influence function with cluster-robust intervals, plus a
+cell-stratified randomization test.
 
-- **Attenuation.** A naive in-sample plug-in prior (fit the cell's own label frequency
-  and use it as the counterfactual, with no held-out evaluation fold) is provably biased
-  by a factor `(n_c - 1)/n_c` relative to WAGER's leave-one-out estimate, worst in small
-  cells. This is the formal reason the redesign needs no projection/evaluation split.
-- **Coarsening.** Merging prior cells changes the estimated alignment gain by an exact
-  between-cell covariance term (law of total covariance), which is not sign-definite.
-  This explains, rather than just reports, why the finest defensible audit feature is the
-  conservative default.
+## Quick start
 
-## Reproduce
+```python
+from wager import decompose_gain
 
-The estimator and every analysis step are pure NumPy and need no GPU. Only the model
-training that *produces* the probability matrices does.
+r = decompose_gain(
+    q_new, q_old, y, phi,     # two (N, K) probability matrices, labels, cell ids
+    groups=image_ids,          # optional: cluster-robust intervals
+    score="brier",             # or "log"
+)
+print(r.total_gain, r.prior_gain, r.alignment_gain, r.alignment_ci)
+```
+
+Four aligned arrays are all it needs, so any pair of frozen probabilistic models can be
+audited from cached predictions. Cost is `O(NK)`.
+
+### Reading the result honestly
+
+- Cells with fewer than two examples cannot identify a within-cell counterfactual. WAGER
+  excludes them and reports `coverage` rather than smoothing over them.
+- The interpretation is conditional on `phi`. A positive alignment gain means the new
+  model aligns its probability changes with the right example better *among cases sharing
+  that feature* — not that it reasons, or that the improvement is causal.
+- The channel credits **any** unrecorded signal varying inside a cell, including
+  shortcuts. Choosing `phi` to be the label itself makes every cell homogeneous and forces
+  the alignment gain to zero as an algebraic artifact.
+- The alignment channel is **not invariant to recalibration**: sharpening or softening a
+  model moves score between the two channels while adding no information. Compare
+  calibration-matched models when they differ visibly in confidence — see
+  `experiments/cifar_recalibration_control.py` for the protocol and how much it matters.
+
+`alignment_gain`, `alignment_ci` and `alignment_share` are the names used in the paper;
+the earlier `reasoning_*` fields remain as aliases.
+
+## Reproducing the paper
+
+The estimator and every analysis step are pure NumPy and need no GPU; only the model
+training that *produces* the probability caches does.
 
 ```bash
-conda run -n py313 python -m pytest tests -q
-conda run -n py313 python experiments/antisymmetric_simulation.py
-conda run -n py313 python experiments/run_sgg_wager.py           # main VG study
-conda run -n py313 python experiments/antisymmetric_ablations.py # sensitivity checks
-conda run -n py313 python experiments/make_antisymmetric_figures.py
+conda run -n py313 python -m pytest tests -q                        # 13 tests
+conda run -n py313 python experiments/verify_manuscript_numbers.py  # 55 quoted values
 ```
 
-`run_sgg_wager.py` trains the five controlled PredCls predictors and writes
-`results/antisymmetric_results.json`; if `results/sgg_dists.npz` is already present it
-loads those cached distributions instead, so the analysis can be rerun without
-retraining. Because every model in a comparison must come from the same run, the cache
-is used wholesale or not at all.
+The verifier checks every number quoted in the manuscript against the committed results
+files, so a transcription slip or a stale figure fails loudly.
 
-### Analyses driven by cached model outputs
+### Analyses
 
-```bash
-conda run -n py313 python experiments/run_cifar_lt_wager.py       # cross-domain study
-conda run -n py313 python experiments/make_cifar_figures.py
-conda run -n py313 python experiments/run_vg_visual_wager.py      # real-pixel study
-conda run -n py313 python experiments/make_vg_visual_figure.py
-conda run -n py313 python experiments/make_dataset_samples_figure.py
-```
+| command | what it produces |
+|---|---|
+| `antisymmetric_simulation.py` | recovery, null, interval coverage, discriminant validity |
+| `run_sgg_wager.py` | main Visual Genome study (trains five controlled predictors) |
+| `antisymmetric_ablations.py` | sensitivity to score, cell granularity, minimum cell size |
+| `run_sgg_audit_wager.py` | audit of the released MOTIFS / MOTIFS-TDE checkpoints |
+| `run_vg_visual_wager.py` | matched-subsample frozen-CLIP study |
+| `vg_prior_consequence.py` | post-hoc prior matching and calibration control on VG |
+| `vg_metric_bridge.py` | translates score gains into accuracy, MRR and recall@5 |
+| `run_cifar_multiseed_wager.py` | CIFAR-100-LT across seeds, ratios, and a logit-adjustment arm |
+| `cifar_recalibration_control.py` | held-out temperature protocol for the long-tail study |
+| `cifar_covariance_check.py` | independent cross-check of the covariance identity |
 
-Each expects the corresponding `.npz` of cached test probabilities under `data/`
-(`data/cifar_lt/`, `data/vg_visual/`). Those are produced by the GPU-side scripts in
-`experiments/colab_*.py`, which train the models and write only the small probability
-caches back:
+Figures: `make_fig1_concept.py`, `make_antisymmetric_figures.py`, `make_cifar_figures.py`,
+`make_vg_visual_figure.py`, `make_dataset_samples_figure.py`. The sample-image figures
+fetch their few source images on demand, so no bulk download is required.
+
+`run_sgg_wager.py` reuses `results/sgg_dists.npz` if present, so the analysis can be rerun
+without retraining. Because every model in a comparison must come from the same run, that
+cache is used wholesale or not at all.
+
+### GPU-side scripts
+
+These run on a Colab-style host, train the models, and write back only the small
+probability caches that the analyses consume (`data/cifar_lt/`, `data/vg_visual/`,
+`data/vg_motifs/`).
 
 | script | produces |
 |---|---|
-| `colab_cifar_lt_train.py` | CIFAR-100-LT cross-entropy and class-balanced ResNet-32 |
-| `colab_cifar_drw_train.py` | adds the deferred-reweighting arm |
+| `colab_cifar_lt_train.py`, `colab_cifar_drw_train.py` | the original CE / CB / DRW ResNet-32 triple |
+| `colab_cifar_multiseed.py` | the same triple across seeds and imbalance ratios |
 | `colab_vg_visual.py` | matched-subsample CLIP / geometry / class-only VG models |
+| `colab_sgg_stage1.py`, `colab_sgg_stage2.py`, `colab_sgg_convert.py` | fetch and patch Scene-Graph-Benchmark, evaluate the released MOTIFS checkpoint in both modes, and convert the dumps to per-relation arrays |
 
-`make_dataset_samples_figure.py` fetches its handful of source images on demand, so it
-needs no bulk download.
+`vg_prepare.py` builds the VG150-style dataset used by the main study from the released
+Visual Genome annotations. Note that this is a reconstruction with a frequency-derived
+vocabulary and its own image split — the checkpoint audit in `run_sgg_audit_wager.py` uses
+the canonical VG150 split instead, and the paper keeps the two settings distinct.
 
-## Main API
+## Layout
 
-```python
-from wager.antisymmetric import decompose_gain
-
-result = decompose_gain(
-    q_new, q_old, y, phi,
-    groups=image_ids,       # cluster-robust inference
-    score="brier",
-)
-print(result.total_gain, result.prior_gain, result.alignment_gain)
+```
+wager/antisymmetric.py   the estimator: transport, identity, inference
+experiments/             analysis drivers, figure scripts, GPU training jobs
+tests/                   13 tests, including numerical checks of both propositions
+results/*.json           cached outputs every reported number is checked against
+manuscript/              the paper (elsarticle), figures, cover letter
+algorithm.md             the mathematics in prose
+report/REPORT.md         development log across the three revisions
 ```
 
-Cells with fewer than two observations cannot identify a within-cell counterfactual;
-WAGER excludes them and reports coverage explicitly. The interpretation is always
-conditional on the chosen `phi`: a positive alignment gain is evidence of improved
-instance-specific prediction beyond that declared prior, not proof of causal or
-compositional understanding. Two caveats the paper documents and tests: the channel
-also credits any unrecorded signal that varies inside a cell, and it is not invariant
-to recalibration, so compare calibration-matched models when they differ visibly in
-confidence (see `experiments/cifar_recalibration_control.py`).
-
-`alignment_gain`, `alignment_ci` and `alignment_share` are the names used in the paper;
-the older `reasoning_*` fields remain as aliases.
-
-See [`algorithm.md`](algorithm.md) for the mathematics and
+See [`algorithm.md`](algorithm.md) for the derivations and
 [`manuscript/main.pdf`](manuscript/main.pdf) for the paper.

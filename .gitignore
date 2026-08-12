@@ -250,3 +250,7 @@ scratchpad/
 
 # local scratch from MCP tooling
 .playwright-mcp/
+
+# stale build output and legacy report artifacts
+output/
+report/summary.html
