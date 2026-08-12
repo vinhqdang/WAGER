@@ -1,0 +1,63 @@
+CSDA SUBMISSION QUESTIONNAIRE -- prepared answers
+=================================================
+Character counts are given as [n/limit]. Paste verbatim; they are already within limit.
+
+
+Q1. Associate Editor names (limit 100 chars)
+---------------------------------------------
+[67/100]  PASTE THIS:
+Lucas Mentch; Andreas Artemiou; Pavlo Mozharovskyi; Alejandro Murua
+
+Why these four, from their listed interests on the board page:
+
+  Lucas Mentch (Pittsburgh) -- the closest match on the entire board:
+    "Resampling, Permutation Tests, Variable Importance, Black Box, Explainability,
+    Model Set Selection". His own research applies U-statistic asymptotics to
+    ensemble predictors, so both halves of this paper -- the U-statistic residual
+    and the randomization test -- are squarely inside his expertise. List first.
+
+  Andreas Artemiou (Limassol) -- "Machine Learning, Regression, Classification,
+    Kernel methods". Comfortable with classifiers evaluated as probabilistic
+    predictors, which is what the estimator consumes.
+
+  Pavlo Mozharovskyi (Telecom Paris) -- "machine learning, classification,
+    multivariate data analysis, robust methods, approximate computation". Bridges
+    the statistical and computational sides of the contribution.
+
+  Alejandro Murua (Montreal) -- "Statistical computing, Statistical learning,
+    Clustering and classification, Object recognition". The only board member whose
+    stated interests touch vision, so he can judge the applications as well as the
+    method.
+
+Reasonable substitutes if any are unavailable: Maria Brigida Ferraro (classification,
+bootstrap) or Edwin Fong (model selection, conformal prediction). Avoid the
+Bayesian-computation, MCMC, survival-analysis and time-series specialists, who make up
+much of the board -- a proper-score decomposition is outside their reviewing range.
+
+
+Q2. How the paper fits the aims and scope of CSDA (limit 100 chars)
+--------------------------------------------------------------------
+PASTE THIS (one line, no line break):
+Section II methodology: model assessment and comparison for classification and pattern
+recognition
+
+
+Q3. Novelty of the paper (limit 500 chars)
+-------------------------------------------
+[500/500]  PASTE THIS:
+Comparing two fitted predictors, the score difference confounds a closer fit to a known nuisance feature with better prediction of individual cases. We give an exact finite-sample identity separating them by within-cell label transport, needing no fitted nuisance model and no tuning parameter. The residual is an order-two U-statistic equal to a within-cell covariance gain, identifying it with the resolution term of classical proper-score decomposition applied to a model pair, not one forecaster.
+
+
+Q4. Main contribution of the paper (limit 1000 chars)
+------------------------------------------------------
+[996/1000]  PASTE THIS:
+An estimator, with theory and inference, attributing the proper-score difference between two frozen probabilistic models into a nuisance-transported component and an instance-alignment residual. Contributions: (i) an exact population and finite-sample identity requiring no fitted nuisance model, no sample splitting, no tuning parameter, computable in O(NK); (ii) a covariance identity showing the residual is the resolution term of the classical decomposition applied to a model pair; (iii) two exact results, that leave-one-out transport removes an (n_c-1)/n_c attenuation the in-sample plug-in incurs, and that coarsening the matching feature shifts the estimand by an explicit between-cell covariance; (iv) Hajek influence-function inference with cluster-robust intervals, coverage-validated by simulation; (v) discriminant-validity experiments establishing what the components do and do not separate, including sensitivity to monotone recalibration and the matched protocol that removes it.
+
+
+Q5. Funding confirmation (radio button)
+----------------------------------------
+Select: "I confirm that I have mentioned all organizations that funded my research..."
+The manuscript carries a Funding section stating: "This research did not receive any
+specific grant from funding agencies in the public, commercial, or not-for-profit
+sectors." That is the required disclosure when there is no funder, so the confirmation
+is accurate.
