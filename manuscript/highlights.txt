@@ -4,5 +4,5 @@ Highlights
 Exact finite-sample identity splits a model-pair score gain into prior and alignment
 Residual is an order-two U-statistic equal to a within-cell covariance gain
 Leave-one-out transport removes an exact (n_c-1)/n_c plug-in attenuation bias
-A CLIP model scoring worse overall aligns with instances better than the one beating it
-Calibration-matched audit overturns what raw scores say two long-tail methods bought
+Simulation validates interval coverage and the channels' discriminant validity
+A published debiasing method gains mean recall with alignment statistically unchanged

@@ -111,7 +111,7 @@ def main():
     for d in OUTDIRS:
         os.makedirs(d, exist_ok=True)
         p = os.path.join(d, "fig1_new_concept.png")
-        fig.savefig(p, dpi=200)
+        fig.savefig(p, dpi=400)
         print(f"wrote {p}", flush=True)
 
 

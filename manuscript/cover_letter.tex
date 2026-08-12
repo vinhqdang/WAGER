@@ -1,5 +1,5 @@
-% Cover letter for submission to Array (Elsevier).
-% Not anonymized: the cover letter accompanies the title page, not the blinded manuscript.
+% Cover letter for submission to Computational Statistics and Data Analysis (Elsevier).
+% CSDA runs single anonymized review, so the manuscript itself carries author details.
 \documentclass[11pt,a4paper]{article}
 \usepackage[margin=1in]{geometry}
 \usepackage{parskip}
@@ -17,23 +17,24 @@ Hung Yen, Vietnam\\
 \vspace{1em}
 \noindent
 To the Editors,\\
-\emph{Array}
+\emph{Computational Statistics and Data Analysis}
 
 \vspace{1em}
 
 Dear Editors,
 
 I am submitting the manuscript ``WAGER: Within-cell Antisymmetric Gain Evaluation of
-Resolution'' for consideration as a regular paper in \emph{Array}.
+Resolution'' for consideration as a regular paper in \emph{Computational Statistics and Data Analysis}.
 
-The paper addresses a measurement problem that recurs across machine learning: when a
-benchmark's labels are strongly predictable from a known nuisance feature, a new model
-can raise its headline score by fitting that regularity more precisely rather than by
-predicting individual examples better. Scene graph generation, visual question
-answering and long-tailed recognition all have this structure. The usual response is to
-compare a model against a prior-only baseline, but that does not answer the question a
-benchmark result actually poses: when system B outscores system A, how much of the gain
-came from the instances and how much from the prior?
+The paper concerns the comparison of two probabilistic predictors when the labels are
+partly determined by a nuisance feature both models observe. In that situation the
+score difference confounds two quantities: a closer fit to the conditional label
+distribution of the nuisance feature, and genuinely better prediction of individual
+cases. Significance testing on the difference does not separate them, and the customary
+remedy --- fitting a nuisance-only baseline and comparing against it --- introduces
+estimation error, smoothing choices and model-family mismatch into what should be an
+exact statement about a fixed pair. Machine-learning benchmarks in computer vision
+supply the applications here, but the estimation problem is general.
 
 WAGER answers that question directly, and the contribution is primarily methodological.
 Given two frozen probabilistic models, it forms their proper-score contrast, matches
@@ -57,34 +58,50 @@ monotone recalibration moves score mass between the channels, together with the
 calibration-matched protocol that removes it and a demonstration that the protocol
 works.
 
-The empirical results show the instrument earning its keep. On 229,605 Visual Genome
-relations, a class-only network's entire improvement over the frequency baseline is
-provably prior-transported, with exactly zero instance alignment. More strikingly, when
-a frozen CLIP encoder replaces annotation-derived box geometry, the resulting model
-scores $0.04655$ \emph{lower} overall --- an evaluator reading that number would discard
-it --- yet aligns with individual instances significantly \emph{better} than the model
-that beats it ($+0.00641$, $p\le.002$), its entire deficit lying in the annotation
-prior; the advantage survives both post-hoc prior correction and calibration matching.
-Applied unchanged to long-tailed image classification, the same estimator separates two
-re-weighting schedules whose aggregate scores hide their composition, and a
-calibration-matched reanalysis overturns what the raw decomposition appears to say about
-each of them.
-% PENDING(sgg): add the MOTIFS/MOTIFS-TDE audit sentence once the numbers land.
+The empirical results show the instrument earning its keep, and the clearest
+demonstration concerns a method the field already compares rather than any predictor of
+ours. We evaluate the released causal MOTIFS checkpoint of Tang et al.\ (CVPR 2020) in
+both of its modes with the authors' own code on the standard Visual Genome PredCls
+split, reproducing their published behaviour, and decompose the debiased model against
+the biased baseline. Read naively, the Total Direct Effect variant appears to lose a
+little instance alignment. That reading does not survive the control this paper argues
+for: the two models differ sharply in confidence, and once temperatures are matched on
+held-out images the alignment channel is statistically indistinguishable from zero
+($-0.00006$, 95\% CI $[-0.00120,+0.00109]$), with essentially the entire proper-score
+difference lying in the prior channel. A widely used debiasing method therefore buys ten
+points of mean recall with no measurable change in within-cell instance alignment ---
+which is what its construction subtracts, so the finding characterises the method
+rather than indicting it, while showing that a metric read as evidence about rare
+predicates can move sharply without any change in instance-level evidence.
 
-I believe the work suits \emph{Array}'s broad computer-science scope: it is a
-methodological and measurement contribution, with proofs, a reference implementation,
-and validation on two structurally different benchmark families, rather than a new
-architecture competing for state-of-the-art accuracy. All code, cached model outputs and
-scripts needed to reproduce every number and figure are publicly available, and the
-repository URL is given on the title page.
+Two further results point in complementary directions. A model reading real pixels
+through a frozen CLIP encoder scores $0.04655$ \emph{lower} overall --- an evaluator
+reading that number would discard it --- yet aligns with individual instances
+significantly \emph{better} than the model that beats it, its entire deficit lying in
+the annotation prior and its advantage surviving both post-hoc prior correction and
+calibration matching. Applied unchanged to long-tailed image classification across
+seeds and imbalance ratios, a calibration-matched reanalysis overturns what the raw
+decomposition appears to say about two re-weighting schedules.
+
+I believe the work belongs in \emph{Computational Statistics and Data Analysis} under
+Section II, Statistical Methodology for Data Analysis, whose remit includes
+classification, pattern recognition, model selection and assessment, and cross-validation
+--- the family this estimator joins. It also touches Section I through the development,
+evaluation and validation of an algorithm, which is supplied and documented rather than
+merely described. The contribution is a decomposition with exact finite-sample results
+and inference, validated as an instrument before being used as one; the vision
+benchmarks are the applications on which it is exercised, not the claim. No
+state-of-the-art result is asserted, and none is needed for the argument.
+
+All code, cached model outputs and scripts needed to reproduce every number, table and
+figure are publicly available at \url{https://github.com/vinhqdang/WAGER}, including a
+verification script that checks each reported value against the committed results files.
 
 The manuscript is original, has not been published previously, and is not under
 consideration for publication elsewhere. I am the sole author and approve its submission.
 I declare no competing financial or personal interests, and the work received no specific
 grant from any funding agency. In accordance with the journal's policy, the manuscript
-includes a declaration of generative AI use in its preparation. Author details are
-supplied on the separate title page, with the manuscript itself anonymized for the
-review process.
+includes a declaration of generative AI use in its preparation.
 
 Thank you for your consideration.
 

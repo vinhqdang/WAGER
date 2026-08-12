@@ -1,4 +1,6 @@
-% Array (Elsevier) submission.
+% Computational Statistics and Data Analysis (Elsevier) submission.
+% CSDA runs SINGLE anonymized review, so author details belong in the manuscript;
+% the separate title page is kept for the submission system's metadata only.
 % Previously typeset for Computer Vision and Image Understanding, and before that with
 % the Springer Nature sn-jnl class; see git history if either is ever needed again.
 \documentclass[preprint,times]{elsarticle}
@@ -27,7 +29,7 @@
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}
 
-\journal{Array}
+\journal{Computational Statistics and Data Analysis}
 
 \begin{document}
 \sloppy
@@ -36,17 +38,20 @@
 
 \title{WAGER: Within-cell Antisymmetric Gain Evaluation of Resolution}
 
-%% Double-anonymized review: author, affiliation and contact details are supplied in the
-%% separate title page file (title_page.tex), not here.
-\author{}
+%% CSDA uses single anonymized review, so author details appear here.
+\author[buv]{Quang-Vinh Dang\corref{cor1}}
+\ead{vinh.dq4@buv.edu.vn}
+\cortext[cor1]{Corresponding author.}
+\affiliation[buv]{organization={British University Vietnam},
+  addressline={Ecopark Township}, city={Hung Yen}, country={Vietnam}}
 
 \begin{abstract}
 \input{0abstract.tex}
 \end{abstract}
 
 \begin{keyword}
-Benchmark Auditing \sep Model Comparison \sep Dataset Bias \sep
-Scene Graph Generation \sep Long-tailed Recognition \sep Counterfactual Evaluation
+Model comparison \sep Proper scoring rules \sep U-statistics \sep
+Model assessment \sep Pattern recognition \sep Randomization tests
 \end{keyword}
 
 \end{frontmatter}
@@ -58,11 +63,22 @@ Scene Graph Generation \sep Long-tailed Recognition \sep Counterfactual Evaluati
 \input{5discussion.tex}
 \input{6conclusions.tex}
 
-\section*{Data availability}
-All code, cached model outputs and scripts needed to reproduce every number and figure
-in this paper are publicly available in a repository whose URL is withheld here to
-preserve anonymity during review; it is given on the title page and will be stated in
-the published version.
+\section*{Data and code availability}
+All code, cached model outputs and scripts needed to reproduce every number, table and
+figure in this paper are publicly available at
+\url{https://github.com/vinhqdang/WAGER}. The repository contains the estimator, its
+unit tests, every experiment driver, and the cached results files that each reported
+value is checked against by an included verification script. The two audited scene-graph
+checkpoints are the public release of \citet{tang2020unbiased}; Visual Genome
+\citep{krishna2017visual} and CIFAR-100 are public benchmarks.
+
+\section*{Declaration of competing interests}
+The author declares no competing financial interests or personal relationships that
+could have appeared to influence the work reported in this paper.
+
+\section*{Funding}
+This research did not receive any specific grant from funding agencies in the public,
+commercial, or not-for-profit sectors.
 
 \section*{Declaration of generative AI and AI-assisted technologies in the manuscript
 preparation process}

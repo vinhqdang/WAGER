@@ -77,7 +77,7 @@ def main():
     for d in OUTDIRS:
         os.makedirs(d, exist_ok=True)
         path = os.path.join(d, "fig5_cifar_lt.png")
-        fig.savefig(path, dpi=200, bbox_inches="tight")
+        fig.savefig(path, dpi=400, bbox_inches="tight")
         print(f"wrote {path}", flush=True)
 
 

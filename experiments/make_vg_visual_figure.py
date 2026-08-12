@@ -68,7 +68,7 @@ def main():
     for d in OUTDIRS:
         os.makedirs(d, exist_ok=True)
         p = os.path.join(d, "fig7_vg_visual.png")
-        fig.savefig(p, dpi=200, bbox_inches="tight")
+        fig.savefig(p, dpi=400, bbox_inches="tight")
         print(f"wrote {p}", flush=True)
 
 

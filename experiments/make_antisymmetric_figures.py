@@ -21,7 +21,7 @@ RED = "#dc2626"
 
 
 def _save(fig, name):
-    fig.savefig(os.path.join(OUT, name), dpi=220, bbox_inches="tight", facecolor="white")
+    fig.savefig(os.path.join(OUT, name), dpi=400, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
 

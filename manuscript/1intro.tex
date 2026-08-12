@@ -1,12 +1,22 @@
 \section{Introduction}\label{sec:intro}
 
-Computer-vision benchmarks often contain a shortcut that is both powerful and easy to
-state. In scene graph generation (SGG), the ordered object-class pair strongly predicts
-the relation label; in visual question answering (VQA), question form predicts the
-answer; in long-tail recognition, category frequency dominates aggregate performance.
-Models can therefore improve a headline score by fitting annotation regularities more
-precisely without improving the instance-specific association between an image and its
-label. This is not merely hypothetical: frequency baselines are competitive on Visual
+Model comparison on a benchmark is an estimation problem that is usually treated as a
+lookup. Two predictors are scored, the difference is reported, and the difference is
+read as evidence that one model has learned something the other has not. That reading
+is sound only when the labels are not already partly determined by a feature both models
+observe. When they are --- and in many benchmarks they conspicuously are --- a model can
+raise its score by fitting the conditional label distribution of that nuisance feature
+more closely, without predicting any individual case better. The score difference then
+confounds two quantities that a careful evaluation should separate, and no amount of
+significance testing on the difference itself will separate them.
+
+Computer-vision benchmarks make the problem concrete, and supply the applications of
+this paper. In scene graph generation (SGG), the ordered object-class pair strongly
+predicts the relation label; in visual question answering (VQA), question form predicts
+the answer; in long-tail recognition, category frequency dominates aggregate
+performance. Models can therefore improve a headline score by fitting annotation
+regularities more precisely without improving the instance-specific association between
+an image and its label. This is not merely hypothetical: frequency baselines are competitive on Visual
 Genome \cite{zellers2018neural}, VQA systems fail under changed answer priors
 \cite{goyal2017making,agrawal2018dont}, standard metrics obscure tail behavior
 \cite{li2022rethinking}, and the same diagnosis continues to reappear in current work:

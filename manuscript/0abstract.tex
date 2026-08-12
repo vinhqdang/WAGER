@@ -1,24 +1,21 @@
-Benchmarks whose labels are strongly predictable from a known nuisance feature can
-reward a model that fits that regularity better rather than one that predicts individual
-examples better. Existing audits compare a single model against a prior-only baseline,
-which does not answer the question a benchmark result actually poses: when one system
-outscores another, how much of the gain came from the instances? We introduce WAGER, a
-pairwise attribution algorithm. For two frozen probabilistic models it forms their
-proper-score contrast, matches test examples sharing a declared prior feature, and
+Comparing two probabilistic predictors on data whose labels are partly determined by a
+known nuisance feature raises an attribution question aggregate scores cannot answer:
+when one model outscores another, how much of the gain reflects a closer fit to the
+nuisance distribution rather than better prediction of individual cases? We introduce
+WAGER, an estimator that answers it directly. For two frozen models it forms their
+proper-score contrast, matches test cases sharing a declared discrete feature, and
 crosses their labels, giving an exact finite-sample identity: the observed gain equals a
-prior-transported gain plus an antisymmetric instance-alignment gain. The residual is an
-order-two U-statistic that, under the quadratic score, equals the within-cell
-prediction--label covariance the new model has gained, connecting it to the classical
-resolution term of proper-score decomposition. It runs in $O(NK)$ time, fits no baseline
-model, has no tunable hyperparameter, and admits cluster-robust inference. Two further
-exact results follow: leave-one-out transport removes an $(n_c-1)/n_c$ attenuation bias
-that a naive in-sample plug-in incurs, and coarsening the audit cell shifts the estimate
-by an explicit between-cell covariance term. Auditing two released scene-graph
-checkpoints on the standard Visual Genome benchmark, we find that a widely used causal
-debiasing method buys ten points of mean recall with no measurable change in within-cell
-instance alignment: calibration-matched, its entire proper-score difference is
-prior-transported. A model reading real pixels through a frozen CLIP encoder shows the
-opposite pattern, scoring clearly worse overall yet aligning with individual instances
-significantly better than the model beating it. Applied unchanged to long-tailed
-classification, a calibration-matched audit overturns what raw scores suggest two
-re-weighting schedules bought.
+prior-transported gain plus an antisymmetric residual. The residual is an order-two
+U-statistic equal, under the quadratic score, to the within-cell prediction--label
+covariance the new model has gained, identifying it with the resolution term of the
+classical proper-score decomposition applied to a model pair rather than a single
+forecaster. The estimator costs $O(NK)$, fits no nuisance model, has no tuning
+parameter, and admits H\'ajek influence-function inference with cluster-robust intervals
+and a stratified randomization test. Two exact results follow: leave-one-out transport
+removes an $(n_c-1)/n_c$ attenuation that the in-sample plug-in incurs, and coarsening
+the matching feature shifts the estimand by an explicit between-cell covariance.
+Simulation establishes interval coverage and discriminant validity, including the
+residual's sensitivity to monotone recalibration and the matched protocol that removes
+it. Applied to scene-graph prediction and long-tailed image classification, the
+decomposition shows published methods whose headline improvements are almost entirely
+nuisance-transported while instance-level alignment is statistically unchanged.
