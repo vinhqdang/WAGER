@@ -178,6 +178,66 @@ CHECKS += [
      sgg["recalls"]["MOTIFS-TDE"]["predcls_zeroshot_recall@50"], 5e-5),
 ]
 
+# confounding-sensitivity bound (Corollary: worst-case)
+sens = load("sensitivity_bound_check.json")
+CHECKS += [
+    ("sens class-pair dR", "3method.tex", "0.01439",
+     sens["delta_r_class_pair_phi"], 1e-5),
+    ("sens subject dR", "3method.tex", "0.02181",
+     sens["delta_r_subject_only_phi"], 1e-5),
+    ("sens empirical bias", "3method.tex", "0.00742",
+     sens["empirical_coarsening_bias"], 5e-5),
+    ("sens crude bound", "3method.tex", "50.00",
+     sens["crude_cauchy_schwarz_bound"], 5e-3),
+    ("sens min rho", "3method.tex", "0.00015",
+     sens["minimum_rho_for_bound_to_hold"], 5e-6),
+]
+
+
+# text classification cross-domain study (20-Newsgroups-LT)
+txt = load("text_lt_results.json")
+txt_rows = {f"{r['prior_feature']}|{r['new']}": r for r in txt["comparisons"]}
+CHECKS += [
+    ("text CE accuracy", "4experiments.tex", "0.3532", txt["accuracy"]["CE"], 5e-4),
+    ("text CB accuracy", "4experiments.tex", "0.3960", txt["accuracy"]["CB"], 5e-4),
+    ("text DRW accuracy", "4experiments.tex", "0.3776", txt["accuracy"]["DRW"], 5e-4),
+    ("text CB superclass dT", "4experiments.tex", "0.11388",
+     txt_rows["superclass|MLP-CB"]["total_gain"], 1e-5),
+    ("text CB superclass dP", "4experiments.tex", "0.07071",
+     txt_rows["superclass|MLP-CB"]["prior_gain"], 1e-5),
+    ("text CB superclass dR", "4experiments.tex", "0.04317",
+     txt_rows["superclass|MLP-CB"]["reasoning_gain"], 1e-5),
+    ("text CB global dR", "4experiments.tex", "0.04185",
+     txt_rows["global|MLP-CB"]["reasoning_gain"], 1e-5),
+    ("text CB tier dR", "4experiments.tex", "0.03578",
+     txt_rows["tier|MLP-CB"]["reasoning_gain"], 1e-5),
+    ("text DRW superclass dT", "4experiments.tex", "0.11490",
+     txt_rows["superclass|MLP-DRW"]["total_gain"], 1e-5),
+    ("text DRW superclass dP", "4experiments.tex", "0.11335",
+     txt_rows["superclass|MLP-DRW"]["prior_gain"], 1e-5),
+    ("text DRW superclass dR", "4experiments.tex", "0.00155",
+     txt_rows["superclass|MLP-DRW"]["reasoning_gain"], 1e-5),
+    ("text DRW global dR", "4experiments.tex", "-0.00319",
+     txt_rows["global|MLP-DRW"]["reasoning_gain"], 1e-5),
+    ("text DRW tier dR", "4experiments.tex", "-0.00901",
+     txt_rows["tier|MLP-DRW"]["reasoning_gain"], 1e-5),
+]
+tier_rows = {(r["new"], r["tier"]): r for r in txt["per_tier_at_superclass_phi"]}
+CHECKS += [
+    ("text CB few-shot dR", "4experiments.tex", "0.04991",
+     tier_rows[("MLP-CB", "few-shot (<20)")]["alignment_gain"], 1e-5),
+    ("text CB medium-shot dR", "4experiments.tex", "0.19213",
+     tier_rows[("MLP-CB", "medium-shot (20-100)")]["alignment_gain"], 1e-5),
+    ("text CB many-shot dR", "4experiments.tex", "-0.09227",
+     tier_rows[("MLP-CB", "many-shot (>100)")]["alignment_gain"], 1e-5),
+    ("text DRW few-shot dR", "4experiments.tex", "0.07352",
+     tier_rows[("MLP-DRW", "few-shot (<20)")]["alignment_gain"], 1e-5),
+    ("text DRW medium-shot dR", "4experiments.tex", "0.07171",
+     tier_rows[("MLP-DRW", "medium-shot (20-100)")]["alignment_gain"], 1e-5),
+    ("text DRW many-shot dR", "4experiments.tex", "-0.10753",
+     tier_rows[("MLP-DRW", "many-shot (>100)")]["alignment_gain"], 1e-5),
+]
+
 fails = []
 for label, fname, literal, actual, tol in CHECKS:
     text = (MS / fname).read_text()

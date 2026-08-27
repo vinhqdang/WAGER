@@ -99,16 +99,27 @@ evaluation: the Diebold--Mariano test \cite{diebold1995comparing} and conditiona
 predictive ability tests \cite{giacomini2006tests} ask whether one forecaster beats
 another, optionally conditional on covariates -- the closest existing relative of a
 gain evaluated conditional on $\phi$. WAGER adds to that tradition an exact
-decomposition of the differential itself. Second, the prior channel is precisely the
-component that label-shift procedures manipulate post hoc: re-weighting a classifier's
-outputs to a new label distribution \cite{saerens2002adjusting,lipton2018detecting} can
-add or remove prior-transported gain without touching instance-level evidence, which is
-what the prior-matching experiment of Section~\ref{sec:vgvisual} exploits as a
-falsification test. Third, evaluating calibration within cells of a declared grouping,
-uniformly over many candidate groupings, is the subject of multicalibration
+decomposition of the differential itself, and Corollary~\ref{cor:dm} makes the
+relationship precise: at the trivial partition, WAGER's own total-gain statistic and its
+image-clustered interval literally are a grouped Diebold--Mariano statistic, so the
+decomposition is best read as everything DM/GW already deliver plus the further split
+that neither provides. Second, the prior channel is precisely the component that
+label-shift procedures manipulate post hoc: re-weighting a classifier's outputs to a new
+label distribution \cite{saerens2002adjusting,lipton2018detecting} can add or remove
+prior-transported gain without touching instance-level evidence, which is what the
+prior-matching experiment of Section~\ref{sec:vgvisual} exploits as a falsification
+test. Third, evaluating calibration within cells of a declared grouping, uniformly over
+many candidate groupings, is the subject of multicalibration
 \cite{hebert2018multicalibration}; that literature is the formal treatment of the
-multiplicity question raised by the choice of $\phi$
-(Section~\ref{sec:discussion}).
+multiplicity question raised by the choice of $\phi$ (Section~\ref{sec:discussion}). A
+fourth, more classical connection concerns what an unrecorded grouping variable can hide:
+omitted-variable sensitivity analysis in observational causal inference
+\cite{rosenbaum2002observational} and its recent correlation- and moment-parameterized
+refinements \cite{freidling2025optimization,zhang2026average} bound how much an
+unmeasured confounder could change a causal estimate; Proposition~\ref{prop:sensitivity}
+adapts the same Cauchy--Schwarz style of argument to bound how much an unrecorded
+covariate could change the reported alignment gain, which is the same question -- how
+far can what is unobserved move the estimate -- asked of a different estimand.
 
 \subsection{Relation to classical proper-score decompositions}\label{sec:related-decomposition}
 The covariance identity in Eq.~\eqref{eq:cov-id} is a relative of the reliability

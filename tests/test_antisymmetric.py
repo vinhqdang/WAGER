@@ -1,4 +1,6 @@
 """Tests for the redesigned within-cell antisymmetric WAGER algorithm."""
+from statistics import NormalDist
+
 import numpy as np
 
 from wager.antisymmetric import (
@@ -155,6 +157,110 @@ def test_attenuation_proposition_matches_insample_plugin():
     hat_p, hat_r = result.transported, result.alignment
     assert np.allclose(p_tilde[idx], hat_p[idx] + hat_r[idx] / nc[idx], atol=1e-9)
     assert np.allclose(r_tilde[idx], (nc[idx] - 1.0) / nc[idx] * hat_r[idx], atol=1e-9)
+
+
+def test_log_score_bregman_covariance_identity():
+    """Corollary (Bregman scores, log case): under the log score, R = sum_y
+    Cov(log q1(y|X) - log q0(y|X), 1[Y=y] | phi), the direct log-odds analogue of the
+    quadratic-score covariance identity checked above."""
+    rng = np.random.default_rng(8)
+    n, k = 500, 4
+    phi = np.repeat(np.arange(20), n // 20)
+    y = rng.integers(k, size=n)
+    q0 = rng.dirichlet(np.ones(k), size=n)
+    q1 = rng.dirichlet(np.ones(k), size=n)
+    eps = 1e-6
+    result = decompose_gain(q1, q0, y, phi, score="log", eps=eps)
+
+    logdiff = np.log(np.maximum(q1, eps)) - np.log(np.maximum(q0, eps))
+    cov_sum = 0.0
+    for c in np.unique(phi):
+        ix = np.flatnonzero(phi == c)
+        nc = len(ix)
+        onehot = np.eye(k)[y[ix]]
+        cov = (nc / (nc - 1.0)) * np.mean(
+            (logdiff[ix] - logdiff[ix].mean(0)) * (onehot - onehot.mean(0)), axis=0
+        )
+        cov_sum += (nc / n) * cov.sum()
+    assert np.isclose(result.reasoning_gain, cov_sum, atol=1e-8)
+
+
+def test_trivial_phi_total_gain_matches_diebold_mariano_statistic():
+    """Corollary (relation to Diebold-Mariano/Giacomini-White): at the trivial
+    (single-cell) phi, Delta_T_hat and its normal-approximation interval are exactly
+    the sample mean and standard error of the paired score differential -- the
+    classical (unclustered) Diebold-Mariano statistic for this score contrast."""
+    rng = np.random.default_rng(9)
+    n, k = 400, 5
+    y = rng.integers(k, size=n)
+    q0 = rng.dirichlet(np.ones(k), size=n)
+    q1 = rng.dirichlet(np.ones(k), size=n)
+    phi = np.zeros(n, dtype=np.int64)
+    result = decompose_gain(q1, q0, y, phi)
+
+    h = gain_matrix(q1, q0)
+    paired_diff = h[np.arange(n), y]
+    dm_mean = float(paired_diff.mean())
+    dm_se = float(paired_diff.std(ddof=0)) / np.sqrt(n)
+
+    z = NormalDist().inv_cdf(0.975)
+    se_from_ci = (result.total_ci[1] - result.total_ci[0]) / (2.0 * z)
+
+    assert np.isclose(result.total_gain, dm_mean)
+    assert np.isclose(se_from_ci, dm_se)
+
+
+def test_sensitivity_bound_ordering_crude_ge_tight_ge_exact_bias():
+    """Proposition (sensitivity to an unrecorded confounder) and its worst-case
+    Corollary: on an explicit discrete population with a known omitted confounder Z,
+    the exact coarsening bias is dominated by the per-cell-dispersion ("tight") bound,
+    which is in turn dominated by the data-free Cauchy-Schwarz/Popoviciu ("crude")
+    bound KM/2 -- verifying both inequalities of Eq. (sensitivity-bound), not just
+    their combination."""
+    K = 2
+    M = 0.40  # matches max(|H(y)|) in the atoms below
+    # (phi, Z, weight, H(y) mean vector [point mass -> Var(H|phi,Z)=0], Pr(Y=y|phi,Z))
+    atoms = [
+        (0, 0, 1.0, np.array([0.10, -0.10]), np.array([0.9, 0.1])),
+        (0, 1, 1.0, np.array([0.30, 0.10]), np.array([0.3, 0.7])),
+        (1, 0, 1.0, np.array([-0.20, 0.40]), np.array([0.6, 0.4])),
+        (1, 1, 1.0, np.array([0.05, 0.05]), np.array([0.2, 0.8])),
+    ]
+    for c in (0, 1):
+        cell = [a for a in atoms if a[0] == c]
+        w = np.array([a[2] for a in cell])
+        w = w / w.sum()
+        a_mat = np.array([a[3] for a in cell])  # (n_Z, K)
+        b_mat = np.array([a[4] for a in cell])
+
+        mean_a = (w[:, None] * a_mat).sum(0)
+        mean_b = (w[:, None] * b_mat).sum(0)
+        var_a = (w[:, None] * (a_mat - mean_a) ** 2).sum(0)
+        var_b = (w[:, None] * (b_mat - mean_b) ** 2).sum(0)
+        cov_ab = (w[:, None] * (a_mat - mean_a) * (b_mat - mean_b)).sum(0)
+
+        exact_bias = cov_ab.sum()  # Delta_R_c(phi) - E[Delta_R_(phi,Z) | phi=c]
+
+        # Population variance of H(y) | phi=c: atoms are point masses on H, so this
+        # equals var_a exactly here (the law-of-total-variance remainder is zero),
+        # which the tight bound is entitled to use directly.
+        var_h = var_a
+        # Population variance of the label indicator | phi=c: p_y(c)(1-p_y(c)) is an
+        # upper bound on var_b (law of total variance), generally strict.
+        p_y = mean_b
+        var_ind = p_y * (1.0 - p_y)
+        assert np.all(var_ind >= var_b - 1e-12)
+
+        denom_a = np.sqrt(var_a.sum())
+        denom_b = np.sqrt(var_b.sum())
+        rho = cov_ab.sum() / (denom_a * denom_b) if denom_a > 0 and denom_b > 0 else 0.0
+        assert -1.0 - 1e-9 <= rho <= 1.0 + 1e-9
+
+        tight_bound = abs(rho) * np.sqrt(var_h.sum()) * np.sqrt(var_ind.sum())
+        crude_bound = abs(rho) * K * M / 2.0
+
+        assert abs(exact_bias) <= tight_bound + 1e-9
+        assert tight_bound <= crude_bound + 1e-9
 
 
 def test_coarsening_proposition_law_of_total_covariance():

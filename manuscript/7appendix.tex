@@ -19,6 +19,29 @@ is $\operatorname{Cov}(B(X),\sum_y\ind \{Y=y\})=
 \operatorname{Cov}(B(X),1)=0$. The remaining terms give Eq.~\eqref{eq:cov-id}. If
 $H_X(y)=H_c(y)$ almost surely, every covariance is zero. \qed
 
+\subsection{Proof of Theorem~\ref{thm:bregman}}
+Condition on $C=c$. The proof of Theorem~\ref{thm:population} above establishes
+$\Delta R_c=\sum_y\operatorname{Cov}(H_X(y),\ind\{Y=y\}\mid C=c)$ for \emph{any} score
+contrast $H$, not only the quadratic one; only the identification of $H_x(y)$ with a
+specific functional form is score-dependent. For the Bregman score of
+Eq.~\eqref{eq:bregman-score},
+\[
+H_x(y)=\underbrace{\bigl[\psi(q_1(x))-\psi(q_0(x))\bigr]
+-\bigl[\langle\nabla\psi(q_1(x)),q_1(x)\rangle-\langle\nabla\psi(q_0(x)),q_0(x)\rangle\bigr]}_{=:B(x)}
++\;\Delta g_y(x),
+\]
+writing $q_i(x)$ for $q_i(\cdot\mid x)$, where $B(x)$ collects every term not indexed by
+$y$ and $\Delta g_y(x)=\partial_y\psi(q_1(x))-\partial_y\psi(q_0(x))$ is the $y$-indexed
+remainder, exactly as in the proof of Theorem~\ref{thm:population} for the quadratic
+case. Substituting,
+\begin{align*}
+\sum_y\operatorname{Cov}(H_X(y),\ind\{Y=y\}\mid c)
+&=\operatorname{Cov}\Bigl(B(X),\sum_y\ind\{Y=y\}\ \Big|\ c\Bigr)\\
+&\quad+\sum_y\operatorname{Cov}(\Delta g_y(X),\ind\{Y=y\}\mid c).
+\end{align*}
+The first term is $\operatorname{Cov}(B(X),1\mid c)=0$ since $\sum_y\ind\{Y=y\}=1$
+almost surely. The second term is Eq.~\eqref{eq:bregman-cov-id}. \qed
+
 \subsection{Proof of Theorem~\ref{thm:sample}}
 Summing the kernel in Eq.~\eqref{eq:kernel} over unordered pairs, every observed term
 $H_i(y_i)$ occurs in $n_c-1$ pairs with coefficient $1/2$, while the two crossed terms
@@ -69,6 +92,51 @@ $\widehat{\Delta Z}$, gives
 $\widetilde{\Delta R}=N_*^{-1}\sum_{c}n_c\cdot\frac{n_c-1}{n_c}\widehat{\Delta R}_c
 =N_*^{-1}\sum_c(n_c-1)\widehat{\Delta R}_c$. \qed
 
+\subsection{Proof of Proposition~\ref{prop:sensitivity}}
+Fix $\phi=c$ throughout and write $a_y=\mathbb E[H_X(y)\mid\phi,Z]$,
+$b_y=\Pr(Y=y\mid\phi,Z)$, both random through their dependence on $(\phi,Z)$. Let
+$U=(a_y-\mathbb E[a_y\mid c])_{y=1}^K$ and $V=(b_y-\mathbb E[b_y\mid c])_{y=1}^K$ be the
+corresponding mean-zero $\mathbb R^K$-valued random vectors conditional on $\phi=c$. The
+map $(U,V)\mapsto\mathbb E[\langle U,V\rangle\mid c]=\sum_y\operatorname{Cov}(a_y,b_y\mid c)$
+is an inner product on the space of mean-square-integrable $\mathbb R^K$-valued random
+variables conditional on $\phi=c$, so by the Cauchy--Schwarz inequality applied to that
+inner product,
+\[
+\Bigl|\sum_{y=1}^K\operatorname{Cov}(a_y,b_y\mid c)\Bigr|
+\le\sqrt{\mathbb E[\lVert U\rVert^2\mid c]}\,\sqrt{\mathbb E[\lVert V\rVert^2\mid c]}
+=\sqrt{\textstyle\sum_y\operatorname{Var}(a_y\mid c)}\,\sqrt{\textstyle\sum_y\operatorname{Var}(b_y\mid c)}.
+\]
+By the definition of $\rho$, the left side equals
+$|\rho|\sqrt{\sum_y\operatorname{Var}(a_y\mid c)}\sqrt{\sum_y\operatorname{Var}(b_y\mid c)}$
+exactly, so this step alone is not yet a bound; two further steps supply one, at two
+different levels of conservatism. First, $a_y=\mathbb E[H_X(y)\mid\phi,Z]$ is itself a
+conditional expectation of $H_X(y)$ given more information than $\phi=c$ alone, so the
+law of total variance gives $\operatorname{Var}(H_X(y)\mid c)=\mathbb
+E[\operatorname{Var}(H_X(y)\mid\phi,Z)\mid c]+\operatorname{Var}(a_y\mid c)\ge
+\operatorname{Var}(a_y\mid c)$; likewise $b_y=\Pr(Y=y\mid\phi,Z)$ satisfies
+$\operatorname{Var}(b_y\mid c)\le\operatorname{Var}(\ind\{Y=y\}\mid c)=p_y(c)(1-p_y(c))$ by
+the same argument applied to $\ind\{Y=y\}$ in place of $H_X(y)$. Both bounds hold
+termwise, so summing over $y$ and applying the (monotone) square root to each sum
+separately gives the observable, per-cell bound
+\[
+\sqrt{\textstyle\sum_y\operatorname{Var}(a_y\mid c)}\sqrt{\textstyle\sum_y\operatorname{Var}(b_y\mid c)}
+\le\sqrt{\textstyle\sum_y\operatorname{Var}(H_X(y)\mid c)}\sqrt{\textstyle\sum_yp_y(c)(1-p_y(c))},
+\]
+the second inequality of Eq.~\eqref{eq:sensitivity-bound}; this is a bound on a product of
+two sums, and does not simplify to a sum of per-label square roots, since Cauchy--Schwarz
+runs the other way for that rearrangement. Second, for
+Corollary~\ref{cor:sensitivity-crude}, $a_y\in[-M,M]$ (a conditional expectation of a
+$[-M,M]$-valued variable) and $b_y\in[0,1]$, so Popoviciu's inequality applied directly to
+$a_y,b_y$ gives $\operatorname{Var}(a_y\mid c)\le M^2$ and $\operatorname{Var}(b_y\mid
+c)\le1/4$ for every $y$, hence
+\[
+\Bigl|\sum_{y=1}^K\operatorname{Cov}(a_y,b_y\mid c)\Bigr|
+\le|\rho|\sqrt{KM^2}\sqrt{K/4}=\frac{|\rho|\,K\,M}{2}.
+\]
+By Eq.~\eqref{eq:sensitivity-exact}, the left side of each display is exactly
+$|\Delta R_c(\phi)-\mathbb E[\Delta R_{(\phi,Z)}\mid\phi=c]|$, giving
+Eq.~\eqref{eq:sensitivity-bound} and Eq.~\eqref{eq:sensitivity-crude}. \qed
+
 \section{Influence function: estimand and derivation}\label{app:influence}
 
 \paragraph{The estimand under singleton exclusion.} Cells with $n_c=1$ identify no
@@ -107,6 +175,35 @@ $\widehat\psi_i=2(\bar A_i-\widehat{\Delta R}_{c})+(\widehat{\Delta R}_{c}
 Eq.~\eqref{eq:influence} and has exactly zero sample mean by construction. Its empirical
 95\% coverage in a VG-like regime (image-clustered examples, Zipf cell sizes dominated
 by $n_c=2$) is validated in Section~\ref{sec:simulation}.
+
+\paragraph{Proof of Theorem~\ref{thm:clt}.} The linearization above gives
+$\widehat{\Delta R}-\theta=N_*^{-1}\sum_i\psi_i+o_p(N_*^{-1/2})$ for the population
+influence contribution $\psi_i=2(g_{C_i}(Z_i)-\theta_{C_i})+(\theta_{C_i}-\theta)$, which
+has zero mean by construction and satisfies $|\psi_i|\le C(M)$ for an absolute constant
+$C(M)$ depending only on the score bound $M$ in condition (i), since $g_{C_i}$,
+$\theta_{C_i}$, and $\theta$ are themselves averages of the bounded kernel
+$A_{ij}\in[-2M,2M]$. Because clusters are mutually independent (condition (ii)),
+$T_g=\sum_{i\in g}\psi_i$ for $g=1,\dots,G$ are independent, mean-zero random variables
+with $|T_g|\le|g|\,C(M)$. Condition (ii)'s finite third moment for cluster sizes and
+$\max_g|g|=o(\sqrt G)$ give
+$\sum_gE|T_g|^3\le C(M)^3\sum_g\mathbb E|g|^3=O(G)$ while
+$\bigl(\sum_g\operatorname{Var}(T_g)\bigr)^{3/2}=\Theta(G^{3/2})$ under condition (iv), so
+Lyapunov's ratio $\sum_gE|T_g|^3/(\sum_g\operatorname{Var}(T_g))^{3/2}\to0$; the
+Lyapunov condition implies the Lindeberg condition, and the Lindeberg--Feller central
+limit theorem for triangular arrays of independent summands
+\citep{serfling1980approximation,vandervaart1998asymptotic} gives
+$\bigl(\sum_gT_g\bigr)/\sqrt{\sum_g\operatorname{Var}(T_g)}\xrightarrow{d}\mathcal N(0,1)$.
+Condition (iii) makes $N_*/\sum_g\operatorname{Var}(T_g)\to1/\sigma^2$ in probability by
+definition of $\sigma^2$, and the $o_p(N_*^{-1/2})$ remainder is asymptotically
+negligible after multiplying by $\sqrt{N_*}$, so
+$\sqrt{N_*}(\widehat{\Delta R}-\theta)\xrightarrow{d}\mathcal N(0,\sigma^2)$ by Slutsky's
+theorem. For the variance estimator, $\widehat{\Delta R}_c\to_p\Delta R_c$ and
+$\widehat{\Delta R}\to_p\theta$ by the weak law of large numbers applied within each cell
+and across cells respectively (each is an average of a bounded kernel over a
+sample size diverging under (iii)), so $\widehat\psi_i\to_p\psi_i$ pointwise, and
+$\widehat\sigma^2$ -- a sum of squares of cluster-aggregated $\widehat\psi_i$, normalized
+by $N_*$ and $G$ -- is a continuous functional of these consistent plug-ins, hence
+$\widehat\sigma^2\to_p\sigma^2$ by the continuous mapping theorem. \qed
 
 \paragraph{Efficient computation.} The implementation does not instantiate all pairs. In addition to Eq.~\eqref{eq:linear},
 let $G_c(y)=\sum_{j\in c}H_j(y)$ and $O_c=\sum_{j\in c}H_j(y_j)$. The pair-kernel mean
@@ -152,12 +249,23 @@ cover the decomposition identity, quadratic covariance identity, cell-constant n
 singleton reporting, cluster inference, randomization power, and log-score path, plus
 direct numerical checks of Propositions~\ref{prop:attenuate} and~\ref{prop:coarsen}
 (the latter against an explicit discrete population with exact expectations, independent
-of the estimator's own code path). The covariance-identity cross-check quoted in
+of the estimator's own code path), Corollary~\ref{cor:bregman}'s log-score covariance
+identity, Corollary~\ref{cor:dm}'s equivalence to the (unclustered) Diebold--Mariano
+statistic at a trivial audit feature, and Proposition~\ref{prop:sensitivity}'s bound
+ordering (exact bias $\le$ tight, per-cell bound $\le$ crude, data-free bound) on a second
+explicit discrete population with a known omitted confounder. The covariance-identity
+cross-check quoted in
 Section~\ref{sec:cifarlt} is reproduced by
 \texttt{experiments/\allowbreak cifar\_covariance\_check.py}; the calibration-matched
 protocol and the prior-matching experiment are
 \texttt{experiments/\allowbreak cifar\_recalibration\_control.py} and
-\texttt{experiments/\allowbreak vg\_prior\_consequence.py}.
+\texttt{experiments/\allowbreak vg\_prior\_consequence.py}. Table~\ref{tab:sensitivity-numeric}'s
+evaluation of Corollary~\ref{cor:sensitivity-crude} is
+\texttt{experiments/\allowbreak sensitivity\_bound\_check.py}, which recomputes the crude
+bound directly from the committed \texttt{antisymmetric\_ablations.json} rather than
+re-running the decomposition; \texttt{experiments/\allowbreak sensitivity\_analysis.py}
+computes Proposition~\ref{prop:sensitivity}'s tighter, per-cell form from per-instance
+arrays (Section~\ref{app:compute}).
 
 \paragraph{Full-data VG predictors (Sections~\ref{sec:results}--\ref{sec:ablations}).}
 FREQ uses add-one smoothing over the $50$ predicates within each training class pair,

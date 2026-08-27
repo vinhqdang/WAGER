@@ -13,7 +13,12 @@ The interpretation remains conditional on the declared audit feature $\phi$. A p
 $\Delta R$ means the new model aligns its probability changes with the correct example
 better than the old model among examples sharing $\phi$. It does not prove causal
 inference, compositional understanding, or robustness. If an unrecorded shortcut varies
-inside a cell, WAGER will count its predictive use in $\Delta R$. Applications should
+inside a cell, WAGER will count its predictive use in $\Delta R$; Proposition
+\ref{prop:sensitivity} turns this qualitative caveat into a numeric one, bounding how far
+the reported alignment gain could be from what a fully adjusted audit would find as a
+function of a single, elicitable correlation parameter $\bar\rho$, though
+Table~\ref{tab:sensitivity-numeric} shows that bound is conservative at VG150's label
+cardinality. Applications should
 therefore choose $\phi$ before looking at results, justify it from the benchmark's data
 generation process, and report finer and coarser alternatives. The observed increase
 under subject-only cells illustrates Proposition~\ref{prop:coarsen}: coarsening adds a
@@ -64,9 +69,13 @@ when coverage is low. Approximate
 matching could extend the method to continuous priors, but would replace the exact
 identity's clear intervention with modeling assumptions; we leave that extension open.
 
-The image-clustered confidence interval is asymptotic. The cyclic randomization test is
-finite-group exact only under its sharper within-cell exchangeability null and treats
-relations as the randomized units, so it is secondary in the SGG analysis. A future
+The image-clustered confidence interval is asymptotic, and Theorem~\ref{thm:clt} is what
+justifies that: under a bounded score and a mild condition ruling out one cluster from
+dominating the sample, the dataset-level estimator is asymptotically normal around the
+identified-subpopulation estimand, and the same sandwich variance already reported is
+consistent for its limiting variance. The cyclic randomization test is finite-group
+exact only under its sharper within-cell exchangeability null and treats relations as
+the randomized units, so it is secondary in the SGG analysis. A future
 image-level randomization design that preserves several relation-cell margins
 simultaneously would strengthen finite-sample inference for structured benchmarks.
 

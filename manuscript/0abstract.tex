@@ -13,9 +13,14 @@ forecaster. The estimator costs $O(NK)$, fits no nuisance model, has no tuning
 parameter, and admits H\'ajek influence-function inference with cluster-robust intervals
 and a stratified randomization test. Two exact results follow: leave-one-out transport
 removes an $(n_c-1)/n_c$ attenuation that the in-sample plug-in incurs, and coarsening
-the matching feature shifts the estimand by an explicit between-cell covariance.
-Simulation establishes interval coverage and discriminant validity, including the
-residual's sensitivity to monotone recalibration and the matched protocol that removes
-it. Applied to scene-graph prediction and long-tailed image classification, the
+the matching feature shifts the estimand by an explicit between-cell covariance. The same
+covariance identity is shown to hold for the entire Bregman-score family, an asymptotic
+normality theorem justifies the reported intervals in the large-sample limit and reduces,
+at a trivial matching feature, to a clustered Diebold--Mariano test, and a
+Cauchy--Schwarz sensitivity bound quantifies how far an unrecorded confounder could move
+the residual away from what a fully adjusted audit would find. Simulation establishes
+interval coverage and discriminant validity, including the residual's sensitivity to
+monotone recalibration and the matched protocol that removes it. Applied to scene-graph
+prediction, long-tailed image classification, and long-tailed text classification, the
 decomposition shows published methods whose headline improvements are almost entirely
 nuisance-transported while instance-level alignment is statistically unchanged.

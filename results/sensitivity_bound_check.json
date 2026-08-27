@@ -1,0 +1,11 @@
+{
+  "K": 50,
+  "M": 2.0,
+  "delta_r_class_pair_phi": 0.014387279837420266,
+  "delta_r_subject_only_phi": 0.02180636394489067,
+  "empirical_coarsening_bias": 0.007419084107470405,
+  "crude_cauchy_schwarz_bound": 50.0,
+  "minimum_rho_for_bound_to_hold": 0.00014838168214940811,
+  "looseness_ratio": 6739.376353700334,
+  "note": "The bound holds for any rho >= minimum_rho_for_bound_to_hold; since that threshold is far below 1, the bound is directionally correct but very conservative at VG150's K=50 scale."
+}

@@ -1,12 +1,24 @@
 \section{Conclusion}\label{sec:conclusion}
 
 We introduced WAGER, Within-cell Antisymmetric Gain Evaluation of Resolution, a direct
-algorithm for attributing the score improvement between two vision models. By crossing
-labels among examples with the same prior feature, WAGER constructs the prior-only
-counterfactual from the evaluated data themselves and obtains an exact identity between
-total, prior-transported, and instance-alignment gains. The residual is an interpretable
-U-statistic, equals a conditional covariance gain under the quadratic score, and is
-computable in $O(NK)$ time. Controlled experiments support null calibration, signal
+algorithm for attributing the score improvement between two frozen probabilistic
+classifiers. By crossing labels among examples with the same prior feature, WAGER
+constructs the prior-only counterfactual from the evaluated data themselves and obtains
+an exact identity between total, prior-transported, and instance-alignment gains. The
+residual is an interpretable U-statistic that, under the quadratic score, equals a
+conditional covariance gain, and the same covariance identity holds for the entire
+Bregman-score family (Theorem~\ref{thm:bregman}) rather than the quadratic score alone.
+The estimator is computable in $O(NK)$ time, its dataset-level statistic is
+asymptotically normal around the identified-subpopulation estimand under conditions that
+hold whenever the score is bounded and no single cluster dominates the sample
+(Theorem~\ref{thm:clt}), and it reduces, at a trivial audit feature, to a clustered
+Diebold--Mariano/Giacomini--White test (Corollary~\ref{cor:dm}) -- so every real-data
+comparison in this paper already reports what that classical test would, plus the split
+it does not provide. A Cauchy--Schwarz sensitivity bound (Proposition~\ref{prop:sensitivity})
+turns the paper's central qualitative caveat -- that an unrecorded confounder can
+masquerade as alignment -- into a numeric limit on how far the reported residual could be
+from a fully adjusted audit, elicited from a single correlation parameter rather than a
+model of the confounder itself. Controlled experiments support null calibration, signal
 recovery, and the coverage of the reported intervals, and establish what the two
 channels do and do not separate: prior-only improvements stay out of the alignment
 channel, unrecorded within-cell shortcuts enter it, and a monotone recalibration moves
@@ -35,6 +47,18 @@ gains, and the calibration-matched reading overturns what the raw scores suggest
 each: the schedule whose aggregate barely moves has genuinely lost within-class
 discrimination, while the one that improves has bought almost purely instance alignment
 rather than the prior refitting its raw decomposition implies. Neither an aggregate
-score nor an accuracy difference can make that separation. It is this gain-specific
-mechanism, rather than the familiar combination of a frequency baseline with a generic
+score nor an accuracy difference can make that separation.
+
+A third domain, long-tailed text classification on 20 Newsgroups
+(Section~\ref{sec:textlt}), carries no spatial or class-frequency prior at all, and
+supplies the estimator's sharpest demonstration that channel composition is a property
+of a training recipe applied to particular data, not of the recipe's name: on this task
+it is the class-balanced schedule that buys genuine instance alignment, and the deferred
+schedule -- the one that carried the real alignment gain on CIFAR-100-LT -- whose
+comparably large total gain is almost entirely prior-transported. The two vision domains
+and the one text domain are audited by the identical unmodified construction, differing
+only in what $\phi$ is declared to be. It is this gain-specific mechanism, together with
+its extension to a general score family, its large-sample justification, its explicit
+sensitivity to what it cannot see, and its exact relation to classical forecast-comparison
+tests, rather than the familiar combination of a frequency baseline with a generic
 significance test, that constitutes the paper's technical contribution.

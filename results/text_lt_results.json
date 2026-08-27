@@ -1,0 +1,275 @@
+{
+  "algorithm": "WAGER-within-cell-antisymmetric",
+  "dataset": "20-Newsgroups-LT (imbalance ratio 100)",
+  "score": "quadratic/Brier",
+  "alpha": 0.05,
+  "n_randomizations": 499,
+  "n_test": 7532,
+  "n_classes": 20,
+  "n_coarse": 6,
+  "imbalance_ratio": 100.0,
+  "epochs": 60,
+  "drw_start_epoch": 45,
+  "accuracy": {
+    "CE": 0.35315985130111527,
+    "CB": 0.3960435475305364,
+    "DRW": 0.37758895379713225
+  },
+  "comparisons": [
+    {
+      "prior_feature": "superclass",
+      "new": "MLP-CB",
+      "old": "MLP-CE",
+      "total_gain": 0.11388367328817016,
+      "prior_gain": 0.0707148064442145,
+      "reasoning_gain": 0.04316886684395565,
+      "reasoning_share": 0.37906106817191926,
+      "reasoning_ci": [
+        0.03663750789930921,
+        0.04970022578860209
+      ],
+      "prior_ci": [
+        0.06511811535852262,
+        0.07631149752990639
+      ],
+      "total_ci": [
+        0.10582267262585988,
+        0.12194467395048043
+      ],
+      "share_ci": [
+        0.3368879219761045,
+        0.421234214367734
+      ],
+      "standard_error": 0.003332387225563821,
+      "n_total": 7532,
+      "n_identified": 7532,
+      "coverage": 1.0,
+      "n_cells": 6,
+      "n_singletons": 0,
+      "score": "brier",
+      "randomization_p": 0.002
+    },
+    {
+      "prior_feature": "global",
+      "new": "MLP-CB",
+      "old": "MLP-CE",
+      "total_gain": 0.11388367328817016,
+      "prior_gain": 0.07202945798429061,
+      "reasoning_gain": 0.04185421530387954,
+      "reasoning_share": 0.3675172577018308,
+      "reasoning_ci": [
+        0.033806898327972776,
+        0.049901532279786304
+      ],
+      "prior_ci": [
+        0.06718942738183731,
+        0.07686948858674392
+      ],
+      "total_ci": [
+        0.10582267262585988,
+        0.12194467395048043
+      ],
+      "share_ci": [
+        0.3159680206192522,
+        0.4190664947844094
+      ],
+      "standard_error": 0.004105849413245843,
+      "n_total": 7532,
+      "n_identified": 7532,
+      "coverage": 1.0,
+      "n_cells": 1,
+      "n_singletons": 0,
+      "score": "brier",
+      "randomization_p": 0.002
+    },
+    {
+      "prior_feature": "tier",
+      "new": "MLP-CB",
+      "old": "MLP-CE",
+      "total_gain": 0.11388367328817016,
+      "prior_gain": 0.07810318107752463,
+      "reasoning_gain": 0.03578049221064552,
+      "reasoning_share": 0.3141845637531106,
+      "reasoning_ci": [
+        0.028247078091933064,
+        0.04331390632935797
+      ],
+      "prior_ci": [
+        0.07320921259198035,
+        0.08299714956306892
+      ],
+      "total_ci": [
+        0.10582267262585988,
+        0.12194467395048043
+      ],
+      "share_ci": [
+        0.2641679477993205,
+        0.3642011797069007
+      ],
+      "standard_error": 0.003843649259953278,
+      "n_total": 7532,
+      "n_identified": 7532,
+      "coverage": 1.0,
+      "n_cells": 3,
+      "n_singletons": 0,
+      "score": "brier",
+      "randomization_p": 0.002
+    },
+    {
+      "prior_feature": "superclass",
+      "new": "MLP-DRW",
+      "old": "MLP-CE",
+      "total_gain": 0.11489764098555362,
+      "prior_gain": 0.11335045998648788,
+      "reasoning_gain": 0.0015471809990657503,
+      "reasoning_share": 0.013465733376199442,
+      "reasoning_ci": [
+        -0.0029564142629420124,
+        0.0060507762610735125
+      ],
+      "prior_ci": [
+        0.10869892061783741,
+        0.11800199935513835
+      ],
+      "total_ci": [
+        0.10865405645143299,
+        0.12114122551967425
+      ],
+      "share_ci": [
+        -0.025245074603953296,
+        0.05217654135635218
+      ],
+      "standard_error": 0.0022977949072184737,
+      "n_total": 7532,
+      "n_identified": 7532,
+      "coverage": 1.0,
+      "n_cells": 6,
+      "n_singletons": 0,
+      "score": "brier",
+      "randomization_p": 0.236
+    },
+    {
+      "prior_feature": "global",
+      "new": "MLP-DRW",
+      "old": "MLP-CE",
+      "total_gain": 0.11489764098555362,
+      "prior_gain": 0.1180921530858615,
+      "reasoning_gain": -0.003194512100307864,
+      "reasoning_share": -0.02780311303962732,
+      "reasoning_ci": [
+        -0.008843574825733903,
+        0.0024545506251181753
+      ],
+      "prior_ci": [
+        0.11441492125127446,
+        0.12176938492044855
+      ],
+      "total_ci": [
+        0.10865405645143299,
+        0.12114122551967425
+      ],
+      "share_ci": [
+        -0.07820561483868399,
+        0.022599388759429344
+      ],
+      "standard_error": 0.0028822278215238275,
+      "n_total": 7532,
+      "n_identified": 7532,
+      "coverage": 1.0,
+      "n_cells": 1,
+      "n_singletons": 0,
+      "score": "brier",
+      "randomization_p": 0.98
+    },
+    {
+      "prior_feature": "tier",
+      "new": "MLP-DRW",
+      "old": "MLP-CE",
+      "total_gain": 0.11489764098555362,
+      "prior_gain": 0.12390902012985795,
+      "reasoning_gain": -0.009011379144304325,
+      "reasoning_share": -0.07842962716212207,
+      "reasoning_ci": [
+        -0.01428051013981868,
+        -0.003742248148789969
+      ],
+      "prior_ci": [
+        0.12028187154042015,
+        0.12753616871929574
+      ],
+      "total_ci": [
+        0.10865405645143299,
+        0.12114122551967425
+      ],
+      "share_ci": [
+        -0.12782213616642507,
+        -0.02903711815781907
+      ],
+      "standard_error": 0.0026883815402102234,
+      "n_total": 7532,
+      "n_identified": 7532,
+      "coverage": 1.0,
+      "n_cells": 3,
+      "n_singletons": 0,
+      "score": "brier",
+      "randomization_p": 1.0
+    }
+  ],
+  "per_tier_at_superclass_phi": [
+    {
+      "new": "MLP-CB",
+      "old": "MLP-CE",
+      "tier": "few-shot (<20)",
+      "n": 1954,
+      "total_gain": 0.1491586490271421,
+      "prior_gain": 0.09924399957881112,
+      "alignment_gain": 0.04991464944833098
+    },
+    {
+      "new": "MLP-CB",
+      "old": "MLP-CE",
+      "tier": "medium-shot (20-100)",
+      "n": 2610,
+      "total_gain": 0.22325411055546573,
+      "prior_gain": 0.031121658688584797,
+      "alignment_gain": 0.19213245186688094
+    },
+    {
+      "new": "MLP-CB",
+      "old": "MLP-CE",
+      "tier": "many-shot (>100)",
+      "n": 2968,
+      "total_gain": -0.005517992433390706,
+      "prior_gain": 0.08674987122089636,
+      "alignment_gain": -0.09226786365428707
+    },
+    {
+      "new": "MLP-DRW",
+      "old": "MLP-CE",
+      "tier": "few-shot (<20)",
+      "n": 1954,
+      "total_gain": 0.22730714722391304,
+      "prior_gain": 0.15379139862000998,
+      "alignment_gain": 0.07351574860390304
+    },
+    {
+      "new": "MLP-DRW",
+      "old": "MLP-CE",
+      "tier": "medium-shot (20-100)",
+      "n": 2610,
+      "total_gain": 0.18821279199206978,
+      "prior_gain": 0.11650285047649607,
+      "alignment_gain": 0.07170994151557372
+    },
+    {
+      "new": "MLP-DRW",
+      "old": "MLP-CE",
+      "tier": "many-shot (>100)",
+      "n": 2968,
+      "total_gain": -0.02357969032063284,
+      "prior_gain": 0.08395378435683035,
+      "alignment_gain": -0.10753347467746319
+    }
+  ],
+  "seconds": 0.569817304611206
+}

@@ -1,0 +1,12 @@
+{
+  "pair": "MLP-SPATIAL vs MLP-CLASS",
+  "phi": "class pair (default)",
+  "reasoning_gain": 0.014266866932606983,
+  "reasoning_ci": [
+    0.013851497185998958,
+    0.014682236679215007
+  ],
+  "bound_B": 0.2328448237088612,
+  "robustness_value_rho_dagger": 0.061271995251419624,
+  "n_identified": 227337
+}

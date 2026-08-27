@@ -220,6 +220,15 @@ with image-cluster-robust intervals.}
 \label{fig:results}
 \end{figure*}
 
+\paragraph{Reading $\widehat{\Delta T}$ as a comparative forecast test.} Corollary
+\ref{cor:dm} identifies $\widehat{\Delta T}$ and its image-clustered interval in Table
+\ref{tab:wager-results} as exactly a grouped Diebold--Mariano statistic and interval for
+each pair's paired score differential, so every row already reports what that classical
+test would report. What it does not report is the next two columns: whether MOTIFS-TDE
+(Section~\ref{sec:sggaudit}) or MLP-SPATIAL beat their baseline for a reason a
+frequency-only remodeling of the same benchmark could not reproduce, which is the
+question $\widehat{\Delta P}$ and $\widehat{\Delta R}$ answer and DM/GW do not ask.
+
 \subsection{Sensitivity analyses}\label{sec:ablations}
 
 For MLP-SPATIAL versus MLP-CLASS, the conclusion survives every planned sensitivity
@@ -233,7 +242,13 @@ class-pair-level structure that the finer audit had already correctly assigned t
 $\Delta P$. This is precisely the sense in which the class-pair audit is the conservative
 choice: it is not that coarsening is wrong, but that it cannot be assumed neutral, and
 only the finer partition's estimate isolates alignment gain net of every prior regularity
-expressible in $\phi$. Raising the minimum cell size from 2 to 5, 10, and 20 yields
+expressible in $\phi$. The same class-pair-versus-subject-only pair also instantiates
+Proposition~\ref{prop:sensitivity} directly, with the subject class playing the role of
+the unrecorded confounder $Z$: Table~\ref{tab:sensitivity-numeric} in
+Section~\ref{sec:sensitivity} reports that the resulting bias of $0.00742$ is comfortably
+inside the Cauchy--Schwarz bound, though the bound is loose enough at $K=50$ that it
+would remain satisfied for a $\bar\rho$ three orders of magnitude smaller than one.
+Raising the minimum cell size from 2 to 5, 10, and 20 yields
 $0.01395$, $0.01330$, and $0.01225$; all cluster-robust lower limits remain positive.
 The procedure itself has no smoothing strength, split fraction, or decision threshold
 to tune.
@@ -715,3 +730,123 @@ here, so the coarse audit overstates the alignment loss by attributing to it str
 that the superclass partition correctly assigns to $\Delta P$. The finer partition is
 again the conservative reading, for the same reason as in Section~\ref{sec:ablations}
 and now in a second domain.
+
+\subsection{Cross-domain validation: long-tailed text classification}\label{sec:textlt}
+
+Sections~\ref{sec:results}--\ref{sec:cifarlt} test two vision tasks that share cached
+probability vectors and audit features grounded in class frequency or object geometry.
+To test the breadth Section~\ref{sec:broader} claims -- any benchmark supplying two
+models' full probability vectors, labels, and a declared discrete prior feature -- we
+apply the identical estimator, unmodified, to document category prediction on 20
+Newsgroups \citep{lang1995newsweeder}. Neither the predictors nor the audit feature are
+visual here: documents replace images, and the declared $\phi$ is a topical grouping
+rather than a spatial or class-frequency one, so a favorable result cannot be attributed
+to anything specific to vision data.
+
+We build a long-tailed training subset with the same exponential profile as
+CIFAR-100-LT (imbalance ratio $100$, Section~\ref{sec:cifarlt}), applied to 20
+Newsgroups' 20 fine categories, keeping the standard balanced test split ($7{,}532$
+documents) untouched (Appendix~\ref{app:implementation}). The 20 categories fall into
+six conventional coarse topics -- computing, recreation, science, politics, religion,
+and classifieds -- which we use as the primary declared $\phi$, the direct analogue of
+CIFAR's coarse superclasses; a global (trivial) and a training-frequency-tier partition
+are reported alongside, as in Section~\ref{sec:cifarlt}. Documents are represented by a
+TF-IDF vector reduced to $300$ dimensions by truncated SVD, and the three compared
+classifiers -- CE, CB, and DRW -- follow the same three-arm protocol as
+Section~\ref{sec:cifarlt}: an identical small MLP architecture and optimizer across runs,
+differing only in per-example loss weight (Appendix~\ref{app:implementation}). Test
+documents are independent units, so the plain H\'ajek interval of Section~\ref{sec:inference}
+applies directly, as for CIFAR.
+
+\paragraph{Result.} Table~\ref{tab:textlt} decomposes both re-weighting schedules' gain
+over the cross-entropy baseline (top-1 accuracies $0.3532$ CE, $0.3960$ CB, $0.3776$
+DRW). The two schedules land in opposite channels here, which is itself the finding
+worth reporting: on this task it is class-balanced re-weighting from initialization, not
+the deferred schedule, that buys genuine within-topic instance alignment ($+0.04317$, CI
+$[0.03664,0.04970]$, $37.9\%$ of its total gain), while DRW's comparably sized total gain
+($0.11490$ vs.\ CB's $0.11388$) is $98.6\%$ prior-transported, its residual alignment
+statistically indistinguishable from zero at the superclass audit ($+0.00155$, CI
+$[-0.00296,0.00605]$, $p=.236$) and significantly negative once the coarser tier
+partition is used instead ($-0.00901$, CI $[-0.01428,-0.00374]$). This is the reverse of
+Section~\ref{sec:cifarlt}'s image-classification finding, where CB's near-zero total
+masked a large alignment \emph{loss} and DRW's gain was genuinely alignment-driven.
+Nothing about the estimator or the construction of $\phi$ changed between the two
+applications; what changed is which training recipe, on which data, buys real
+per-instance discrimination -- exactly the composition question an aggregate score or an
+accuracy difference alone cannot answer, now demonstrated on a domain with neither a
+class-frequency table nor a spatial prior.
+
+Coarsening moves both comparisons in the direction Proposition~\ref{prop:coarsen} allows
+without requiring: CB's credited alignment falls from $0.04317$ at the superclass
+partition to $0.04185$ at the global cell and $0.03578$ at the tier partition, while
+DRW's changes sign twice, from a small positive residual (superclass) to a small
+negative one (global) to a significant negative one (tier). None of these differences
+overturns CB's conclusion, but DRW's illustrates exactly why the finest defensible
+partition is the conservative default (Section~\ref{sec:coarsening}): a reader stopping
+at the coarser tier partition would report a significant alignment \emph{loss} for a
+method whose finer-grained residual is not distinguishable from zero.
+
+\begin{table}[t]
+\centering
+\caption{WAGER decomposition on the 7,532-document balanced 20-Newsgroups-LT test
+split. Gains use the quadratic score; CI is the (unclustered) H\'ajek interval on
+$\widehat{\Delta R}$, documents being independent units; $p$ is the 499-shift
+randomization diagnostic, one-sided for positive alignment.}
+\label{tab:textlt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Comparison & Audit cell $\phi$ & $\widehat{\Delta T}$ & $\widehat{\Delta P}$ &
+$\widehat{\Delta R}$ (95\% CI) & $p$ \\
+\midrule
+CB vs CE  & superclass (6) & $0.11388$ & $0.07071$ & $0.04317\,[0.03664,0.04970]$ & $.002$ \\
+CB vs CE  & global (1)     & $0.11388$ & $0.07203$ & $0.04185\,[0.03381,0.04990]$ & $.002$ \\
+CB vs CE  & tier (3)       & $0.11388$ & $0.07810$ & $0.03578\,[0.02825,0.04331]$ & $.002$ \\
+\midrule
+DRW vs CE & superclass (6) & $0.11490$ & $0.11335$ & $0.00155\,[-0.00296,0.00605]$ & $.236$ \\
+DRW vs CE & global (1)     & $0.11490$ & $0.11809$ & $-0.00319\,[-0.00884,0.00245]$ & $.980$ \\
+DRW vs CE & tier (3)       & $0.11490$ & $0.12391$ & $-0.00901\,[-0.01428,-0.00374]$ & $1.000$ \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig8_text_lt.png}
+\caption{\textbf{A third domain, with neither a spatial nor a class-frequency prior.}
+Left: exact decomposition at the coarse-topic audit; CB's total gain is genuinely split
+between both channels while DRW's is almost entirely prior-transported. Error bars are
+95\% H\'ajek intervals on $\widehat{\Delta R}$. Right: alignment gain by
+training-frequency tier for both schedules, showing the same head-loses/tail-gains
+signature as Figure~\ref{fig:cifar} despite the change of domain and audit feature.}
+\label{fig:textlt}
+\end{figure*}
+
+Table~\ref{tab:textlt-tier} breaks the superclass-audit alignment down by
+training-frequency tier for both schedules; the two methods agree in shape even though
+their superclass totals diverge sharply in composition, each gaining alignment on rare
+and medium-frequency categories and losing it on frequent ones, the same qualitative
+signature Section~\ref{sec:cifarlt} reports for image classification.
+
+\begin{table}[t]
+\centering
+\caption{Alignment gain by training-frequency tier at the superclass audit,
+20-Newsgroups-LT. Both schedules gain instance alignment on rare and medium categories
+and lose it on frequent ones.}
+\label{tab:textlt-tier}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Tier & $n$ & $\widehat{\Delta R}$, CB vs CE & $\widehat{\Delta R}$, DRW vs CE \\
+\midrule
+Few-shot ($<20$)          & 1954 & $0.04991$  & $0.07352$  \\
+Medium-shot ($20$--$100$) & 2610 & $0.19213$  & $0.07171$  \\
+Many-shot ($>100$)        & 2968 & $-0.09227$ & $-0.10753$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This third domain uses a single trained pair per schedule rather than the multi-seed,
+calibration-matched protocol Section~\ref{sec:cifarlt} applies to CIFAR-100-LT; extending
+that fuller protocol to text is the natural next replication, not a step this section
+claims to have taken.
