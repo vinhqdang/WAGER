@@ -22,11 +22,18 @@ To the Editors,\\
 
 \vspace{1em}
 
+\noindent
+Re: Ms.\ Ref.\ No.\ JSPI-D-26-00452 --- ``WAGER: Within-cell Antisymmetric Gain
+Evaluation of Resolution'' --- revised submission
+
+\vspace{1em}
+
 Dear Editors,
 
-I am submitting the manuscript ``WAGER: Within-cell Antisymmetric Gain Evaluation of
-Resolution'' for consideration as a regular paper in \emph{Journal of Statistical
-Planning and Inference}.
+Thank you for the opportunity to revise the manuscript above. This letter accompanies a
+substantially revised submission responding to the decision of major revision. Rather
+than a numbered point-by-point response, the sections below summarize the revision
+comprehensively; a table of the principal changes is given near the end of this letter.
 
 The paper concerns the comparison of two probabilistic predictors when the labels are
 partly determined by a nuisance feature both models observe. In that situation the
@@ -110,6 +117,32 @@ with an exact relationship to the classical Diebold--Mariano/Giacomini--White te
 comparative forecast evaluation. The computer-vision and text-classification benchmarks
 are the applications on which the instrument is exercised and validated, not the claim
 itself; no state-of-the-art result is asserted, and none is needed for the argument.
+
+\textbf{Summary of principal changes in this revision.}
+\begin{itemize}
+\item Four new theoretical results aimed at this journal's readership: the
+Bregman-score generalization of the covariance identity (Theorem~2), the asymptotic
+normality theorem for the dataset-level estimator (Theorem~3), the sensitivity bound
+for an unrecorded confounder and its data-free worst-case corollary (Proposition~3 and
+Corollary), and the exact reduction to a clustered Diebold--Mariano/Giacomini--White
+test at a trivial audit feature (Corollary).
+\item A third empirical domain, long-tailed text classification on 20 Newsgroups, with
+neither a spatial nor a class-frequency prior, added to the existing scene-graph and
+long-tailed image classification studies.
+\item Two results corrected after further internal review, both verified by hand before
+editing: a related-work argument claiming a self-prediction bias "does not cancel under
+subtraction'' was found to be false when both compared models share the same audit
+partition, and has been replaced with the paper's actually-valid distinguishing point
+(three newly verified citations added); and the new asymptotic normality theorem's proof
+required an explicit condition, now stated, that the paper's own heavy-tailed real-data
+application does not attain in-sample, with the reported coverage simulation supplying
+the finite-sample evidence in its place.
+\item The headline empirical finding (Section~4.6) has been restated to reflect a
+robustness check the manuscript itself reports: the quadratic and log scores agree that
+the audited debiasing method's improvement is overwhelmingly prior-transported, but
+disagree on whether any instance-alignment remainder is exactly zero, and the revision
+now states this precisely rather than reporting only the score that read as null.
+\end{itemize}
 
 All code, cached model outputs and scripts needed to reproduce every number, table and
 figure are publicly available at \url{https://github.com/vinhqdang/WAGER}, including a

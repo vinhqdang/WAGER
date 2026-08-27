@@ -2,7 +2,7 @@ Highlights
 (Elsevier requires 3-5 bullets, each at most 85 characters including spaces.)
 
 Exact finite-sample identity splits a model-pair score gain into prior and alignment
-Residual is an order-two U-statistic equal to a within-cell covariance gain
+Extends to the full Bregman-score family with large-sample and sensitivity theory
 Leave-one-out transport removes an exact (n_c-1)/n_c plug-in attenuation bias
-Simulation validates interval coverage and the channels' discriminant validity
 A published debiasing method's mean-recall gain is overwhelmingly prior-driven
+Cross-domain validation spans vision and text with one unmodified estimator
