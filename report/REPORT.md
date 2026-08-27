@@ -349,3 +349,61 @@ verified against publisher/arXiv records before being added: Cinelli & Hazlett (
 JRSS-B), Rosenbaum (2002), Freidling & Zhao (2025, JCGS), Zhang & Zhao (2026,
 Biometrika), Serfling (1980), van der Vaart (1998), and Lang (1995) for 20 Newsgroups.
 Three new unit tests verify the new theory numerically, bringing the suite to 16/16.
+
+### Simulated 5-seat review panel (same day), and what it found
+
+Full reports and the editorial synthesis: `reviews/2026-08-27-panel/`.
+
+With no real JSPI referee reports available, a fresh 5-seat simulated panel (Journal-Fit,
+Methodology, Domain, Perspective, Devil's Advocate -- independent, blind to each other)
+was run against this revision. Genuine, checkable findings, distinct from the earlier
+2026-08-10 CVIU panel:
+
+- **Front-matter mismatch (Journal-Fit, Critical).** `main.tex`'s `\journal{}` macro,
+  `cover_letter.tex`, and `title_page.tex` still addressed *Computational Statistics and
+  Data Analysis* -- the paper's previous venue -- despite the README and this report both
+  stating the current target is JSPI. Fixed: retargeted all three files and the
+  cover letter's scope argument to JSPI.
+- **Score-dependent significance on the flagship claim (Devil's Advocate, Critical).**
+  Table `tab:sggaudit`'s calibration-matched log-score row (`dR=+0.04396`) was missing
+  its confidence interval in the manuscript, even though the driver script had already
+  computed one (`results/sgg_audit_motifs.json`). Adding it (`[+0.04079,+0.04714]`)
+  shows the log score's alignment estimate is significantly *positive* -- it does **not**
+  reproduce the quadratic score's null (`[-0.00120,+0.00109]`). The abstract, intro,
+  conclusion, and cover letter's "instance alignment is statistically unchanged" language
+  overstated a single-score result as the headline finding; all four (plus the LaTeX
+  table and `highlights.txt`) were rewritten to state precisely what both scores agree on
+  (prior-transported dominance, at least an order of magnitude larger than either
+  alignment estimate) versus what they disagree on (whether any alignment remainder is
+  exactly zero).
+- **Related-work argument checked and found wrong (Domain, Major).** Section 2.5's claim
+  that "the bias does not cancel under subtraction because it scales with each model's
+  own cell counts" is false when both models share the same `phi`-partition: the same
+  `(n_c-1)/n_c` attenuation factor applies to each model's own resolution term (same
+  `n_c`, shared partition), so subtracting two separately-debiased single-model
+  resolutions recovers WAGER's own estimate exactly, term for term. Verified independently
+  by hand before editing. The real distinguishing point -- inference for the *contrast*,
+  which the single-model literature does not supply even with its own bias correction
+  (Ferro & Fricker 2012) or variance estimator (Siegert 2014) -- was kept and sharpened;
+  the false point was removed. Added Ferro & Fricker (2012), Siegert (2014), and
+  DeLong et al. (1988, paired-correlated-AUC U-statistics) as citations, all verified
+  against publisher records.
+- **Text-domain claim overstated relative to its own evidence (Devil's Advocate, Major).**
+  The Conclusion's framing of the 20-Newsgroups-LT result as the paper's "sharpest
+  demonstration" of cross-domain generality did not carry the single-seed,
+  non-calibration-matched caveat that the CIFAR-100-LT study itself showed is
+  load-bearing (recalibrating a baseline alone moved CIFAR's channels by comparable
+  magnitude to the entire text-domain finding). Reworded to state the result as
+  suggestive pending the fuller protocol, not as already-earned.
+- **"Genuine"/"genuinely" register (Devil's Advocate, Major).** The paper renamed its
+  acronym's R from Reasoning to Resolution specifically to stop implying causal or
+  compositional understanding, but reused "genuine" a dozen times in exactly the
+  sections readers see first. Added one clarifying sentence to the Discussion's existing
+  disclaimer rather than rewording every occurrence.
+
+Methodology (proof-by-proof rigor) and Perspective (CV/ML outsider) reports raised
+mostly Major/Minor presentation and positioning points -- CIFAR's own CB accuracy not
+benchmarked against the literature it re-implements, the benchmarks-should-archive-
+probabilities recommendation underestimating real adoption barriers, the paper's length
+and CV-heavy proportion being unusual for JSPI's typical submission -- tracked but not
+all yet acted on; see the synthesis for the full editorial decision and roadmap.

@@ -12,7 +12,10 @@ cases without a separately fitted reference forecaster.
 The interpretation remains conditional on the declared audit feature $\phi$. A positive
 $\Delta R$ means the new model aligns its probability changes with the correct example
 better than the old model among examples sharing $\phi$. It does not prove causal
-inference, compositional understanding, or robustness. If an unrecorded shortcut varies
+inference, compositional understanding, or robustness. Where the rest of this paper
+calls an alignment estimate ``genuine,'' the word distinguishes a real statistical
+effect from a calibration or prior artifact -- it is not a claim that the effect
+reflects reasoning, causal structure, or any compositional property of the model. If an unrecorded shortcut varies
 inside a cell, WAGER will count its predictive use in $\Delta R$; Proposition
 \ref{prop:sensitivity} turns this qualitative caveat into a numeric one, bounding how far
 the reported alignment gain could be from what a fully adjusted audit would find as a
@@ -70,10 +73,16 @@ matching could extend the method to continuous priors, but would replace the exa
 identity's clear intervention with modeling assumptions; we leave that extension open.
 
 The image-clustered confidence interval is asymptotic, and Theorem~\ref{thm:clt} is what
-justifies that: under a bounded score and a mild condition ruling out one cluster from
-dominating the sample, the dataset-level estimator is asymptotically normal around the
-identified-subpopulation estimand, and the same sandwich variance already reported is
-consistent for its limiting variance. The cyclic randomization test is finite-group
+justifies that: under a bounded score, a mild condition ruling out one cluster from
+dominating the sample, and a fixed, finite $\phi$-support whose every cell's size
+diverges in the limit, the dataset-level estimator is asymptotically normal around the
+identified-subpopulation estimand, with a consistent sandwich variance. The last
+condition is an idealization that a heavy-tailed real application has not attained
+in-sample -- most eligible VG150 cells sit at the minimum size $n_c=2$ -- so the reported
+$94.0\%$ empirical coverage against a nominal $95\%$ (Section~\ref{sec:simulation}) is
+the operative evidence for the interval's finite-sample adequacy, with the theorem
+supplying the limiting justification the simulation is checking against. The cyclic
+randomization test is finite-group
 exact only under its sharper within-cell exchangeability null and treats relations as
 the randomized units, so it is secondary in the SGG analysis. A future
 image-level randomization design that preserves several relation-cell margins

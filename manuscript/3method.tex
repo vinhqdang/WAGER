@@ -93,7 +93,7 @@ For $\psi(q)=\lVert q\rVert_2^2$, $\Delta g_y(x)=2\Delta q_y(x)$ and Eq.~\eqref{
 \end{equation}
 \end{corollary}
 
-Eq.~\eqref{eq:log-cov-id} gives the log-score check of Section~\ref{sec:sggaudit} the same exact covariance meaning that Eq.~\eqref{eq:cov-id} gives the quadratic score: instance alignment under the log score is the within-cell covariance between the log-likelihood-ratio contrast of the two models and the observed label indicator, not merely "a sensitivity analysis." Any other Bregman score -- the spherical or power-family scores catalogued by \citet{gneiting2007proper}, for instance -- inherits an identity of the same form through its own $\psi$, so Theorem~\ref{thm:bregman} fixes the scope of the estimator's scoring-rule dependence once, rather than leaving each alternative score to be checked separately.
+Eq.~\eqref{eq:log-cov-id} gives the log-score check of Section~\ref{sec:sggaudit} the same exact covariance meaning that Eq.~\eqref{eq:cov-id} gives the quadratic score: instance alignment under the log score is the within-cell covariance between the log-likelihood-ratio contrast of the two models and the observed label indicator, not merely "a sensitivity analysis." Any other Bregman score -- the spherical or power-family scores catalogued by \citet{gneiting2007proper}, for instance -- inherits an identity of the same form through its own $\psi$, so Theorem~\ref{thm:bregman} fixes the scope of the estimator's scoring-rule dependence once, rather than leaving each alternative score to be checked separately. The implemented log score floors each probability at $\epsilon=10^{-6}$ to avoid $-\infty$ on an unseen label; Eq.~\eqref{eq:log-cov-id} is exact for the unfloored $\log q_y$, and the floored version used throughout is a sensitivity check on that exact identity rather than a literal instance of it, negligibly different whenever no relevant probability is within $\epsilon$ of zero.
 
 \subsection{Coarsening the audit cell}\label{sec:coarsening}
 
@@ -387,10 +387,17 @@ and clusters do not grow without bound relative to the sample.
 Suppose (i) $H_x(y)\in[-M,M]$ for all $x,y$; (ii) examples are partitioned into clusters
 $g=1,\dots,G$ (e.g.\ images) that are mutually independent, with cluster sizes having a
 finite third moment and $\max_g|g|=o(\sqrt{G})$; (iii) the identified fraction
-$N_*/N\to\kappa\in(0,1]$ in probability; and (iv) the limiting variance
+$N_*/N\to\kappa\in(0,1]$ in probability; (iv) the limiting variance
 $\sigma^2=\lim_{G\to\infty}\operatorname{Var}\!\bigl(\sqrt{N_*}(\widehat{\Delta R}-\theta)\bigr)$
 exists and is strictly positive, where $\theta$ is the identified-subpopulation estimand
-of Appendix~\ref{app:influence}. Then
+of Appendix~\ref{app:influence}; and (v) $\phi$ takes values in a fixed, finite set,
+each with strictly positive limiting population mass, so that every eligible cell's size
+$n_c$ diverges almost surely as $N\to\infty$. Condition (v) is what licenses treating the
+per-cell plug-ins $\widehat{\Delta R}_c$ as consistent for $\Delta R_c$ in the variance
+proof below; it is an asymptotic idealization, not a claim about any finite sample, and
+Section~\ref{sec:simulation}'s coverage simulation is the finite-sample check for a
+regime -- most eligible cells at their minimum size $n_c=2$ -- in which condition (v)'s
+divergence has manifestly not yet occurred. Then
 \begin{equation}
 \sqrt{N_*}\bigl(\widehat{\Delta R}-\theta\bigr)\ \xrightarrow{d}\ \mathcal N(0,\sigma^2),
 \end{equation}
@@ -404,12 +411,20 @@ independent-across-cluster sum of mean-zero, uniformly bounded terms
 \citep{serfling1980approximation,vandervaart1998asymptotic}; boundedness (i) makes the
 Lindeberg condition automatic given (ii), and consistency of $\widehat\sigma^2$ follows
 from the weak law of large numbers applied to each plug-in $\widehat{\Delta R}_c,
-\widehat{\Delta R}$ together with continuity of the variance functional. Condition (ii)
-is what rules out a single cluster dominating the sum -- an image contributing a
-positive fraction of all relations, for instance -- and is a standard requirement for
-cluster-robust inference generally, not specific to this estimator. This theorem is what
-licenses reading the image-clustered intervals reported throughout Section~\ref{sec:exp}
-as asymptotically valid rather than merely a plausible finite-sample proxy.
+\widehat{\Delta R}$ together with continuity of the variance functional -- the former
+per-cell application is where condition (v) is used, not (iii): a cell's size $n_c$ is
+not bounded by the aggregate identified count, so within-cell consistency needs its own
+divergence condition. Condition (ii) is what rules out a single cluster dominating the
+sum -- an image contributing a positive fraction of all relations, for instance -- and
+is a standard requirement for cluster-robust inference generally, not specific to this
+estimator. This theorem licenses reading the image-clustered intervals reported
+throughout Section~\ref{sec:exp} as asymptotically valid in the idealized regime where
+every eligible cell's size grows without bound; because VG150's eligible cells are
+Zipf-distributed and dominated by the minimum size $n_c=2$ at the sample sizes this paper
+actually reports (Section~\ref{sec:simulation}), condition (v) has not been attained
+in-sample, and the reported $94.0\%$ empirical coverage against a nominal $95\%$
+(Section~\ref{sec:simulation}) -- not this theorem directly -- is the evidence that the
+interval remains a good approximation well short of that idealization.
 
 \paragraph{Relation to comparative forecast evaluation.}
 \begin{corollary}[Relation to Diebold--Mariano/Giacomini--White]\label{cor:dm}

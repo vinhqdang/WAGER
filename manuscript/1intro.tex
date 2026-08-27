@@ -73,12 +73,15 @@ antisymmetric U-statistic; under the quadratic score it has a covariance identit
 identifies it with the resolution term of the classical proper-score decomposition
 \cite{murphy1973vector,degroot1983comparison,brocker2009reliability}, applied to a
 model-pair contrast rather than to one forecaster.
-\item We prove two further exact results that were not available for the single-model
-decomposition: leave-one-out transport removes a finite-sample attenuation bias of
-$(n_c-1)/n_c$ that a naive in-sample plug-in prior would otherwise incur at every finite
-cell size (Proposition~\ref{prop:attenuate}), and coarsening the audit cell changes the
-estimate by an explicit between-cell covariance term (Proposition~\ref{prop:coarsen}),
-which turns an empirical sensitivity finding into a population-level mechanism.
+\item We prove two further exact results for the model-pair contrast, one of them a
+direct transplant of a known single-model correction and one with no single-model
+analogue: leave-one-out transport removes the same $(n_c-1)/n_c$ finite-sample
+attenuation bias that a bias-corrected single-model decomposition already removes for
+one forecaster \citep{ferro2012bias}, now applied to the contrast and paired with
+inference that literature does not supply (Proposition~\ref{prop:attenuate},
+Section~\ref{sec:related-decomposition}); coarsening the audit cell changes the estimate
+by an explicit between-cell covariance term (Proposition~\ref{prop:coarsen}), which
+turns an empirical sensitivity finding into a population-level mechanism.
 \item We generalize the covariance identity from the quadratic score to the entire
 Bregman-score family (Theorem~\ref{thm:bregman}), recovering the quadratic and log-score
 identities as two named cases of one result, and we give a Cauchy--Schwarz/Popoviciu
@@ -101,9 +104,11 @@ and further from gains created by a model that consumes real image pixels throug
 frozen CLIP encoder rather than only box geometry (Section~\ref{sec:vgvisual}).
 \item We audit a published debiasing method rather than only our own predictors:
 applied to two released scene-graph checkpoints on the standard benchmark, WAGER shows
-that a ten-point mean-recall improvement is accompanied by no measurable change in
-within-cell instance alignment, its whole proper-score difference lying in the prior
-channel (Section~\ref{sec:sggaudit}).
+that a ten-point mean-recall improvement is overwhelmingly prior-transported under
+either of two proper scores, with an instance-alignment remainder the two scores do not
+agree is nonzero -- one reads exactly null, the other small but significant -- and in
+both cases at least an order of magnitude smaller than the prior-channel shift
+(Section~\ref{sec:sggaudit}).
 \item We show WAGER is not SGG-specific by applying it unchanged to two further domains
 and task types -- long-tailed image classification on CIFAR-100-LT
 (Section~\ref{sec:cifarlt}) and long-tailed text classification on 20-Newsgroups-LT

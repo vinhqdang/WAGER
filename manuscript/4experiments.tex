@@ -301,29 +301,41 @@ but significant $0.01355$ in instance alignment. That reading does not survive t
 control this paper insists on. The two models differ sharply in confidence --- the
 baseline is overconfident at $T^*=2.50$ while TDE, having subtracted a counterfactual,
 is already near-calibrated at $T^*=0.92$ --- and once temperatures are fitted on a
-held-out half of the images and the audit runs on the other half, the alignment channel
-is indistinguishable from zero: $\widehat{\Delta R}=-0.00006$ with a $95\%$ interval of
-$[-0.00120,+0.00109]$ and a randomization $p$ of $.555$. Essentially the entire
-proper-score difference, $-0.18258$ of $-0.18264$, is prior-transported.
+held-out half of the images and the audit runs on the other half, the quadratic-score
+alignment channel is indistinguishable from zero: $\widehat{\Delta R}=-0.00006$ with a
+$95\%$ interval of $[-0.00120,+0.00109]$ and a randomization $p$ of $.555$. Essentially
+the entire proper-score difference, $-0.18258$ of $-0.18264$, is prior-transported.
+
+The log-score row of the same calibrated comparison does not repeat this null: it
+returns $\widehat{\Delta R}=+0.04396$, $95\%$ CI $[+0.04079,+0.04714]$, an interval that
+excludes zero. The two proper scores therefore disagree on whether any real alignment
+change survives calibration matching -- one reads exactly null, the other reads small
+but significantly positive -- while agreeing that whichever value is correct is far
+smaller than the calibrated prior-channel shift ($-0.18258$ under the quadratic score,
+$-0.59157$ under the log score, both an order of magnitude or more larger than either
+alignment estimate). We do not adjudicate between the two scores here: nothing in
+Section~\ref{sec:setup} privileges one proper score's alignment estimate as the
+``true'' one, and this is the reason the paper's default score is stated as a
+declared choice rather than derived. The claim this audit actually supports is the one
+both scores agree on --- that TDE's proper-score improvement over the baseline is
+overwhelmingly prior-transported, with an instance-alignment remainder that is at most
+a small fraction of the total and may be exactly zero --- not the stronger, single-score
+claim that instance alignment is unchanged.
 
 This is a precise and, we think, fair characterization of what TDE does. Its own
 construction subtracts the context-only prediction, so a method that operates on the
 prior channel is what its authors built; WAGER quantifies that the intervention is
 almost purely of that kind, and that the model's ability to tell which relation belongs
-to which image within a class-pair cell is left essentially untouched. The consequence
-for evaluation is the paper's thesis in a published setting: an improvement of $10.2$
-points of mean recall, a metric the field reads as evidence of better handling of rare
-predicates, is compatible with no measurable change in within-cell instance alignment.
+to which image within a class-pair cell is left, at most, only marginally changed. The
+consequence for evaluation is the paper's thesis in a published setting: an improvement
+of $10.2$ points of mean recall, a metric the field reads as evidence of better handling
+of rare predicates, is compatible with an instance-alignment change that is either zero
+or a small fraction of the total, depending on the scoring rule used to measure it.
 Mean recall and the alignment channel are answering different questions, and only the
 latter is a statement about instance-level evidence.
 
-Two honest qualifications. First, the alignment conclusion is stable in sign under the
-audit cell but not in magnitude under the score: the calibration-matched log-score
-decomposition puts alignment at $+0.04396$ against a prior channel of $-0.59157$, so
-the claim we make is the one both scores support --- that the prior channel carries the
-overwhelming majority of the difference --- rather than a precise value for the
-remainder. Second, TDE is designed to change the decision rule rather than to emit
-calibrated probabilities, and a proper score evaluates the latter; the
+One further qualification: TDE is designed to change the decision rule rather than to
+emit calibrated probabilities, and a proper score evaluates the latter; the
 calibration-matched regime is what makes the comparison meaningful at all, and its
 necessity here is the clearest practical argument for the protocol of
 Section~\ref{sec:cifarlt}.
@@ -343,11 +355,11 @@ Regime & Score & Audit cell $\phi$ & $\widehat{\Delta T}$ & $\widehat{\Delta P}$
 $\widehat{\Delta R}$ (95\% CI) \\
 \midrule
 raw & quadratic & class pair & $-0.11651$ & $-0.10296$ & $-0.01355\,[-0.01504,-0.01206]$ \\
-raw & log       & class pair & $+0.03277$ & $+0.15897$ & $-0.12619$ \\
+raw & log       & class pair & $+0.03277$ & $+0.15897$ & $-0.12619\,[-0.13093,-0.12145]$ \\
 raw & quadratic & subject    & $-0.11536$ & $+0.10175$ & $-0.21711$ \\
 \midrule
 calibration-matched & quadratic & class pair & $-0.18264$ & $-0.18258$ & $-0.00006\,[-0.00120,+0.00109]$ \\
-calibration-matched & log       & class pair & $-0.54760$ & $-0.59157$ & $+0.04396$ \\
+calibration-matched & log       & class pair & $-0.54760$ & $-0.59157$ & $+0.04396\,[+0.04079,+0.04714]$ \\
 \bottomrule
 \end{tabular}
 }

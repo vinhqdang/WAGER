@@ -197,10 +197,14 @@ Condition (iii) makes $N_*/\sum_g\operatorname{Var}(T_g)\to1/\sigma^2$ in probab
 definition of $\sigma^2$, and the $o_p(N_*^{-1/2})$ remainder is asymptotically
 negligible after multiplying by $\sqrt{N_*}$, so
 $\sqrt{N_*}(\widehat{\Delta R}-\theta)\xrightarrow{d}\mathcal N(0,\sigma^2)$ by Slutsky's
-theorem. For the variance estimator, $\widehat{\Delta R}_c\to_p\Delta R_c$ and
-$\widehat{\Delta R}\to_p\theta$ by the weak law of large numbers applied within each cell
-and across cells respectively (each is an average of a bounded kernel over a
-sample size diverging under (iii)), so $\widehat\psi_i\to_p\psi_i$ pointwise, and
+theorem. For the variance estimator, $\widehat{\Delta R}\to_p\theta$ by the weak law of
+large numbers across the (diverging, by (iii)) number of identified examples, and
+$\widehat{\Delta R}_c\to_p\Delta R_c$ for each eligible cell by the weak law of large
+numbers applied within that cell -- here condition (v), not (iii), is what is used:
+(v) guarantees $n_c\to\infty$ almost surely for every cell in the fixed, finite support
+of $\phi$, which is what a within-cell WLLN requires; the aggregate condition (iii)
+alone bounds only the total identified count, not any individual cell's size, and does
+not by itself imply within-cell consistency. So $\widehat\psi_i\to_p\psi_i$ pointwise, and
 $\widehat\sigma^2$ -- a sum of squares of cluster-aggregated $\widehat\psi_i$, normalized
 by $N_*$ and $G$ -- is a continuous functional of these consistent plug-ins, hence
 $\widehat\sigma^2\to_p\sigma^2$ by the continuous mapping theorem. \qed

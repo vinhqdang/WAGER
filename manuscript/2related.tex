@@ -93,17 +93,22 @@ arrive, is a distinct open problem. Its new element
 is the gain-contrast transport identity and the resulting attribution algorithm, rather
 than permutation or U-statistic theory by itself.
 
-Three adjacent literatures locate the same object from different directions. Inference
+Four adjacent literatures locate the same object from different directions. Inference
 on a paired score differential is the classical territory of comparative forecast
 evaluation: the Diebold--Mariano test \cite{diebold1995comparing} and conditional
 predictive ability tests \cite{giacomini2006tests} ask whether one forecaster beats
 another, optionally conditional on covariates -- the closest existing relative of a
 gain evaluated conditional on $\phi$. WAGER adds to that tradition an exact
 decomposition of the differential itself, and Corollary~\ref{cor:dm} makes the
-relationship precise: at the trivial partition, WAGER's own total-gain statistic and its
-image-clustered interval literally are a grouped Diebold--Mariano statistic, so the
-decomposition is best read as everything DM/GW already deliver plus the further split
-that neither provides. Second, the prior channel is precisely the component that
+relationship precise: at the trivial partition, WAGER's own total-gain statistic has
+exactly the Diebold--Mariano form, corrected for image-level rather than serial
+dependence, so the decomposition is best read as everything DM/GW already deliver plus
+the further split that neither provides. A structurally close precedent for comparing
+two correlated models through a paired U-statistic exists outside forecast evaluation
+too: \citet{delong1988comparing} compare two correlated ROC curves' AUCs via a
+generalized U-statistic covariance estimator, the same construction this paper applies
+to a declared-cell gain rather than an unconditional ranking statistic. Second, the
+prior channel is precisely the component that
 label-shift procedures manipulate post hoc: re-weighting a classifier's outputs to a new
 label distribution \cite{saerens2002adjusting,lipton2018detecting} can add or remove
 prior-transported gain without touching instance-level evidence, which is what the
@@ -132,13 +137,25 @@ within groups. We deliberately build on this fact rather than obscure it. WAGER 
 new proper score, and $\Delta R_c$ is best understood as a \emph{resolution
 difference}, not a new quantity to be evaluated on its own. Two things distinguish WAGER
 from applying the classical decomposition to $q_0$ and $q_1$ separately and subtracting
-the two resolutions. First, that indirect route requires two resolution estimates, each
-of which is generally biased in finite samples by the same self-prediction mechanism
-formalized in Section~\ref{sec:attenuation}; the bias does not cancel under subtraction
-because it scales with each model's own cell counts. WAGER instead forms the paired
-gain vector $H_x(y)$ first and decomposes the \emph{contrast} in one pass, which is what
-makes the exact finite-sample identity and the antisymmetric U-statistic kernel possible.
-Second, the classical decomposition is a diagnostic for a single forecaster's calibration
+the two resolutions. First, the point estimates do combine identically -- both models
+share the same $\phi$-partition and hence the same per-cell $n_c$, so the same
+attenuation factor $(n_c-1)/n_c$ (Proposition~\ref{prop:attenuate}) applies to each
+model's separately-estimated in-sample resolution, exactly the finite-sample bias a
+single-model bias-corrected decomposition already removes for one forecaster
+\citep{ferro2012bias}, and subtracting the two naive plug-ins recovers exactly WAGER's
+own biased estimate of the contrast -- but inference does not transfer this way. Existing
+variance estimators for the single-model decomposition \citep{siegert2014variance}
+target one resolution term in isolation and supply no covariance between it and a
+second model's resolution estimated from the same data, so subtracting two single-model
+estimates leaves the contrast's own sampling variability unaddressed; a variance for the
+difference would still have to be built from the joint law of the two marginal
+estimators, which the single-model decomposition does not supply. WAGER instead forms
+the paired gain vector $H_x(y)$ first and targets the contrast directly, so its
+Hájek projection (Section~\ref{sec:inference}) is the influence function of the
+\emph{difference} itself, in one pass, rather than an ad hoc combination of two
+marginal ones -- which is also what makes the exact finite-sample identity and the
+antisymmetric U-statistic kernel possible without first building two single-model
+estimators. Second, the classical decomposition is a diagnostic for a single forecaster's calibration
 and sharpness; it neither targets nor equips a specific pairwise comparison with
 inference. WAGER supplies image-cluster-robust confidence intervals and a
 cell-stratified randomization test for exactly the gain a benchmark submission claims.

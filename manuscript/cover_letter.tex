@@ -1,5 +1,6 @@
-% Cover letter for submission to Computational Statistics and Data Analysis (Elsevier).
-% CSDA runs single anonymized review, so the manuscript itself carries author details.
+% Cover letter for submission to the Journal of Statistical Planning and Inference (Elsevier).
+% Author details carried in the manuscript per Elsevier's typical single-anonymized
+% review for this journal (confirm current policy in JSPI's guide for authors).
 \documentclass[11pt,a4paper]{article}
 \usepackage[margin=1in]{geometry}
 \usepackage{parskip}
@@ -17,14 +18,15 @@ Hung Yen, Vietnam\\
 \vspace{1em}
 \noindent
 To the Editors,\\
-\emph{Computational Statistics and Data Analysis}
+\emph{Journal of Statistical Planning and Inference}
 
 \vspace{1em}
 
 Dear Editors,
 
 I am submitting the manuscript ``WAGER: Within-cell Antisymmetric Gain Evaluation of
-Resolution'' for consideration as a regular paper in \emph{Computational Statistics and Data Analysis}.
+Resolution'' for consideration as a regular paper in \emph{Journal of Statistical
+Planning and Inference}.
 
 The paper concerns the comparison of two probabilistic predictors when the labels are
 partly determined by a nuisance feature both models observe. In that situation the
@@ -45,10 +47,17 @@ that, under the quadratic score, equals the within-cell prediction--label covari
 new model has gained, linking it to the classical resolution term of proper-score
 decomposition. The estimator runs in $O(NK)$ time on cached predictions, fits no
 baseline model, has no tunable hyperparameter, and comes with cluster-robust intervals
-and a cell-stratified randomization test. Two further exact results are proved:
-leave-one-out transport removes an attenuation bias of $(n_c-1)/n_c$ that a naive
-in-sample plug-in incurs, and coarsening the audit cell shifts the estimate by an
-explicit between-cell covariance term.
+and a cell-stratified randomization test. This revision adds four further results aimed
+at this journal's readership specifically: the covariance identity is shown to hold for
+the entire Bregman-score family, not the quadratic score alone; an asymptotic normality
+theorem justifies the reported intervals in the large-sample limit; a Cauchy--Schwarz
+sensitivity bound quantifies how far an unrecorded confounder could move the residual
+from what a fully adjusted audit would find; and, at a trivial audit feature, the
+statistic and its interval reduce exactly to a clustered Diebold--Mariano/Giacomini--White
+test, situating the estimator precisely relative to comparative forecast evaluation.
+Two further exact results were already established: leave-one-out transport removes an
+attenuation bias of $(n_c-1)/n_c$ that a naive in-sample plug-in incurs, and coarsening
+the audit cell shifts the estimate by an explicit between-cell covariance term.
 
 Because the method is a measuring instrument, the paper takes its validation seriously.
 Beyond recovery and null designs, we verify the coverage of the primary interval in a
@@ -66,13 +75,17 @@ split, reproducing their published behaviour, and decompose the debiased model a
 the biased baseline. Read naively, the Total Direct Effect variant appears to lose a
 little instance alignment. That reading does not survive the control this paper argues
 for: the two models differ sharply in confidence, and once temperatures are matched on
-held-out images the alignment channel is statistically indistinguishable from zero
-($-0.00006$, 95\% CI $[-0.00120,+0.00109]$), with essentially the entire proper-score
-difference lying in the prior channel. A widely used debiasing method therefore buys ten
-points of mean recall with no measurable change in within-cell instance alignment ---
-which is what its construction subtracts, so the finding characterises the method
-rather than indicting it, while showing that a metric read as evidence about rare
-predicates can move sharply without any change in instance-level evidence.
+held-out images the proper-score difference is overwhelmingly prior-transported under
+both the quadratic and the log score, though the two scores disagree on whether any
+instance-alignment remainder survives ($-0.00006$, 95\% CI $[-0.00120,+0.00109]$ under
+the quadratic score; $+0.04396$, CI $[+0.04079,+0.04714]$ under the log score) --- in
+either reading at least an order of magnitude smaller than the prior-channel shift. A
+widely used debiasing method therefore buys ten points of mean recall while changing
+within-cell instance alignment by at most a small fraction of that amount, possibly
+none --- which is what its construction subtracts, so the finding characterises the
+method rather than indicting it, while showing that a metric read as evidence about
+rare predicates can move sharply on evidence that is mostly, and perhaps entirely, of
+a different kind.
 
 Two further results point in complementary directions. A model reading real pixels
 through a frozen CLIP encoder scores $0.04655$ \emph{lower} overall --- an evaluator
@@ -81,17 +94,22 @@ significantly \emph{better} than the model that beats it, its entire deficit lyi
 the annotation prior and its advantage surviving both post-hoc prior correction and
 calibration matching. Applied unchanged to long-tailed image classification across
 seeds and imbalance ratios, a calibration-matched reanalysis overturns what the raw
-decomposition appears to say about two re-weighting schedules.
+decomposition appears to say about two re-weighting schedules. A third domain with
+neither a spatial nor a class-frequency prior --- long-tailed text classification ---
+shows the same estimator, unmodified, produces a different and equally interpretable
+composition: the schedule that buys real instance alignment on one domain buys almost
+none on the other, which is itself evidence that the decomposition tracks a genuine
+property of the training-data pair rather than a fixed property of a method's name.
 
-I believe the work belongs in \emph{Computational Statistics and Data Analysis} under
-Section II, Statistical Methodology for Data Analysis, whose remit includes
-classification, pattern recognition, model selection and assessment, and cross-validation
---- the family this estimator joins. It also touches Section I through the development,
-evaluation and validation of an algorithm, which is supplied and documented rather than
-merely described. The contribution is a decomposition with exact finite-sample results
-and inference, validated as an instrument before being used as one; the vision
-benchmarks are the applications on which it is exercised, not the claim. No
-state-of-the-art result is asserted, and none is needed for the argument.
+I believe the work fits this journal's remit in the theory and practice of statistical
+inference and model comparison: the central contribution is an estimand and its exact
+finite-sample and asymptotic inference theory --- U-statistic identities, a Hájek
+influence function, an asymptotic normality result, and a sensitivity analysis for an
+unmeasured confounder in the tradition of Rosenbaum and Cinelli \& Hazlett --- together
+with an exact relationship to the classical Diebold--Mariano/Giacomini--White tests for
+comparative forecast evaluation. The computer-vision and text-classification benchmarks
+are the applications on which the instrument is exercised and validated, not the claim
+itself; no state-of-the-art result is asserted, and none is needed for the argument.
 
 All code, cached model outputs and scripts needed to reproduce every number, table and
 figure are publicly available at \url{https://github.com/vinhqdang/WAGER}, including a

@@ -27,12 +27,15 @@ protocol rather than an afterthought.
 
 Pointed at two released scene-graph checkpoints rather than at predictors of our own,
 the method returns a precise account of a widely used causal debiasing technique: its
-ten-point mean-recall improvement is accompanied, once calibration is matched, by an
-instance-alignment change indistinguishable from zero, with essentially the entire
-proper-score difference lying in the prior channel. That is what its construction
-subtracts, so the finding characterizes the method rather than indicting it -- and it
-shows that a metric the field reads as evidence about rare predicates can move ten
-points without any measurable change in instance-level evidence.
+ten-point mean-recall improvement is, once calibration is matched, overwhelmingly
+prior-transported under either the quadratic or the log score, with an
+instance-alignment remainder the two scores disagree on -- exactly zero under one,
+small but significant under the other -- and in both readings at least an order of
+magnitude smaller than the prior-channel shift. That prior-channel dominance is what
+the method's own construction subtracts, so the finding characterizes it rather than
+indicting it -- and it shows that a metric the field reads as evidence about rare
+predicates can move ten points while instance-level evidence changes by at most a small
+fraction of that amount, possibly none.
 
 On our own Visual Genome predictors the method assigns a class-only improvement entirely
 to the prior channel while identifying the additional alignment that spatial geometry
@@ -51,11 +54,15 @@ score nor an accuracy difference can make that separation.
 
 A third domain, long-tailed text classification on 20 Newsgroups
 (Section~\ref{sec:textlt}), carries no spatial or class-frequency prior at all, and
-supplies the estimator's sharpest demonstration that channel composition is a property
-of a training recipe applied to particular data, not of the recipe's name: on this task
-it is the class-balanced schedule that buys genuine instance alignment, and the deferred
-schedule -- the one that carried the real alignment gain on CIFAR-100-LT -- whose
-comparably large total gain is almost entirely prior-transported. The two vision domains
+--- from a single trained pair per schedule, not yet the calibration-matched,
+multi-seed protocol given to CIFAR-100-LT --- points the same way: on this task it is
+the class-balanced schedule whose alignment estimate is clearly positive, and the
+deferred schedule -- the one that carried the alignment gain on CIFAR-100-LT -- whose
+comparably large total gain is almost entirely prior-transported. Whether this
+composition replicates under that fuller protocol is the natural next check, not a
+claim this single run has already earned; if it does, it would be the estimator's
+sharpest demonstration yet that channel composition is a property of a training recipe
+applied to particular data, not of the recipe's name. The two vision domains
 and the one text domain are audited by the identical unmodified construction, differing
 only in what $\phi$ is declared to be. It is this gain-specific mechanism, together with
 its extension to a general score family, its large-sample justification, its explicit
