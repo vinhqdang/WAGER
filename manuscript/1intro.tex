@@ -1,129 +1,199 @@
 \section{Introduction}\label{sec:intro}
 
-Model comparison on a benchmark is an estimation problem that is usually treated as a
-lookup. Two predictors are scored, the difference is reported, and the difference is
-read as evidence that one model has learned something the other has not. That reading
-is sound only when the labels are not already partly determined by a feature both models
-observe. When they are --- and in many benchmarks they conspicuously are --- a model can
-raise its score by fitting the conditional label distribution of that nuisance feature
-more closely, without predicting any individual case better. The score difference then
-confounds two quantities that a careful evaluation should separate, and no amount of
-significance testing on the difference itself will separate them.
+A benchmark reports that a new model scores $0.05$ higher than the model it replaces.
+What has the new model learned? The question sounds like bookkeeping, but it is a
+statistical estimation problem, and the reported number does not answer it whenever the
+labels are partly determined by a feature that both models can see.
 
-Computer-vision benchmarks make the problem concrete, and supply the applications of
-this paper. In scene graph generation (SGG), the ordered object-class pair strongly
-predicts the relation label; in visual question answering (VQA), question form predicts
-the answer; in long-tail recognition, category frequency dominates aggregate
-performance. Models can therefore improve a headline score by fitting annotation
-regularities more precisely without improving the instance-specific association between
-an image and its label. This is not merely hypothetical: frequency baselines are competitive on Visual
-Genome \cite{zellers2018neural}, VQA systems fail under changed answer priors
-\cite{goyal2017making,agrawal2018dont}, standard metrics obscure tail behavior
-\cite{li2022rethinking}, and the same diagnosis continues to reappear in current work:
-open-vocabulary and knowledge-enhanced SGG methods report aggregate scores --
-increasingly sliced by predicate frequency, but with the composition of any given
-model-pair improvement left unattributed
-\cite{li2024pixels,zhang2024hiker,sun2024unbiased}, long-tailed recognition methods
-rebalance training toward rare classes without attributing a resulting gain to the
-frequency prior versus instance-specific evidence
-\cite{ma2024geometric,li2026pih2t,luo2025rebalancing}, and recent benchmark audits show
-multimodal models can exploit non-visual shortcuts that inflate exactly this kind of
-aggregate score \cite{brown2025benchmark,zhou2025shortcut}.
+A concrete case makes the difficulty visible. In relation prediction on Visual Genome
+\citep{krishna2017visual}, the task is to name the relation between two objects in an
+image, and the pair of object classes already predicts the relation strongly: given
+(\textsf{man}, \textsf{surfboard}), the label is very often \textsf{riding}. Two models
+that both observe the object classes can therefore differ in their scores for two quite
+different reasons. One is that the new model estimates the conditional label frequencies
+$\Pr(Y\mid \text{class pair})$ more accurately --- a real improvement, but one that a
+lookup table of training frequencies also achieves, and one that evaporates if the
+relation frequencies shift. The other is that the new model does better at telling
+\emph{these two men on surfboards apart}: it puts higher probability on the correct
+label for the individual case, beyond what the class pair alone implies. The reported
+score difference is the sum of the two, and no amount of significance testing on that
+difference will split it, because the two components are both present in the same
+number. The same structure recurs wherever a benchmark has strong label priors: in
+visual question answering the form of the question predicts the answer
+\citep{agrawal2018dont}, and in long-tailed recognition the class frequencies dominate
+aggregate accuracy \citep{ma2024geometric}.
 
-The usual audit trains or constructs a prior-only baseline and compares its score with a
-full model. That strategy is useful diagnostically, but it does not identify where the
-\emph{gain between two submitted systems} came from. Baseline estimation error,
-smoothing, calibration, and model-family mismatch all enter the result. More
-fundamentally, separately decomposing each model and subtracting the decompositions is
-an indirect answer to a pairwise question.
+The customary remedy is to build a prior-only reference --- fit
+$\widehat\Pr(Y\mid \phi)$ from training data, score it, and see how far the full models
+beat it \citep{zellers2018neural}. That is a useful diagnostic for one model at a time,
+but as an answer to the pairwise question it is indirect and noisy. The reference has to
+be estimated, which contributes its own sampling error; it needs a smoothing rule for
+rare cells and a model family that may or may not match either compared system; and
+decomposing two models separately and subtracting the two decompositions gives no
+variance for the difference, which is the quantity actually in dispute
+(Section~\ref{sec:related-decomposition}).
 
-We instead ask a counterfactual question at the level of the gain itself. Let $f_0$ be
-the old model, $f_1$ the claimed improvement, and $\phi(x)$ the declared prior feature.
-For two test examples $i,j$ with the same $\phi$, we retain both models' prediction
-vectors but cross the observed labels. The crossed assignment preserves the prior cell
-and its label histogram while destroying which prediction vector belongs with which
-label. Comparing the observed and crossed assignments measures whether $f_1-f_0$
-improves this instance-level alignment. Figure~\ref{fig:concept} summarizes the idea.
+\paragraph{What this paper does.}
+We decompose the score difference itself, exactly, using no fitted reference at all. The
+idea takes one sentence. Both models have already produced a full probability vector for
+every test case, so each model's score can be recomputed against \emph{any} label, not
+only the one that was observed. Take two test cases that fall in the same group ---
+that share the same value of a declared grouping variable $\phi$, such as the
+object-class pair --- and score each case's predictions against the \emph{other} case's
+label. Doing this preserves the group and its label frequencies while destroying the
+correspondence between a prediction and the case it was made for. Whatever score
+advantage survives that relabelling is an advantage the new model holds over the group
+as a whole, not over any particular case in it; whatever advantage disappears was
+case-specific. Averaging within groups turns this into an identity,
+\[
+\text{total score gain} \;=\; \underbrace{\text{prior-fit gain}}_{\text{survives relabelling}}
+\;+\; \underbrace{\text{within-group resolution gain}}_{\text{destroyed by relabelling}},
+\]
+which holds exactly in the observed sample, for any score, with no approximation and no
+asymptotics. Figure~\ref{fig:concept} shows the relabelling on two real Visual Genome
+cases.
+
+Section~\ref{sec:worked} works the arithmetic through on four data points, which is
+enough to exhibit every property the rest of the paper proves in general.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig1_new_concept.png}
-\caption{\textbf{WAGER audits the gain directly, on the benchmark's own examples.} Two
-VG150 test relations share the audit cell $\phi=(\text{man},\text{surfboard})$ yet
-carry different labels. Crossing the labels within the cell (arrows) preserves the cell
-and its label histogram while destroying which prediction meets which image. Scoring
-two frozen models under the observed and transported assignments splits their score
-difference exactly into a prior-transported gain and an instance-alignment gain.}
+\caption{\textbf{The construction, on two real test cases.} Two VG150 test relations
+share the group $\phi=(\textsf{man},\textsf{surfboard})$ but carry different labels.
+Exchanging their labels (arrows) leaves the group and its label frequencies intact while
+breaking the link between each prediction and the case it was made for. Scoring two
+frozen models before and after the exchange splits their score difference exactly into a
+prior-fit gain and a within-group resolution gain.}
 \label{fig:concept}
 \end{figure*}
 
-This construction gives WAGER: \emph{Within-cell Antisymmetric Gain Evaluation of
-Resolution}. The name is deliberately literal. What the residual measures is a
-resolution difference in the sense of the classical proper-score literature
-\cite{murphy1973vector,brocker2009reliability} --- predictive alignment with the correct
-instance beyond $\phi$ --- and we call it the instance-alignment gain throughout, with
-no claim about cognition, causality, or understanding attached. WAGER makes
-nine contributions.
+\paragraph{What the second component is, in standard terms.}
+The surviving component is not a new invention. Written out, the within-group remainder
+equals the covariance, inside each group, between how much the new model moved its
+predicted probability for a label and whether that label actually occurred
+(Theorem~\ref{thm:population}). That covariance is the \emph{resolution} term of the
+classical reliability--resolution decomposition of a proper score
+\citep{murphy1973vector,degroot1983comparison,brocker2009reliability}, which splits a
+single forecaster's score, conditional on a chosen grouping, into how well calibrated it
+is and how much its forecasts vary with the outcome. Our contribution is to obtain that
+term for a \emph{pair} of forecasters directly, as an exact finite-sample identity with
+inference attached, rather than by decomposing each forecaster separately and
+subtracting. We call the resulting estimator WAGER (within-group antisymmetric gain
+evaluation of resolution) for reference, and name its two components the
+\emph{prior-fit gain} and the \emph{within-group resolution gain} throughout.
+
+\subsection{Contributions}\label{sec:contributions}
 
 \begin{enumerate}
-\item We define a direct model-pair estimand whose prior component is generated by
-within-cell label transport, not by fitting a frequency forecaster.
-\item We prove an exact population and finite-sample decomposition. The residual is an
-antisymmetric U-statistic; under the quadratic score it has a covariance identity that
-identifies it with the resolution term of the classical proper-score decomposition
-\cite{murphy1973vector,degroot1983comparison,brocker2009reliability}, applied to a
-model-pair contrast rather than to one forecaster.
-\item We prove two further exact results for the model-pair contrast, one of them a
-direct transplant of a known single-model correction and one with no single-model
-analogue: leave-one-out transport removes the same $(n_c-1)/n_c$ finite-sample
-attenuation bias that a bias-corrected single-model decomposition already removes for
-one forecaster \citep{ferro2012bias}, now applied to the contrast and paired with
-inference that literature does not supply (Proposition~\ref{prop:attenuate},
-Section~\ref{sec:related-decomposition}); coarsening the audit cell changes the estimate
-by an explicit between-cell covariance term (Proposition~\ref{prop:coarsen}), which
-turns an empirical sensitivity finding into a population-level mechanism.
-\item We generalize the covariance identity from the quadratic score to the entire
-Bregman-score family (Theorem~\ref{thm:bregman}), recovering the quadratic and log-score
-identities as two named cases of one result, and we give a Cauchy--Schwarz/Popoviciu
-sensitivity bound (Proposition~\ref{prop:sensitivity}) that converts the paper's central
-qualitative caveat -- an unrecorded confounder can masquerade as alignment -- into a
-numeric limit on how far the reported residual could be from a fully adjusted audit.
-\item We derive an $O(NK)$ algorithm, a H\'ajek influence function for
-image-cluster-robust intervals, and a cell-stratified randomization test under a sharp
-exchangeability null.
-\item We prove an asymptotic normality theorem for the dataset-level estimator
-(Theorem~\ref{thm:clt}) that justifies its reported intervals in the large-sample limit,
-and show as a corollary that, at a trivial audit feature, the undecomposed statistic and
-interval are exactly a clustered Diebold--Mariano/Giacomini--White test
-\citep{diebold1995comparing,giacomini2006tests} for the paired loss differential
-(Corollary~\ref{cor:dm}), situating WAGER precisely relative to comparative forecast
-evaluation rather than only by analogy.
-\item We validate the estimator under controlled alternatives and on Visual Genome,
-where it distinguishes a class-only gain from gains created by adding spatial evidence,
-and further from gains created by a model that consumes real image pixels through a
-frozen CLIP encoder rather than only box geometry (Section~\ref{sec:vgvisual}).
-\item We audit a published debiasing method rather than only our own predictors:
-applied to two released scene-graph checkpoints on the standard benchmark, WAGER shows
-that a ten-point mean-recall improvement is overwhelmingly prior-transported under
-either of two proper scores, with an instance-alignment remainder the two scores do not
-agree is nonzero -- one reads exactly null, the other small but significant -- and in
-both cases at least an order of magnitude smaller than the prior-channel shift
-(Section~\ref{sec:sggaudit}).
-\item We show WAGER is not SGG-specific by applying it unchanged to two further domains
-and task types -- long-tailed image classification on CIFAR-100-LT
-(Section~\ref{sec:cifarlt}) and long-tailed text classification on 20-Newsgroups-LT
-(Section~\ref{sec:textlt}) -- decomposing the gain of class-balanced and deferred
-re-weighting classifiers over a vanilla cross-entropy baseline into
-class-frequency-prior and instance-alignment components in both a vision and a language
-task, giving empirical support to the broader-applicability claim of
-Section~\ref{sec:broader} rather than leaving it as an untested hypothesis.
+\item \textbf{An exact decomposition, and what its remainder is.} For any score, the
+observed gain between two frozen models splits exactly --- in the population
+(Theorem~\ref{thm:population}) and in the finite sample (Theorem~\ref{thm:sample}) ---
+into a prior-fit gain and a remainder that is a U-statistic of order two. For every
+Bregman score, and hence for the quadratic and logarithmic scores as named cases, that
+remainder equals a within-group covariance between the models' predicted-probability
+difference and the label indicator (Theorem~\ref{thm:bregman}). A change that is
+constant within groups contributes exactly zero to it.
+
+\item \textbf{Inference for the difference, and its large-sample justification.} We
+derive the estimator's influence function, which gives cluster-robust confidence
+intervals in one pass over the data, together with a randomization test stratified by
+group. The dataset-level estimator is asymptotically normal with a consistent sandwich
+variance (Theorem~\ref{thm:clt}); at a trivial grouping variable it reduces exactly to a
+clustered Diebold--Mariano test of the paired score differential
+(Corollary~\ref{cor:dm}), so the decomposition delivers what that classical test does
+plus the split it does not.
+
+\item \textbf{Two exact statements about design choices that would otherwise be
+guesswork.} Using a group's own observed label frequency as the counterfactual, rather
+than leaving each case out, attenuates the estimate by exactly $(n_c-1)/n_c$ in a group
+of size $n_c$ (Proposition~\ref{prop:attenuate}) --- which is why no held-out fold is
+needed. Merging groups shifts the estimand by an explicit between-group covariance of
+either sign (Proposition~\ref{prop:coarsen}), so a coarser grouping variable cannot be
+assumed harmless. A Cauchy--Schwarz bound
+(Proposition~\ref{prop:sensitivity}) limits how far an unrecorded grouping variable could
+move the reported remainder, from a single elicited correlation.
+
+\item \textbf{Validation, and an audit of a published method.} Simulations establish
+interval coverage under clustering and delimit what the two components separate:
+prior-only improvements stay out of the resolution component, unrecorded within-group
+signal enters it, and monotone recalibration moves score between the components, which is
+why we audit calibration-matched pairs. Applied to two publicly released scene-graph
+checkpoints --- not to models of our own --- the decomposition shows that a ten-point
+improvement in mean recall is overwhelmingly prior-fit under either of two proper scores
+(Section~\ref{sec:sggaudit}). Three further studies, in relation prediction and in
+long-tailed image and text classification, apply the identical estimator and are reported
+in Appendix~\ref{app:studies}.
 \end{enumerate}
 
-WAGER is also defined by what it avoids: it fits no prior baseline model, requires no
-projection/evaluation split, and imposes no decision threshold on a gain ratio. The
-primary quantity is the signed instance-alignment gain with uncertainty. Its scope is
-correspondingly concrete: WAGER audits closed-set probabilistic prediction, requiring
-both models' full probability vectors and a discrete, declarable prior feature. Any
-benchmark meeting those three conditions is in reach; generative or free-form
-evaluations, where no $K$-way probability vector exists, are not, and we do not claim
-them.
+\subsection{Terminology}\label{sec:terminology}
+
+The construction needs few new words, and Table~\ref{tab:terms} fixes them against their
+standard statistical counterparts. Readers who prefer the standard vocabulary can read
+``group'' for cell, ``resolution'' for the second component, and ``relabelling within
+groups'' for transport, and lose nothing.
+
+\begin{table}[t]
+\centering
+\small
+\caption{The paper's vocabulary, and what it corresponds to in standard terms.}
+\label{tab:terms}
+\begin{tabular}{@{}p{0.24\textwidth}p{0.30\textwidth}p{0.38\textwidth}@{}}
+\toprule
+Term used here & Standard counterpart & Meaning \\
+\midrule
+grouping variable $\phi$ &
+stratifying / conditioning variable &
+a discrete function of the input, declared before the audit, whose levels the labels
+depend on \\
+cell $c$ &
+level of $\phi$; stratum &
+the set of test cases sharing one value of $\phi$ \\
+label transport &
+within-stratum relabelling; permutation within blocks &
+replacing a case's label with another case's label from the same cell \\
+total gain $\Delta T$ &
+paired score differential &
+the observed mean score of the new model minus that of the old \\
+prior-fit gain $\Delta P$ &
+--- &
+the part of $\Delta T$ that survives label transport \\
+within-group resolution gain $\Delta R$ &
+resolution difference \citep{murphy1973vector,brocker2009reliability} &
+the part destroyed by transport; a within-cell prediction--label covariance \\
+coverage &
+identified fraction &
+share of test cases in cells of size $\ge2$, the only cells in which $\Delta R$ is
+identified \\
+calibration-matched &
+temperature-scaled on held-out data &
+both models rescaled to comparable confidence before the audit \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Scope, and what is not claimed}\label{sec:scope}
+
+The estimator needs exactly four aligned arrays: two $N\times K$ matrices of predicted
+probabilities, the $N$ observed labels, and the $N$ cell identifiers. Any closed-set
+probabilistic prediction task supplies them. Free-form or generative evaluation, where no
+$K$-way probability vector exists, does not, and we make no claim there.
+
+Three limits on interpretation are worth stating before any result. First, everything is
+conditional on the declared $\phi$: a positive $\Delta R$ says the new model predicts
+individual cases better \emph{among cases sharing that feature}, and nothing about
+causality, reasoning, or robustness. Second, $\Delta R$ credits any signal that varies
+within a cell, including a shortcut the analyst did not record;
+Proposition~\ref{prop:sensitivity} bounds that exposure rather than removing it. Third, a
+prior-fit gain is not illegitimate --- fitting the deployment label distribution better
+is real skill whenever that distribution is the one that matters. The decomposition says
+where a gain lives, not whether it is worth having.
+
+\paragraph{Organization.}
+Section~\ref{sec:worked} works a four-point example. Section~\ref{sec:related} places the
+construction in the literature on proper-score decomposition and forecast comparison.
+Section~\ref{sec:method} develops the estimator and its theory.
+Section~\ref{sec:exp} validates it and audits two released checkpoints.
+Sections~\ref{sec:discussion} and~\ref{sec:conclusion} discuss limits and conclude.
+Proofs are in Appendix~\ref{app:proofs}; three further empirical studies are in
+Appendix~\ref{app:studies}.

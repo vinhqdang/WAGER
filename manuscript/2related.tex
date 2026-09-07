@@ -1,165 +1,140 @@
-\section{Related Work}\label{sec:related}
+\section{Related work}\label{sec:related}
 
-\subsection{Benchmark priors and shortcut learning}
-Dataset bias has long complicated comparisons between visual recognition systems
-\cite{torralba2011unbiased,geirhos2020shortcut}. In SGG, the FREQ predictor estimates
-$p(\text{predicate}\mid\text{subject},\text{object})$ and is surprisingly competitive
-\cite{zellers2018neural}; mean recall and causal interventions were proposed to reduce
-this dependence \cite{chen2019knowledge,tang2019learning,tang2020unbiased}, although
-metric pathologies remain \cite{li2022rethinking}. More recent SGG work continues this
-line under open-vocabulary and knowledge-enhanced settings
-\cite{li2024pixels,zhang2024hiker,sun2024unbiased}. The community's reporting standards
-have themselves responded to the shortcut: mean recall is reported alongside recall,
-often broken down by predicate-frequency group \cite{tang2020unbiased,li2022rethinking},
-and zero-shot recall -- introduced with the earliest language-prior models
-\cite{lu2016visual} -- checks whether a gain survives on triplets absent from training,
-exactly the frequency-exploitation worry \cite{tang2020unbiased}. In VQA, GQA-OOD
-stratifies evaluation by answer rarity within question groups \cite{kervadec2021roses},
-and VQA-CP changes language priors between train and test \cite{agrawal2018dont},
-though changing-prior splits can themselves be exploited \cite{teney2020value}; recent
-VQA work continues to target the same language-prior shortcut
-\cite{xu2025qirl,kuang2024debiasing}. Benchmark-level audits of exploitable non-visual
-shortcuts have also expanded to broader multimodal evaluation
-\cite{brown2025benchmark,zhou2025shortcut}. All of these are prior-aware slicings,
-splits, or stress tests of a \emph{single} model's performance, and they are effective
-as far as they go. What none of them provides is what WAGER targets: an exact
-decomposition, with uncertainty, of the score difference between two submitted systems
-into a prior-transported channel and an instance-alignment channel. A stratified or
-zero-shot metric can show \emph{that} a gain is uneven across the prior; it does not
-attribute the pairwise gain itself, on the full evaluation set, into the two channels
-with a finite-sample identity and inference.
-
-\subsection{Long-tailed recognition}\label{sec:related-longtail}
-The same shortcut, in a structurally identical form, appears well outside scene graph
-generation. A long-tailed classifier can raise its aggregate accuracy simply by fitting
-the training-time class-frequency prior more precisely, without becoming any better at
-discriminating instances within a class \cite{ma2024geometric,duan2024longtailed}. The
-canonical remedies rebalance the training objective or the classifier itself:
-effective-number class-balanced re-weighting \cite{cui2019classbalanced}, deferred
-re-weighting \cite{cao2019learning}, logit adjustment \cite{menon2021long}, and
-post-hoc re-training or re-scaling of a decoupled classifier \cite{kang2020decoupling},
-with a continuing stream of recent variants
-\cite{ma2024geometric,li2026pih2t,luo2025rebalancing}, much as mean-recall and
-causal-intervention methods rebalance SGG training. What such remedies share with their
-SGG counterparts is that they intervene on how a model is trained or adjusted rather
-than on how a trained pair is compared, so none of them attributes an observed score
-gap between two finished models to frequency-fitting on the one hand and
-instance-specific improvement on the other. That is the question
-Section~\ref{sec:cifarlt} puts to WAGER, using the benchmark's own coarse superclasses
-as the declared prior feature $\phi$; the estimator exposes the composition of two
-re-weighting schedules' gains that their aggregate scores leave hidden -- one whose
-near-zero total conceals a large prior improvement cancelling an equally large
-alignment loss, the other whose calibration-matched improvement is almost entirely
-rare-class instance alignment.
-
-\subsection{Information and predictive probing}
-Usable-information analyses measure information accessible to a chosen predictor family
-\cite{xu2020theory,ethayarajh2022understanding,hewitt2021conditional}. Their central
-objects are model- or family-level quantities. WAGER is deliberately narrower and more
-operational: it attributes the proper-score difference between two concrete frozen
-models. We do not identify conditional mutual information and do not claim that a
-positive residual establishes causal or compositional understanding.
-
-\subsection{Proper scores, randomization, and U-statistics}
-Strictly proper scoring rules reward honest predictive distributions
-\cite{gneiting2007proper}; WAGER uses their model-pair contrast. A recent survey
-revisits estimation and forecast evaluation under proper scoring rules broadly
-\cite{waghmare2026proper}, and the reliability--resolution--uncertainty partition
-itself continues to be re-derived and extended: to general strictly proper scores and
-multiclass outcomes \cite{charpentier2026decomposing}, to entropy/divergence-based
-uncertainty quantification \cite{hofman2025uncertainty}, and via an alternative
-covariance rearrangement for the Brier score specifically \cite{vieira2026yates}. WAGER
-uses the same partition but applies it to a paired gain contrast rather than to one
-forecaster, as detailed in Section~\ref{sec:related-decomposition}. Permutation methods
-have been used to assess classifier performance and conditional independence
-\cite{ojala2010permutation,berrett2020conditional}, with recent work characterizing when
-generalized permutation tests attain optimal power \cite{kim2026dispersion} and
-extending conditional-independence testing via ball-divergence measures
-\cite{banerjee2026ball} and transport-map reductions to the unconditional case
-\cite{he2025conditional}. Conditional permutation tests typically estimate or assume a
-conditional distribution when confounders are continuous or high-dimensional. WAGER
-exploits a different setting: the benchmark supplies a discrete audit cell $\phi$, and
-the target is not generic conditional independence but a specific model-to-model score
-gain. This permits exact within-cell transport without estimating a nuisance law. The
-antisymmetric residual is an order-two U-statistic in the sense of Hoeffding
-\cite{hoeffding1948class}; its Hájek-projection inference is part of the same broader
-program of finite- and large-sample U-statistic theory that recent work extends to
-anytime-valid confidence sequences \cite{cai2026anytime}, enabling an efficient
-all-pairs estimator and influence-function inference here. Pairwise betting has also
-been used to test exchangeability sequentially \cite{saha2024testing}; WAGER is a
-fixed-sample gain decomposition and makes no sequential-validity claim -- the
-sequential variant a live leaderboard would need, with anytime validity as submissions
-arrive, is a distinct open problem. Its new element
-is the gain-contrast transport identity and the resulting attribution algorithm, rather
-than permutation or U-statistic theory by itself.
-
-Four adjacent literatures locate the same object from different directions. Inference
-on a paired score differential is the classical territory of comparative forecast
-evaluation: the Diebold--Mariano test \cite{diebold1995comparing} and conditional
-predictive ability tests \cite{giacomini2006tests} ask whether one forecaster beats
-another, optionally conditional on covariates -- the closest existing relative of a
-gain evaluated conditional on $\phi$. WAGER adds to that tradition an exact
-decomposition of the differential itself, and Corollary~\ref{cor:dm} makes the
-relationship precise: at the trivial partition, WAGER's own total-gain statistic has
-exactly the Diebold--Mariano form, corrected for image-level rather than serial
-dependence, so the decomposition is best read as everything DM/GW already deliver plus
-the further split that neither provides. A structurally close precedent for comparing
-two correlated models through a paired U-statistic exists outside forecast evaluation
-too: \citet{delong1988comparing} compare two correlated ROC curves' AUCs via a
-generalized U-statistic covariance estimator, the same construction this paper applies
-to a declared-cell gain rather than an unconditional ranking statistic. Second, the
-prior channel is precisely the component that
-label-shift procedures manipulate post hoc: re-weighting a classifier's outputs to a new
-label distribution \cite{saerens2002adjusting,lipton2018detecting} can add or remove
-prior-transported gain without touching instance-level evidence, which is what the
-prior-matching experiment of Section~\ref{sec:vgvisual} exploits as a falsification
-test. Third, evaluating calibration within cells of a declared grouping, uniformly over
-many candidate groupings, is the subject of multicalibration
-\cite{hebert2018multicalibration}; that literature is the formal treatment of the
-multiplicity question raised by the choice of $\phi$ (Section~\ref{sec:discussion}). A
-fourth, more classical connection concerns what an unrecorded grouping variable can hide:
-omitted-variable sensitivity analysis in observational causal inference
-\cite{rosenbaum2002observational} and its recent correlation- and moment-parameterized
-refinements \cite{freidling2025optimization,zhang2026average} bound how much an
-unmeasured confounder could change a causal estimate; Proposition~\ref{prop:sensitivity}
-adapts the same Cauchy--Schwarz style of argument to bound how much an unrecorded
-covariate could change the reported alignment gain, which is the same question -- how
-far can what is unobserved move the estimate -- asked of a different estimand.
+The construction sits between two literatures that rarely meet: the decomposition of
+proper scores, which supplies the object being estimated, and the comparison of
+forecasters, which supplies the inferential target. We take those first, then the applied
+literature that motivates the problem.
 
 \subsection{Relation to classical proper-score decompositions}\label{sec:related-decomposition}
-The covariance identity in Eq.~\eqref{eq:cov-id} is a relative of the reliability
-resolution--uncertainty partition of a single proper score
-\cite{murphy1973vector,degroot1983comparison}, later generalized and made
-conditioning-set explicit by \citet{brocker2009reliability}: conditioned on a chosen
-grouping variable, a proper score splits into a calibration term and a resolution term,
-and the resolution term is a covariance between the forecast and the outcome indicator
-within groups. We deliberately build on this fact rather than obscure it. WAGER is not a
-new proper score, and $\Delta R_c$ is best understood as a \emph{resolution
-difference}, not a new quantity to be evaluated on its own. Two things distinguish WAGER
-from applying the classical decomposition to $q_0$ and $q_1$ separately and subtracting
-the two resolutions. First, the point estimates do combine identically -- both models
-share the same $\phi$-partition and hence the same per-cell $n_c$, so the same
-attenuation factor $(n_c-1)/n_c$ (Proposition~\ref{prop:attenuate}) applies to each
-model's separately-estimated in-sample resolution, exactly the finite-sample bias a
-single-model bias-corrected decomposition already removes for one forecaster
-\citep{ferro2012bias}, and subtracting the two naive plug-ins recovers exactly WAGER's
-own biased estimate of the contrast -- but inference does not transfer this way. Existing
-variance estimators for the single-model decomposition \citep{siegert2014variance}
-target one resolution term in isolation and supply no covariance between it and a
-second model's resolution estimated from the same data, so subtracting two single-model
-estimates leaves the contrast's own sampling variability unaddressed; a variance for the
-difference would still have to be built from the joint law of the two marginal
-estimators, which the single-model decomposition does not supply. WAGER instead forms
-the paired gain vector $H_x(y)$ first and targets the contrast directly, so its
-Hájek projection (Section~\ref{sec:inference}) is the influence function of the
-\emph{difference} itself, in one pass, rather than an ad hoc combination of two
-marginal ones -- which is also what makes the exact finite-sample identity and the
-antisymmetric U-statistic kernel possible without first building two single-model
-estimators. Second, the classical decomposition is a diagnostic for a single forecaster's calibration
-and sharpness; it neither targets nor equips a specific pairwise comparison with
-inference. WAGER supplies image-cluster-robust confidence intervals and a
-cell-stratified randomization test for exactly the gain a benchmark submission claims.
-The technical contribution here is narrower than a new form of score decomposition: it is
-the transport construction and finite-sample identity that convert a known resolution
-concept into a model-to-model attribution algorithm with an exactness and inference
-guarantee that the single-model decomposition does not provide.
+
+Conditional on a chosen grouping variable, a proper score splits into a calibration
+(reliability) term and a resolution term, the latter a covariance between the forecast and
+the outcome indicator within groups
+\citep{murphy1973vector,degroot1983comparison}, made conditioning-set explicit by
+\citet{brocker2009reliability}. The partition continues to be extended --- to general
+strictly proper and multiclass scores \citep{charpentier2026decomposing}, to
+divergence-based uncertainty quantification \citep{hofman2025uncertainty}, and by an
+alternative covariance rearrangement for the Brier score \citep{vieira2026yates}. Our
+$\Delta R$ is a resolution \emph{difference} in exactly this sense, and we build on the
+fact rather than obscure it: WAGER is not a new scoring rule, and $\Delta R$ is not a new
+quantity to be evaluated on its own.
+
+What the classical decomposition does not supply is inference for a pairwise contrast.
+The point estimates do combine: both models share the same $\phi$-partition and hence the
+same per-cell $n_c$, so the same $(n_c-1)/n_c$ attenuation
+(Proposition~\ref{prop:attenuate}) applies to each model's separately estimated in-sample
+resolution --- the finite-sample bias a bias-corrected single-model decomposition already
+removes for one forecaster \citep{ferro2012bias} --- and subtracting two naive plug-ins
+recovers exactly the biased estimate of the contrast, term for term. Inference, however,
+does not transfer. Variance estimators for the single-model decomposition
+\citep{siegert2014variance} target one resolution term in isolation and supply no
+covariance between it and a second model's resolution estimated from the same data, so
+subtracting two single-model estimates leaves the contrast's own sampling variability
+unaddressed; a variance for the difference would have to be rebuilt from the joint law of
+the two marginal estimators. Forming the paired gain vector first and targeting the
+contrast directly makes the influence function that of the \emph{difference} itself, in
+one pass, and is also what makes the exact finite-sample identity and the antisymmetric
+kernel available without constructing two single-model estimators at all.
+
+\subsection{Comparing two forecasters}\label{sec:related-dm}
+
+Inference on a paired score differential is the classical territory of comparative
+forecast evaluation: the Diebold--Mariano test \citep{diebold1995comparing} and
+conditional predictive ability tests \citep{giacomini2006tests} ask whether one forecaster
+beats another, optionally conditional on covariates. That is the closest existing relative
+of a gain evaluated conditional on $\phi$, and
+Corollary~\ref{cor:dm} makes the relation exact: at the trivial one-cell partition our
+total-gain statistic and its interval \emph{are} a clustered Diebold--Mariano test,
+corrected for cluster rather than serial dependence. The decomposition is therefore best
+read as everything those tests already deliver plus a split that neither provides. A
+structurally close precedent for comparing two correlated models through a paired
+U-statistic exists outside forecast evaluation as well: \citet{delong1988comparing}
+compare two correlated ROC curves' areas via a generalized U-statistic covariance
+estimator, the same construction applied to an unconditional ranking statistic rather than
+a declared-cell gain.
+
+Two further literatures locate the same object from other directions. The prior-fit
+component is precisely what label-shift procedures manipulate post hoc: re-weighting a
+classifier's outputs towards a new label distribution
+\citep{saerens2002adjusting,lipton2018detecting} can add or remove prior-fit gain without
+touching case-level evidence, which Appendix~\ref{app:vgvisual} exploits as a
+falsification test. And evaluating calibration within cells of a declared grouping,
+uniformly over many candidate groupings, is the subject of multicalibration
+\citep{hebert2018multicalibration}, which is the formal treatment of the multiplicity
+question raised by the choice of $\phi$ (Section~\ref{sec:discussion}).
+
+\subsection{Transport, permutation, and U-statistics}\label{sec:related-perm}
+
+Strictly proper scoring rules reward honest predictive distributions
+\citep{gneiting2007proper}; a recent survey revisits estimation and forecast evaluation
+under them broadly \citep{waghmare2026proper}. Permutation methods have long been used to
+assess classifier performance and conditional independence
+\citep{ojala2010permutation,berrett2020conditional}, with recent work characterizing when
+generalized permutation tests attain optimal power \citep{kim2026dispersion} and extending
+conditional-independence testing through ball divergences \citep{banerjee2026ball} and
+transport-map reductions to the unconditional case \citep{he2025conditional}. Conditional
+permutation tests generally estimate or assume a conditional distribution when the
+conditioning variables are continuous or high-dimensional. The setting here is different
+in a way that buys exactness: the benchmark supplies a \emph{discrete} grouping variable,
+and the target is not generic conditional independence but one specific model-to-model
+score gain, so within-cell transport requires no nuisance law at all. The remainder is a
+U-statistic of order two in the sense of \citet{hoeffding1948class}, and its H\'ajek
+projection places the inference within the same body of theory that recent work extends to
+anytime-valid confidence sequences \citep{cai2026anytime}. Pairwise betting has also been
+used to test exchangeability sequentially \citep{saha2024testing}; ours is a fixed-sample
+decomposition and makes no sequential-validity claim. The new element is the gain-contrast
+transport identity and the attribution it licenses, not permutation or U-statistic theory
+by itself.
+
+A more classical connection concerns what an unrecorded grouping variable can hide.
+Omitted-variable sensitivity analysis in observational causal inference
+\citep{rosenbaum2002observational} and its correlation- and moment-parameterized
+refinements \citep{freidling2025optimization,zhang2026average} bound how far an unmeasured
+confounder could move a causal estimate; Proposition~\ref{prop:sensitivity} adapts the
+same Cauchy--Schwarz argument to bound how far an unrecorded covariate could move
+$\Delta R$ --- the same question asked of a different estimand.
+
+Usable-information analyses measure information accessible to a chosen predictor family
+\citep{xu2020theory,ethayarajh2022understanding,hewitt2021conditional}. Their central
+objects are model- or family-level quantities; ours is deliberately narrower and more
+operational, attributing the score difference between two concrete frozen models. We do
+not identify conditional mutual information, and a positive $\Delta R$ establishes nothing
+about causal or compositional structure.
+
+\subsection{Where the problem arises}\label{sec:related-applied}
+
+Benchmarks with strong label priors are the applied motivation, and the applications in
+Section~\ref{sec:exp} and Appendix~\ref{app:studies} come from computer vision and
+natural-language classification. Dataset bias has long complicated comparisons between
+recognition systems \citep{torralba2011unbiased,geirhos2020shortcut}. In scene graph
+generation a frequency predictor of
+$p(\text{predicate}\mid\text{subject},\text{object})$ is surprisingly competitive
+\citep{zellers2018neural}; mean recall and causal interventions were proposed to reduce
+that dependence \citep{chen2019knowledge,tang2019learning,tang2020unbiased}, though
+metric pathologies remain \citep{li2022rethinking} and the same diagnosis recurs in
+open-vocabulary and knowledge-enhanced work
+\citep{li2024pixels,zhang2024hiker,sun2024unbiased}. In visual question answering,
+GQA-OOD stratifies evaluation by answer rarity within question groups
+\citep{kervadec2021roses} and VQA-CP changes language priors between train and test
+\citep{agrawal2018dont}, though changing-prior splits can themselves be exploited
+\citep{teney2020value}; the same shortcut is still targeted directly
+\citep{xu2025qirl,kuang2024debiasing}, and benchmark-level audits of exploitable
+non-visual shortcuts have widened to multimodal evaluation generally
+\citep{brown2025benchmark,zhou2025shortcut}. In long-tailed recognition a classifier can
+raise aggregate accuracy by fitting the training class frequencies more precisely without
+discriminating better within a class \citep{ma2024geometric,duan2024longtailed}; the
+canonical remedies rebalance the objective or the classifier
+\citep{cui2019classbalanced,cao2019learning,menon2021long,kang2020decoupling}, with a
+continuing stream of variants \citep{li2026pih2t,luo2025rebalancing}.
+
+The reporting standards in these fields have themselves responded to the shortcut: mean
+recall is reported alongside recall and often broken down by predicate frequency
+\citep{tang2020unbiased,li2022rethinking}, and zero-shot recall \citep{lu2016visual}
+checks whether a gain survives on triplets absent from training. These are all effective
+prior-aware slicings, splits, or stress tests of a \emph{single} model's performance. What
+none provides is what we target: an exact decomposition, with uncertainty, of the score
+difference between two fixed systems. A stratified or zero-shot metric can show
+\emph{that} a gain is uneven across the prior; it does not attribute the pairwise gain
+itself, on the full evaluation set, with a finite-sample identity and inference. The
+remedies, equally, intervene on how a model is trained rather than on how a trained pair
+is compared.

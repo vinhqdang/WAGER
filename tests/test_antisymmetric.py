@@ -301,3 +301,46 @@ def test_coarsening_proposition_law_of_total_covariance():
 
     _, _, _, delta_r_coarse = cell_stats(atoms)
     assert np.isclose(delta_r_coarse, e_delta_r + cov_between, atol=1e-12)
+
+
+def test_worked_example_of_the_paper_reproduces_every_printed_value():
+    """The four-point example the paper works through by hand (Section 2).
+
+    One cell, four cases, two labels, cell label frequencies (3/4, 1/4).  The old
+    model is uninformative within the cell.  Model A moves every case to the cell
+    frequencies; model B moves each case towards its own correct label by the same
+    amount.  Every quantity the paper prints is checked here, including the
+    covariance form of the remainder and its (n_c - 1)/n_c attenuation.
+    """
+    y = np.array([0, 0, 0, 1])
+    phi = np.zeros(4, dtype=int)
+    q_old = np.tile([0.5, 0.5], (4, 1))
+    q_a = np.tile([0.75, 0.25], (4, 1))
+    q_b = np.array([[0.75, 0.25], [0.75, 0.25], [0.75, 0.25], [0.25, 0.75]])
+
+    # Eq. (worked-h): the gain vector is +3/8 towards the label moved to, -5/8 away.
+    for q_new in (q_a, q_b):
+        h = gain_matrix(q_new, q_old)
+        assert np.allclose(np.sort(np.unique(np.round(h, 12))), [-0.625, 0.375])
+
+    # Model A: a within-cell-constant change earns prior fit and exactly no resolution.
+    a = decompose_gain(q_a, q_old, y, phi)
+    assert np.isclose(a.total_gain, 1 / 8)
+    assert np.isclose(a.prior_gain, 1 / 8)
+    assert np.isclose(a.alignment_gain, 0.0, atol=1e-15)
+
+    # Model B: the total understates the resolution gain, because prior fit worsens.
+    b = decompose_gain(q_b, q_old, y, phi)
+    assert np.isclose(b.total_gain, 3 / 8)
+    assert np.isclose(b.prior_gain, -1 / 8)
+    assert np.isclose(b.alignment_gain, 1 / 2)
+    assert np.isclose(b.total_gain, b.prior_gain + b.alignment_gain)
+
+    # The in-sample covariance plug-in of Theorem 1 is attenuated by exactly 3/4.
+    dq = q_b - q_old
+    cov = sum(
+        np.mean(dq[:, k] * (y == k)) - np.mean(dq[:, k]) * np.mean(y == k)
+        for k in range(2)
+    )
+    assert np.isclose(2 * cov, 3 / 8)
+    assert np.isclose(2 * cov, (4 - 1) / 4 * b.alignment_gain)

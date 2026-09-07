@@ -1,11 +1,29 @@
-\section{Method}\label{sec:method}
+\section{The estimator and its properties}\label{sec:method}
 
-\subsection{Setup: audit a gain, not a model}\label{sec:setup}
+This section states the construction of Sections~\ref{sec:intro}--\ref{sec:worked}
+formally and establishes its properties. The order is: notation and the object being
+decomposed (Section~\ref{sec:setup}); the population identity and the covariance form of
+its remainder (Section~\ref{sec:transport}), which Section~\ref{sec:bregman} shows is not
+specific to the quadratic score; what happens when the grouping variable is made coarser
+(Section~\ref{sec:coarsening}) or is missing a relevant covariate altogether
+(Section~\ref{sec:sensitivity}); the finite-sample identity and its $O(NK)$ computation
+(Sections~\ref{sec:finite}--\ref{sec:efficient}); why the counterfactual leaves each case
+out rather than fitting the group's own frequencies (Section~\ref{sec:attenuation}); and
+inference, both finite-sample and asymptotic
+(Sections~\ref{sec:inference}--\ref{sec:asymptotic}). Proofs are in
+Appendix~\ref{app:proofs}. A reader who wants only what is needed to use the estimator can
+read Sections~\ref{sec:setup}, \ref{sec:transport}, \ref{sec:finite}
+and~\ref{sec:inference} and skip the rest.
+
+\subsection{Setup: what is being decomposed}\label{sec:setup}
 
 Let $q_0(\cdot\mid x)$ and $q_1(\cdot\mid x)$ be the predictive distributions of an
 old and a new frozen model over $K$ labels. Let $S(q,y)$ be a bounded proper score,
 oriented so that larger is better, and let $C=\phi(X)$ be a declared discrete prior
-feature. For SGG, $C$ is the ordered subject--object class pair. Define the
+feature. In the relation-prediction example of Section~\ref{sec:intro}, $C$ is the ordered
+subject--object class pair; in a long-tailed classification benchmark it is a coarse
+superclass. We call a value of $C$ a \emph{cell} and require it to be declared before the
+audit is run. Define the
 instance-specific \emph{gain vector}
 \begin{equation}
 H_x(y)=S(q_1(\cdot\mid x),y)-S(q_0(\cdot\mid x),y),\qquad y=1,\ldots,K.
@@ -25,7 +43,7 @@ distribution. A floored log score is a sensitivity analysis.
 
 \subsection{Within-cell counterfactual transport}\label{sec:transport}
 
-For a prior cell $c$, define three population quantities:
+For a cell $c$, define three population quantities:
 \begin{align}
 \Delta T_c &= \mathbb E[H_X(Y)\mid C=c], \\
 \Delta P_c &= \mathbb E_{H\mid c}\,\mathbb E_{Y'\mid c}[H_X(Y')], \\
@@ -33,8 +51,8 @@ For a prior cell $c$, define three population quantities:
 \end{align}
 Here $Y'$ is an independent label drawn from the same cell. Thus $\Delta T_c$ is the
 observed score gain, $\Delta P_c$ is the gain retained after breaking the
-instance-specific prediction--label assignment while preserving the prior cell, and
-$\Delta R_c$ is the alignment gain lost by that transport.
+instance-specific prediction--label assignment while preserving the cell, and
+$\Delta R_c$ is the resolution gain lost by that transport.
 
 \begin{theorem}[Transport and covariance identities]\label{thm:population}
 For any integrable score contrast $H$,
@@ -55,8 +73,8 @@ Consequently, if the gain vector is a function of $c$ alone, then $\Delta R_c=0$
 \end{theorem}
 
 Equation~\eqref{eq:cov-id} is the operational meaning of WAGER: the new model receives
-alignment credit only to the extent that its probability change aligns more strongly
-with the label of the correct instance within the same prior cell. Cell-constant score
+resolution credit only to the extent that its probability change aligns more strongly
+with the label of the correct instance within the same cell. Cell-constant score
 improvements, including improved fitting of the cell's label histogram, remain in
 $\Delta P$. The result does not assert that a nonzero covariance reflects causal or
 compositional understanding; unrecorded within-cell shortcuts can also contribute, so
@@ -93,17 +111,17 @@ For $\psi(q)=\lVert q\rVert_2^2$, $\Delta g_y(x)=2\Delta q_y(x)$ and Eq.~\eqref{
 \end{equation}
 \end{corollary}
 
-Eq.~\eqref{eq:log-cov-id} gives the log-score check of Section~\ref{sec:sggaudit} the same exact covariance meaning that Eq.~\eqref{eq:cov-id} gives the quadratic score: instance alignment under the log score is the within-cell covariance between the log-likelihood-ratio contrast of the two models and the observed label indicator, not merely "a sensitivity analysis." Any other Bregman score -- the spherical or power-family scores catalogued by \citet{gneiting2007proper}, for instance -- inherits an identity of the same form through its own $\psi$, so Theorem~\ref{thm:bregman} fixes the scope of the estimator's scoring-rule dependence once, rather than leaving each alternative score to be checked separately. The implemented log score floors each probability at $\epsilon=10^{-6}$ to avoid $-\infty$ on an unseen label; Eq.~\eqref{eq:log-cov-id} is exact for the unfloored $\log q_y$, and the floored version used throughout is a sensitivity check on that exact identity rather than a literal instance of it, negligibly different whenever no relevant probability is within $\epsilon$ of zero.
+Eq.~\eqref{eq:log-cov-id} gives the log-score check of Section~\ref{sec:sggaudit} the same exact covariance meaning that Eq.~\eqref{eq:cov-id} gives the quadratic score: within-group resolution under the log score is the within-cell covariance between the log-likelihood-ratio contrast of the two models and the observed label indicator, not merely "a sensitivity analysis." Any other Bregman score -- the spherical or power-family scores catalogued by \citet{gneiting2007proper}, for instance -- inherits an identity of the same form through its own $\psi$, so Theorem~\ref{thm:bregman} fixes the scope of the estimator's scoring-rule dependence once, rather than leaving each alternative score to be checked separately. The implemented log score floors each probability at $\epsilon=10^{-6}$ to avoid $-\infty$ on an unseen label; Eq.~\eqref{eq:log-cov-id} is exact for the unfloored $\log q_y$, and the floored version used throughout is a sensitivity check on that exact identity rather than a literal instance of it, negligibly different whenever no relevant probability is within $\epsilon$ of zero.
 
-\subsection{Coarsening the audit cell}\label{sec:coarsening}
+\subsection{Coarsening the cell}\label{sec:coarsening}
 
-Section~\ref{sec:ablations} reports that replacing the class-pair cell with a coarser
-subject-only cell changes the estimated alignment gain. The following result gives that
+Appendix~\ref{sec:ablations} reports that replacing the class-pair cell with a coarser
+subject-only cell changes the estimated resolution gain. The following result gives that
 sensitivity an exact population-level mechanism rather than treating it as an empirical
 curiosity.
 
 \begin{proposition}[Coarsening decomposition]\label{prop:coarsen}
-Let $\bar\phi=g(\phi)$ be any coarsening of the audit feature, so that each cell
+Let $\bar\phi=g(\phi)$ be any coarsening of the grouping variable, so that each cell
 $\bar c$ of $\bar\phi$ is a union of cells of $\phi$. Then
 \begin{equation}
 \Delta R_{\bar c}
@@ -114,19 +132,19 @@ $\bar c$ of $\bar\phi$ is a union of cells of $\phi$. Then
 \end{equation}
 \end{proposition}
 
-The first term is the coarse cell's share of the fine-grained alignment gain the paper
+The first term is the coarse cell's share of the fine-grained resolution gain the paper
 already reports; it is the quantity a reader would expect a coarser audit to recover on
 average. The second term is new: it is a between-cell covariance, taken over the finer
 cells nested inside $\bar c$, between each fine cell's typical gain at label $y$ and its
 label-$y$ frequency. It is generally not sign definite, so coarsening $\phi$ can inflate
-or deflate the credited alignment gain relative to the finer audit, and Table
+or deflate the credited resolution gain relative to the finer audit, and Table
 \ref{tab:sensitivity} shows the empirically inflating case. The second term vanishes
 exactly when the quantities it correlates do not vary across the fine cells nested in
 $\bar c$ -- that is, when $\mathbb E[H_X(y)\mid C]$ or $\Pr(Y=y\mid C)$ is constant
 within each coarse cell. Proposition~\ref{prop:coarsen} thereby formalizes why the
-finest defensible audit feature is the conservative default: relative to the finer
+finest defensible grouping variable is the conservative default: relative to the finer
 audit, coarsening changes the estimate only by adding cross-cell prior structure into
-$\Delta R$, while the finer partition's alignment gain is preserved on average through
+$\Delta R$, while the finer partition's resolution gain is preserved on average through
 the first term. The proof is a per-label application of the
 law of total covariance, summed over $y$ (Appendix~\ref{app:proofs}).
 
@@ -243,14 +261,14 @@ cell-level aggregates the crude form reads directly. Even in its loose,
 data-free form, the bound gives a falsifiable prediction Proposition~\ref{prop:coarsen}
 alone does not: an unrecorded confounder would have to act with an implausibly strong,
 simultaneous effect on both channels to explain away a reported $\widehat{\Delta R}$ of
-the size seen in Section~\ref{sec:results}.
+the size seen in Appendix~\ref{sec:results}.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig2_pair_mechanism.png}
 \caption{\textbf{The antisymmetric pair kernel.} For two examples in the same prior
 cell, WAGER subtracts the score under crossed labels from the score under the observed
-assignment. Cell membership and label counts are unchanged; only instance alignment is
+assignment. Cell membership and label counts are unchanged; only within-group resolution is
 removed.}
 \label{fig:pair}
 \end{figure*}
@@ -291,9 +309,9 @@ The dataset-level quantities weight cells by their number of identified examples
 $\widehat{\Delta Z}=N_*^{-1}\sum_{c:n_c\ge2}n_c\widehat{\Delta Z}_c$ for
 $Z\in\{T,P,R\}$. Singleton cells cannot identify a within-cell counterfactual; WAGER
 excludes and reports them instead of inventing a smoothed estimate. If
-$\widehat{\Delta T}>0$, the descriptive alignment share is
+$\widehat{\Delta T}>0$, the descriptive resolution share is
 $\widehat\rho=\widehat{\Delta R}/\widehat{\Delta T}$. It may exceed one when
-instance alignment improves while prior fitting deteriorates, and it is undefined for a
+within-group resolution improves while prior fitting deteriorates, and it is undefined for a
 nonpositive total gain. We therefore report $\widehat{\Delta R}$ as the primary result,
 not a thresholded ratio.
 
@@ -331,7 +349,7 @@ Eq.~\eqref{eq:linear} and $\hat R_i=H_i(y_i)-\hat P_i$,
 \end{equation}
 Consequently the in-sample plug-in's dataset-level statistic obeys
 $\widetilde{\Delta R}=N_*^{-1}\sum_{c:n_c\ge2}(n_c-1)\widehat{\Delta R}_c$, a
-multiplicative shrinkage of every cell's leave-one-out alignment gain by the factor
+multiplicative shrinkage of every cell's leave-one-out resolution gain by the factor
 $(n_c-1)/n_c$.
 \end{proposition}
 
@@ -383,7 +401,7 @@ stated as $o_p(N_*^{-1/2})$ but not, until now, given a limit theorem. The follo
 result supplies one, under regularity conditions that hold whenever the score is bounded
 and clusters do not grow without bound relative to the sample.
 
-\begin{theorem}[Asymptotic normality of the alignment-gain estimator]\label{thm:clt}
+\begin{theorem}[Asymptotic normality of the resolution-gain estimator]\label{thm:clt}
 Suppose (i) $H_x(y)\in[-M,M]$ for all $x,y$; (ii) examples are partitioned into clusters
 $g=1,\dots,G$ (e.g.\ images) that are mutually independent, with cluster sizes having a
 finite third moment and $\max_g|g|=o(\sqrt{G})$; (iii) the identified fraction
@@ -459,7 +477,7 @@ alongside the two-way split that DM/GW do not provide.
 \begin{algorithm}[t]
 \caption{WAGER gain decomposition}\label{alg:wager}
 \begin{algorithmic}[1]
-\Require frozen $q_1,q_0$; labels $y$; prior cells $\phi$; proper score $S$
+\Require frozen $q_1,q_0$; labels $y$; cells $\phi$; proper score $S$
 \Ensure $\widehat{\Delta T},\widehat{\Delta P},\widehat{\Delta R}$ and uncertainty
 \State $H_i(k)\gets S(q_{1i},k)-S(q_{0i},k)$ for all $i,k$
 \For{each cell $c$ with $n_c\ge2$}

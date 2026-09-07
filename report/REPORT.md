@@ -407,3 +407,154 @@ benchmarked against the literature it re-implements, the benchmarks-should-archi
 probabilities recommendation underestimating real adoption barriers, the paper's length
 and CV-heavy proportion being unusual for JSPI's typical submission -- tracked but not
 all yet acted on; see the synthesis for the full editorial decision and roadmap.
+
+---
+
+## Addendum: fifth revision (2026-09-07), after the JSPI rejection
+
+*Journal of Statistical Planning and Inference* rejected Ms. Ref. No. JSPI-D-26-00452R1
+outright. The editors' letter cited insufficient substance and interest; the single
+referee report was entirely about presentation, and is worth quoting because it drove
+this whole pass:
+
+> The article needs a simple and precise description of what are its main contributions.
+> At present, it is not describing anything in simple terms. There is a lot of unexplained
+> words and terminology that are making things obscure. [...] The Introduction itself is
+> so hard for me to follow and I can barely make sense of what is going on. I think the
+> article had something interesting to contribute, but I am not willing to recommend a
+> resubmission. I would encourage the author to write technically and in simple
+> statistical terms what the article is planning to contribute.
+
+Notably, the referee credited the work with "something interesting to contribute" and
+still declined to recommend resubmission, on legibility alone. The prior four revisions
+had each added material — four theorems, a third domain, a sensitivity analysis — in
+response to desk rejections for insufficient novelty. That strategy had made the paper
+harder to read at exactly the rate it made it more substantial. This revision reverses
+the direction: nothing was added to the theory, and the paper got shorter where a reader
+first meets it.
+
+### What was rewritten
+
+**Title.** ``WAGER: Within-cell Antisymmetric Gain Evaluation of Resolution'' —
+four pieces of coined vocabulary before the colon has even done its work — becomes
+*An Exact Decomposition of Paired Score Differences: Separating Prior Fit from Within-Group
+Resolution*. The acronym survives as the estimator's short name inside the paper and as
+the repository name, but no longer greets the reader.
+
+**Abstract.** Rewritten from 335 to ~265 words, opening on the concrete situation ("two
+probabilistic classifiers are compared on a test set and the newer one scores higher")
+rather than on an attribution question posed in the abstract's own terminology. The
+construction is now stated in one sentence of plain English before any of its properties
+are claimed.
+
+**Introduction.** Rewritten end to end. It now opens on a worked situation from a real
+benchmark — given (`man`, `surfboard`) the relation is usually `riding`, so two models
+observing the object classes can differ in score for two quite different reasons — states
+the identity in words before any notation, and says explicitly, in standard terms, that
+the remainder is the resolution term of the Murphy/DeGroot--Fienberg/Bröcker
+decomposition applied to a model pair. The nine-item contribution list is now four items,
+each one sentence of plain statistics. Two new subsections were added: a
+**terminology table** mapping every term the paper coins to its standard statistical
+counterpart (grouping variable/stratifying variable, cell/stratum, transport/within-block
+relabelling, resolution gain/resolution difference), and a **scope** subsection stating
+the three interpretation limits before any result appears rather than after all of them.
+
+**New Section 2: a worked example.** Four data points, one cell, two labels, all
+arithmetic in eighths. Two candidate replacement models — one that moves every case to
+the cell's label frequencies, one that moves each case towards its own correct label by
+the same amount — exhibit, in numbers a reader can check by hand, every property the rest
+of the paper proves in general:
+
+| | total | prior fit | resolution |
+|---|---:|---:|---:|
+| A (pure prior refit) | 1/8 | 1/8 | **0** |
+| B (case-specific shift) | 3/8 | −1/8 | **1/2** |
+
+Model A's exact zero is Theorem 1. Model B's total *understating* its resolution gain is
+the paper's thesis in miniature. And the in-sample covariance plug-in for B returns 3/8,
+not 1/2, which is exactly the `(n_c-1)/n_c = 3/4` factor of Proposition 1 — so the
+attenuation result, previously an appendix-flavoured technicality, is now something the
+reader has already seen happen.
+`tests/test_antisymmetric.py::test_worked_example_of_the_paper_reproduces_every_printed_value`
+checks all of it against the estimator (suite now 17/17).
+
+**Terminology, throughout.** The paper's coinages were replaced with standard vocabulary
+wherever one exists: *audit feature*/*prior feature* → **grouping variable**; *audit
+cell*/*prior cell* → **cell**; *prior-transported gain* → **prior-fit gain**;
+*instance-alignment gain*/*antisymmetric residual* → **within-group resolution gain**
+(``antisymmetric'' is retained only where the kernel's antisymmetry is actually used).
+This is not cosmetic: *resolution* is the term the statistical literature already uses for
+this exact quantity, so the paper now names its own contribution in the words a reader of
+that literature would reach for. One collateral collision was caught and fixed — the
+randomization test's `p`-value granularity had been described as a "resolution floor",
+which now means something else in this paper.
+
+**Restructure.** Sections were reordered around the plain statement and one flagship
+application. The audit of two released MOTIFS/MOTIFS-TDE checkpoints stays in the main
+text: the models are not ours, the claimed improvement is one the field already reports,
+and it is the paper's strongest evidence of usefulness. The other three empirical studies
+— our own VG predictors, the frozen-CLIP variant, and long-tailed image and text
+classification — moved wholesale to Appendix E, with a one-page main-text summary of what
+each adds. The calibration-matching protocol moved *into* the main text, since it is a
+property of the estimator rather than of any application. All theory stayed in the main
+text: the referee's objection was legibility, not depth, and the editors' substance
+objection is not answered by hiding the substance.
+
+Result: main text 26 pages (was ~36 by the same count), total 52 with references and five
+appendices. Method section 9 pages, experiments 4, discussion 3.
+
+**Front matter.** Retargeted to be venue-neutral pending a venue decision:
+`\journal{}` removed, cover letter rewritten as a fresh-submission letter that leads with
+the problem in one paragraph and the contribution in two, highlights and title page
+retitled. `revision_notes.tex`/`.pdf` were deleted — they answered a JSPI revision round
+that has now closed, and a fresh submission does not carry them.
+
+### Defects found and fixed in passing
+
+- **`Appendix Appendix A`.** `elsarticle` expands `\thesection` to "Appendix~A" inside the
+  appendix, so every `Appendix~\ref{...}` in the prose had been rendering as "Appendix
+  Appendix A" — all 48 such references in the current draft, and the defect has been
+  present since the paper was first typeset in this class without being noticed. Fixed by
+  numbering the appendices with bare letters and letting the prose supply the word.
+- Four cross-references broke in the restructure (`sec:related-longtail` had been deleted
+  with the old related-work section; `Section~\ref{}` prefixes pointing at what are now
+  appendices). All resolved; the build has no undefined references and one 1.9pt overfull
+  box in float output.
+- `experiments/verify_manuscript_numbers.py` asserts each literal against a *named*
+  manuscript file, so moving four studies to an appendix invalidated 52 of its 83 entries'
+  file fields. Retargeted; all 83 numbers still trace to committed results. No reported
+  value changed in this revision — this was a presentation pass, and the verifier is what
+  proves it.
+
+### Venue
+
+Elsevier offered five transfer suggestions against the JSPI submission. Assessed against
+what the paper actually is — an estimand for a *paired score differential* with exact
+finite-sample and asymptotic inference — they rank as follows.
+
+1. **Econometrics and Statistics** (IF 2.5, CiteScore 4.0) — the recommendation. The
+   paper's inferential target is the comparison of two forecasters, and
+   Corollary~\ref{cor:dm} establishes that its undecomposed statistic *is* a clustered
+   Diebold--Mariano/Giacomini--White test. Comparative predictive ability is native
+   territory for this journal, and its Statistics section takes methodology with
+   substantial data applications, so the benchmark studies are an asset rather than a
+   mismatch. The paper would need its forecast-evaluation framing moved forward, which
+   the restructured related-work section (Section 3.2) has already done.
+2. **Journal of Computational Mathematics and Data Science** (CiteScore 5.3, no IF) — a
+   plausible fallback: computational methodology with data-science applications, and the
+   $O(NK)$ algorithm plus released code fit. Low visibility among statisticians is the
+   cost.
+3. **Computational Statistics & Data Analysis** — **do not transfer.** CSDA desk-rejected
+   this manuscript in August 2026 (see the fourth-revision addendum above); the
+   suggestion engine has no way to know that. Re-entering the same editorial office with
+   a paper it already declined wastes a submission cycle.
+4. **Results in Applied Mathematics**, **Journal of Computational and Applied
+   Mathematics** — poor fit. Both are applied/numerical mathematics venues; nothing in
+   the paper is a numerical-analysis contribution, and neither readership works on
+   forecast evaluation or scoring rules.
+
+A transfer would carry the *old* title and files, so if the transfer route is taken the
+restructured manuscript in this commit should be uploaded in place of the transferred
+version before the submission is completed. The front matter is deliberately left
+venue-neutral (`\journal{}` removed, cover letter addressed to `[Journal name]`) so that
+retargeting is a one-line change.

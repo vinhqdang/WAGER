@@ -1,4 +1,10 @@
+\makeatletter
 \appendix
+% elsarticle makes \thesection expand to "Appendix~A", so \ref{} inside prose that
+% already says "Appendix" renders "Appendix Appendix A". Number the appendices with
+% bare letters and let the prose supply the word.
+\gdef\thesection{\@Alph\c@section}
+\makeatother
 
 \section{Proofs}\label{app:proofs}
 
@@ -245,7 +251,7 @@ Carlo correction includes the observed assignment and prevents zero $p$-values.
 The NumPy implementation is in \texttt{wager/antisymmetric.py}. The primary routine
 \texttt{decompose\_gain} validates probability matrices, forms score contrasts, excludes
 singleton cells, computes all three components, verifies the identity numerically, and
-returns per-instance transported/alignment values plus intervals. The Visual Genome
+returns per-instance transported/resolution values plus intervals. The Visual Genome
 driver is \texttt{experiments/\allowbreak run\_sgg\_wager.py}; controlled validation and sensitivity
 checks are in \texttt{experiments/\allowbreak antisymmetric\_simulation.py} and
 \texttt{experiments/\allowbreak antisymmetric\_ablations.py}. All random seeds are fixed. Unit tests
@@ -255,11 +261,11 @@ direct numerical checks of Propositions~\ref{prop:attenuate} and~\ref{prop:coars
 (the latter against an explicit discrete population with exact expectations, independent
 of the estimator's own code path), Corollary~\ref{cor:bregman}'s log-score covariance
 identity, Corollary~\ref{cor:dm}'s equivalence to the (unclustered) Diebold--Mariano
-statistic at a trivial audit feature, and Proposition~\ref{prop:sensitivity}'s bound
+statistic at a trivial grouping variable, and Proposition~\ref{prop:sensitivity}'s bound
 ordering (exact bias $\le$ tight, per-cell bound $\le$ crude, data-free bound) on a second
 explicit discrete population with a known omitted confounder. The covariance-identity
 cross-check quoted in
-Section~\ref{sec:cifarlt} is reproduced by
+Appendix~\ref{app:lt} is reproduced by
 \texttt{experiments/\allowbreak cifar\_covariance\_check.py}; the calibration-matched
 protocol and the prior-matching experiment are
 \texttt{experiments/\allowbreak cifar\_recalibration\_control.py} and
@@ -271,7 +277,7 @@ re-running the decomposition; \texttt{experiments/\allowbreak sensitivity\_analy
 computes Proposition~\ref{prop:sensitivity}'s tighter, per-cell form from per-instance
 arrays (Section~\ref{app:compute}).
 
-\paragraph{Full-data VG predictors (Sections~\ref{sec:results}--\ref{sec:ablations}).}
+\paragraph{Full-data VG predictors (Appendices~\ref{app:vgmain}--\ref{sec:ablations}).}
 FREQ uses add-one smoothing over the $50$ predicates within each training class pair,
 backing off to the subject-marginal and then the global predicate histogram for pairs
 unseen in training. The MLPs consume fixed random class embeddings
@@ -280,7 +286,7 @@ standardized features and train with AdamW (learning rate $10^{-3}$, weight deca
 $10^{-5}$, batch size $4096$): MLP-CLASS with hidden sizes $(256,128)$ for $12$ epochs,
 MLP-SPATIAL with $(256,128)$ for $15$ epochs, and MLP-SPATIAL+ with $(512,256,128)$ for
 $20$ epochs -- the ``+'' variant differs in both width and schedule, as noted in
-Section~\ref{sec:data}.
+Appendix~\ref{app:vgmain}.
 
 \paragraph{Data availability.} The repository ships the estimator, every driver script,
 and the cached results files that every printed number traces to
@@ -290,14 +296,14 @@ consume (\texttt{sgg\_dists.npz}, \texttt{vg\_visual\_models.npz},
 with fixed seeds and are archived alongside the code release, so exact reproduction
 does not require retraining.
 
-\subsection{Compute environment for Sections~\ref{sec:vgvisual}--\ref{sec:cifarlt}}\label{app:compute}
+\subsection{Compute environment for Appendices~\ref{app:vgvisual}--\ref{app:lt}}\label{app:compute}
 
 Model training and feature extraction for both new experiments ran on a single NVIDIA
 T4 (15\,GB) GPU. The WAGER decomposition itself is pure NumPy and requires no
 accelerator: it consumes the resulting cached probability arrays, as in
-Section~\ref{sec:data}. All Python code runs under a pinned environment (Python 3.13).
+Appendix~\ref{app:vgmain}. All Python code runs under a pinned environment (Python 3.13).
 
-\paragraph{Matched-subsample models (Section~\ref{sec:vgvisual}).} The three compared
+\paragraph{Matched-subsample models (Appendix~\ref{app:vgvisual}).} The three compared
 predictors share a fixed, seeded ($\text{seed}=0$) subsample of $100{,}000$ of the
 $532{,}987$ training relations, drawn without replacement uniformly at the relation
 level (not the image level); the full $229{,}605$-relation test split is always used for
@@ -321,7 +327,7 @@ feature. Only the images referenced by those relations are retrieved, individual
 than through the two bulk archives; of the $71{,}990$ required, three were unavailable
 upstream and fall back to a blank crop.
 
-\paragraph{ResNet-32 triple (Section~\ref{sec:cifarlt}).} CIFAR-100-LT uses the standard
+\paragraph{ResNet-32 triple (Appendix~\ref{app:lt}).} CIFAR-100-LT uses the standard
 exponential-profile construction of \citet{cui2019classbalanced} at imbalance ratio
 $100$: class $c$ (zero-indexed, $0,\ldots,99$) keeps
 $n_c=\lfloor 500\cdot\mu^{c}\rfloor$ training images, where

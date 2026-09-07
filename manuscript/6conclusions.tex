@@ -1,71 +1,67 @@
 \section{Conclusion}\label{sec:conclusion}
 
-We introduced WAGER, Within-cell Antisymmetric Gain Evaluation of Resolution, a direct
-algorithm for attributing the score improvement between two frozen probabilistic
-classifiers. By crossing labels among examples with the same prior feature, WAGER
-constructs the prior-only counterfactual from the evaluated data themselves and obtains
-an exact identity between total, prior-transported, and instance-alignment gains. The
-residual is an interpretable U-statistic that, under the quadratic score, equals a
-conditional covariance gain, and the same covariance identity holds for the entire
-Bregman-score family (Theorem~\ref{thm:bregman}) rather than the quadratic score alone.
-The estimator is computable in $O(NK)$ time, its dataset-level statistic is
-asymptotically normal around the identified-subpopulation estimand under conditions that
-hold whenever the score is bounded and no single cluster dominates the sample
-(Theorem~\ref{thm:clt}), and it reduces, at a trivial audit feature, to a clustered
-Diebold--Mariano/Giacomini--White test (Corollary~\ref{cor:dm}) -- so every real-data
-comparison in this paper already reports what that classical test would, plus the split
-it does not provide. A Cauchy--Schwarz sensitivity bound (Proposition~\ref{prop:sensitivity})
-turns the paper's central qualitative caveat -- that an unrecorded confounder can
-masquerade as alignment -- into a numeric limit on how far the reported residual could be
-from a fully adjusted audit, elicited from a single correlation parameter rather than a
-model of the confounder itself. Controlled experiments support null calibration, signal
-recovery, and the coverage of the reported intervals, and establish what the two
-channels do and do not separate: prior-only improvements stay out of the alignment
-channel, unrecorded within-cell shortcuts enter it, and a monotone recalibration moves
-score between the channels, which is why calibration-matched auditing is part of the
-protocol rather than an afterthought.
+When two probabilistic classifiers are compared on a benchmark whose labels depend partly
+on a feature both models observe, the reported score difference answers a question nobody
+asked. It sums a closer fit to the label frequencies within groups and a closer match
+between predictions and the individual cases they were made for, and those are different
+achievements with different consequences: the first is real skill that a lookup table also
+supplies and that a shift in label frequencies removes, the second is not.
 
-Pointed at two released scene-graph checkpoints rather than at predictors of our own,
-the method returns a precise account of a widely used causal debiasing technique: its
+This paper separates them exactly. Scoring each model's prediction for one test case
+against the label of a different case in the same group leaves the group and its label
+frequencies intact while breaking the correspondence between prediction and case, and the
+gain that survives that relabelling is the prior-fit component. The identity
+$\Delta T=\Delta P+\Delta R$ then holds in the observed sample, for any score, with no
+fitted reference model, no held-out fold and no tuning parameter, at a cost of $O(NK)$.
+The remainder is a U-statistic of order two whose value is a within-group covariance
+between the two models' probability change and the label indicator --- for every Bregman
+score, so the quadratic and logarithmic cases are one result rather than two
+(Theorem~\ref{thm:bregman}) --- which identifies it as the resolution term of the
+classical proper-score decomposition, evaluated for a pair of forecasters instead of one.
+
+What makes it usable rather than merely exact is that the pairwise contrast comes with its
+own inference. The influence function of the difference gives cluster-robust intervals in
+one pass; the estimator is asymptotically normal with a consistent sandwich variance
+(Theorem~\ref{thm:clt}); and at a trivial grouping variable the undecomposed statistic is
+a clustered Diebold--Mariano test (Corollary~\ref{cor:dm}), so every comparison reported
+here already contains what that classical test would say, plus the split it does not
+provide. Three exact statements settle design choices that would otherwise be judgment
+calls: using a group's own label frequencies as the counterfactual attenuates the estimate
+by precisely $(n_c-1)/n_c$, which is why no sample splitting is needed
+(Proposition~\ref{prop:attenuate}); merging groups moves the estimand by an explicit
+between-group covariance of either sign, so a coarser grouping cannot be assumed harmless
+(Proposition~\ref{prop:coarsen}); and a Cauchy--Schwarz bound limits how far an unrecorded
+grouping variable could move the result, from one elicited correlation
+(Proposition~\ref{prop:sensitivity}).
+
+The controlled experiments are as informative about the limits as about the capability.
+Prior-only improvements stay out of the resolution component, and injected within-group
+signal is recovered monotonically with intervals that cover at $94.0\%$ against a nominal
+$95\%$ in the clustered, small-cell regime that stresses them hardest. But unrecorded
+within-group signal is credited to resolution, shortcut or not, and a monotone
+recalibration moves score between the two components while adding no information --- which
+is why calibration matching is part of the procedure and not a caveat attached to it.
+
+Applied to two released scene-graph checkpoints, evaluated with their authors' own code,
+the decomposition gives a precise account of a widely cited debiasing method: its
 ten-point mean-recall improvement is, once calibration is matched, overwhelmingly
-prior-transported under either the quadratic or the log score, with an
-instance-alignment remainder the two scores disagree on -- exactly zero under one,
-small but significant under the other -- and in both readings at least an order of
-magnitude smaller than the prior-channel shift. That prior-channel dominance is what
-the method's own construction subtracts, so the finding characterizes it rather than
-indicting it -- and it shows that a metric the field reads as evidence about rare
-predicates can move ten points while instance-level evidence changes by at most a small
-fraction of that amount, possibly none.
+prior-fit under either of two proper scores, with a resolution remainder the two scores
+disagree about --- indistinguishable from zero under one, small but significant under the
+other --- and in both readings at least an order of magnitude smaller than the prior-side
+shift. Since the method's own construction subtracts a context-only prediction, this
+characterizes what it does rather than indicting it. The consequence for evaluation is the
+paper's thesis in a published setting: a metric the field reads as evidence about rare
+predicates can move ten points while case-level evidence changes by at most a small
+fraction of that, possibly none. Three further studies, on predictors whose information
+content is controlled by construction and in two other data modalities
+(Appendix~\ref{app:studies}), show the same estimator returning sensible attributions
+without modification, including a case in which a model that loses on every aggregate
+measure is shown to resolve individual cases significantly better than the model it
+appears to lose to.
 
-On our own Visual Genome predictors the method assigns a class-only improvement entirely
-to the prior channel while identifying the additional alignment that spatial geometry
-supplies. Substituting a frozen CLIP encoder for that geometry produces the sharpest
-illustration of why the two channels are worth separating: the resulting model scores
-and ranks worse by every aggregate measure, yet is shown to align with individual
-instances significantly better than the model it appears to lose to, its whole deficit
-lying in the annotation prior and its advantage surviving both post-hoc prior correction
-and calibration matching. Carried over without modification to long-tailed
-classification, the estimator exposes the composition of two re-weighting schedules'
-gains, and the calibration-matched reading overturns what the raw scores suggest about
-each: the schedule whose aggregate barely moves has genuinely lost within-class
-discrimination, while the one that improves has bought almost purely instance alignment
-rather than the prior refitting its raw decomposition implies. Neither an aggregate
-score nor an accuracy difference can make that separation.
-
-A third domain, long-tailed text classification on 20 Newsgroups
-(Section~\ref{sec:textlt}), carries no spatial or class-frequency prior at all, and
---- from a single trained pair per schedule, not yet the calibration-matched,
-multi-seed protocol given to CIFAR-100-LT --- points the same way: on this task it is
-the class-balanced schedule whose alignment estimate is clearly positive, and the
-deferred schedule -- the one that carried the alignment gain on CIFAR-100-LT -- whose
-comparably large total gain is almost entirely prior-transported. Whether this
-composition replicates under that fuller protocol is the natural next check, not a
-claim this single run has already earned; if it does, it would be the estimator's
-sharpest demonstration yet that channel composition is a property of a training recipe
-applied to particular data, not of the recipe's name. The two vision domains
-and the one text domain are audited by the identical unmodified construction, differing
-only in what $\phi$ is declared to be. It is this gain-specific mechanism, together with
-its extension to a general score family, its large-sample justification, its explicit
-sensitivity to what it cannot see, and its exact relation to classical forecast-comparison
-tests, rather than the familiar combination of a frequency baseline with a generic
-significance test, that constitutes the paper's technical contribution.
+The estimator's requirements are its main obstacle to routine use, and they are about
+disclosure rather than difficulty: it needs both models' full probability vectors, and
+benchmarks overwhelmingly archive ranked predictions instead. A leaderboard that stored
+per-example probabilities, and whose maintainers declared the grouping variable rather
+than leaving it to submitting authors, would make this kind of attribution available for
+every pair it ranks.

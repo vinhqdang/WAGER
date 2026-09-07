@@ -2,23 +2,27 @@
 
 \subsection{What the decomposition does and does not establish}
 
-WAGER changes the unit of analysis from a model to a model-pair gain. This matters
-scientifically. A class-only network may be a better prior estimator than FREQ, but that
-fact does not become evidence of instance-specific visual use. Conversely, a model can
-improve visual alignment while losing enough prior score to obscure the improvement in
-its aggregate metric. The signed identity $\Delta T=\Delta P+\Delta R$ exposes both
-cases without a separately fitted reference forecaster.
+The unit of analysis is a model-pair gain rather than a model, and that change is what
+makes the two failure modes visible. A model may be a better estimator of the label
+frequencies within groups without predicting any individual case better, and be credited
+for the first as though it had achieved the second. Conversely, a model may resolve
+individual cases better while losing enough prior fit to hide the improvement in its
+aggregate score --- Appendix~\ref{app:vgvisual} contains a case where the aggregate score
+and the accuracy both point the wrong way. The signed identity
+$\Delta T=\Delta P+\Delta R$ exposes both without a separately fitted reference
+forecaster, and the four-point example of Section~\ref{sec:worked} exhibits both in
+arithmetic.
 
-The interpretation remains conditional on the declared audit feature $\phi$. A positive
+The interpretation remains conditional on the declared grouping variable $\phi$. A positive
 $\Delta R$ means the new model aligns its probability changes with the correct example
 better than the old model among examples sharing $\phi$. It does not prove causal
-inference, compositional understanding, or robustness. Where the rest of this paper
-calls an alignment estimate ``genuine,'' the word distinguishes a real statistical
-effect from a calibration or prior artifact -- it is not a claim that the effect
-reflects reasoning, causal structure, or any compositional property of the model. If an unrecorded shortcut varies
+inference, compositional understanding, or robustness. Where this paper calls a resolution
+estimate ``genuine,'' the word distinguishes a real statistical effect from a calibration
+or prior artifact; it is not a claim about reasoning, causal structure, or any
+compositional property of the model. If an unrecorded shortcut varies
 inside a cell, WAGER will count its predictive use in $\Delta R$; Proposition
 \ref{prop:sensitivity} turns this qualitative caveat into a numeric one, bounding how far
-the reported alignment gain could be from what a fully adjusted audit would find as a
+the reported resolution gain could be from what a fully adjusted audit would find as a
 function of a single, elicitable correlation parameter $\bar\rho$, though
 Table~\ref{tab:sensitivity-numeric} shows that bound is conservative at VG150's label
 cardinality. Applications should
@@ -26,30 +30,30 @@ therefore choose $\phi$ before looking at results, justify it from the benchmark
 generation process, and report finer and coarser alternatives. The observed increase
 under subject-only cells illustrates Proposition~\ref{prop:coarsen}: coarsening adds a
 between-cell covariance term of either sign, so it cannot be assumed to leave the
-estimate unchanged, and only the finest identified partition isolates alignment gain net
+estimate unchanged, and only the finest identified partition isolates resolution gain net
 of every prior regularity expressible in $\phi$. This is why the finest defensible prior
 feature is the conservative primary choice, not merely an empirical convention.
 
 Two further interpretation limits deserve explicit statement. First, $\Delta R$ is not
-invariant to monotone recalibration: because the alignment channel is a covariance
+invariant to monotone recalibration: because the resolution channel is a covariance
 between probability movements and labels, sharpening or softening a fixed model shifts
 score mass between the two channels while adding no information about any individual
-example. Section~\ref{sec:cifarlt} quantifies the effect on real models and adopts the
+example. Appendix~\ref{app:lt} quantifies the effect on real models and adopts the
 corresponding control -- decompose calibration-matched model pairs, with temperatures
 chosen on data disjoint from the audit -- which we recommend whenever the compared
-systems differ visibly in confidence. Second, a prior-transported gain is not evidence
+systems differ visibly in confidence. Second, a prior-fit gain is not evidence
 of anything illegitimate. Fitting the deployment label distribution better is genuine,
 decision-relevant skill whenever that distribution matches the benchmark's; it is
-fragile precisely under label shift, where prior-transported gain can be added or
+fragile precisely under label shift, where prior-fit gain can be added or
 removed post hoc by re-weighting \citep{saerens2002adjusting,lipton2018detecting}, as
-the prior-matching experiment of Section~\ref{sec:vgvisual} demonstrates directly.
+the prior-matching experiment of Appendix~\ref{app:vgvisual} demonstrates directly.
 The decomposition reports where a gain lives; whether the prior channel is worth paying
 for is a property of the deployment, not of the model pair.
 
 ``Choose $\phi$ before looking'' is stated advice, not an enforced mechanism, and the
 analyst-chosen-subgroup problem has structural answers that WAGER should inherit. Our
 recommendation is that the \emph{benchmark}, not the submitting author, declare the
-audit feature -- the annotation prior is a property of the dataset, and
+grouping variable -- the annotation prior is a property of the dataset, and
 maintainer-declared $\phi$ removes the incentive to report only the most favorable of
 several candidates. Where several defensible priors exist, all pre-declared candidates
 should be reported, as our sensitivity tables do; guarantees that hold uniformly over a
@@ -57,7 +61,7 @@ class of groupings are the subject of multicalibration
 \citep{hebert2018multicalibration}, and porting that style of guarantee to pairwise
 gain attribution is a natural extension. To make reports comparable across papers, we
 suggest a fixed reporting block per audited pair: the declared $\phi$ and its
-rationale, the identified coverage, both channels signed with the alignment interval,
+rationale, the identified coverage, both channels signed with the resolution interval,
 the calibration-matched row when the models differ visibly in confidence, and the
 granularity sensitivity rows.
 
@@ -95,7 +99,7 @@ seconds. Nothing about that workflow is specific to scene graph generation, and 
 practical obstacle is neither compute nor complexity but disclosure --- benchmarks
 overwhelmingly collect ranked predictions rather than predictive distributions. A
 benchmark that archived per-example probabilities alongside its leaderboard would make
-this kind of audit routine for every submitted pair. Where several audit features are
+this kind of audit routine for every submitted pair. Where several grouping variables are
 defensible, we would further recommend that the benchmark, rather than the submitting
 author, declare $\phi$, and that all pre-declared candidates be reported.
 
@@ -110,13 +114,13 @@ declared in advance.
 Four aligned arrays are all the algorithm requires -- two models' probability vectors,
 the labels, and the prior-cell identifiers -- and nothing in
 Sections~\ref{sec:setup}--\ref{sec:inference} is specific to relation prediction.
-Section~\ref{sec:cifarlt} puts that generality to the test on long-tailed image
+Appendix~\ref{app:lt} puts that generality to the test on long-tailed image
 classification, where taking the benchmark's coarse superclasses as $\phi$ lets the
 decomposition distinguish a re-weighting schedule whose near-zero aggregate score hides
 two large cancelling channels from one whose genuine improvement is part prior-refitting
-and part rare-class alignment. The claim of breadth thereby acquires empirical content
+and part rare-class resolution. The claim of breadth thereby acquires empirical content
 instead of resting on analogy. That second domain is also where the constraint on $\phi$
-shows its teeth, since the fine class label cannot serve as an audit cell: it would leave
+shows its teeth, since the fine class label cannot serve as an cell: it would leave
 every cell label-homogeneous and drive $\Delta R$ to zero by construction, producing an
 artifact that reads exactly like a null result. Elsewhere the natural choices are easy
 enough to name -- a predeclared question template for VQA, an answer format or prompt

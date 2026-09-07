@@ -32,7 +32,7 @@ Transport each prediction contrast to labels from *other* examples in the same c
 P_c = 1/[n_c(n_c-1)] * sum_{i != j} H_i(y_j).
 ```
 
-The within-cell instance-alignment gain is
+The within-cell instance-resolution gain is
 
 ```text
 R_c = T_c - P_c.
@@ -95,15 +95,15 @@ This buys two exact results the single-model decomposition does not have:
 - **Attenuation.** The naive in-sample plug-in transported score
   `P_tilde_i = mean_j H_i(y_j)` over the whole cell (including `i`) relates to WAGER's
   leave-one-out `P_i` by `P_tilde_i = P_i + R_i / n_c`, so the plug-in's implied
-  alignment `H_i(y_i) - P_tilde_i` is exactly `(n_c - 1)/n_c` times WAGER's `R_i` --
+  resolution `H_i(y_i) - P_tilde_i` is exactly `(n_c - 1)/n_c` times WAGER's `R_i` --
   biased at every finite `n_c`, worst at small cells. This is why the redesign needs no
   projection/evaluation split: leave-one-out transport removes the self-prediction bias
   exactly, at the full sample.
 - **Coarsening.** If `phi_bar` is any coarsening of `phi` (so each `phi_bar`-cell is a
   union of `phi`-cells), then `R_{c_bar} = E[R_C | phi_bar = c_bar] + between-cell
   covariance term`, by the law of total covariance applied per label and summed. The
-  second term is not sign-definite, so coarsening the audit cell is never guaranteed
-  neutral -- only the finest identified partition isolates alignment gain net of every
+  second term is not sign-definite, so coarsening the cell is never guaranteed
+  neutral -- only the finest identified partition isolates resolution gain net of every
   prior regularity expressible in `phi`.
 
 Proofs and unit tests: `manuscript/7appendix.tex` (Appendix A) and
@@ -116,7 +116,7 @@ Proofs and unit tests: `manuscript/7appendix.tex` (Appendix A) and
   cells.
 - `P > 0`: some improvement survives after instance assignments are broken and is
   prior-recoverable.
-- `R/T` is descriptive only when `T > 0`; it may exceed one if alignment improves while
+- `R/T` is descriptive only when `T > 0`; it may exceed one if resolution improves while
   prior fitting worsens.
 - A positive `R` is not automatically causal reasoning. Any unmeasured within-cell
   shortcut can contribute, so `phi` must be justified and stress-tested.
@@ -166,7 +166,7 @@ conservatism:
 where `rho` is the aggregate correlation between the fine-grained gain and label
 frequency across the unobserved `(phi, Z)` partition, `M` bounds the score contrast, and
 `K` is the label count. An analyst who bounds `rho` (a single elicitable correlation, not
-a model of `Z`) gets a numeric limit on the alignment estimate's confounding bias
+a model of `Z`) gets a numeric limit on the resolution estimate's confounding bias
 without observing or modeling the confounder itself.
 
 ## 10. Relation to Diebold-Mariano / Giacomini-White
