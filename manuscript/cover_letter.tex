@@ -25,8 +25,8 @@ To the Editors,\\
 \vspace{1em}
 
 \noindent
-Re: ``An Exact Decomposition of Paired Score Differences: Separating Prior Fit from
-Within-Group Resolution'' --- new submission
+Re: ``An Exact Decomposition of Paired Score Differences by Relabelling Within
+Groups'' --- new submission
 
 \vspace{1em}
 
@@ -50,26 +50,39 @@ probability vector for every test case, each model's score can be recomputed aga
 label, so one can score a case's predictions against a \emph{different} case's label from
 the same group. That relabelling preserves the group and its label frequencies while
 breaking the correspondence between a prediction and the case it was made for. The gain
-that survives is prior fit; the gain that disappears is case-specific. The resulting
-identity is exact in the observed sample, for any score, with no held-out fold and no
-tuning parameter, at a cost of $O(NK)$ in $N$ cases and $K$ labels.
+that survives is the \emph{transported gain}; the gain that disappears is a
+\emph{within-group covariance gain}. The resulting identity is exact in the observed
+sample, for any score, with no held-out fold and no tuning parameter, at a cost of
+$O(NK)$ in $N$ cases and $K$ labels.
 
 The remainder is a U-statistic of order two, and it is not a new quantity: it equals the
 within-group covariance between the two models' predicted-probability difference and the
-label indicator, which identifies it as the resolution term of the classical
-reliability--resolution decomposition of a proper score (Murphy 1973; DeGroot \& Fienberg
-1983; Br\"ocker 2009), evaluated for a \emph{pair} of forecasters instead of one. What
-the classical decomposition does not supply is inference for the pairwise contrast, and
-that is where the paper's technical content sits. Specifically, we prove: the covariance
+label indicator, which is the object isolated by Yates's (1982) covariance decomposition
+of a proper score, here evaluated for a \emph{pair} of forecasters instead of one. One
+correction relative to earlier versions of this work bears directly on how the
+contribution is framed, so I state it rather than leave it to be found: this remainder is
+\emph{not} the resolution term of the classical reliability--resolution partition, as
+earlier drafts claimed. Classical resolution depends on a forecast only through the
+partition its level sets generate and is therefore invariant to any monotone rescaling of
+forecast values; a covariance between those values is not. The two coincide only when both
+models are calibrated within groups. The paper now states that relation precisely and
+adopts confidence matching as part of the procedure rather than as a caveat. What the
+classical decomposition does not supply in either reading is inference for the pairwise
+contrast, and that is where the paper's technical content sits. Specifically, we prove: the covariance
 identity for the whole Bregman-score family, so the quadratic and logarithmic scores are
 named cases of one theorem; asymptotic normality of the dataset-level estimator with a
 consistent cluster-robust sandwich variance; an exact reduction, at a trivial grouping
 variable, to a clustered Diebold--Mariano/Giacomini--White test, which locates the
 estimator precisely relative to comparative forecast evaluation; an exact $(n_c-1)/n_c$
 attenuation of the in-sample plug-in, which is why no sample splitting is needed; an
-explicit between-group covariance term for what happens when groups are merged; and a
+explicit between-group covariance term for what happens when groups are merged; an exact
+composition of the transported component into a mean-forecast-fit term minus a dispersion
+term, which is what shows that component is not a measure of prior fit; and a
 Cauchy--Schwarz sensitivity bound, in the tradition of Rosenbaum and Cinelli \& Hazlett,
-for how far an unrecorded grouping variable could move the result.
+for how far an unrecorded grouping variable could move the result. On that last point the
+paper reports the bound against its own estimates rather than only in the abstract: for
+one of the appendix studies an unrecorded covariate with an aggregate correlation of
+$0.061$ would account for the whole reported gain, and I say so.
 
 \textbf{Validation, and one application in detail.} Because the object is a measuring
 instrument, the paper validates it before using it: signal recovery, null calibration,
@@ -83,16 +96,17 @@ demonstration that it works.
 The main application audits two publicly released scene-graph checkpoints of a widely
 cited debiasing method, evaluated in both modes with the original authors' code, so the
 models are not ours and the claimed improvement is one the field already reports. Once
-confidence is matched on held-out images, the proper-score difference is overwhelmingly
-prior fit under both the quadratic and the logarithmic score, although the two scores
-disagree on whether any resolution remainder survives ($-0.00006$, 95\% CI
-$[-0.00120,+0.00109]$ under the quadratic score; $+0.04396$, CI $[+0.04079,+0.04714]$
-under the log score) --- in either reading at least an order of magnitude smaller than
-the prior-side shift. A method therefore buys ten points of mean recall while changing
-within-group resolution by at most a small fraction of that, possibly none. Since its
-construction subtracts a context-only prediction, this characterises the method rather
-than indicting it, while showing that a metric read as evidence about rare categories can
-move sharply on evidence that is mostly, and perhaps entirely, of a different kind.
+confidence is matched on held-out images and the audit runs at the object-class-pair
+grouping, the proper-score difference is overwhelmingly transported under both the
+quadratic and the logarithmic score, although the two scores disagree on whether any
+covariance remainder survives ($-0.00006$, 95\% CI $[-0.00120,+0.00109]$ under the
+quadratic score; $+0.04396$, CI $[+0.04079,+0.04714]$ under the log score) --- in either
+reading at least an order of magnitude smaller than the transported shift. That
+configuration qualifier appears in the paper wherever the claim does, because two of the
+five configurations reported for this same pair do not support it. Since the method's
+construction subtracts a context-only prediction, the finding characterises it rather than
+indicting it, and the paper is explicit that the ten-point mean-recall movement and the
+proper-score decomposition are in different units with no bridge supplied between them.
 
 Three further studies --- our own relation predictors, a frozen-CLIP variant of them, and
 long-tailed classification in images and in text --- are reported in an appendix, and
@@ -104,8 +118,12 @@ finite-sample and asymptotic inference theory. The benchmarks are where the inst
 exercised and validated, not the claim: no state-of-the-art result is asserted, and none
 is needed for the argument. I have written the paper so that the contribution is legible
 before any notation appears --- a plain statement of the identity in the introduction, a
-four-point worked example that exhibits every property proved later, and a table fixing
-the paper's vocabulary against its standard statistical counterparts.
+four-point worked example that exhibits the main properties proved later, and a table
+fixing the paper's vocabulary against its standard statistical counterparts. The same
+four points then exhibit a model-selection decision the decomposition gets right and the
+aggregate score gets wrong: a candidate whose entire gain is transported becomes
+\emph{worse} than the model it replaces under a shift in label frequencies, while one
+whose gain is covariance is untouched.
 
 All code, cached model outputs and scripts needed to reproduce every number, table and
 figure are publicly available at \url{https://github.com/vinhqdang/WAGER}, including a

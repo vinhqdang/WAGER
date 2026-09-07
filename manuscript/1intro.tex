@@ -46,15 +46,17 @@ advantage survives that relabelling is an advantage the new model holds over the
 as a whole, not over any particular case in it; whatever advantage disappears was
 case-specific. Averaging within groups turns this into an identity,
 \[
-\text{total score gain} \;=\; \underbrace{\text{prior-fit gain}}_{\text{survives relabelling}}
-\;+\; \underbrace{\text{within-group resolution gain}}_{\text{destroyed by relabelling}},
+\text{total score gain} \;=\; \underbrace{\text{transported gain}}_{\text{survives relabelling}}
+\;+\; \underbrace{\text{within-group covariance gain}}_{\text{destroyed by relabelling}},
 \]
 which holds exactly in the observed sample, for any score, with no approximation and no
 asymptotics. Figure~\ref{fig:concept} shows the relabelling on two real Visual Genome
 cases.
 
 Section~\ref{sec:worked} works the arithmetic through on four data points, which is
-enough to exhibit every property the rest of the paper proves in general.
+enough to exhibit the main properties the rest of the paper proves in general --- and, in
+Section~\ref{sec:decision}, enough to exhibit a model-selection decision that the split
+gets right and the aggregate score gets wrong.
 
 \begin{figure*}[t]
 \centering
@@ -64,24 +66,39 @@ share the group $\phi=(\textsf{man},\textsf{surfboard})$ but carry different lab
 Exchanging their labels (arrows) leaves the group and its label frequencies intact while
 breaking the link between each prediction and the case it was made for. Scoring two
 frozen models before and after the exchange splits their score difference exactly into a
-prior-fit gain and a within-group resolution gain.}
+transported gain and a within-group covariance gain.}
 \label{fig:concept}
 \end{figure*}
 
 \paragraph{What the second component is, in standard terms.}
-The surviving component is not a new invention. Written out, the within-group remainder
-equals the covariance, inside each group, between how much the new model moved its
-predicted probability for a label and whether that label actually occurred
-(Theorem~\ref{thm:population}). That covariance is the \emph{resolution} term of the
-classical reliability--resolution decomposition of a proper score
-\citep{murphy1973vector,degroot1983comparison,brocker2009reliability}, which splits a
-single forecaster's score, conditional on a chosen grouping, into how well calibrated it
-is and how much its forecasts vary with the outcome. Our contribution is to obtain that
-term for a \emph{pair} of forecasters directly, as an exact finite-sample identity with
-inference attached, rather than by decomposing each forecaster separately and
-subtracting. We call the resulting estimator WAGER (within-group antisymmetric gain
-evaluation of resolution) for reference, and name its two components the
-\emph{prior-fit gain} and the \emph{within-group resolution gain} throughout.
+The component destroyed by relabelling is not a new invention. Written out, it equals the
+covariance, inside each group, between how much the new model moved its predicted
+probability for a label and whether that label actually occurred
+(Theorem~\ref{thm:population}). A covariance between a forecast and an outcome indicator
+is exactly the object isolated by the covariance rearrangement of a proper score that
+goes back to \citet{yates1982external}, and we call our second component the
+\emph{within-group covariance gain} accordingly.
+
+It is worth being precise about how this relates to the more familiar
+reliability--resolution partition of a proper score
+\citep{murphy1973vector,degroot1983comparison,brocker2009reliability}, because the
+relation is close but not identity. Classical resolution depends on a forecast only
+through the partition its level sets generate, so it is invariant under any strictly
+monotone relabelling of the forecast values. A covariance between forecast \emph{values}
+and outcomes is not: rescaling a fixed model's confidence changes it while changing no
+ranking and adding no information. The two coincide --- our component equals twice a
+difference of classical resolution terms --- exactly when both models are calibrated
+within groups, and diverge otherwise. Section~\ref{sec:related-decomposition} gives the
+discrepancy explicitly, and Section~\ref{sec:simulation} measures how large it can be:
+large enough that we compare confidence-matched models as a matter of procedure. Readers
+who want a recalibration-invariant quantity should want a rank-based one instead, and
+Section~\ref{sec:discussion} says what that would cost.
+
+We refer to the estimator as WAGER, which is the name under which the software is
+released; the acronym is a label, not a claim, and we do not expand it. Its two
+components are the \emph{transported gain} $\Delta P$ --- named for the operation that
+produces it, not for an interpretation of it --- and the within-group covariance gain
+$\Delta R$.
 
 \subsection{Contributions}\label{sec:contributions}
 
@@ -89,7 +106,7 @@ evaluation of resolution) for reference, and name its two components the
 \item \textbf{An exact decomposition, and what its remainder is.} For any score, the
 observed gain between two frozen models splits exactly --- in the population
 (Theorem~\ref{thm:population}) and in the finite sample (Theorem~\ref{thm:sample}) ---
-into a prior-fit gain and a remainder that is a U-statistic of order two. For every
+into a transported gain and a remainder that is a U-statistic of order two. For every
 Bregman score, and hence for the quadratic and logarithmic scores as named cases, that
 remainder equals a within-group covariance between the models' predicted-probability
 difference and the label indicator (Theorem~\ref{thm:bregman}). A change that is
@@ -116,11 +133,11 @@ move the reported remainder, from a single elicited correlation.
 
 \item \textbf{Validation, and an audit of a published method.} Simulations establish
 interval coverage under clustering and delimit what the two components separate:
-prior-only improvements stay out of the resolution component, unrecorded within-group
+prior-only improvements stay out of the covariance component, unrecorded within-group
 signal enters it, and monotone recalibration moves score between the components, which is
 why we audit calibration-matched pairs. Applied to two publicly released scene-graph
 checkpoints --- not to models of our own --- the decomposition shows that a ten-point
-improvement in mean recall is overwhelmingly prior-fit under either of two proper scores
+improvement in mean recall is overwhelmingly transported under either of two proper scores
 (Section~\ref{sec:sggaudit}). Three further studies, in relation prediction and in
 long-tailed image and text classification, apply the identical estimator and are reported
 in Appendix~\ref{app:studies}.
@@ -129,9 +146,12 @@ in Appendix~\ref{app:studies}.
 \subsection{Terminology}\label{sec:terminology}
 
 The construction needs few new words, and Table~\ref{tab:terms} fixes them against their
-standard statistical counterparts. Readers who prefer the standard vocabulary can read
-``group'' for cell, ``resolution'' for the second component, and ``relabelling within
-groups'' for transport, and lose nothing.
+standard statistical counterparts. Two of the rows carry a caveat rather than a synonym,
+because no standard term matches exactly: $\Delta P$ is named for the operation that
+produces it, and $\Delta R$ is a covariance rearrangement's term rather than the
+classical resolution it is often mistaken for. We use ``group'' and ``cell''
+interchangeably --- ``cell'' where the contingency-table sense is natural, ``group''
+where a reader outside that tradition would prefer it.
 
 \begin{table}[t]
 \centering
@@ -155,11 +175,14 @@ replacing a case's label with another case's label from the same cell \\
 total gain $\Delta T$ &
 paired score differential &
 the observed mean score of the new model minus that of the old \\
-prior-fit gain $\Delta P$ &
---- &
+transported gain $\Delta P$ &
+no exact counterpart; a mean-forecast-fit term minus a dispersion term
+(Proposition~\ref{prop:transported}), \emph{not} a measure of prior fit &
 the part of $\Delta T$ that survives label transport \\
-within-group resolution gain $\Delta R$ &
-resolution difference \citep{murphy1973vector,brocker2009reliability} &
+within-group covariance gain $\Delta R$ &
+the covariance term of a covariance rearrangement of a proper score
+\citep{yates1982external}; twice a classical resolution difference \emph{only} under
+within-cell calibration &
 the part destroyed by transport; a within-cell prediction--label covariance \\
 coverage &
 identified fraction &
@@ -174,23 +197,41 @@ both models rescaled to comparable confidence before the audit \\
 
 \subsection{Scope, and what is not claimed}\label{sec:scope}
 
-The estimator needs exactly four aligned arrays: two $N\times K$ matrices of predicted
-probabilities, the $N$ observed labels, and the $N$ cell identifiers. Any closed-set
-probabilistic prediction task supplies them. Free-form or generative evaluation, where no
-$K$-way probability vector exists, does not, and we make no claim there.
+The \emph{identity} needs exactly four aligned arrays: two $N\times K$ matrices of
+predicted probabilities, the $N$ observed labels, and the $N$ cell identifiers. Any
+closed-set probabilistic prediction task supplies them. The \emph{procedure} we actually
+recommend needs more --- cluster identifiers for the intervals, and, whenever the compared
+models differ visibly in confidence, a random split of the clusters and a temperature
+fitted per model on the held-out half (Section~\ref{sec:simulation}). We state the
+distinction here because the four-array framing, taken alone, understates what a faithful
+audit costs. Free-form or generative evaluation, where no $K$-way probability vector
+exists, is out of reach altogether, and we make no claim there.
 
-Three limits on interpretation are worth stating before any result. First, everything is
-conditional on the declared $\phi$: a positive $\Delta R$ says the new model predicts
-individual cases better \emph{among cases sharing that feature}, and nothing about
-causality, reasoning, or robustness. Second, $\Delta R$ credits any signal that varies
-within a cell, including a shortcut the analyst did not record;
-Proposition~\ref{prop:sensitivity} bounds that exposure rather than removing it. Third, a
-prior-fit gain is not illegitimate --- fitting the deployment label distribution better
-is real skill whenever that distribution is the one that matters. The decomposition says
+Four limits on interpretation are worth stating before any result rather than after all of
+them. First, everything is conditional on the declared $\phi$: a positive $\Delta R$ says
+the new model predicts individual cases better \emph{among cases sharing that feature},
+and nothing about causality, reasoning, or robustness. Second, $\Delta R$ credits any
+signal that varies within a cell, including a shortcut the analyst did not record.
+Proposition~\ref{prop:sensitivity} bounds that exposure rather than removing it, and the
+bound is not always comfortable: for the Visual Genome pair of
+Appendix~\ref{app:vgmain} an unrecorded covariate with an aggregate correlation of
+$0.061$ would account for the entire reported gain (Section~\ref{sec:sensitivity}).
+Third --- and this is the limitation we would most want a reader to carry --- $\Delta R$
+is \emph{not invariant to recalibration}. Rescaling a fixed model's confidence changes it
+while changing no ranking and adding no information about any case, and the effect is
+large enough to reverse verdicts: in simulation a pure recalibration moves $\Delta R$ by
+$-0.488$, tens of times the size of any real gain reported in this paper. Everything we
+report is therefore for confidence-matched pairs, by the protocol of
+Section~\ref{sec:simulation}, and a reader who applies the estimator to unmatched models
+should expect the split to be dominated by their confidence difference. Fourth, a
+transported gain is not illegitimate --- fitting the deployment label distribution better
+is real skill whenever that distribution is the one that matters --- and it is also not
+purely a matter of prior fit (Proposition~\ref{prop:transported}). The decomposition says
 where a gain lives, not whether it is worth having.
 
 \paragraph{Organization.}
-Section~\ref{sec:worked} works a four-point example. Section~\ref{sec:related} places the
+Section~\ref{sec:worked} works a four-point example and, in
+Section~\ref{sec:decision}, uses it to exhibit a decision the split changes. Section~\ref{sec:related} places the
 construction in the literature on proper-score decomposition and forecast comparison.
 Section~\ref{sec:method} develops the estimator and its theory.
 Section~\ref{sec:exp} validates it and audits two released checkpoints.

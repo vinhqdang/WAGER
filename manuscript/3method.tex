@@ -19,8 +19,8 @@ and~\ref{sec:inference} and skip the rest.
 
 Let $q_0(\cdot\mid x)$ and $q_1(\cdot\mid x)$ be the predictive distributions of an
 old and a new frozen model over $K$ labels. Let $S(q,y)$ be a bounded proper score,
-oriented so that larger is better, and let $C=\phi(X)$ be a declared discrete prior
-feature. In the relation-prediction example of Section~\ref{sec:intro}, $C$ is the ordered
+oriented so that larger is better, and let $C=\phi(X)$ be a declared discrete
+grouping variable. In the relation-prediction example of Section~\ref{sec:intro}, $C$ is the ordered
 subject--object class pair; in a long-tailed classification benchmark it is a coarse
 superclass. We call a value of $C$ a \emph{cell} and require it to be declared before the
 audit is run. Define the
@@ -52,7 +52,7 @@ For a cell $c$, define three population quantities:
 Here $Y'$ is an independent label drawn from the same cell. Thus $\Delta T_c$ is the
 observed score gain, $\Delta P_c$ is the gain retained after breaking the
 instance-specific prediction--label assignment while preserving the cell, and
-$\Delta R_c$ is the resolution gain lost by that transport.
+$\Delta R_c$ is the covariance gain lost by that transport.
 
 \begin{theorem}[Transport and covariance identities]\label{thm:population}
 For any integrable score contrast $H$,
@@ -73,12 +73,58 @@ Consequently, if the gain vector is a function of $c$ alone, then $\Delta R_c=0$
 \end{theorem}
 
 Equation~\eqref{eq:cov-id} is the operational meaning of WAGER: the new model receives
-resolution credit only to the extent that its probability change aligns more strongly
+covariance credit only to the extent that its probability change aligns more strongly
 with the label of the correct instance within the same cell. Cell-constant score
 improvements, including improved fitting of the cell's label histogram, remain in
 $\Delta P$. The result does not assert that a nonzero covariance reflects causal or
 compositional understanding; unrecorded within-cell shortcuts can also contribute, so
 $\phi$ must be declared and stress-tested.
+
+\subsection{What the transported gain measures}\label{sec:transported}
+
+The component that survives transport is easy to misname. It is tempting to call
+$\Delta P$ a prior-fit gain, since transport replaces a case's label by an independent
+draw from its cell; several earlier drafts of this paper did exactly that. The following
+identity shows the name is wrong, and says what the quantity is instead.
+
+\begin{proposition}[Composition of the transported gain]\label{prop:transported}
+Under the quadratic score, write $\bar q_m(c)=\mathbb E[q_m(\cdot\mid X)\mid C=c]$ for
+model $m$'s mean forecast in cell $c$, $\operatorname{Var}(q_m\mid c)$ for the
+within-cell covariance matrix of its forecast vector, and $p(c)$ for the cell's transport
+law. Then
+\begin{equation}
+\Delta P_c=
+\underbrace{\Bigl[\lVert p(c)-\bar q_0(c)\rVert^2-\lVert p(c)-\bar q_1(c)\rVert^2\Bigr]}
+_{\text{improvement in mean-forecast fit}}
+\;-\;
+\underbrace{\Bigl[\operatorname{tr}\operatorname{Var}(q_1\mid c)-
+\operatorname{tr}\operatorname{Var}(q_0\mid c)\Bigr]}_{\text{increase in within-cell dispersion}} .
+\label{eq:transported-composition}
+\end{equation}
+\end{proposition}
+
+Only the first bracket is prior fit: it is positive exactly when the new model's average
+within-cell forecast sits closer to the cell's label frequencies. The second bracket has
+nothing to do with the prior at all. It rewards the new model for making \emph{less}
+dispersed predictions inside the cell, and it does so at a fixed mean forecast, so
+$\Delta P$ can be large and positive when neither model's prior fit has changed by
+anything. A single cell suffices to see it: with two labels and cell frequencies
+$(\tfrac12,\tfrac12)$, let $q_0$ alternate between $(1,0)$ and $(0,1)$ in a pattern
+uncorrelated with the label, and let $q_1$ predict $(\tfrac12,\tfrac12)$ throughout. Both
+models' mean forecasts equal the cell frequencies exactly, so the first bracket is zero;
+the whole observed gain of $\tfrac12$ is transported, produced entirely by the collapse in
+dispersion. The channel is therefore the reliability-and-sharpness channel of the
+classical partition rather than a prior-fitting channel, which is why we name it for the
+operation that produces it and not for an interpretation of it.
+
+Two consequences are worth stating. First, a claim that some gain is
+``mostly prior-fitting'' does not follow from a large $\widehat{\Delta P}$ alone; where
+this paper reports such a reading it is the two brackets of
+Eq.~\eqref{eq:transported-composition} that carry it, and
+Section~\ref{sec:sggaudit} reports them separately for the audited pair. Second,
+Eq.~\eqref{eq:transported-composition} explains why calibration matching moves
+$\widehat{\Delta P}$ so sharply (Section~\ref{sec:simulation}): a temperature change is
+almost purely a change in dispersion.
 
 \subsection{Generalization: the Bregman-score family}\label{sec:bregman}
 
@@ -111,12 +157,12 @@ For $\psi(q)=\lVert q\rVert_2^2$, $\Delta g_y(x)=2\Delta q_y(x)$ and Eq.~\eqref{
 \end{equation}
 \end{corollary}
 
-Eq.~\eqref{eq:log-cov-id} gives the log-score check of Section~\ref{sec:sggaudit} the same exact covariance meaning that Eq.~\eqref{eq:cov-id} gives the quadratic score: within-group resolution under the log score is the within-cell covariance between the log-likelihood-ratio contrast of the two models and the observed label indicator, not merely "a sensitivity analysis." Any other Bregman score -- the spherical or power-family scores catalogued by \citet{gneiting2007proper}, for instance -- inherits an identity of the same form through its own $\psi$, so Theorem~\ref{thm:bregman} fixes the scope of the estimator's scoring-rule dependence once, rather than leaving each alternative score to be checked separately. The implemented log score floors each probability at $\epsilon=10^{-6}$ to avoid $-\infty$ on an unseen label; Eq.~\eqref{eq:log-cov-id} is exact for the unfloored $\log q_y$, and the floored version used throughout is a sensitivity check on that exact identity rather than a literal instance of it, negligibly different whenever no relevant probability is within $\epsilon$ of zero.
+Eq.~\eqref{eq:log-cov-id} gives the log-score check of Section~\ref{sec:sggaudit} the same exact covariance meaning that Eq.~\eqref{eq:cov-id} gives the quadratic score: within-group covariance under the log score is the within-cell covariance between the log-likelihood-ratio contrast of the two models and the observed label indicator, not merely "a sensitivity analysis." Any other Bregman score -- the spherical or power-family scores catalogued by \citet{gneiting2007proper}, for instance -- inherits an identity of the same form through its own $\psi$, so Theorem~\ref{thm:bregman} fixes the scope of the estimator's scoring-rule dependence once, rather than leaving each alternative score to be checked separately. The implemented log score floors each probability at $\epsilon=10^{-6}$ to avoid $-\infty$ on an unseen label; Eq.~\eqref{eq:log-cov-id} is exact for the unfloored $\log q_y$, and the floored version used throughout is a sensitivity check on that exact identity rather than a literal instance of it, negligibly different whenever no relevant probability is within $\epsilon$ of zero.
 
 \subsection{Coarsening the cell}\label{sec:coarsening}
 
 Appendix~\ref{sec:ablations} reports that replacing the class-pair cell with a coarser
-subject-only cell changes the estimated resolution gain. The following result gives that
+subject-only cell changes the estimated covariance gain. The following result gives that
 sensitivity an exact population-level mechanism rather than treating it as an empirical
 curiosity.
 
@@ -132,19 +178,19 @@ $\bar c$ of $\bar\phi$ is a union of cells of $\phi$. Then
 \end{equation}
 \end{proposition}
 
-The first term is the coarse cell's share of the fine-grained resolution gain the paper
+The first term is the coarse cell's share of the fine-grained covariance gain the paper
 already reports; it is the quantity a reader would expect a coarser audit to recover on
 average. The second term is new: it is a between-cell covariance, taken over the finer
 cells nested inside $\bar c$, between each fine cell's typical gain at label $y$ and its
 label-$y$ frequency. It is generally not sign definite, so coarsening $\phi$ can inflate
-or deflate the credited resolution gain relative to the finer audit, and Table
+or deflate the credited covariance gain relative to the finer audit, and Table
 \ref{tab:sensitivity} shows the empirically inflating case. The second term vanishes
 exactly when the quantities it correlates do not vary across the fine cells nested in
 $\bar c$ -- that is, when $\mathbb E[H_X(y)\mid C]$ or $\Pr(Y=y\mid C)$ is constant
 within each coarse cell. Proposition~\ref{prop:coarsen} thereby formalizes why the
 finest defensible grouping variable is the conservative default: relative to the finer
 audit, coarsening changes the estimate only by adding cross-cell prior structure into
-$\Delta R$, while the finer partition's resolution gain is preserved on average through
+$\Delta R$, while the finer partition's covariance gain is preserved on average through
 the first term. The proof is a per-label application of the
 law of total covariance, summed over $y$ (Appendix~\ref{app:proofs}).
 
@@ -199,15 +245,31 @@ separately -- a product of two square-root sums, not a sum of per-label square r
 which the law of total variance alone would not license.
 \end{proposition}
 
-\begin{corollary}[Worst-case bound]\label{cor:sensitivity-crude}
-Since $\operatorname{Var}(a_y\mid c)\le M^2$ and $\operatorname{Var}(b_y\mid c)\le1/4$ by
-Popoviciu's inequality (each $a_y$ ranges over $[-M,M]$ as a conditional expectation of
-$H$, each $b_y$ over $[0,1]$), Eq.~\eqref{eq:sensitivity-bound} gives the data-free bound
+\begin{corollary}[Free bound]\label{cor:sensitivity-crude}
+Each $a_y$ ranges over $[-M,M]$ as a conditional expectation of $H$, so
+$\operatorname{Var}(a_y\mid c)\le M^2$ and $\sum_y\operatorname{Var}(a_y\mid c)\le KM^2$.
+The label probabilities satisfy $\sum_yb_y=1$, which gives $\sum_yb_y^2\le1$ and, by
+Cauchy--Schwarz, $\sum_y(\mathbb E b_y)^2\ge1/K$; hence
 \begin{equation}
-\left|\Delta R_c(\phi)-\mathbb E[\Delta R_{(\phi,Z)}\mid\phi=c]\right|\ \le\ \frac{|\rho|\,K\,M}2.
+\sum_{y=1}^K\operatorname{Var}(b_y\mid c)
+=\mathbb E\Bigl[\textstyle\sum_yb_y^2\Bigr]-\sum_y\bigl(\mathbb E b_y\bigr)^2
+\ \le\ 1-\frac1K .
+\label{eq:simplex-var}
+\end{equation}
+Substituting both into Eq.~\eqref{eq:sensitivity-bound} gives the data-free bound
+\begin{equation}
+\left|\Delta R_c(\phi)-\mathbb E[\Delta R_{(\phi,Z)}\mid\phi=c]\right|
+\ \le\ |\rho|\,M\sqrt{K-1}.
 \label{eq:sensitivity-crude}
 \end{equation}
 \end{corollary}
+
+Earlier versions of this corollary bounded $\sum_y\operatorname{Var}(b_y\mid c)$ by
+Popoviciu's inequality applied label by label, giving $K/4$ and hence $|\rho|KM/2$. That
+discards Eq.~\eqref{eq:simplex-var}: the $b_y$ are not $K$ unconstrained quantities in
+$[0,1]$ but a point on the simplex, and $K/4$ is unattainable for $K>2$. At VG150's
+$K=50$ and $M=2$ the corrected free bound is $14.00|\rho|$ rather than $50.00|\rho|$, a
+factor of $3.57$.
 
 An analyst willing to bound $|\rho|\le\bar\rho$ -- how strongly an unrecorded variable
 could jointly move a model's within-cell score gain and the within-cell label
@@ -216,21 +278,54 @@ what a fully adjusted audit would find, without observing or modeling $Z$, in th
 of \citet{rosenbaum2002observational} and recent partial-correlation sensitivity models
 for unmeasured confounding \citep{cinelli2020making,freidling2025optimization,zhang2026average}.
 Because $\bar\rho$ is a correlation rather than a domain-specific odds or risk ratio, it
-can be elicited the same way across benchmarks. Eq.~\eqref{eq:sensitivity-bound}'s middle
-term uses the cell's own dispersion and is always at least as tight as
-Corollary~\ref{cor:sensitivity-crude}'s worst-case form, which needs only $K$ and $M$ and
-no per-cell computation at all; Table~\ref{tab:sensitivity-numeric} evaluates the latter
-on VG150, where the coarsening from the class-pair cell to the subject-only cell
-instantiates Eq.~\eqref{eq:sensitivity-exact} exactly, with $Z=$ object class.
+can be elicited the same way across benchmarks.
+
+\paragraph{What the bound says about this paper's own estimates.}
+Table~\ref{tab:sensitivity-numeric} reports both forms of the bound on the Visual Genome
+pair of Appendix~\ref{sec:results}, together with the coarsening from the class-pair to
+the subject-only cell, which instantiates Eq.~\eqref{eq:sensitivity-exact} exactly with
+$Z=$ object class. The free bound is directionally correct and, at $K=50$, still
+$1{,}887$ times the actual coarsening bias, so any $\bar\rho$ an analyst would plausibly
+declare certifies a limit far above what is observed. That looseness is a property of a
+worst-case inequality applied to label probabilities that concentrate away from the
+extremes at which it binds, not a defect of this dataset --- but it also means the free
+bound cannot support a claim about whether any particular reported $\widehat{\Delta R}$
+would survive confounding.
+
+The sharp per-cell form of Eq.~\eqref{eq:sensitivity-bound}, which replaces the
+worst-case sums by the cell's own $\sum_y\operatorname{Var}(H_X(y)\mid c)$ and
+$\sum_yp_y(c)(1-p_y(c))$, can support such a claim, and it is less reassuring than the
+free bound. Computed by \texttt{experiments/sensitivity\_analysis.py} from per-instance
+arrays for the same pair, it gives $B=0.23284$ at $\bar\rho=1$, so the
+\emph{robustness value} --- the smallest aggregate correlation at which the bound reaches
+the estimate --- is
+\begin{equation}
+\rho^\dagger=\frac{\bigl|\widehat{\Delta R}\bigr|}{B}
+=\frac{0.01427}{0.23284}=0.06127 .
+\label{eq:robustness-value}
+\end{equation}
+An unrecorded covariate whose aggregate correlation with the within-cell gain and the
+within-cell label distribution reaches $0.061$ is enough to account for the whole of that
+$\widehat{\Delta R}$. At the $\bar\rho=0.1$ that this section suggests as a plausible
+elicited value, the sharp bound is $0.02328$, which \emph{exceeds} the estimate. We
+therefore do not claim that a confounder would have to be implausibly strong to explain
+these Visual Genome gains away; on this evidence a modest one would suffice, and the
+reader should treat Appendix~\ref{sec:results}'s covariance gains as conditional on the
+declared $\phi$ being close to complete. The flagship audit of
+Section~\ref{sec:sggaudit} is not exposed in the same way, because its reported
+$\widehat{\Delta R}$ is indistinguishable from zero and a sensitivity bound on a null
+result changes nothing about it.
 
 \begin{table}[t]
 \centering
-\caption{Corollary~\ref{cor:sensitivity-crude}'s worst-case bound evaluated on the
-coarsening already reported in Table~\ref{tab:sensitivity} ($K=50$, $M=2$ for the Brier
-score). The empirical bias is the law-of-total-expectation aggregate of
-Eq.~\eqref{eq:sensitivity-exact}'s covariance term across all subject-only cells;
-\texttt{experiments/sensitivity\_bound\_check.py} reproduces it from the committed
-ablation results.}
+\caption{Both forms of the Proposition~\ref{prop:sensitivity} bound on the
+MLP-SPATIAL vs.\ MLP-CLASS pair, and the coarsening already reported in
+Table~\ref{tab:sensitivity} ($K=50$, $M=2$ for the quadratic score). The empirical bias
+is the law-of-total-expectation aggregate of Eq.~\eqref{eq:sensitivity-exact}'s covariance
+term across all subject-only cells.
+\texttt{experiments/sensitivity\_bound\_check.py} reproduces the free-bound rows from the
+committed ablation results and \texttt{experiments/sensitivity\_analysis.py} the sharp
+rows from per-instance arrays.}
 \label{tab:sensitivity-numeric}
 \begin{tabular}{lr}
 \toprule
@@ -239,36 +334,23 @@ Quantity & Value \\
 $\widehat{\Delta R}$, $\phi=$ subject-only & $0.02181$ \\
 $\widehat{\Delta R}$, $\phi=$ class-pair & $0.01439$ \\
 Empirical coarsening bias & $0.00742$ \\
-Crude bound, $KM/2$ & $50.00$ \\
-Minimum $\bar\rho$ for the crude bound to hold & $0.00015$ \\
+\midrule
+Free bound, $M\sqrt{K-1}$, at $\bar\rho=1$ & $14.00$ \\
+Minimum $\bar\rho$ for the free bound to reach the bias & $0.00053$ \\
+\midrule
+Sharp bound $B$ at $\bar\rho=1$ & $0.23284$ \\
+Sharp bound at $\bar\rho=0.1$ & $0.02328$ \\
+Robustness value $\rho^\dagger$ & $0.06127$ \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-The crude bound holds for every $\bar\rho\ge0.00015$, so it is directionally correct but,
-at VG150's $K=50$, more than three orders of magnitude looser than the actual bias: any
-sensitivity parameter an analyst would plausibly declare (say $\bar\rho=0.1$) certifies a
-limit far above what is ever observed. This is an honest property of the worst-case
-Popoviciu bound applied to $K$ label probabilities that in practice concentrate well away
-from the $0/1$ extremes at which that inequality is tight, not a defect specific to this
-dataset. Proposition~\ref{prop:sensitivity}'s second inequality is the fix: replacing the
-worst-case sums $KM^2$ and $K/4$ with the cell's own $\sum_y\operatorname{Var}(H_X(y)\mid c)$
-and $\sum_yp_y(c)(1-p_y(c))$ tightens the bound by exactly the ratio of the true aggregate
-dispersion to its worst case, without any further assumption on $Z$;
-\texttt{experiments/sensitivity\_analysis.py} computes this sharper form from
-per-instance arrays, at the cost of needing them rather than only the committed
-cell-level aggregates the crude form reads directly. Even in its loose,
-data-free form, the bound gives a falsifiable prediction Proposition~\ref{prop:coarsen}
-alone does not: an unrecorded confounder would have to act with an implausibly strong,
-simultaneous effect on both channels to explain away a reported $\widehat{\Delta R}$ of
-the size seen in Appendix~\ref{sec:results}.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig2_pair_mechanism.png}
 \caption{\textbf{The antisymmetric pair kernel.} For two examples in the same prior
 cell, WAGER subtracts the score under crossed labels from the score under the observed
-assignment. Cell membership and label counts are unchanged; only within-group resolution is
+assignment. Cell membership and label counts are unchanged; only within-group covariance is
 removed.}
 \label{fig:pair}
 \end{figure*}
@@ -309,9 +391,9 @@ The dataset-level quantities weight cells by their number of identified examples
 $\widehat{\Delta Z}=N_*^{-1}\sum_{c:n_c\ge2}n_c\widehat{\Delta Z}_c$ for
 $Z\in\{T,P,R\}$. Singleton cells cannot identify a within-cell counterfactual; WAGER
 excludes and reports them instead of inventing a smoothed estimate. If
-$\widehat{\Delta T}>0$, the descriptive resolution share is
+$\widehat{\Delta T}>0$, the descriptive covariance share is
 $\widehat\rho=\widehat{\Delta R}/\widehat{\Delta T}$. It may exceed one when
-within-group resolution improves while prior fitting deteriorates, and it is undefined for a
+within-group covariance improves while the transported channel deteriorates, and it is undefined for a
 nonpositive total gain. We therefore report $\widehat{\Delta R}$ as the primary result,
 not a thresholded ratio.
 
@@ -349,7 +431,7 @@ Eq.~\eqref{eq:linear} and $\hat R_i=H_i(y_i)-\hat P_i$,
 \end{equation}
 Consequently the in-sample plug-in's dataset-level statistic obeys
 $\widetilde{\Delta R}=N_*^{-1}\sum_{c:n_c\ge2}(n_c-1)\widehat{\Delta R}_c$, a
-multiplicative shrinkage of every cell's leave-one-out resolution gain by the factor
+multiplicative shrinkage of every cell's leave-one-out covariance gain by the factor
 $(n_c-1)/n_c$.
 \end{proposition}
 
@@ -364,7 +446,7 @@ hyperparameter and, typically, higher variance. WAGER's leave-one-out U-statisti
 at the full sample, for every $\phi$-cell with $n_c\ge2$, without a fitted nuisance
 distribution at all. Section~\ref{sec:related-decomposition} situates this result
 against the classical single-model score decomposition, where the analogous
-self-prediction bias affects each model's resolution estimate separately.
+self-prediction bias affects each model's covariance estimate separately.
 
 \subsection{Inference}\label{sec:inference}
 
@@ -401,27 +483,38 @@ stated as $o_p(N_*^{-1/2})$ but not, until now, given a limit theorem. The follo
 result supplies one, under regularity conditions that hold whenever the score is bounded
 and clusters do not grow without bound relative to the sample.
 
-\begin{theorem}[Asymptotic normality of the resolution-gain estimator]\label{thm:clt}
+\begin{theorem}[Asymptotic normality of the covariance-gain estimator]\label{thm:clt}
 Suppose (i) $H_x(y)\in[-M,M]$ for all $x,y$; (ii) examples are partitioned into clusters
 $g=1,\dots,G$ (e.g.\ images) that are mutually independent, with cluster sizes having a
-finite third moment and $\max_g|g|=o(\sqrt{G})$; (iii) the identified fraction
-$N_*/N\to\kappa\in(0,1]$ in probability; (iv) the limiting variance
+finite third moment and $\max_g|g|=o(\sqrt{G})$; (iii) the limiting variance
 $\sigma^2=\lim_{G\to\infty}\operatorname{Var}\!\bigl(\sqrt{N_*}(\widehat{\Delta R}-\theta)\bigr)$
 exists and is strictly positive, where $\theta$ is the identified-subpopulation estimand
-of Appendix~\ref{app:influence}; and (v) $\phi$ takes values in a fixed, finite set,
+of Appendix~\ref{app:influence}; and (iv) $\phi$ takes values in a fixed, finite set,
 each with strictly positive limiting population mass, so that every eligible cell's size
-$n_c$ diverges almost surely as $N\to\infty$. Condition (v) is what licenses treating the
-per-cell plug-ins $\widehat{\Delta R}_c$ as consistent for $\Delta R_c$ in the variance
-proof below; it is an asymptotic idealization, not a claim about any finite sample, and
-Section~\ref{sec:simulation}'s coverage simulation is the finite-sample check for a
-regime -- most eligible cells at their minimum size $n_c=2$ -- in which condition (v)'s
-divergence has manifestly not yet occurred. Then
+$n_c$ diverges almost surely as $N\to\infty$. Then
 \begin{equation}
 \sqrt{N_*}\bigl(\widehat{\Delta R}-\theta\bigr)\ \xrightarrow{d}\ \mathcal N(0,\sigma^2),
 \end{equation}
-and the plug-in sandwich variance $\widehat\sigma^2=(N_*/G)\sum_{g}(\sum_{i\in g}\widehat\psi_i/N_*)^2\cdot G/(G-1)$
+and the plug-in sandwich variance $\widehat\sigma^2=N_*\dfrac{G}{G-1}\sum_{g}\bigl(\sum_{i\in g}\widehat\psi_i/N_*\bigr)^2$
 of Appendix~\ref{app:influence} is consistent for $\sigma^2$.
 \end{theorem}
+
+Two things about condition (iv) deserve saying plainly rather than in a footnote. It is
+what licenses treating the per-cell plug-ins $\widehat{\Delta R}_c$ as consistent for
+$\Delta R_c$ in the variance argument, and a cell's size is not controlled by the
+aggregate identified count, so this needs its own divergence requirement. But it also
+forces every cell to be eventually identified, hence $N_*/N\to1$: an earlier version of
+this theorem additionally assumed an identified fraction converging to some
+$\kappa\in(0,1]$, which condition (iv) makes vacuous, and under which the
+identified-subpopulation estimand $\theta$ would in any case coincide with the
+unconditional target. We have therefore dropped that assumption rather than state two
+conditions that cannot both bind. The price is that the theorem does not describe the
+regime the paper's own applications sit in, where $\theta$ is a random, $N$-dependent
+target because coverage is short of one ($99.0\%$ on VG150, $98.9\%$ in
+Section~\ref{sec:sggaudit}). What the theorem licenses is the interval's form and its
+variance estimator; what licenses reading the reported intervals at finite $N$ is the
+coverage simulation of Section~\ref{sec:simulation}, and Section~\ref{sec:discussion}
+states the gap between the two rather than eliding it.
 
 The proof (Appendix~\ref{app:proofs}) combines the exact linearization of
 Appendix~\ref{app:influence} with a Lindeberg--Feller central limit theorem for the
@@ -429,20 +522,29 @@ independent-across-cluster sum of mean-zero, uniformly bounded terms
 \citep{serfling1980approximation,vandervaart1998asymptotic}; boundedness (i) makes the
 Lindeberg condition automatic given (ii), and consistency of $\widehat\sigma^2$ follows
 from the weak law of large numbers applied to each plug-in $\widehat{\Delta R}_c,
-\widehat{\Delta R}$ together with continuity of the variance functional -- the former
-per-cell application is where condition (v) is used, not (iii): a cell's size $n_c$ is
-not bounded by the aggregate identified count, so within-cell consistency needs its own
-divergence condition. Condition (ii) is what rules out a single cluster dominating the
+\widehat{\Delta R}$ together with continuity of the variance functional. One step needs
+more care than the appendix's per-cell statement supplies: a per-cell H\'ajek remainder of
+order $o_p(n_c^{-1/2})$ does not aggregate to $o_p(N_*^{-1/2})$ at the dataset level when
+the number of cells grows, since summing $C$ such remainders admits a $\sqrt C$ inflation.
+The repair does not need a new condition on cell sizes, only that the cell count be
+negligible relative to the identified sample, $\#\{c:n_c\ge2\}=o(N_*)$: the second-order
+degenerate term of a two-sample U-statistic is $O_p(n_c^{-1})$ rather than
+$o_p(n_c^{-1/2})$, and $\sum_c n_c\cdot O_p(n_c^{-1})=O_p(C)=o_p(N_*)$ gives the
+dataset-level rate directly. We state that condition explicitly; on VG150 it holds
+comfortably ($C=6{,}346$ against $N_*=227{,}337$). Condition (ii) is what rules out a single cluster dominating the
 sum -- an image contributing a positive fraction of all relations, for instance -- and
 is a standard requirement for cluster-robust inference generally, not specific to this
 estimator. This theorem licenses reading the image-clustered intervals reported
 throughout Section~\ref{sec:exp} as asymptotically valid in the idealized regime where
-every eligible cell's size grows without bound; because VG150's eligible cells are
-Zipf-distributed and dominated by the minimum size $n_c=2$ at the sample sizes this paper
-actually reports (Section~\ref{sec:simulation}), condition (v) has not been attained
-in-sample, and the reported $94.0\%$ empirical coverage against a nominal $95\%$
-(Section~\ref{sec:simulation}) -- not this theorem directly -- is the evidence that the
-interval remains a good approximation well short of that idealization.
+every eligible cell's size grows without bound. That regime is not attained in-sample:
+VG150's eligible cells are heavy-tailed, and $2{,}286$ of the $6{,}346$ eligible
+class-pair cells hold fewer than five examples (Table~\ref{tab:sensitivity}). The
+proportion is smaller than earlier drafts of this paper asserted --- those cells carry
+$2.7\%$ of identified relations, and the median eligible cell holds appreciably more than
+the minimum --- but a third of the cells still sit where condition (iv)'s divergence is
+plainly hypothetical. The reported $94.0\%$ empirical coverage against a nominal $95\%$
+(Section~\ref{sec:simulation}), not this theorem directly, is therefore the evidence that
+the interval remains a good approximation well short of the idealization.
 
 \paragraph{Relation to comparative forecast evaluation.}
 \begin{corollary}[Relation to Diebold--Mariano/Giacomini--White]\label{cor:dm}
@@ -460,19 +562,32 @@ partition is exactly that differential's sample mean. $\widehat{\Delta P}$ and
 $\widehat{\Delta R}$ remain perfectly well defined at the trivial partition too --- the
 single giant cell still supports leave-one-out label transport whenever $N\ge2$ --- but
 neither DM nor GW forms them: both tests target $\Delta T$ alone and stop there.
-$\widehat{\Delta R}$ at the trivial partition is then exactly the classical
-resolution term of Section~\ref{sec:related-decomposition}'s single-model decomposition,
-applied without any conditioning at all, and $\widehat{\Delta P}$ the corresponding
-calibration term, so WAGER's contribution at this special case is the further exact split
-of the DM/GW differential into the two components neither test provides. Conditioning on
+At the trivial partition $\widehat{\Delta R}$ is the
+\emph{unconditional} prediction--outcome covariance contrast --- the Yates-type quantity
+of Section~\ref{sec:related-decomposition} with an empty conditioning set. It is not a
+classical resolution term: a resolution term computed with no conditioning variable is
+identically zero, since it is the variance of a conditional mean given nothing, and
+$\widehat{\Delta P}$ is correspondingly not a calibration term. An earlier version of
+this paper asserted both identifications and they were wrong. What is true, and is the
+contribution at this special case, is the further exact split of the DM/GW differential
+into two components neither test forms. Conditioning on
 a nontrivial $\phi$ is what separates WAGER's estimand from the classical target more
 generally: DM/GW ask whether one forecaster beats another on average, optionally
 conditional on a test function of an information set \citep{giacomini2006tests}; WAGER
 asks the same question at every declared cell \emph{and} attributes the answer, cell by
 cell, into a component recoverable from the label histogram alone and a component that is
-not. Every real-data comparison in Section~\ref{sec:exp} could equivalently be read as
-reporting a clustered DM statistic for $\widehat{\Delta T}$ (Corollary~\ref{cor:dm})
-alongside the two-way split that DM/GW do not provide.
+not. One qualification on how far this reading travels. Corollary~\ref{cor:dm} is stated at the
+trivial partition, and the statistic it identifies with a clustered DM test is
+$N^{-1}\sum_iH_i(y_i)$ over every example. The totals reported at a nontrivial $\phi$ in
+Section~\ref{sec:exp} are instead $N_*$-weighted means over the \emph{identified}
+subsample, since cells of size one are excluded. Because $\Delta T$ itself does not depend
+on $\phi$ except through that exclusion, each reported $\widehat{\Delta T}$ is a clustered
+DM statistic for the paired differential \emph{on its identified subsample} --- which at
+the coverages reported here ($99.0\%$ on VG150, $98.9\%$ in
+Section~\ref{sec:sggaudit}) differs from the full-sample DM statistic only in the excluded
+singletons. That is the precise claim; ``exactly a clustered DM statistic'' without the
+subsample qualifier, as earlier drafts had it in Appendix~\ref{sec:results}, is not
+right at a nontrivial $\phi$.
 
 \begin{algorithm}[t]
 \caption{WAGER gain decomposition}\label{alg:wager}

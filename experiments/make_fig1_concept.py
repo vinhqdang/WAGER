@@ -1,6 +1,7 @@
 """Concept figure (Fig. 1) built on real pixels: two Visual Genome relations
-from one audit cell, the label-crossing transport between them, and the exact
-identity it produces. Replaces the earlier text-only flowchart.
+from one cell, the label-crossing transport between them, and the exact identity
+it produces.  Replaces the text-only flowchart that shipped in the committed PNG
+until 2026-09 even though this script had already superseded it.
 
 Uses the same cached images as the dataset-samples figure.
 Run: conda run -n py313 python experiments/make_fig1_concept.py
@@ -91,9 +92,9 @@ def main():
              transform=axr.transAxes, ha="center", fontsize=19)
     axr.text(0.145, 0.565, "observed\ngain", transform=axr.transAxes, ha="center",
              fontsize=10.5, color="black")
-    axr.text(0.46, 0.565, "prior-transported\ngain", transform=axr.transAxes,
+    axr.text(0.46, 0.565, "transported\ngain", transform=axr.transAxes,
              ha="center", fontsize=10.5, color=TRA_C)
-    axr.text(0.80, 0.565, "instance-alignment\ngain", transform=axr.transAxes,
+    axr.text(0.80, 0.565, "within-group\ncovariance gain", transform=axr.transAxes,
              ha="center", fontsize=10.5, color=OBS_C)
     axr.text(0.06, 0.42, r"$\widehat{\Delta P}$: what the gain would be if predictions"
              "\nmet labels only through the cell: the label\nhistogram of "
@@ -104,8 +105,8 @@ def main():
              "U-statistic with CIs.",
              transform=axr.transAxes, fontsize=10.5, va="top", color=OBS_C)
 
-    fig.suptitle("Two frozen models, one audit cell:  crossing labels within "
-                 r"$\phi$ removes instance identity and nothing else",
+    fig.suptitle("Two frozen models, one cell:  relabelling within "
+                 r"$\phi$ removes case identity and nothing else",
                  fontsize=13.5, y=0.965)
 
     for d in OUTDIRS:

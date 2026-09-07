@@ -195,10 +195,27 @@ CHECKS += [
      sens["delta_r_subject_only_phi"], 1e-5),
     ("sens empirical bias", "3method.tex", "0.00742",
      sens["empirical_coarsening_bias"], 5e-5),
-    ("sens crude bound", "3method.tex", "50.00",
+    ("sens free bound", "3method.tex", "14.00",
      sens["crude_cauchy_schwarz_bound"], 5e-3),
-    ("sens min rho", "3method.tex", "0.00015",
+    ("sens min rho", "3method.tex", "0.00053",
      sens["minimum_rho_for_bound_to_hold"], 5e-6),
+    ("sens superseded bound", "3method.tex", "50.00",
+     sens["superseded_popoviciu_bound"], 5e-3),
+    ("sens looseness ratio", "3method.tex", "1{,}887", sens["looseness_ratio"], 1.0),
+]
+
+
+# Sharp per-cell sensitivity bound and robustness value.  Section 3.5 reports these; the
+# file was committed in the fourth revision but cited nowhere and checked by nothing
+# until the 2026-09 panel found the omission.
+sharp = load("sensitivity_bound.json")
+CHECKS += [
+    ("sharp bound B", "3method.tex", "0.23284", sharp["bound_B"], 5e-6),
+    ("sharp bound at rho=0.1", "3method.tex", "0.02328",
+     sharp["bound_B"] / 10.0, 5e-6),
+    ("robustness value", "3method.tex", "0.06127",
+     sharp["robustness_value_rho_dagger"], 5e-6),
+    ("sharp bound dR", "3method.tex", "0.01427", sharp["reasoning_gain"], 5e-6),
 ]
 
 

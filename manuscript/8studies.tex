@@ -50,7 +50,7 @@ diagnostic $p$-values for the number of reported comparisons.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig6_dataset_samples.png}
-\caption{\textbf{What an cell contains, on both benchmarks.} Each row shows two
+\caption{\textbf{What a cell contains, on both benchmarks.} Each row shows two
 real test examples that share the same declared grouping variable $\phi$ but carry
 different labels -- precisely the configuration within-cell transport exploits.
 \emph{Top:} two Visual Genome relations from the cell $\phi=(\text{man},
@@ -69,7 +69,7 @@ with which instance.}
 \begin{table}[t]
 \centering
 \caption{Frozen-model top-1 accuracy on VG150 PredCls. Similar accuracies do not reveal
-whether the difference is prior-fit.}
+whether the difference is transported.}
 \label{tab:accuracy}
 \begin{tabular}{@{}lr@{}}
 \toprule
@@ -90,22 +90,22 @@ The central result is collected in Table~\ref{tab:wager-results} and
 Figure~\ref{fig:results}. MLP-CLASS improves on FREQ by $0.03386$ of quadratic score,
 yet because its gain vector is constant inside every class-pair cell, the estimator
 assigns that entire improvement to prior transport and precisely nothing to instance
-resolution. The zero is worth dwelling on: it follows algebraically from the construction
+covariance. The zero is worth dwelling on: it follows algebraically from the construction
 rather than from a learned baseline happening to pass a sanity check.
 
 Adding box geometry changes the picture. MLP-SPATIAL gains $0.04270$ over FREQ, of which
-$0.02832$ survives label transport and $0.01439$ is within-group resolution (CI
+$0.02832$ survives label transport and $0.01439$ is within-group covariance (CI
 $[0.01373,0.01504]$). More revealing still is the direct comparison against MLP-CLASS,
-where the total gain falls to $0.00885$ only because prior fitting deteriorates by
-$0.00554$ even as the resolution gain from spatial features rises by $0.01439$. The resulting resolution share
+where the total gain falls to $0.00885$ only because the transported channel deteriorates by
+$0.00554$ even as the covariance gain from spatial features rises by $0.01439$. The resulting covariance share
 of 1.63 records a genuinely useful instance-specific change that the aggregate score
 partly conceals behind a worse prior component, and it is exactly the configuration that
 a ratio confined to $[0,1]$, or thresholded at $0.5$, would misdescribe.
 
 The remaining two comparisons bracket the interesting range. MLP-SPATIAL+ adds $0.00374$
-over MLP-SPATIAL, nearly all of it resolution at $0.00321$ (CI $[0.00289,0.00353]$),
+over MLP-SPATIAL, nearly all of it covariance gain at $0.00321$ (CI $[0.00289,0.00353]$),
 whereas FREQ+OVERLAP supplies the opposite caution: its overlap indicator does create a
-small positive resolution term, but the accompanying negative prior term is larger, so
+small positive covariance gain, but the accompanying negative prior term is larger, so
 the model ends up worse overall. Using image-derived information is thus never treated
 as an improvement in itself; both channels are reported, signs included.
 
@@ -115,7 +115,7 @@ literature reports. Where both channels point the same way the correspondence is
 straightforward: MLP-SPATIAL-S's $\widehat{\Delta R}=+0.01023$ over MLP-CLASS-S
 accompanies $+0.51$ points of top-1 predicate accuracy, $+0.60$ of mean reciprocal rank
 and $+0.86$ of recall@5, so in these data a hundredth of quadratic-score gain is worth
-roughly half an accuracy point. The resolution channel is not, however, a re-description
+roughly half an accuracy point. The covariance channel is not, however, a re-description
 of any rank metric, and the real-pixel comparison of Appendix~\ref{app:vgvisual} is
 where that becomes visible: there $\widehat{\Delta R}=+0.00641$ while top-1 accuracy
 falls by $3.07$ points and recall@5 by $2.21$. Prior-matching both models before scoring
@@ -155,15 +155,15 @@ MLP-SPATIAL+ & MLP-SPATIAL & $0.00374$ & $0.00053$ & $0.00321\,[0.00289,0.00353]
 \centering
 \includegraphics[width=\textwidth]{figures/fig4_new_results.png}
 \caption{\textbf{Direct model-pair attribution.} Left: exact decomposition of each
-positive gain into prior-fit and within-group resolution components (the negative
-prior term for SPATIAL--CLASS extends left of zero). Right: primary resolution estimates
+positive gain into transported and within-group covariance components (the negative
+prior term for SPATIAL--CLASS extends left of zero). Right: primary covariance estimates
 with image-cluster-robust intervals.}
 \label{fig:results}
 \end{figure*}
 
 \paragraph{Reading $\widehat{\Delta T}$ as a comparative forecast test.} Corollary
 \ref{cor:dm} identifies $\widehat{\Delta T}$ and its image-clustered interval in Table
-\ref{tab:wager-results} as exactly a grouped Diebold--Mariano statistic and interval for
+\ref{tab:wager-results} as a grouped Diebold--Mariano statistic and interval, on the identified subsample, for
 each pair's paired score differential, so every row already reports what that classical
 test would report. What it does not report is the next two columns: whether MOTIFS-TDE
 (Section~\ref{sec:sggaudit}) or MLP-SPATIAL beat their baseline for a reason a
@@ -175,14 +175,22 @@ question $\widehat{\Delta P}$ and $\widehat{\Delta R}$ answer and DM/GW do not a
 For MLP-SPATIAL versus MLP-CLASS, the conclusion survives every planned sensitivity
 check (Table~\ref{tab:sensitivity}). Changing from the quadratic to a probability-floored
 log score changes scale ($0.01439$ to $0.06536$) but not sign or significance.
-Coarsening $\phi$ from the class pair to subject class increases the credited resolution
+The coverage column matters for reading the rows against each other, and earlier
+versions of this table omitted it. Each row targets the identified subpopulation its own
+setting defines, so the minimum-cell-size rows are not four estimates of one quantity:
+raising the minimum from $2$ to $20$ drops coverage from $99.0\%$ to $86.7\%$ and changes
+the estimand along with the estimator. That the estimate moves so little across them
+($0.01439$ to $0.01225$) is therefore mild evidence of stability rather than a
+sensitivity analysis holding the target fixed.
+
+Coarsening $\phi$ from the class pair to subject class increases the credited covariance
 to $0.02181$. Proposition~\ref{prop:coarsen} identifies why: the coarser cell's estimate
 equals the class-pair estimate's conditional average plus a between-class-pair covariance
 term, and that term is positive here, meaning some of the credited gain reflects
 class-pair-level structure that the finer audit had already correctly assigned to
 $\Delta P$. This is precisely the sense in which the class-pair audit is the conservative
 choice: it is not that coarsening is wrong, but that it cannot be assumed neutral, and
-only the finer partition's estimate isolates resolution gain net of every prior regularity
+only the finer partition's estimate isolates covariance gain net of every prior regularity
 expressible in $\phi$. The same class-pair-versus-subject-only pair also instantiates
 Proposition~\ref{prop:sensitivity} directly, with the subject class playing the role of
 the unrecorded confounder $Z$: Table~\ref{tab:sensitivity-numeric} in
@@ -199,18 +207,20 @@ to tune.
 \caption{Sensitivity of the MLP-SPATIAL vs.\ MLP-CLASS decomposition to score, audit
 granularity, and minimum cell size. CI is image-cluster robust on $\widehat{\Delta R}$.}
 \label{tab:sensitivity}
-\begin{tabular}{@{}llrrr@{}}
+\small
+\begin{tabular}{@{}llrr@{\,}rr@{}}
 \toprule
-Factor & Setting & $\widehat{\Delta T}$ & $\widehat{\Delta R}$ (95\% CI) & Cells \\
+Factor & Setting & $\widehat{\Delta T}$ & \multicolumn{1}{r}{$\widehat{\Delta R}$ (95\% CI)} & Cells &
+Cov. \\
 \midrule
-Score & Brier (default) & $0.00885$ & $0.01439\,[0.01373,0.01504]$ & 6346 \\
-Score & Log (floored) & $0.04297$ & $0.06536\,[0.06294,0.06779]$ & 6346 \\
-Audit cell & class pair (default) & $0.00885$ & $0.01439\,[0.01373,0.01504]$ & 6346 \\
-Audit cell & subject only & $0.00943$ & $0.02181\,[0.02079,0.02283]$ & 150 \\
-Min.\ cell size & 2 (default) & $0.00885$ & $0.01439\,[0.01373,0.01504]$ & 6346 \\
-Min.\ cell size & 5 & $0.00772$ & $0.01395\,[0.01329,0.01462]$ & 4060 \\
-Min.\ cell size & 10 & $0.00683$ & $0.01330\,[0.01262,0.01398]$ & 2744 \\
-Min.\ cell size & 20 & $0.00570$ & $0.01225\,[0.01155,0.01295]$ & 1757 \\
+Score & Brier (def.) & $0.00885$ & $0.01439\,[0.01373,0.01504]$ & 6346 & $99.0\%$ \\
+Score & Log (floored) & $0.04297$ & $0.06536\,[0.06294,0.06779]$ & 6346 & $99.0\%$ \\
+Cell $\phi$ & class pair (def.) & $0.00885$ & $0.01439\,[0.01373,0.01504]$ & 6346 & $99.0\%$ \\
+Cell $\phi$ & subject only & $0.00943$ & $0.02181\,[0.02079,0.02283]$ & 150 & $100.0\%$ \\
+Min.\ cell size & 2 (def.) & $0.00885$ & $0.01439\,[0.01373,0.01504]$ & 6346 & $99.0\%$ \\
+Min.\ cell size & 5 & $0.00772$ & $0.01395\,[0.01329,0.01462]$ & 4060 & $96.3\%$ \\
+Min.\ cell size & 10 & $0.00683$ & $0.01330\,[0.01262,0.01398]$ & 2744 & $92.6\%$ \\
+Min.\ cell size & 20 & $0.00570$ & $0.01225\,[0.01155,0.01295]$ & 1757 & $86.7\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -220,7 +230,7 @@ Min.\ cell size & 20 & $0.00570$ & $0.01225\,[0.01155,0.01295]$ & 1757 \\
 None of the models in Appendices~\ref{app:vgmain}--\ref{sec:ablations} ever sees an image.
 They are functions of the declared class pair and, in the case of MLP-SPATIAL(+), of box
 coordinates recorded in the annotation. Since box geometry serves only as a proxy for
-what an image contains, a sceptical reader is entitled to ask whether the resolution
+what an image contains, a sceptical reader is entitled to ask whether the covariance
 channel is responding to genuine pixel evidence or merely to that proxy.
 Figure~\ref{fig:samples} sharpens the question: the cell
 $\phi=(\text{man},\text{surfboard})$ holds both ``riding'' and ``carrying'', and although
@@ -232,7 +242,7 @@ original Visual Genome image and each is encoded by a frozen CLIP ViT-B/32 image
 \citep{radford2021learning}, after which the two $512$-dimensional embeddings are
 concatenated with the class embeddings that MLP-CLASS already uses and passed to a small
 trained head of 256 and 128 units. Because CLIP itself is never fine-tuned, whatever
-resolution the model gains reflects information its pretraining had already recovered
+covariance the model gains reflects information its pretraining had already recovered
 from pixels and the head has merely matched to an SGG label, rather than representation
 learning performed on Visual Genome.
 
@@ -259,20 +269,20 @@ geometry with pixel content had simply made the predictor worse, and would disca
 
 The decomposition in Table~\ref{tab:vgvisual} and Figure~\ref{fig:vgvisual} contradicts
 that reading on the axis the paper cares about. Against MLP-SPATIAL-S the CLIP model
-loses $0.05296$ of prior-fit gain while \emph{gaining} $0.00641$ of instance
-resolution (95\% CI $[0.00514,0.00769]$, randomization $p=.002$), so its entire deficit
-sits in the prior channel and its instance-level discrimination is significantly better,
+loses $0.05296$ of transported gain while \emph{gaining} $0.00641$ of instance
+covariance (95\% CI $[0.00514,0.00769]$, randomization $p=.002$), so its entire deficit
+sits in the transported channel and its within-cell discrimination is significantly better,
 not worse. The comparison against the class-only baseline tells the same story more
-plainly: pixels buy $0.01665$ of resolution where box geometry buys $0.01023$, and the
+plainly: pixels buy $0.01665$ of covariance where box geometry buys $0.01023$, and the
 two intervals are far apart. Real image content therefore carries more instance-specific
 signal than the geometric proxy standing in for it, which is precisely what
 Appendix~\ref{app:vgvisual} set out to test.
 
-Why the prior channel collapses has a plausible mechanism, though we state it as a
+Why the transported channel collapses has a plausible mechanism, though we state it as a
 hypothesis rather than a finding. The $1024$ CLIP dimensions dominate
 the $64$ dimensions of class embedding that the head also receives, so the model fits the
 class-pair frequency structure of VG150 markedly less well than a predictor built around
-that structure. A benchmark whose headline metric rewards prior fitting will punish this
+that structure. A benchmark whose headline metric rewards transported gain will punish this
 model, and the aggregate numbers duly do. What WAGER adds is the observation that the
 punishment is not for failing to use the image; it is for failing to reproduce the
 annotation prior, while using the image better than either competitor.
@@ -283,21 +293,21 @@ correction that supplies prior information but no instance information. We test 
 prior matching: within each class-pair cell, a model's predictions are reweighted so
 that their cell mean matches the training-count histogram, a label-shift-style
 correction that uses no test labels. The correction registers, as it must, almost
-entirely in the prior channel ($\Delta P=+0.02401$ against $\Delta R=+0.00111$ for the
+entirely in the transported channel ($\Delta P=+0.02401$ against $\Delta R=+0.00111$ for the
 CLIP model relative to its uncorrected self), and it cuts the CLIP model's aggregate
-deficit roughly in half ($-0.04655$ to $-0.02143$) while leaving the resolution advantage
+deficit roughly in half ($-0.04655$ to $-0.02143$) while leaving the covariance advantage
 intact ($+0.00752$, or $+0.00663$ with both models corrected). A calibration-matched
 audit -- temperatures fitted on a held-out image split, $T^*=1.18$ against $1.00$, so
 these heads are nearly calibrated to begin with -- likewise leaves the advantage
-significant at $+0.00467$ $[+0.00314,+0.00621]$. The resolution channel is therefore
+significant at $+0.00467$ $[+0.00314,+0.00621]$. The covariance channel is therefore
 neither manufacturable by prior correction nor an artifact of confidence scaling.
 Conversely, the part of the deficit that prior matching removes is exactly the part a
 deployment could restore by re-weighting; the remainder reflects differences in
 within-cell prediction dispersion rather than in the fitted cell histogram.
 
 This is the paper's argument running in the opposite direction from
-Appendix~\ref{app:lt}. There a near-zero total gain concealed a large resolution
-\emph{loss}; here a clearly negative total gain conceals a real resolution \emph{gain}. In
+Appendix~\ref{app:lt}. There a near-zero total gain concealed a large covariance-gain
+\emph{loss}; here a clearly negative total gain conceals a real covariance \emph{gain}. In
 both cases the aggregate score is not merely imprecise but actively misleading about the
 thing a vision benchmark is meant to measure, and in both cases the two channels recover
 what it hides.
@@ -326,12 +336,12 @@ MLP-VISUAL-S  & MLP-SPATIAL-S & $-0.04655$ & $-0.05296$ & $0.00641\,[0.00514,0.0
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig7_vg_visual.png}
-\caption{\textbf{Pixels beat geometry on resolution while losing on the aggregate.}
+\caption{\textbf{Pixels beat geometry on covariance while losing on the aggregate.}
 Left: the exact decomposition for the three matched-subsample pairs. Both comparisons
 involving the CLIP model have strongly negative totals (green) driven entirely by the
-prior channel (blue), while their resolution channel (red) is positive in every case.
-Right: the resolution channel alone, with 95\% image-clustered intervals. Replacing box
-geometry with real image content raises within-group resolution from $0.01023$ to $0.01665$
+transported channel (blue), while their covariance channel (red) is positive in every case.
+Right: the covariance channel alone, with 95\% image-clustered intervals. Replacing box
+geometry with real image content raises within-group covariance from $0.01023$ to $0.01665$
 over the same class-only baseline.}
 \label{fig:vgvisual}
 \end{figure*}
@@ -369,7 +379,7 @@ Section~\ref{sec:inference} applies directly. One semantic point matters in this
 transport uses each cell's \emph{test} label histogram, which on CIFAR-100-LT is
 balanced. A positive $\Delta P$ here therefore records movement \emph{toward} the
 balanced test marginal -- undoing the training-frequency skew -- which is precisely the
-adjustment long-tailed evaluation is designed to reward; a prior-fit gain is a
+adjustment long-tailed evaluation is designed to reward; a transported gain is a
 description of where score was earned, not an accusation
 (Section~\ref{sec:discussion}).
 
@@ -384,15 +394,15 @@ aggregate score conceals almost everything of interest. On the quadratic score i
 $+0.00143$ over the baseline, a difference small enough that a reader working from the
 headline number alone would reasonably conclude that re-weighting had changed very
 little. The decomposition tells another story: within superclasses the
-prior-fit channel improves by $+0.19713$ while within-group resolution deteriorates
+transported channel improves by $+0.19713$ while within-group covariance deteriorates
 by $-0.19569$ (95\% CI $[-0.20728,-0.18411]$), so the near-zero total is not a small
 effect but two large ones that happen to cancel.
 
 \paragraph{A calibration-matched regime.} A channel split of that shape could, however,
-be produced by confidence scaling alone. Under the quadratic score the resolution channel
+be produced by confidence scaling alone. Under the quadratic score the covariance channel
 is a covariance between probability movements and labels
 (Eq.~\eqref{eq:cov-id}), and a monotone recalibration moves it: softening an
-overconfident model transfers score mass from the resolution to the prior channel while
+overconfident model transfers score mass from the covariance channel to the transported channel while
 adding no information about any individual image. The baseline invites exactly this
 concern, assigning a mean maximum probability of $0.764$ while being correct on only
 $0.3662$ of the test set. We therefore repeat the audit in a calibration-matched regime:
@@ -401,21 +411,21 @@ test split ($T^*=2.85$ for CE, $3.51$ for CB, $2.61$ for DRW), the decomposition
 computed on the disjoint audit half, and the whole procedure is repeated over twenty
 random splits (Table~\ref{tab:cifar-cal}). The regime's necessity is quantified by its
 control row: recalibrating the baseline alone -- a transformation carrying no instance
-information -- moves the channels by $+0.380$ (prior) and $-0.175$ (resolution), so the
+information -- moves the channels by $+0.380$ (prior) and $-0.175$ (covariance), so the
 raw split does mix calibration with discrimination.
 
 The calibration-matched rows then separate the two schedules cleanly, and more sharply
-than the raw ones. CB's resolution deficit does not shrink but widens, to
+than the raw ones. CB's covariance deficit does not shrink but widens, to
 $-0.23991\,(0.00491)$: the model re-weighted from initialization has genuinely lost
 within-superclass discrimination -- a real degradation that the ten-point accuracy drop
 records independently -- and its near-zero raw total reflects that loss offset by its
 softer, better-calibrated confidence. DRW inverts the reading its raw split suggests.
-Raw, its $+0.06712$ gain divides roughly two-thirds prior to one-third resolution;
+Raw, its $+0.06712$ gain divides roughly two-thirds transported to one-third covariance gain;
 calibration-matched, the improvement is $+0.02173\,(0.00275)$ of which
-$+0.01957\,(0.00329)$ is within-group resolution while the prior channel is close to zero
+$+0.01957\,(0.00329)$ is within-group covariance while the transported channel is close to zero
 ($+0.00216\,(0.00410)$). What survives calibration matching is precisely the component
 the deferred schedule was designed to buy -- per-instance discrimination, concentrated
-on rare classes (Table~\ref{tab:cifar-tier}) -- while the apparently prior-fit
+on rare classes (Table~\ref{tab:cifar-tier}) -- while the apparently transported
 share of its raw gain was largely the calibration difference between the two runs.
 Neither an accuracy difference nor an aggregate score exposes either composition, which
 is the practical argument for reporting the two channels, in both regimes, instead of
@@ -453,13 +463,13 @@ two further seeds at the primary ratio and at imbalance ratios $10$ and $50$, an
 fourth arm: post-hoc logit adjustment (LA), which divides the baseline's predictions by
 the training class prior without retraining \citep{menon2021long}. Every configuration is
 audited in both regimes; Table~\ref{tab:cifar-robust} reports the calibration-matched
-resolution channel, which is the one the preceding paragraphs interpret.
+covariance channel, which is the one the preceding paragraphs interpret.
 
-Three things follow. First, the class-balanced run's resolution loss is not a
+Three things follow. First, the class-balanced run's covariance loss is not a
 misconfiguration but a systematic function of imbalance severity: $-0.069$ at ratio $10$,
 $-0.244$ at $50$, and $-0.251\,(0.011)$ across three seeds at $100$, tracking an accuracy
 penalty that grows from $2.3$ to $10.4$ points over the same range. Second, the deferred
-schedule's resolution gain is positive at every ratio and in every seed, but its magnitude
+schedule's covariance gain is positive at every ratio and in every seed, but its magnitude
 varies roughly fourfold across seeds at ratio $100$ ($+0.007$ to $+0.031$). We therefore
 report the spread rather than a seed-level interval: the direction replicates, the
 magnitude is seed-sensitive, and the gap between the tight within-run intervals of
@@ -467,10 +477,10 @@ Table~\ref{tab:cifar} and this across-seed spread is exactly why a method-level 
 needs replication rather than a single audit.
 
 Third, LA is an instructive falsification of a natural expectation. A purely post-hoc
-prior correction might be expected to register as almost pure prior channel, as the
+prior correction might be expected to register as almost pure transported channel, as the
 within-cell prior matching of Appendix~\ref{app:vgvisual} does. It does not:
-calibration-matched, LA reads as almost entirely resolution ($+0.022$ to $+0.038$) with a
-prior channel near zero, while achieving the best balanced accuracy of any arm at every
+calibration-matched, LA reads as almost entirely covariance gain ($+0.022$ to $+0.038$) with a
+transported channel near zero, while achieving the best balanced accuracy of any arm at every
 ratio. The reason is visible in the construction. Dividing by the \emph{global} class
 prior is not a within-superclass histogram move, because fine classes inside a superclass
 differ in training frequency, and the correction it applies is multiplicative in each
@@ -481,11 +491,11 @@ cell's label histogram from adjustments that act on individual predictions.
 
 \begin{table}[t]
 \centering
-\caption{Calibration-matched resolution gain across seeds and imbalance ratios, with
+\caption{Calibration-matched covariance gain across seeds and imbalance ratios, with
 balanced test accuracy for each arm. LA is post-hoc logit adjustment applied to the
 baseline. The class-balanced deficit scales with imbalance severity; the deferred
 schedule's gain is positive throughout but seed-sensitive in magnitude; the post-hoc
-correction lands in the resolution channel rather than the prior channel.}
+correction lands in the covariance channel rather than the transported channel.}
 \label{tab:cifar-robust}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llrrrrrrr@{}}
@@ -507,17 +517,17 @@ $-0.25108\,(0.01124)$ & $+0.01953\,(0.01188)$ & $+0.03241\,(0.00498)$ \\
 }
 \end{table}
 
-Where the resolution gain sits is visible in Table~\ref{tab:cifar-tier} and
+Where the covariance gain sits is visible in Table~\ref{tab:cifar-tier} and
 Figure~\ref{fig:cifar} (raw regime, primary seed). For DRW it falls where the long-tail literature intends it to,
 reaching $+0.09009$ on few-shot classes and $+0.06760$ on medium-shot ones, while
 many-shot classes lose $-0.07624$ as the schedule shifts capacity away from the head.
 The class-balanced run reproduces that same ordering with every level displaced
-downward, its many-shot resolution collapsing to $-0.41977$. What the decomposition
+downward, its many-shot covariance collapsing to $-0.41977$. What the decomposition
 supplies, then, is not only how much of a long-tail gain is real but where in the
 frequency spectrum it was earned.
 
 These numbers also provide an implementation check on real inputs. Computing the
-resolution term directly from the covariance identity of Eq.~\eqref{eq:cov-id}, through a
+within-group covariance gain directly from the identity of Eq.~\eqref{eq:cov-id}, through a
 code path that shares nothing with the transport estimator, gives $-0.19530$; multiplying
 by the factor $n_c/(n_c-1)$ that Proposition~\ref{prop:attenuate} predicts, at the
 $n_c=500$ of a balanced superclass cell, returns $-0.195693$ against the estimator's
@@ -531,8 +541,8 @@ in the unit tests.
 \centering
 \caption{WAGER decomposition on the 10,000-image balanced CIFAR-100-LT test split.
 Gains use the quadratic score; CI is the H\'ajek interval on $\widehat{\Delta R}$;
-$p$ is the 499-shift randomization diagnostic, one-sided for positive resolution, so the
-value of $1.000$ on the CB rows records an resolution gain at the extreme negative end of
+$p$ is the 499-shift randomization diagnostic, one-sided for a positive covariance gain, so the
+value of $1.000$ on the CB rows records a covariance gain at the extreme negative end of
 its randomization distribution.}
 \label{tab:cifar}
 \resizebox{\textwidth}{!}{%
@@ -555,9 +565,9 @@ DRW vs CE & tier (3)        & $0.06606$ & $0.03702$ & $0.02904\,[0.01702,0.04107
 
 \begin{table}[t]
 \centering
-\caption{Resolution gain by training-frequency tier at the primary superclass audit.
+\caption{Covariance gain by training-frequency tier at the primary superclass audit.
 The deferred schedule concentrates its genuine per-instance improvement on rare
-classes; both methods lose resolution on the head.}
+classes; both methods lose covariance on the head.}
 \label{tab:cifar-tier}
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
@@ -580,15 +590,15 @@ decomposition at the superclass audit. The CB total gain (green) is visually alm
 absent at $+0.00143$ while its two channels reach $\pm0.2$ -- a near-zero aggregate
 score concealing two large opposing effects. DRW's smaller total is genuinely split
 between both channels. Error bars are 95\% H\'ajek intervals on $\widehat{\Delta R}$.
-Right: the resolution channel by training-frequency tier, showing that DRW's genuine
+Right: the covariance channel by training-frequency tier, showing that DRW's genuine
 per-instance gain is concentrated on rare classes and negative on the head.}
 \label{fig:cifar}
 \end{figure*}
 
 Coarsening behaves as Proposition~\ref{prop:coarsen} predicts. Moving from the 20
-superclass cells to a single global cell changes the credited resolution from $-0.19569$
+superclass cells to a single global cell changes the credited covariance from $-0.19569$
 to $-0.25430$; the difference is the between-cell covariance term, which is negative
-here, so the coarse audit overstates the resolution loss by attributing to it structure
+here, so the coarse audit overstates the covariance loss by attributing to it structure
 that the superclass partition correctly assigns to $\Delta P$. The finer partition is
 again the conservative reading, for the same reason as in Appendix~\ref{sec:ablations}
 and now in a second domain.
@@ -624,14 +634,14 @@ applies directly, as for CIFAR.
 over the cross-entropy baseline (top-1 accuracies $0.3532$ CE, $0.3960$ CB, $0.3776$
 DRW). The two schedules land in opposite channels here, which is itself the finding
 worth reporting: on this task it is class-balanced re-weighting from initialization, not
-the deferred schedule, that buys genuine within-topic resolution ($+0.04317$, CI
+the deferred schedule, that buys genuine within-topic covariance gain ($+0.04317$, CI
 $[0.03664,0.04970]$, $37.9\%$ of its total gain), while DRW's comparably sized total gain
-($0.11490$ vs.\ CB's $0.11388$) is $98.6\%$ prior-fit, its residual resolution
+($0.11490$ vs.\ CB's $0.11388$) is $98.6\%$ transported, its residual covariance
 statistically indistinguishable from zero at the superclass audit ($+0.00155$, CI
 $[-0.00296,0.00605]$, $p=.236$) and significantly negative once the coarser tier
 partition is used instead ($-0.00901$, CI $[-0.01428,-0.00374]$). This is the reverse of
 Appendix~\ref{app:lt}'s image-classification finding, where CB's near-zero total
-masked a large resolution \emph{loss} and DRW's gain was genuinely resolution-driven.
+masked a large covariance-gain \emph{loss} and DRW's gain was genuinely covariance-driven.
 Nothing about the estimator or the construction of $\phi$ changed between the two
 applications; what changed is which training recipe, on which data, buys real
 per-instance discrimination -- exactly the composition question an aggregate score or an
@@ -639,13 +649,13 @@ accuracy difference alone cannot answer, now demonstrated on a domain with neith
 class-frequency table nor a spatial prior.
 
 Coarsening moves both comparisons in the direction Proposition~\ref{prop:coarsen} allows
-without requiring: CB's credited resolution falls from $0.04317$ at the superclass
+without requiring: CB's credited covariance falls from $0.04317$ at the superclass
 partition to $0.04185$ at the global cell and $0.03578$ at the tier partition, while
 DRW's changes sign twice, from a small positive residual (superclass) to a small
 negative one (global) to a significant negative one (tier). None of these differences
 overturns CB's conclusion, but DRW's illustrates exactly why the finest defensible
 partition is the conservative default (Section~\ref{sec:coarsening}): a reader stopping
-at the coarser tier partition would report a significant resolution \emph{loss} for a
+at the coarser tier partition would report a significant covariance \emph{loss} for a
 method whose finer-grained residual is not distinguishable from zero.
 
 \begin{table}[t]
@@ -653,7 +663,7 @@ method whose finer-grained residual is not distinguishable from zero.
 \caption{WAGER decomposition on the 7,532-document balanced 20-Newsgroups-LT test
 split. Gains use the quadratic score; CI is the (unclustered) H\'ajek interval on
 $\widehat{\Delta R}$, documents being independent units; $p$ is the 499-shift
-randomization diagnostic, one-sided for positive resolution.}
+randomization diagnostic, one-sided for a positive covariance gain.}
 \label{tab:textlt}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llrrrr@{}}
@@ -678,23 +688,23 @@ DRW vs CE & tier (3)       & $0.11490$ & $0.12391$ & $-0.00901\,[-0.01428,-0.003
 \includegraphics[width=\textwidth]{figures/fig8_text_lt.png}
 \caption{\textbf{A third domain, with neither a spatial nor a class-frequency prior.}
 Left: exact decomposition at the coarse-topic audit; CB's total gain is genuinely split
-between both channels while DRW's is almost entirely prior-fit. Error bars are
-95\% H\'ajek intervals on $\widehat{\Delta R}$. Right: resolution gain by
+between both channels while DRW's is almost entirely transported. Error bars are
+95\% H\'ajek intervals on $\widehat{\Delta R}$. Right: covariance gain by
 training-frequency tier for both schedules, showing the same head-loses/tail-gains
 signature as Figure~\ref{fig:cifar} despite the change of domain and grouping variable.}
 \label{fig:textlt}
 \end{figure*}
 
-Table~\ref{tab:textlt-tier} breaks the superclass-audit resolution down by
+Table~\ref{tab:textlt-tier} breaks the superclass-audit covariance down by
 training-frequency tier for both schedules; the two methods agree in shape even though
-their superclass totals diverge sharply in composition, each gaining resolution on rare
+their superclass totals diverge sharply in composition, each gaining covariance on rare
 and medium-frequency categories and losing it on frequent ones, the same qualitative
 signature Appendix~\ref{app:lt} reports for image classification.
 
 \begin{table}[t]
 \centering
-\caption{Resolution gain by training-frequency tier at the superclass audit,
-20-Newsgroups-LT. Both schedules gain within-group resolution on rare and medium categories
+\caption{Covariance gain by training-frequency tier at the superclass audit,
+20-Newsgroups-LT. Both schedules gain within-group covariance on rare and medium categories
 and lose it on frequent ones.}
 \label{tab:textlt-tier}
 \begin{tabular}{@{}lrrr@{}}

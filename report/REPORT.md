@@ -558,3 +558,198 @@ restructured manuscript in this commit should be uploaded in place of the transf
 version before the submission is completed. The front matter is deliberately left
 venue-neutral (`\journal{}` removed, cover letter addressed to `[Journal name]`) so that
 retargeting is a one-line change.
+
+---
+
+## Addendum: sixth revision (2026-09-07), after the panel found the framing wrong
+
+The fifth revision above was a presentation pass, and a 5-seat simulated panel run against
+it (`reviews/2026-09-07-panel/`) returned Major Revision from all four seats that issue a
+recommendation, with three CRITICAL findings. One of them invalidated the framing that
+pass had just built. The full editorial synthesis, roadmap and panel provenance are in
+that directory; what follows is what changed and what was verified before changing it.
+
+### The central correction: ΔR is not the classical resolution term
+
+The Domain seat and, independently, the Methodology seat found that the paper's headline
+identification is false. The argument is short and decisive, and the paper had contained
+its own refutation for three revisions:
+
+- Classical DeGroot–Fienberg resolution depends on a forecast only through the partition
+  its level sets generate, so it is invariant under any strictly monotone rescaling of
+  forecast values.
+- The paper's own Discussion states that ΔR is **not** invariant to recalibration — which
+  is why the calibration-matching protocol exists.
+- Both cannot be true of one quantity.
+
+Verified directly before acting. Under a strictly monotone recalibration, classical
+resolution holds at `0.046160` while the within-cell covariance moves `0.257157 →
+0.184819`; on a recalibrated-versus-raw pair the estimator returns `ΔR = −0.072338` where
+the difference of classical resolutions is exactly `0.000000`. The Methodology seat's
+independent counterexample gives `ΔR̂ = −0.35964444` against a classical resolution
+difference of exactly `0`.
+
+Theorem 1 is untouched — `ΔR_c = Σ_y Cov(H_X(y), 1{Y=y} | C=c)` is definitional. What was
+wrong is the attribution, and it was made structural by the fifth revision, which promoted
+"resolution" from an occasional gloss to the paper's primary term and put it in the title.
+Corrected throughout:
+
+- **Retitled** to *An Exact Decomposition of Paired Score Differences by Relabelling
+  Within Groups* — naming the operation, which is unarguable, rather than an
+  interpretation that is false.
+- **ΔR renamed** the *within-group covariance gain*. Yates (1982) added as the source of
+  the covariance representation, which the paper had been crediting to Murphy and to
+  DeGroot & Fienberg. The precise relation — equal to twice a classical resolution
+  difference exactly when both models are calibrated within cells, and not otherwise — is
+  now stated in the abstract, the introduction, §3.1 and the conclusion.
+- "Discrimination" was considered and rejected as a replacement name: standard
+  discrimination measures (AUC, the c-statistic) are rank-based and *are* monotone
+  invariant, so that name would have reproduced the same error.
+- The acronym's expansion is retired. WAGER is now just the software's name.
+
+### The second correction: ΔP is not prior fit either
+
+The Domain seat also found "prior-fit gain" a misnomer, and the paper had no result
+characterizing ΔP at all — five revisions had left it named by assumption. Derived and
+verified: for the quadratic score,
+
+```
+ΔP_c = [ ||p(c) − q̄₀(c)||² − ||p(c) − q̄₁(c)||² ]  −  [ tr Var(q₁|c) − tr Var(q₀|c) ]
+```
+
+a mean-forecast-fit improvement minus a within-cell dispersion increase, checked against
+the estimator on random inputs to 1e-12. Only the first bracket is prior fit. The second
+rewards *less* dispersed predictions at a fixed mean forecast, so ΔP can absorb an entire
+gain with both models' mean forecast sitting exactly on the cell frequencies — a
+four-point counterexample now in the paper and in the test suite. Added as
+**Proposition 2** with an appendix proof; ΔP renamed the *transported gain*, for the
+operation rather than an interpretation.
+
+This also fixed the fifth revision's worst self-inflicted error, which the Devil's
+Advocate seat caught: §2 had explained model B's `ΔP = −1/8` by saying its prior fit "got
+worse", when B's mean-forecast fit in fact *improves* by `+0.09375`. The true explanation
+is that dispersion rises by exactly the same `0.09375`, cancelling it, and the `−1/8`
+comes from leave-one-out transport removing the `(1/n_c)ΔR̂ = 1/8` the in-sample plug-in
+credits to the transported channel. Both numbers were right; the sentence explaining them
+was not.
+
+### The third correction: a committed file contradicted the paper's reassurance
+
+The Devil's Advocate seat found that `results/sensitivity_bound.json` — committed with
+Proposition 3 in the fourth revision, cited nowhere in the manuscript, and the only
+committed results file the verifier did not check — holds `bound_B = 0.232845` and
+`robustness_value_rho_dagger = 0.061272` for the main Visual Genome pair. Verified:
+`ρ† × B = 0.014267 = |ΔR|` exactly, and at the ρ̄ = 0.1 the paper itself suggests as
+plausible, the sharp bound `0.023284` **exceeds** the estimate. §3.5 had meanwhile
+asserted that a confounder would need "an implausibly strong, simultaneous effect" to
+explain a reported ΔR away, reporting only the crude bound it conceded was orders of
+magnitude too loose.
+
+An aggregate correlation of `0.061` is not implausibly strong. §3.5 now reports both
+bounds and the robustness value, states that a modest confounder would suffice for the
+Visual Genome gains, and notes that the flagship audit is not exposed the same way because
+its estimate is already indistinguishable from zero. The file is now in
+`verify_manuscript_numbers.py`.
+
+**Corollary 2 re-derived** (Methodology W5): bounding `Σ_y Var(b_y)` label-by-label with
+Popoviciu gives `K/4` and discards `Σ_y b_y = 1`, which forces `Σ_y Var(b_y) ≤ 1 − 1/K`.
+The free bound is `M√(K−1)` = `14.00`, not `K M / 2` = `50.00`. `sensitivity_bound_check.json`
+regenerated; the superseded value is retained in the file for the record.
+
+### Other corrections, each verified before editing
+
+- **Theorem 4's printed sandwich variance was `1/G` times the correct quantity** — the
+  `N_*/G` prefactor cancels the `G/(G−1)` numerator, so the stated consistency claim was
+  false as printed while Appendix B and the code were right.
+- **Conditions (iii) and (v) could not both bind.** (v) forces `N_*/N → 1`, making the
+  identified-fraction assumption vacuous; it is dropped rather than stated alongside a
+  condition that contradicts it, and the theorem now says plainly that it does not describe
+  the regime the applications sit in.
+- **The Hájek remainder rate was asserted at the wrong level.** A per-cell `o_p(n_c^{-1/2})`
+  does not aggregate to `o_p(N_*^{-1/2})` when the cell count grows. Repaired with the
+  degenerate second-order rate `O_p(n_c^{-1})`, which needs only `C = o(√N_*)` — stated as
+  Eq. (cellcount).
+- **"Most eligible VG150 cells sit at the minimum size n_c = 2" was false**, in three
+  places, and it carried the paper's honesty statement about condition (v). The paper's own
+  ablation refutes it: 2,286 of 6,346 eligible cells hold fewer than five examples, and
+  those carry 2.7% of identified relations. The correction runs in the paper's favour,
+  which is precisely why it had to be made rather than defended.
+- **The Diebold–Mariano corollary was invoked out of scope.** It is stated at the trivial
+  partition for `N⁻¹Σᵢ`, but §4.10 and Appendix E.2 invoked it at non-trivial groupings
+  where the reported statistic is the `N_*`-weighted identified-subsample mean. Both now
+  carry the subsample qualifier.
+- **A false sentence in §4.10**: a resolution term "applied without any conditioning at
+  all" is identically zero. Corrected — at the trivial partition ΔR is the *unconditional*
+  covariance contrast, and ΔP is not a calibration term.
+- **§5.1's "averaging over repeated splits … throughout" was false.** Only CIFAR averages
+  (20 splits); the SGG audit and VG-visual each use one fixed-seed split, and the omitted
+  between-split sd (`0.001725`) exceeds the audit's reported CI half-width (`0.00115`).
+  Stated.
+- **Figure 1 was stale in a way this log had claimed was fixed two revisions ago.** The
+  committed PNG was still the text-only flowchart titled "Within-cell Antisymmetric Gain
+  Evaluation of **Reasoning**" — abandoned terminology, and exactly the jargon the retitle
+  removed. `make_fig1_concept.py` had long since superseded it but its output was never
+  committed. The script's own labels were updated and the figure regenerated; it now shows
+  the two real VG150 relations with crossed labels that the caption describes.
+- **Coverage column added** to the granularity table, whose rows target different
+  identified subpopulations (99.0% → 86.7%) and so are not four estimates of one quantity.
+- **Terminology audit completed past §1**, which is where the fifth revision's sweep had
+  stopped: four names for the grouping variable and five for ΔP were still in circulation
+  in §4–§6, along with three agreement artefacts ("an cell" ×2, "an covariance").
+
+### Two additions the panel's criticism earned
+
+**A decision the split changes** (§2.1). The Devil's Advocate seat's sharpest point was
+that the paper never exhibited a single decision the decomposition would alter — it
+disclaimed "says where a gain lives, not whether it is worth having" and then showed no
+ranking that reverses. It does now, on the same four points, exactly:
+
+| | benchmark gain | after a label-frequency shift to (¼, ¾) |
+|---|---:|---:|
+| model A (all transported) | +1/8 | **−3/8** |
+| model B (all covariance)  | +3/8 | **+3/8** |
+
+Model A does not merely lose its margin; it becomes *worse* than the model it was meant to
+replace, while B is untouched. The decomposition says in advance which is exposed and the
+aggregate score does not — ΔP is the part of a reported gain contingent on the evaluation
+set's label frequencies matching deployment, and ΔR is the part that is not.
+
+**Fineness is not a total order** (§6). The Devil's Advocate built an adversarial example
+the paper could not answer, and it is now stated as a limitation. Four cases, one model
+pair, `ΔT = +0.480` and 100% coverage under all three partitions below:
+
+| declared φ | cells | ΔP | ΔR |
+|---|---|---:|---:|
+| {1,3},{2,4} | 2×2 | −1.120 | **+1.600** |
+| {1,2,3,4} | 1×4 | −0.587 | +1.067 |
+| {1,2},{3,4} | 2×2 | +0.480 | **0.000** |
+
+The first and third are equally fine and fully identified and disagree about whether the
+improvement is entirely case-level or entirely transported. "Choose the finest defensible
+φ" cannot arbitrate, and Proposition 1 is silent because neither coarsens the other. The
+paper previously attached this warning only to the degenerate choice φ = Y; the general
+version is less comfortable and we have no procedure that resolves it. A
+recalibration-invariant rank-based alternative is now discussed too, along with what it
+would cost (the exact additivity that is the whole point).
+
+**Adjacent literatures** added, all nine new citations verified against CrossRef records
+before use: Yates (1982); Ferro (2007), DelSole & Tippett (2014) and Siegert et al. (2017)
+on inference for skill differences, which the paper's gap claim had overstated the silence
+of; Oaxaca (1973), Blinder (1973) and DiNardo, Fortin & Lemieux (1996) on decomposing a
+gap into composition and conditional behaviour; Mantel & Haenszel (1959) on within-stratum
+association and non-collapsibility; Holland & Thayer (1986) on differential item
+functioning. Note that the panel's author list for Siegert et al. was wrong and the
+CrossRef check caught it.
+
+### State
+
+Main text 34 pages (from 26; the additions above are the cost), 62 total. Suite 20/20;
+89 verifier checks, up from 83, the new ones covering the sharp sensitivity bound and the
+robustness value. One 1.9pt overfull box, no undefined references. Front matter, README and
+`algorithm.md` all carry the corrected framing.
+
+**What is not addressed.** The Journal-Fit seat's CRITICAL — no econometric or forecasting
+application, 30 ML conference citations against two econometrics ones — is a venue
+judgment, not a defect in the work, and it is the open question for the transfer decision
+(see the Venue section above). The panel's remaining Minor findings are tracked in the
+roadmap and not all acted on.

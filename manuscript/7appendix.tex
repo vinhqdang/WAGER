@@ -25,6 +25,27 @@ is $\operatorname{Cov}(B(X),\sum_y\ind \{Y=y\})=
 \operatorname{Cov}(B(X),1)=0$. The remaining terms give Eq.~\eqref{eq:cov-id}. If
 $H_X(y)=H_c(y)$ almost surely, every covariance is zero. \qed
 
+\subsection{Proof of Proposition~\ref{prop:transported}}
+Condition on $C=c$ and let $Y'\sim p(c)$ be independent of $X$. For the quadratic score
+$S_{\rm B}(q,y)=2q_y-\lVert q\rVert^2$,
+\begin{equation}
+\mathbb E\bigl[S_{\rm B}(q_m,Y')\mid c\bigr]
+=2\bigl\langle p(c),\bar q_m(c)\bigr\rangle-\mathbb E\bigl[\lVert q_m\rVert^2\mid c\bigr].
+\end{equation}
+Decompose the second moment as
+$\mathbb E[\lVert q_m\rVert^2\mid c]=\lVert\bar q_m(c)\rVert^2
++\operatorname{tr}\operatorname{Var}(q_m\mid c)$, and complete the square using
+$2\langle p,\bar q\rangle-\lVert\bar q\rVert^2=\lVert p\rVert^2-\lVert p-\bar q\rVert^2$:
+\begin{equation}
+\mathbb E\bigl[S_{\rm B}(q_m,Y')\mid c\bigr]
+=\lVert p(c)\rVert^2-\lVert p(c)-\bar q_m(c)\rVert^2
+-\operatorname{tr}\operatorname{Var}(q_m\mid c).
+\end{equation}
+Subtracting the $m=0$ expression from the $m=1$ expression, the $\lVert p(c)\rVert^2$
+terms cancel and Eq.~\eqref{eq:transported-composition} follows, since
+$\Delta P_c=\mathbb E[S_{\rm B}(q_1,Y')\mid c]-\mathbb E[S_{\rm B}(q_0,Y')\mid c]$ by
+definition. \qed
+
 \subsection{Proof of Theorem~\ref{thm:bregman}}
 Condition on $C=c$. The proof of Theorem~\ref{thm:population} above establishes
 $\Delta R_c=\sum_y\operatorname{Cov}(H_X(y),\ind\{Y=y\}\mid C=c)$ for \emph{any} score
@@ -131,13 +152,24 @@ separately gives the observable, per-cell bound
 the second inequality of Eq.~\eqref{eq:sensitivity-bound}; this is a bound on a product of
 two sums, and does not simplify to a sum of per-label square roots, since Cauchy--Schwarz
 runs the other way for that rearrangement. Second, for
-Corollary~\ref{cor:sensitivity-crude}, $a_y\in[-M,M]$ (a conditional expectation of a
-$[-M,M]$-valued variable) and $b_y\in[0,1]$, so Popoviciu's inequality applied directly to
-$a_y,b_y$ gives $\operatorname{Var}(a_y\mid c)\le M^2$ and $\operatorname{Var}(b_y\mid
-c)\le1/4$ for every $y$, hence
+Corollary~\ref{cor:sensitivity-crude}, $a_y\in[-M,M]$ as a conditional expectation of a
+$[-M,M]$-valued variable, so Popoviciu's inequality gives
+$\operatorname{Var}(a_y\mid c)\le M^2$ for every $y$ and hence
+$\sum_y\operatorname{Var}(a_y\mid c)\le KM^2$. For the $b_y$ the same argument would give
+$\operatorname{Var}(b_y\mid c)\le1/4$ and a total of $K/4$, but that treats the $b_y$ as
+$K$ unconstrained quantities in $[0,1]$ when in fact $\sum_yb_y=1$ almost surely. Using
+that constraint, $\sum_yb_y^2\le\bigl(\sum_yb_y\bigr)^2=1$ pointwise, while
+$\sum_y(\mathbb E b_y)^2\ge K^{-1}\bigl(\sum_y\mathbb E b_y\bigr)^2=1/K$ by
+Cauchy--Schwarz, so
+\[
+\sum_{y=1}^K\operatorname{Var}(b_y\mid c)
+=\mathbb E\Bigl[\sum_yb_y^2\Bigr]-\sum_y\bigl(\mathbb E b_y\bigr)^2\le1-\frac1K,
+\]
+which is Eq.~\eqref{eq:simplex-var} and is strictly smaller than $K/4$ for every $K>2$.
+Therefore
 \[
 \Bigl|\sum_{y=1}^K\operatorname{Cov}(a_y,b_y\mid c)\Bigr|
-\le|\rho|\sqrt{KM^2}\sqrt{K/4}=\frac{|\rho|\,K\,M}{2}.
+\le|\rho|\sqrt{KM^2}\sqrt{1-1/K}=|\rho|\,M\sqrt{K-1}.
 \]
 By Eq.~\eqref{eq:sensitivity-exact}, the left side of each display is exactly
 $|\Delta R_c(\phi)-\mathbb E[\Delta R_{(\phi,Z)}\mid\phi=c]|$, giving
@@ -161,7 +193,7 @@ projection. The classical H\'ajek projection of the order-two U-statistic
 $\widehat{\Delta R}_c$ is
 \[
 \widehat{\Delta R}_c=\theta_c+\frac{2}{n_c}\sum_{i\in c}\bigl(g_c(Z_i)-\theta_c\bigr)
-+o_p(n_c^{-1/2}).
++O_p(n_c^{-1}).
 \]
 The dataset statistic weights cells by their example counts,
 $\widehat{\Delta R}=N_*^{-1}\sum_c n_c\widehat{\Delta R}_c$, and cell membership is
@@ -171,19 +203,36 @@ $\theta_{C_i}-\theta$. Combining the two sources,
 \[
 \widehat{\Delta R}-\theta
 =\frac{1}{N_*}\sum_{i}\Bigl[2\bigl(g_{C_i}(Z_i)-\theta_{C_i}\bigr)
-+\bigl(\theta_{C_i}-\theta\bigr)\Bigr]+o_p(N_*^{-1/2}).
++\bigl(\theta_{C_i}-\theta\bigr)\Bigr]+o_p(N_*^{-1/2}),
 \]
+where the dataset-level remainder requires one condition beyond the per-cell expansion,
+because $C$ per-cell remainders do not aggregate for free. Writing
+$C=\#\{c:n_c\ge2\}$ for the number of eligible cells, the weighted sum of the per-cell
+degenerate terms is $N_*^{-1}\sum_cn_c\cdot O_p(n_c^{-1})=O_p(C/N_*)$, which is
+$o_p(N_*^{-1/2})$ provided
+\begin{equation}
+C=o\bigl(\sqrt{N_*}\bigr).
+\label{eq:cellcount}
+\end{equation}
+This is what makes the second-order rate $O_p(n_c^{-1})$ rather than $o_p(n_c^{-1/2})$
+worth stating: the sharper per-cell rate is what allows a condition on the cell
+\emph{count} alone, with no further requirement on individual cell sizes. On VG150,
+$C=6{,}346$ against $N_*=227{,}337$, so $C/\sqrt{N_*}\approx13.3$ --- the condition is a
+statement about the limit, and at these finite sample sizes it is the coverage simulation
+of Section~\ref{sec:simulation}, not Eq.~\eqref{eq:cellcount}, that supports the reported
+intervals.
 Estimating $g_{C_i}(Z_i)$ by the pair-kernel mean $\bar A_i$, $\theta_c$ by
 $\widehat{\Delta R}_c$, and $\theta$ by $\widehat{\Delta R}$ gives the plug-in
 influence contribution
 $\widehat\psi_i=2(\bar A_i-\widehat{\Delta R}_{c})+(\widehat{\Delta R}_{c}
 -\widehat{\Delta R})=2\bar A_i-\widehat{\Delta R}_{c}-\widehat{\Delta R}$, which is
 Eq.~\eqref{eq:influence} and has exactly zero sample mean by construction. Its empirical
-95\% coverage in a VG-like regime (image-clustered examples, Zipf cell sizes dominated
-by $n_c=2$) is validated in Section~\ref{sec:simulation}.
+95\% coverage in a VG-like regime (image-clustered examples, heavy-tailed cell sizes with
+a large mass of near-minimum cells) is validated in Section~\ref{sec:simulation}.
 
 \paragraph{Proof of Theorem~\ref{thm:clt}.} The linearization above gives
-$\widehat{\Delta R}-\theta=N_*^{-1}\sum_i\psi_i+o_p(N_*^{-1/2})$ for the population
+$\widehat{\Delta R}-\theta=N_*^{-1}\sum_i\psi_i+o_p(N_*^{-1/2})$, under
+Eq.~\eqref{eq:cellcount}, for the population
 influence contribution $\psi_i=2(g_{C_i}(Z_i)-\theta_{C_i})+(\theta_{C_i}-\theta)$, which
 has zero mean by construction and satisfies $|\psi_i|\le C(M)$ for an absolute constant
 $C(M)$ depending only on the score bound $M$ in condition (i), since $g_{C_i}$,
@@ -204,13 +253,12 @@ definition of $\sigma^2$, and the $o_p(N_*^{-1/2})$ remainder is asymptotically
 negligible after multiplying by $\sqrt{N_*}$, so
 $\sqrt{N_*}(\widehat{\Delta R}-\theta)\xrightarrow{d}\mathcal N(0,\sigma^2)$ by Slutsky's
 theorem. For the variance estimator, $\widehat{\Delta R}\to_p\theta$ by the weak law of
-large numbers across the (diverging, by (iii)) number of identified examples, and
+large numbers across the diverging number of identified examples, and
 $\widehat{\Delta R}_c\to_p\Delta R_c$ for each eligible cell by the weak law of large
-numbers applied within that cell -- here condition (v), not (iii), is what is used:
-(v) guarantees $n_c\to\infty$ almost surely for every cell in the fixed, finite support
-of $\phi$, which is what a within-cell WLLN requires; the aggregate condition (iii)
-alone bounds only the total identified count, not any individual cell's size, and does
-not by itself imply within-cell consistency. So $\widehat\psi_i\to_p\psi_i$ pointwise, and
+numbers applied within that cell -- this is where condition (iv) is used, and it is not
+implied by anything aggregate: (iv) guarantees $n_c\to\infty$ almost surely for every cell
+in the fixed, finite support of $\phi$, which is what a within-cell WLLN requires, whereas
+a condition on the total identified count bounds no individual cell's size. So $\widehat\psi_i\to_p\psi_i$ pointwise, and
 $\widehat\sigma^2$ -- a sum of squares of cluster-aggregated $\widehat\psi_i$, normalized
 by $N_*$ and $G$ -- is a continuous functional of these consistent plug-ins, hence
 $\widehat\sigma^2\to_p\sigma^2$ by the continuous mapping theorem. \qed
@@ -251,7 +299,7 @@ Carlo correction includes the observed assignment and prevents zero $p$-values.
 The NumPy implementation is in \texttt{wager/antisymmetric.py}. The primary routine
 \texttt{decompose\_gain} validates probability matrices, forms score contrasts, excludes
 singleton cells, computes all three components, verifies the identity numerically, and
-returns per-instance transported/resolution values plus intervals. The Visual Genome
+returns per-instance transported/covariance values plus intervals. The Visual Genome
 driver is \texttt{experiments/\allowbreak run\_sgg\_wager.py}; controlled validation and sensitivity
 checks are in \texttt{experiments/\allowbreak antisymmetric\_simulation.py} and
 \texttt{experiments/\allowbreak antisymmetric\_ablations.py}. All random seeds are fixed. Unit tests
@@ -270,7 +318,11 @@ Appendix~\ref{app:lt} is reproduced by
 protocol and the prior-matching experiment are
 \texttt{experiments/\allowbreak cifar\_recalibration\_control.py} and
 \texttt{experiments/\allowbreak vg\_prior\_consequence.py}. Table~\ref{tab:sensitivity-numeric}'s
-evaluation of Corollary~\ref{cor:sensitivity-crude} is
+free-bound rows are reproduced by \texttt{experiments/\allowbreak
+sensitivity\_bound\_check.py} and its sharp rows, including the robustness value
+$\rho^\dagger$ of Eq.~\eqref{eq:robustness-value}, by
+\texttt{experiments/\allowbreak sensitivity\_analysis.py}; the evaluation of
+Corollary~\ref{cor:sensitivity-crude} is
 \texttt{experiments/\allowbreak sensitivity\_bound\_check.py}, which recomputes the crude
 bound directly from the committed \texttt{antisymmetric\_ablations.json} rather than
 re-running the decomposition; \texttt{experiments/\allowbreak sensitivity\_analysis.py}

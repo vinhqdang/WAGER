@@ -32,7 +32,7 @@ Transport each prediction contrast to labels from *other* examples in the same c
 P_c = 1/[n_c(n_c-1)] * sum_{i != j} H_i(y_j).
 ```
 
-The within-cell instance-resolution gain is
+The within-cell covariance gain is
 
 ```text
 R_c = T_c - P_c.
@@ -84,10 +84,17 @@ image-clustered interval is primary.
 
 ## 5. Relation to classical score decomposition and two new identities
 
-`R_c` is a model-pair relative of the classical reliability/resolution/uncertainty
-partition of a single proper score (Murphy 1973; DeGroot & Fienberg 1983; Brocker 2009):
-conditioned on a grouping variable, a proper score splits into calibration and
-resolution, and resolution is a within-group covariance between forecast and outcome.
+`R_c` is a model-pair relative of the classical decompositions of a single proper score,
+but the relation needs stating carefully, because earlier versions of these notes got it
+wrong. `R_c` is a within-group covariance between the forecast contrast and the outcome
+indicator, which is the object **Yates's (1982) covariance decomposition** isolates. It is
+*not* the resolution term of the classical reliability/resolution/uncertainty partition
+(Murphy 1973; DeGroot & Fienberg 1983; Brocker 2009). Classical resolution depends on a
+forecast only through the partition its level sets generate, so it is invariant under any
+strictly monotone rescaling of forecast values; a covariance between those values is not.
+The two coincide -- `R_c` equals twice a difference of classical resolution terms -- only
+when both models are calibrated within each cell. This is why `R` moves under
+recalibration and why the protocol matches confidence before auditing.
 WAGER forms the paired gain vector `H_x(y)` first and decomposes the *contrast* between
 two models in one pass, rather than decomposing each model separately and subtracting.
 This buys two exact results the single-model decomposition does not have:
@@ -95,7 +102,7 @@ This buys two exact results the single-model decomposition does not have:
 - **Attenuation.** The naive in-sample plug-in transported score
   `P_tilde_i = mean_j H_i(y_j)` over the whole cell (including `i`) relates to WAGER's
   leave-one-out `P_i` by `P_tilde_i = P_i + R_i / n_c`, so the plug-in's implied
-  resolution `H_i(y_i) - P_tilde_i` is exactly `(n_c - 1)/n_c` times WAGER's `R_i` --
+  covariance `H_i(y_i) - P_tilde_i` is exactly `(n_c - 1)/n_c` times WAGER's `R_i` --
   biased at every finite `n_c`, worst at small cells. This is why the redesign needs no
   projection/evaluation split: leave-one-out transport removes the self-prediction bias
   exactly, at the full sample.
@@ -103,7 +110,7 @@ This buys two exact results the single-model decomposition does not have:
   union of `phi`-cells), then `R_{c_bar} = E[R_C | phi_bar = c_bar] + between-cell
   covariance term`, by the law of total covariance applied per label and summed. The
   second term is not sign-definite, so coarsening the cell is never guaranteed
-  neutral -- only the finest identified partition isolates resolution gain net of every
+  neutral -- only the finest identified partition isolates covariance gain net of every
   prior regularity expressible in `phi`.
 
 Proofs and unit tests: `manuscript/7appendix.tex` (Appendix A) and
@@ -116,7 +123,7 @@ Proofs and unit tests: `manuscript/7appendix.tex` (Appendix A) and
   cells.
 - `P > 0`: some improvement survives after instance assignments are broken and is
   prior-recoverable.
-- `R/T` is descriptive only when `T > 0`; it may exceed one if resolution improves while
+- `R/T` is descriptive only when `T > 0`; it may exceed one if the covariance gain rises while
   prior fitting worsens.
 - A positive `R` is not automatically causal reasoning. Any unmeasured within-cell
   shortcut can contribute, so `phi` must be justified and stress-tested.
@@ -166,7 +173,7 @@ conservatism:
 where `rho` is the aggregate correlation between the fine-grained gain and label
 frequency across the unobserved `(phi, Z)` partition, `M` bounds the score contrast, and
 `K` is the label count. An analyst who bounds `rho` (a single elicitable correlation, not
-a model of `Z`) gets a numeric limit on the resolution estimate's confounding bias
+a model of `Z`) gets a numeric limit on the covariance estimate's confounding bias
 without observing or modeling the confounder itself.
 
 ## 10. Relation to Diebold-Mariano / Giacomini-White

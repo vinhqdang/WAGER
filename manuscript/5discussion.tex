@@ -16,13 +16,13 @@ arithmetic.
 The interpretation remains conditional on the declared grouping variable $\phi$. A positive
 $\Delta R$ means the new model aligns its probability changes with the correct example
 better than the old model among examples sharing $\phi$. It does not prove causal
-inference, compositional understanding, or robustness. Where this paper calls a resolution
+inference, compositional understanding, or robustness. Where this paper calls a covariance
 estimate ``genuine,'' the word distinguishes a real statistical effect from a calibration
 or prior artifact; it is not a claim about reasoning, causal structure, or any
 compositional property of the model. If an unrecorded shortcut varies
 inside a cell, WAGER will count its predictive use in $\Delta R$; Proposition
 \ref{prop:sensitivity} turns this qualitative caveat into a numeric one, bounding how far
-the reported resolution gain could be from what a fully adjusted audit would find as a
+the reported covariance gain could be from what a fully adjusted audit would find as a
 function of a single, elicitable correlation parameter $\bar\rho$, though
 Table~\ref{tab:sensitivity-numeric} shows that bound is conservative at VG150's label
 cardinality. Applications should
@@ -30,38 +30,99 @@ therefore choose $\phi$ before looking at results, justify it from the benchmark
 generation process, and report finer and coarser alternatives. The observed increase
 under subject-only cells illustrates Proposition~\ref{prop:coarsen}: coarsening adds a
 between-cell covariance term of either sign, so it cannot be assumed to leave the
-estimate unchanged, and only the finest identified partition isolates resolution gain net
+estimate unchanged, and only the finest identified partition isolates covariance gain net
 of every prior regularity expressible in $\phi$. This is why the finest defensible prior
 feature is the conservative primary choice, not merely an empirical convention.
 
 Two further interpretation limits deserve explicit statement. First, $\Delta R$ is not
-invariant to monotone recalibration: because the resolution channel is a covariance
+invariant to monotone recalibration: because the covariance channel is a covariance
 between probability movements and labels, sharpening or softening a fixed model shifts
 score mass between the two channels while adding no information about any individual
 example. Appendix~\ref{app:lt} quantifies the effect on real models and adopts the
 corresponding control -- decompose calibration-matched model pairs, with temperatures
 chosen on data disjoint from the audit -- which we recommend whenever the compared
-systems differ visibly in confidence. Second, a prior-fit gain is not evidence
+systems differ visibly in confidence. Second, a transported gain is not evidence
 of anything illegitimate. Fitting the deployment label distribution better is genuine,
 decision-relevant skill whenever that distribution matches the benchmark's; it is
-fragile precisely under label shift, where prior-fit gain can be added or
+fragile precisely under label shift, where transported gain can be added or
 removed post hoc by re-weighting \citep{saerens2002adjusting,lipton2018detecting}, as
 the prior-matching experiment of Appendix~\ref{app:vgvisual} demonstrates directly.
-The decomposition reports where a gain lives; whether the prior channel is worth paying
+The decomposition reports where a gain lives; whether the transported channel is worth paying
 for is a property of the deployment, not of the model pair.
+
+\paragraph{Fineness is not a total order, and the guidance needs that qualification.}
+The advice to prefer the finest defensible $\phi$ is sound against \emph{coarsening},
+which is what Proposition~\ref{prop:coarsen} governs. It gives no guidance at all between
+two partitions of the same granularity, neither of which coarsens the other --- and there
+the estimand can differ without limit. Four cases suffice. Take two labels, $q_0$
+uninformative at $(\tfrac12,\tfrac12)$, and a new model that is confidently right on all
+four: $q_1=(0.9,0.1)$ on the two cases labelled $1$ and $(0.1,0.9)$ on the two labelled
+$2$. The total gain is $\widehat{\Delta T}=+0.480$ under every partition, and every
+partition below is fully identified at $100\%$ coverage:
+\begin{center}
+\begin{tabular}{@{}lccr@{}}
+\toprule
+declared $\phi$ & cells & $\widehat{\Delta P}$ & $\widehat{\Delta R}$ \\
+\midrule
+$\{1,3\},\{2,4\}$ (labels differ within each cell) & $2\times2$ & $-1.120$ & $+1.600$ \\
+$\{1,2,3,4\}$ (one cell)                           & $1\times4$ & $-0.587$ & $+1.067$ \\
+$\{1,2\},\{3,4\}$ (labels agree within each cell)  & $2\times2$ & $+0.480$ & $\phantom{+}0.000$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+The first and third partitions are equally fine, both fully identified, and they disagree
+about whether this model pair's improvement is entirely case-level or entirely
+transported. The third is the degenerate case the paper already warns about --- grouping
+by something that determines the label leaves each cell label-homogeneous and drives
+$\widehat{\Delta R}$ to zero algebraically --- but the warning was previously attached to
+the choice $\phi=Y$, and the point here is more general and less comfortable: any $\phi$
+correlated with the label inside a cell partially degenerates the estimand, ``finest
+defensible'' cannot detect it, and Proposition~\ref{prop:coarsen} is silent because
+neither partition is a coarsening of the other. What the analyst actually needs to
+declare, and what we recommend reporting alongside $\phi$, is the within-cell label
+heterogeneity that remains: a partition whose cells are nearly label-homogeneous cannot
+identify much of anything, and the coverage statistic does not reveal it. This is a
+limitation of the construction rather than of any application of it, and we do not have a
+procedure that resolves it.
+
+\paragraph{A recalibration-invariant alternative, and what it would cost.}
+Because $\Delta R$ is a covariance between forecast values, its sensitivity to
+recalibration is structural rather than incidental, and a reader may reasonably ask why we
+do not use a rank-based within-cell contrast instead --- a within-cell paired AUC
+difference, say, for which \citet{delong1988comparing} already supply the
+correlated-U-statistic variance. Such a quantity would be invariant to any monotone
+rescaling of either model and would dissolve the confound this paper spends a protocol on.
+We think the trade is worth stating and is not obviously in our favour on every axis.
+What a rank-based contrast gives up is the exact identity: it is not a component of the
+score difference, so it cannot be added to anything to recover $\Delta T$, and a benchmark
+reporting it learns how the models rank cases but not how the reported score gain
+decomposes. The construction here buys exact additivity with respect to a declared proper
+score, and pays for it with scale dependence. A rank-based diagnostic is the natural
+companion rather than a competitor, and reporting both --- one exact and scale-dependent,
+one invariant and non-additive --- is what we would now recommend to a benchmark that
+could choose.
 
 ``Choose $\phi$ before looking'' is stated advice, not an enforced mechanism, and the
 analyst-chosen-subgroup problem has structural answers that WAGER should inherit. Our
 recommendation is that the \emph{benchmark}, not the submitting author, declare the
 grouping variable -- the annotation prior is a property of the dataset, and
 maintainer-declared $\phi$ removes the incentive to report only the most favorable of
-several candidates. Where several defensible priors exist, all pre-declared candidates
+several candidates. We should be candid that this only moves the discretion rather than
+eliminating it. Maintainers are not disinterested: they are often the authors of methods
+evaluated on their own benchmark, sometimes a single unfunded volunteer, and sometimes
+absent, and a maintainer-declared $\phi$ that happens to flatter the benchmark's own
+baseline is no better than an author-declared one. The recommendation also sits in slight
+tension with our own advice to report every pre-declared candidate: if all candidates are
+reported, the declaration matters less, and if one is privileged, the choice matters more.
+What we would defend is the weaker claim that $\phi$ should be fixed and public
+\emph{before} a leaderboard opens, by whoever does it, so that the partition is not a
+degree of freedom exercised after seeing results. Where several defensible priors exist, all pre-declared candidates
 should be reported, as our sensitivity tables do; guarantees that hold uniformly over a
 class of groupings are the subject of multicalibration
 \citep{hebert2018multicalibration}, and porting that style of guarantee to pairwise
 gain attribution is a natural extension. To make reports comparable across papers, we
 suggest a fixed reporting block per audited pair: the declared $\phi$ and its
-rationale, the identified coverage, both channels signed with the resolution interval,
+rationale, the identified coverage, both channels signed with the covariance interval,
 the calibration-matched row when the models differ visibly in confidence, and the
 granularity sensitivity rows.
 
@@ -78,14 +139,20 @@ identity's clear intervention with modeling assumptions; we leave that extension
 
 The image-clustered confidence interval is asymptotic, and Theorem~\ref{thm:clt} is what
 justifies that: under a bounded score, a mild condition ruling out one cluster from
-dominating the sample, and a fixed, finite $\phi$-support whose every cell's size
+dominating the sample, a cell count negligible against the identified sample
+(Eq.~\eqref{eq:cellcount}), and a fixed, finite $\phi$-support whose every cell's size
 diverges in the limit, the dataset-level estimator is asymptotically normal around the
 identified-subpopulation estimand, with a consistent sandwich variance. The last
-condition is an idealization that a heavy-tailed real application has not attained
-in-sample -- most eligible VG150 cells sit at the minimum size $n_c=2$ -- so the reported
-$94.0\%$ empirical coverage against a nominal $95\%$ (Section~\ref{sec:simulation}) is
-the operative evidence for the interval's finite-sample adequacy, with the theorem
-supplying the limiting justification the simulation is checking against. The cyclic
+condition is an idealization no heavy-tailed application attains in-sample. Earlier
+drafts of this paper put the point too strongly, asserting that most eligible VG150 cells
+sit at the minimum size $n_c=2$; that is not so, and the correction runs in the paper's
+favour. Of $6{,}346$ eligible class-pair cells, $2{,}286$ hold fewer than five examples
+and those carry $2.7\%$ of identified relations, so the bulk of the evidence comes from
+cells appreciably larger than the minimum. A third of the cells nonetheless sit where the
+divergence condition is hypothetical, which is why the reported $94.0\%$ empirical
+coverage against a nominal $95\%$ (Section~\ref{sec:simulation}) remains the operative
+evidence for the interval's finite-sample adequacy, with the theorem supplying the
+limiting justification the simulation checks against. The cyclic
 randomization test is finite-group
 exact only under its sharper within-cell exchangeability null and treats relations as
 the randomized units, so it is secondary in the SGG analysis. A future
@@ -109,6 +176,37 @@ released logits or probabilities. The quadratic score is bounded and strictly pr
 other proper scores answer scale-dependent variants of the same question and should be
 declared in advance.
 
+\subsection{Where else this construction lives}\label{sec:adjacent}
+
+Decomposing a difference between two groups or systems into a part attributable to
+composition and a part attributable to conditional behaviour is not specific to forecast
+evaluation, and a reader arriving from another field will recognize the shape of
+$\Delta T=\Delta P+\Delta R$ immediately. In labour economics, the Oaxaca--Blinder
+decomposition splits a mean wage gap into an endowments component and a coefficients
+component \citep{oaxaca1973male,blinder1973wage}, and its semiparametric successors
+reweight one group's covariate distribution to another's
+\citep{dinardo1996labor} --- which is what within-cell label transport does, in the other
+direction, to labels rather than covariates. In epidemiology, the Mantel--Haenszel
+estimator aggregates a within-stratum association across strata precisely so that
+composition cannot drive it \citep{mantel1959statistical}, and the observation that a
+within-stratum association need not agree with the marginal one is non-collapsibility ---
+of which Proposition~\ref{prop:coarsen}'s between-cell covariance term is an instance.
+Psychometrics asks a structurally identical question of test items: differential item
+functioning tests whether an item behaves differently across groups \emph{conditional on
+ability}, and does so through a Mantel--Haenszel statistic
+\citep{holland1986differential}. Clinical prediction has long separated discrimination
+from calibration for a single model, which is the single-forecaster ancestor of the split
+this paper takes for a pair.
+
+We claim no technical novelty from these connections and have not adapted any of their
+machinery. They are worth stating for two reasons. They locate the construction for
+readers who would otherwise see only a scoring-rule paper, and they suggest where the
+open problems already have answers: the analyst-chosen-partition problem this section
+worries about is the multiple-comparisons problem those literatures have faced for
+decades, and the label-shift exposure of Section~\ref{sec:decision} is a reweighting
+problem \citet{dinardo1996labor} solve in a setting where the weights are estimated rather
+than known.
+
 \subsection{Broader applicability}\label{sec:broader}
 
 Four aligned arrays are all the algorithm requires -- two models' probability vectors,
@@ -118,9 +216,9 @@ Appendix~\ref{app:lt} puts that generality to the test on long-tailed image
 classification, where taking the benchmark's coarse superclasses as $\phi$ lets the
 decomposition distinguish a re-weighting schedule whose near-zero aggregate score hides
 two large cancelling channels from one whose genuine improvement is part prior-refitting
-and part rare-class resolution. The claim of breadth thereby acquires empirical content
+and part rare-class covariance. The claim of breadth thereby acquires empirical content
 instead of resting on analogy. That second domain is also where the constraint on $\phi$
-shows its teeth, since the fine class label cannot serve as an cell: it would leave
+shows its teeth, since the fine class label cannot serve as a cell: it would leave
 every cell label-homogeneous and drive $\Delta R$ to zero by construction, producing an
 artifact that reads exactly like a null result. Elsewhere the natural choices are easy
 enough to name -- a predeclared question template for VQA, an answer format or prompt

@@ -7,17 +7,23 @@ individual cases they were made for. An aggregate difference cannot say which, a
 testing it for significance does not separate them. We give an exact decomposition into
 those two parts. The construction is elementary: score each model's prediction for one
 test case against the label of a \emph{different} case in the same group. Averaging over
-such within-group relabellings isolates the gain earned from group-level label
-frequencies alone; what remains is the gain from predicting individual cases. The
-identity is exact in finite samples, needs no fitted baseline model, no sample splitting
-and no tuning parameter, and costs $O(NK)$ for $N$ cases and $K$ labels. The remainder is
-a U-statistic of order two equal to the within-group covariance between the two models'
-predicted-probability difference and the label indicator --- the resolution term of the
-classical reliability--resolution decomposition of a proper score, applied to a
-\emph{pair} of forecasters rather than to one. We show this identity holds for every
-Bregman score, prove asymptotic normality with a consistent cluster-robust variance,
-bound the effect of an unrecorded grouping variable, and show that using a group's own
-label frequency as the counterfactual attenuates the estimate by exactly $(n_c-1)/n_c$.
-Simulations establish interval coverage and delimit what the components separate. On two
-released scene-graph checkpoints, a ten-point gain in a widely reported metric is
-overwhelmingly group-frequency fit.
+such within-group relabellings gives the \emph{transported gain}, the part that survives
+relabelling; what remains is a \emph{within-group covariance gain}. The identity is exact
+in finite samples, needs no fitted baseline model, no sample splitting and no tuning
+parameter, and costs $O(NK)$ for $N$ cases and $K$ labels. The remainder is a U-statistic
+of order two equal to the within-group covariance between the two models'
+predicted-probability difference and the label indicator. That covariance is the quantity
+a covariance rearrangement of a proper score isolates \citep{yates1982external}; it
+equals twice a difference of classical resolution terms when both models are calibrated
+within groups, but not in general, because a covariance between forecast values --- unlike
+a rank-based measure --- is not invariant to recalibration. We show the covariance
+identity holds for every Bregman score, prove asymptotic normality with a consistent
+cluster-robust variance, give a sensitivity bound for an unrecorded grouping variable
+together with the correlation at which it would overturn our own estimates, and show that
+using a group's own label frequency as the counterfactual attenuates the estimate by
+exactly $(n_c-1)/n_c$. Simulations establish interval coverage and delimit what the two
+parts separate, including a recalibration sensitivity large enough that we audit
+confidence-matched pairs. On two released scene-graph checkpoints, matched for confidence
+and grouped by object-class pair, essentially the entire proper-score difference is
+transported gain under either of two proper scores; the estimate depends on that
+configuration, and we report the alternatives rather than one of them.

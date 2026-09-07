@@ -1,33 +1,46 @@
 # WAGER — an exact decomposition of paired score differences
 
-**Paper title:** *An Exact Decomposition of Paired Score Differences: Separating Prior Fit
-from Within-Group Resolution.* Rejected at the *Journal of Statistical Planning and
-Inference* on presentation grounds (the contribution was not stated plainly enough) and
-restructured accordingly; awaiting a new statistics venue. Previously desk-rejected at
-*Computational Statistics and Data Analysis* and *Computer Vision and Image
-Understanding*. See [`report/REPORT.md`](report/REPORT.md) for the full submission
-history.
+**Paper title:** *An Exact Decomposition of Paired Score Differences by Relabelling Within
+Groups.* Rejected at the *Journal of Statistical Planning and Inference* on presentation
+grounds and restructured accordingly; a 5-seat review panel then found the central
+positioning claim wrong, and this revision corrects it (see
+[`reviews/2026-09-07-panel/`](reviews/2026-09-07-panel/) and
+[`report/REPORT.md`](report/REPORT.md)). Previously desk-rejected at *Computational
+Statistics and Data Analysis* and *Computer Vision and Image Understanding*. Awaiting a
+new statistics venue.
 
 When two models are compared on a benchmark whose labels are partly determined by a
-feature both of them observe, the score difference sums two different improvements: a
-closer fit to the label frequencies *within* groups of that feature, and better prediction
-of the individual cases. WAGER separates them exactly. It scores each test case's
-predictions against another case's label from the same group — a relabelling that
-preserves the group and its label frequencies while breaking the link between a prediction
-and the case it was made for — and splits the observed gain:
+feature both of them observe, the score difference sums two different improvements. WAGER
+separates them exactly. It scores each test case's predictions against another case's
+label from the same group — a relabelling that preserves the group and its label
+frequencies while breaking the link between a prediction and the case it was made for —
+and splits the observed gain:
 
 ```text
-total gain = prior-fit gain + within-group resolution gain
+total gain = transported gain + within-group covariance gain
 ```
 
-The resolution term is an order-two U-statistic. Under the quadratic score it equals the
-within-group covariance the new model has gained between its probability changes and the
-label, which identifies it with the resolution term of the classical proper-score
-decomposition (Murphy 1973; DeGroot & Fienberg 1983; Bröcker 2009) applied to a model
-*pair* rather than to one forecaster. A change that is constant inside each group — a pure
-prior refit — has exactly zero resolution gain, by construction rather than by
-approximation. Section 2 of the paper works the whole construction through on four data
-points; `tests/test_antisymmetric.py` reproduces every number in it.
+The **transported gain** is what survives the relabelling. It is *not* a measure of prior
+fit, which is why it is named for the operation instead: it splits exactly into a
+mean-forecast-fit term minus a within-cell dispersion term, so a model can earn it by
+becoming less sharp without moving its mean forecast at all.
+
+The **within-group covariance gain** is what the relabelling destroys: an order-two
+U-statistic equal to the within-group covariance between the new model's probability
+change and the label indicator. This is the quantity Yates's (1982) covariance
+decomposition of a proper score isolates. It is **not** the resolution term of the
+classical reliability–resolution partition — classical resolution depends on a forecast
+only through the partition its level sets generate, so it is invariant to monotone
+rescaling, and a covariance between forecast *values* is not. The two coincide only when
+both models are calibrated within groups. Earlier versions of this work claimed the
+identity; it is false, and the correction is why every result here is reported for
+confidence-matched pairs.
+
+A change that is constant inside each group — a pure prior refit — has exactly zero
+covariance gain, by construction rather than approximation. Section 2 of the paper works
+the whole construction through on four data points and then uses the same four points to
+exhibit a model-selection decision the split gets right and the aggregate score gets
+wrong; `tests/test_antisymmetric.py` reproduces every number in both.
 
 There is no fitted nuisance model, no sample splitting, and no tuning parameter. Several
 exact results follow from the construction:
@@ -46,12 +59,20 @@ exact results follow from the construction:
   one cluster from dominating the sample, and the implemented sandwich variance is
   consistent for the limiting variance — the formal justification for the reported
   intervals.
-- **Sensitivity bound.** A Cauchy–Schwarz/Popoviciu bound quantifies how far an
-  unrecorded confounder could move the reported resolution gain from what a fully
-  adjusted audit would find, elicited from a single correlation parameter.
+- **Transported-gain composition.** The surviving channel equals a mean-forecast-fit
+  improvement minus a within-cell dispersion increase, which is what shows it is not a
+  measure of prior fit.
+- **Sensitivity bound.** A Cauchy–Schwarz bound quantifies how far an unrecorded
+  confounder could move the reported covariance gain, from a single correlation
+  parameter. The free form is `M*sqrt(K-1)`; the `K*M/2` reported before 2026-09
+  discarded the constraint that the label probabilities sum to one. The sharp per-cell
+  form is less reassuring and is now reported against the paper's own estimates: for the
+  main Visual Genome pair an unrecorded covariate correlated at `0.061` accounts for the
+  whole reported gain.
 - **Relation to Diebold–Mariano/Giacomini–White.** At a trivial (single-cell) `phi`, the
-  undecomposed total-gain statistic and its interval are exactly a clustered DM/GW test
-  for the paired score differential.
+  undecomposed total-gain statistic and its interval are a clustered DM/GW test for the
+  paired score differential. At a non-trivial `phi` the equivalence holds on the
+  identified subsample only, since singleton cells are excluded.
 
 Inference is by Hájek influence function with cluster-robust intervals, plus a
 cell-stratified randomization test.
@@ -97,8 +118,8 @@ The estimator and every analysis step are pure NumPy and need no GPU; only the m
 training that *produces* the probability caches does.
 
 ```bash
-python -m pytest tests -q                                  # 17 tests
-python experiments/verify_manuscript_numbers.py            # 83 quoted values
+python -m pytest tests -q                                  # 20 tests
+python experiments/verify_manuscript_numbers.py            # 89 quoted values
 ```
 
 The verifier checks every number quoted in the manuscript against the committed results
@@ -155,11 +176,11 @@ the canonical VG150 split instead, and the paper keeps the two settings distinct
 ```
 wager/antisymmetric.py   the estimator: transport, identity, inference
 experiments/             analysis drivers, figure scripts, GPU training jobs
-tests/                   17 tests, including the paper's worked example and every proposition
+tests/                   20 tests, including the worked example and every proposition
 results/*.json           cached outputs every reported number is checked against
 manuscript/              the paper (elsarticle), figures, cover letter, highlights
 algorithm.md             the mathematics in prose
-report/REPORT.md         development log across the five revisions
+report/REPORT.md         development log across the six revisions
 ```
 
 See [`algorithm.md`](algorithm.md) for the derivations and

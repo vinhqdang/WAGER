@@ -344,3 +344,96 @@ def test_worked_example_of_the_paper_reproduces_every_printed_value():
     )
     assert np.isclose(2 * cov, 3 / 8)
     assert np.isclose(2 * cov, (4 - 1) / 4 * b.alignment_gain)
+
+
+def test_transported_gain_is_not_prior_fit_but_fit_minus_dispersion():
+    """Proposition 2: dP = mean-forecast-fit improvement minus dispersion increase.
+
+    Also pins the counterexample the paper uses to retire the name "prior-fit
+    gain": both models' mean forecast can sit exactly on the cell frequencies
+    while the transported channel absorbs the entire observed gain.
+    """
+    y = np.array([0, 0, 1, 1])
+    phi = np.zeros(4, dtype=int)
+    # Old model is maximally sharp but carries no within-cell information.
+    q_old = np.array([[1.0, 0.0], [0.0, 1.0], [1.0, 0.0], [0.0, 1.0]])
+    q_new = np.tile([0.5, 0.5], (4, 1))
+    p = np.array([np.mean(y == k) for k in range(2)])
+    assert np.allclose(q_old.mean(0), p) and np.allclose(q_new.mean(0), p)
+
+    r = decompose_gain(q_new, q_old, y, phi)
+    assert np.isclose(r.total_gain, 0.5)
+    assert np.isclose(r.prior_gain, 0.5)
+    assert np.isclose(r.alignment_gain, 0.0, atol=1e-12)
+
+    # The identity itself, against the in-sample transport law, on random inputs.
+    rng = np.random.default_rng(11)
+    for _ in range(25):
+        n, K = int(rng.integers(4, 40)), int(rng.integers(2, 6))
+        a = rng.dirichlet(np.ones(K), size=n)
+        b = rng.dirichlet(np.ones(K), size=n)
+        yy = rng.integers(0, K, size=n)
+        pp = np.array([np.mean(yy == k) for k in range(K)])
+        in_sample_dp = float(
+            np.mean(2 * (a @ pp) - (a * a).sum(1))
+            - np.mean(2 * (b @ pp) - (b * b).sum(1))
+        )
+        fit = ((pp - b.mean(0)) ** 2).sum() - ((pp - a.mean(0)) ** 2).sum()
+        dispersion = a.var(0).sum() - b.var(0).sum()
+        assert np.isclose(in_sample_dp, fit - dispersion, atol=1e-12)
+
+
+def test_equally_fine_partitions_can_disagree_without_limit():
+    """The Section 6 limitation: fineness does not determine the estimand.
+
+    Two partitions of the same four cases, both 2x2 and both fully identified,
+    disagree about whether the whole gain is case-level or wholly transported.
+    Neither coarsens the other, so the coarsening proposition cannot arbitrate.
+    """
+    y = np.array([0, 0, 1, 1])
+    q_old = np.tile([0.5, 0.5], (4, 1))
+    q_new = np.array([[0.9, 0.1], [0.9, 0.1], [0.1, 0.9], [0.1, 0.9]])
+
+    heterogeneous = decompose_gain(q_new, q_old, y, np.array([0, 1, 0, 1]))
+    single = decompose_gain(q_new, q_old, y, np.zeros(4, dtype=int))
+    homogeneous = decompose_gain(q_new, q_old, y, np.array([0, 0, 1, 1]))
+
+    for r in (heterogeneous, single, homogeneous):
+        assert np.isclose(r.total_gain, 0.48)
+        assert r.coverage == 1.0
+    assert np.isclose(heterogeneous.alignment_gain, 1.60)
+    assert np.isclose(single.alignment_gain, 32 / 30)
+    assert np.isclose(homogeneous.alignment_gain, 0.0, atol=1e-12)
+    # Same granularity, incompatible verdicts.
+    assert heterogeneous.n_cells == homogeneous.n_cells == 2
+
+
+def test_only_the_covariance_channel_survives_a_label_shift():
+    """Section 2.1: the decomposition predicts which advantage survives.
+
+    Model A's gain is entirely transported and reverses sign under a shift in
+    label frequencies; model B's is entirely covariance and is untouched.
+    """
+    y = np.array([0, 0, 0, 1])
+    phi = np.zeros(4, dtype=int)
+    q_old = np.tile([0.5, 0.5], (4, 1))
+    q_a = np.tile([0.75, 0.25], (4, 1))
+    q_b = np.array([[0.75, 0.25], [0.75, 0.25], [0.75, 0.25], [0.25, 0.75]])
+
+    ra, rb = decompose_gain(q_a, q_old, y, phi), decompose_gain(q_b, q_old, y, phi)
+    assert np.isclose(ra.alignment_gain, 0.0, atol=1e-15)
+    assert np.isclose(rb.prior_gain + rb.alignment_gain, rb.total_gain)
+
+    p_bench = np.array([0.75, 0.25])
+    p_deploy = np.array([0.25, 0.75])
+    w = (p_deploy / p_bench)[y]
+    w = w / w.mean()
+    shifted = {}
+    for name, q_new in (("A", q_a), ("B", q_b)):
+        h = gain_matrix(q_new, q_old)[np.arange(4), y]
+        shifted[name] = float(np.average(h, weights=w))
+
+    assert np.isclose(ra.total_gain, 1 / 8) and np.isclose(shifted["A"], -3 / 8)
+    assert np.isclose(rb.total_gain, 3 / 8) and np.isclose(shifted["B"], 3 / 8)
+    # A improved on the benchmark and is worse than q_old after the shift.
+    assert ra.total_gain > 0 > shifted["A"]

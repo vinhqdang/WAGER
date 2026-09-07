@@ -10,14 +10,21 @@ supplies and that a shift in label frequencies removes, the second is not.
 This paper separates them exactly. Scoring each model's prediction for one test case
 against the label of a different case in the same group leaves the group and its label
 frequencies intact while breaking the correspondence between prediction and case, and the
-gain that survives that relabelling is the prior-fit component. The identity
+gain that survives that relabelling is the transported component. The identity
 $\Delta T=\Delta P+\Delta R$ then holds in the observed sample, for any score, with no
 fitted reference model, no held-out fold and no tuning parameter, at a cost of $O(NK)$.
 The remainder is a U-statistic of order two whose value is a within-group covariance
 between the two models' probability change and the label indicator --- for every Bregman
 score, so the quadratic and logarithmic cases are one result rather than two
-(Theorem~\ref{thm:bregman}) --- which identifies it as the resolution term of the
-classical proper-score decomposition, evaluated for a pair of forecasters instead of one.
+(Theorem~\ref{thm:bregman}). That covariance is the object a covariance rearrangement of a
+proper score isolates \citep{yates1982external}, evaluated for a pair of forecasters
+instead of one. It is not the resolution term of the classical
+reliability--resolution partition, which is invariant to monotone rescaling of the
+forecast where a covariance between forecast values is not; the two coincide only under
+within-cell calibration, and Section~\ref{sec:related-decomposition} states the
+discrepancy. Naming the quantity correctly is what makes the recalibration sensitivity
+predictable rather than surprising, and it is why confidence matching is part of the
+procedure here.
 
 What makes it usable rather than merely exact is that the pairwise contrast comes with its
 own inference. The influence function of the difference gives cluster-robust intervals in
@@ -25,17 +32,23 @@ one pass; the estimator is asymptotically normal with a consistent sandwich vari
 (Theorem~\ref{thm:clt}); and at a trivial grouping variable the undecomposed statistic is
 a clustered Diebold--Mariano test (Corollary~\ref{cor:dm}), so every comparison reported
 here already contains what that classical test would say, plus the split it does not
-provide. Three exact statements settle design choices that would otherwise be judgment
+provide. Four exact statements settle design choices that would otherwise be judgment
 calls: using a group's own label frequencies as the counterfactual attenuates the estimate
 by precisely $(n_c-1)/n_c$, which is why no sample splitting is needed
 (Proposition~\ref{prop:attenuate}); merging groups moves the estimand by an explicit
 between-group covariance of either sign, so a coarser grouping cannot be assumed harmless
-(Proposition~\ref{prop:coarsen}); and a Cauchy--Schwarz bound limits how far an unrecorded
-grouping variable could move the result, from one elicited correlation
-(Proposition~\ref{prop:sensitivity}).
+(Proposition~\ref{prop:coarsen}); the transported component splits exactly into a
+mean-forecast-fit term minus a within-cell dispersion term, so it is not a measure of
+prior fit and we do not call it one (Proposition~\ref{prop:transported}); and a
+Cauchy--Schwarz bound limits how far an unrecorded grouping variable could move the result,
+from one elicited correlation (Proposition~\ref{prop:sensitivity}). On that last point we
+report the bound against our own numbers: for the Visual Genome pair of
+Appendix~\ref{app:vgmain} an unrecorded covariate correlated at $0.061$ would account for
+the entire reported gain, so those covariance gains are conditional on the declared
+grouping being close to complete.
 
 The controlled experiments are as informative about the limits as about the capability.
-Prior-only improvements stay out of the resolution component, and injected within-group
+Prior-only improvements stay out of the covariance component, and injected within-group
 signal is recovered monotonically with intervals that cover at $94.0\%$ against a nominal
 $95\%$ in the clustered, small-cell regime that stresses them hardest. But unrecorded
 within-group signal is credited to resolution, shortcut or not, and a monotone
@@ -45,7 +58,7 @@ is why calibration matching is part of the procedure and not a caveat attached t
 Applied to two released scene-graph checkpoints, evaluated with their authors' own code,
 the decomposition gives a precise account of a widely cited debiasing method: its
 ten-point mean-recall improvement is, once calibration is matched, overwhelmingly
-prior-fit under either of two proper scores, with a resolution remainder the two scores
+transported under either of two proper scores, with a covariance remainder the two scores
 disagree about --- indistinguishable from zero under one, small but significant under the
 other --- and in both readings at least an order of magnitude smaller than the prior-side
 shift. Since the method's own construction subtracts a context-only prediction, this
@@ -58,6 +71,16 @@ content is controlled by construction and in two other data modalities
 without modification, including a case in which a model that loses on every aggregate
 measure is shown to resolve individual cases significantly better than the model it
 appears to lose to.
+
+Two limits deserve to be carried out of the paper alongside the construction. The
+estimand is not determined by the granularity of the grouping variable: two equally fine,
+fully identified partitions of the same four cases can split the same total gain as
+entirely case-level or entirely transported (Section~\ref{sec:discussion}), and the advice
+to choose the finest defensible $\phi$ cannot arbitrate between them because neither
+coarsens the other. And a rank-based within-cell contrast would be invariant to the
+recalibration this construction is sensitive to, at the cost of the exact additivity that
+is the point here; the two are companions rather than competitors, and a benchmark able to
+report both should.
 
 The estimator's requirements are its main obstacle to routine use, and they are about
 disclosure rather than difficulty: it needs both models' full probability vectors, and
