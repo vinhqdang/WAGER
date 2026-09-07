@@ -254,3 +254,6 @@ scratchpad/
 # stale build output and legacy report artifacts
 output/
 report/summary.html
+
+# Derived text dumps of the built manuscript, produced for review passes.
+reviews/*/_manuscript_text.txt
