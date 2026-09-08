@@ -1,146 +1,168 @@
 \section{Introduction}\label{sec:intro}
 
-A benchmark reports that a new model scores $0.05$ higher than the model it replaces.
-What has the new model learned? The question sounds like bookkeeping, but it is a
-statistical estimation problem, and the reported number does not answer it whenever the
-labels are partly determined by a feature that both models can see.
+A scene graph generation method reports a ten-point improvement in mean recall on Visual
+Genome. A long-tailed classifier reports two points of accuracy on CIFAR-100-LT. What did
+those gains buy?
 
-A concrete case makes the difficulty visible. In relation prediction on Visual Genome
-\citep{krishna2017visual}, the task is to name the relation between two objects in an
-image, and the pair of object classes already predicts the relation strongly: given
-(\textsf{man}, \textsf{surfboard}), the label is very often \textsf{riding}. Two models
-that both observe the object classes can therefore differ in their scores for two quite
-different reasons. One is that the new model estimates the conditional label frequencies
-$\Pr(Y\mid \text{class pair})$ more accurately --- a real improvement, but one that a
-lookup table of training frequencies also achieves, and one that evaporates if the
-relation frequencies shift. The other is that the new model does better at telling
-\emph{these two men on surfboards apart}: it puts higher probability on the correct
-label for the individual case, beyond what the class pair alone implies. The reported
-score difference is the sum of the two, and no amount of significance testing on that
-difference will split it, because the two components are both present in the same
-number. The same structure recurs wherever a benchmark has strong label priors: in
-visual question answering the form of the question predicts the answer
-\citep{agrawal2018dont}, and in long-tailed recognition the class frequencies dominate
-aggregate accuracy \citep{ma2024geometric}.
+The question is not rhetorical, because on benchmarks like these a model can raise its
+score without becoming any better at the cases it is scored on. In relation prediction, the
+ordered object-class pair already predicts the relation strongly: given
+(\textsf{man}, \textsf{surfboard}), the label is very often \textsf{riding}, and a lookup
+table of training frequencies is famously competitive \citep{zellers2018neural}. A new model
+can therefore improve by estimating $\Pr(Y\mid\text{class pair})$ more accurately --- a real
+improvement, but one that no more distinguishes \emph{these two men on surfboards} than the
+frequency table did, and one that evaporates the moment the relation frequencies shift. Or
+it can improve by telling those two cases apart: putting higher probability on the correct
+label for the individual image, beyond what the class pair alone implies. The reported score
+is the sum of the two, and the field's own metrics cannot separate them --- not mean recall,
+not zero-shot recall, and not a significance test on the difference, because both components
+sit inside the same number.
 
-The customary remedy is to build a prior-only reference --- fit
-$\widehat\Pr(Y\mid \phi)$ from training data, score it, and see how far the full models
-beat it \citep{zellers2018neural}. That is a useful diagnostic for one model at a time,
-but as an answer to the pairwise question it is indirect and noisy. The reference has to
-be estimated, which contributes its own sampling error; it needs a smoothing rule for
-rare cells and a model family that may or may not match either compared system; and
-decomposing two models separately and subtracting the two decompositions gives no
-variance for the difference, which is the quantity actually in dispute
-(Section~\ref{sec:related-decomposition}).
+The problem is general and the community knows it. Frequency baselines are competitive on
+Visual Genome \citep{zellers2018neural}; VQA systems collapse under changed answer priors
+\citep{goyal2017making,agrawal2018dont}; standard metrics obscure tail behaviour
+\citep{li2022rethinking}; and benchmark audits keep finding multimodal models exploiting
+non-visual shortcuts that inflate exactly this kind of aggregate score
+\citep{brown2025benchmark,zhou2025shortcut}. The reporting standards have responded --- mean
+recall alongside recall, broken down by predicate frequency
+\citep{tang2020unbiased,li2022rethinking}, zero-shot recall on unseen triplets
+\citep{lu2016visual}, GQA-OOD stratified by answer rarity \citep{kervadec2021roses} --- and
+every one of those is a prior-aware slicing of a \emph{single} model's performance. None
+attributes the gain between two submitted systems.
+
+The customary audit builds a prior-only reference: fit $\widehat\Pr(Y\mid\phi)$ from
+training data, score it, and see how far the full models beat it \citep{zellers2018neural}.
+As a diagnostic for one model that is useful. As an answer to the pairwise question it is
+indirect and noisy --- the reference has to be estimated, it needs a smoothing rule for rare
+cells and a model family that may match neither compared system, and decomposing two models
+separately then subtracting gives no uncertainty for the difference, which is the quantity
+actually in dispute.
 
 \paragraph{What this paper does.}
-We decompose the score difference itself, exactly, using no fitted reference at all. The
-idea takes one sentence. Both models have already produced a full probability vector for
-every test case, so each model's score can be recomputed against \emph{any} label, not
-only the one that was observed. Take two test cases that fall in the same group ---
-that share the same value of a declared grouping variable $\phi$, such as the
-object-class pair --- and score each case's predictions against the \emph{other} case's
-label. Doing this preserves the group and its label frequencies while destroying the
-correspondence between a prediction and the case it was made for. Whatever score
-advantage survives that relabelling is an advantage the new model holds over the group
-as a whole, not over any particular case in it; whatever advantage disappears was
-case-specific. Averaging within groups turns this into an identity,
+We decompose the score difference itself, exactly, with no fitted reference at all. The idea
+takes one sentence. Both models have already emitted a full probability vector for every
+test case, so each model's score can be recomputed against \emph{any} label, not only the
+one that was observed. Take two test cases in the same group --- sharing the same value of a
+declared grouping variable $\phi$, such as the object-class pair --- and score each case's
+predictions against the \emph{other} case's label. That relabelling preserves the group and
+its label frequencies while destroying the correspondence between a prediction and the case
+it was made for. Whatever score advantage survives is an advantage the new model holds over
+the group as a whole; whatever disappears was case-specific. Averaging within groups turns
+this into an identity,
 \[
 \text{total score gain} \;=\; \underbrace{\text{transported gain}}_{\text{survives relabelling}}
 \;+\; \underbrace{\text{within-group covariance gain}}_{\text{destroyed by relabelling}},
 \]
-which holds exactly in the observed sample, for any score, with no approximation and no
-asymptotics. Figure~\ref{fig:concept} shows the relabelling on two real Visual Genome
-cases.
+exact in the observed sample, for any proper score, with no approximation, no held-out fold
+and no tuning parameter, at a cost of $O(NK)$ for $N$ cases and $K$ labels.
+Figure~\ref{fig:concept} shows the relabelling on two real Visual Genome cases, and
+Section~\ref{sec:worked} works the arithmetic through on four data points ---
+including, in Section~\ref{sec:decision}, a model-selection decision the split gets right
+and the aggregate score gets wrong.
 
-Section~\ref{sec:worked} works the arithmetic through on four data points, which is
-enough to exhibit the main properties the rest of the paper proves in general --- and, in
-Section~\ref{sec:decision}, enough to exhibit a model-selection decision that the split
-gets right and the aggregate score gets wrong.
+\paragraph{What we find.}
+Pointed at two publicly released scene-graph checkpoints rather than at predictors of our
+own, the decomposition gives a precise account of a widely cited debiasing method. Once the
+two models are matched for confidence, essentially the entire proper-score difference
+between MOTIFS-TDE and the MOTIFS baseline it debiases is transported gain, with a
+within-group covariance remainder at least an order of magnitude smaller under either of two
+proper scores (Section~\ref{sec:sggaudit}). A metric the field reads as evidence about rare
+predicates moves ten points while the quantity that would measure case-level evidence barely
+moves at all. Since TDE's own construction subtracts a context-only prediction, this
+characterises the method rather than indicting it --- but it does mean the headline number
+is not the evidence it is generally taken for.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig1_new_concept.png}
-\caption{\textbf{The construction, on two real test cases.} Two VG150 test relations
-share the group $\phi=(\textsf{man},\textsf{surfboard})$ but carry different labels.
-Exchanging their labels (arrows) leaves the group and its label frequencies intact while
-breaking the link between each prediction and the case it was made for. Scoring two
-frozen models before and after the exchange splits their score difference exactly into a
-transported gain and a within-group covariance gain.}
+\caption{\textbf{The construction, on two real VG150 test relations.} Both share the group
+$\phi=(\textsf{man},\textsf{surfboard})$ --- the ordered object-class pair that already
+predicts the relation --- yet carry different labels. Exchanging their labels (arrows) leaves
+the group and its label frequencies intact while breaking the link between each prediction
+and the image it was made for. Scoring two frozen models before and after the exchange
+splits their score difference exactly into a transported gain and a within-group covariance
+gain. Nothing about the construction is specific to relation prediction: it needs the two
+probability vectors, the labels, and the group identifiers.}
 \label{fig:concept}
 \end{figure*}
 
-\paragraph{What the second component is, in standard terms.}
-The component destroyed by relabelling is not a new invention. Written out, it equals the
-covariance, inside each group, between how much the new model moved its predicted
-probability for a label and whether that label actually occurred
-(Theorem~\ref{thm:population}). A covariance between a forecast and an outcome indicator
-is exactly the object isolated by the covariance rearrangement of a proper score that
-goes back to \citet{yates1982external}, and we call our second component the
-\emph{within-group covariance gain} accordingly.
+\paragraph{What the second component is.}
+The component destroyed by relabelling is not a new invention, and it is worth naming
+correctly because the name predicts how it behaves. Written out, it equals the covariance,
+inside each group, between how much the new model moved its predicted probability for a
+label and whether that label actually occurred (Theorem~\ref{thm:population}). A covariance
+between a forecast and an outcome indicator is the object isolated by the covariance
+rearrangement of a proper score that goes back to \citet{yates1982external}, so we call our
+second component the \emph{within-group covariance gain}.
 
-It is worth being precise about how this relates to the more familiar
+It is close to, but not the same as, the \emph{resolution} term of the classical
 reliability--resolution partition of a proper score
-\citep{murphy1973vector,degroot1983comparison,brocker2009reliability}, because the
-relation is close but not identity. Classical resolution depends on a forecast only
-through the partition its level sets generate, so it is invariant under any strictly
-monotone relabelling of the forecast values. A covariance between forecast \emph{values}
-and outcomes is not: rescaling a fixed model's confidence changes it while changing no
-ranking and adding no information. The two coincide --- our component equals twice a
-difference of classical resolution terms --- exactly when both models are calibrated
-within groups, and diverge otherwise. Section~\ref{sec:related-decomposition} gives the
-discrepancy explicitly, and Section~\ref{sec:simulation} measures how large it can be:
-large enough that we compare confidence-matched models as a matter of procedure. Readers
-who want a recalibration-invariant quantity should want a rank-based one instead, and
-Section~\ref{sec:discussion} says what that would cost.
+\citep{murphy1973vector,degroot1983comparison,brocker2009reliability}, and the difference
+has a practical consequence. Classical resolution depends on a forecast only through the
+partition its level sets generate, so it is invariant under any strictly monotone relabelling
+of the forecast values. A covariance between forecast \emph{values} is not: rescaling a fixed
+model's confidence changes it while changing no ranking, no top-1 decision and no
+information. The two coincide exactly when both models are calibrated within groups.
+Section~\ref{sec:related-decomposition} states the discrepancy and
+Section~\ref{sec:simulation} measures it --- large enough that every comparison we report is
+between confidence-matched models. Models that differ sharply in calibration, which released
+checkpoints routinely do, cannot be audited on their raw outputs.
 
-We refer to the estimator as WAGER, which is the name under which the software is
-released; the acronym is a label, not a claim, and we do not expand it. Its two
-components are the \emph{transported gain} $\Delta P$ --- named for the operation that
-produces it, not for an interpretation of it --- and the within-group covariance gain
+We call the estimator WAGER; the acronym is a label, not a claim, and we do not expand it.
+Its two components are the \emph{transported gain} $\Delta P$ --- named for the operation
+that produces it, not for an interpretation of it --- and the within-group covariance gain
 $\Delta R$.
 
 \subsection{Contributions}\label{sec:contributions}
 
 \begin{enumerate}
-\item \textbf{An exact decomposition, and what its remainder is.} For any score, the
-observed gain between two frozen models splits exactly --- in the population
-(Theorem~\ref{thm:population}) and in the finite sample (Theorem~\ref{thm:sample}) ---
-into a transported gain and a remainder that is a U-statistic of order two. For every
-Bregman score, and hence for the quadratic and logarithmic scores as named cases, that
-remainder equals a within-group covariance between the models' predicted-probability
-difference and the label indicator (Theorem~\ref{thm:bregman}). A change that is
-constant within groups contributes exactly zero to it.
+\item \textbf{An audit of a released debiasing method.} Applied to the two publicly released
+MOTIFS checkpoints of \citet{tang2020unbiased} on the canonical VG150 PredCls split,
+evaluated with the original authors' code, the decomposition shows that TDE's ten-point
+mean-recall improvement corresponds to a proper-score difference that is overwhelmingly
+transported, with a within-group covariance remainder at most a small fraction of it
+(Section~\ref{sec:sggaudit}). This is a statement about somebody else's published method, on
+the benchmark the field actually uses, and it is the paper's headline result.
 
-\item \textbf{Inference for the difference, and its large-sample justification.} We
-derive the estimator's influence function, which gives cluster-robust confidence
-intervals in one pass over the data, together with a randomization test stratified by
-group. The dataset-level estimator is asymptotically normal with a consistent sandwich
-variance (Theorem~\ref{thm:clt}); at a trivial grouping variable it reduces exactly to a
-clustered Diebold--Mariano test of the paired score differential
-(Corollary~\ref{cor:dm}), so the decomposition delivers what that classical test does
-plus the split it does not.
+\item \textbf{A drop-in tool for any closed-set benchmark.} The estimator needs four aligned
+arrays --- two $N\times K$ probability matrices, the labels, the group identifiers --- runs
+in $O(NK)$ on cached predictions with no model refitting, no held-out fold and no tuning
+parameter, and returns both components with cluster-robust intervals in one pass. We apply it
+unchanged to relation prediction, to a frozen-CLIP variant of it, to long-tailed image
+classification across seeds and imbalance ratios, and to long-tailed text classification;
+only the declared $\phi$ changes. Code, cached model outputs and a script that verifies every
+reported number are released.
 
-\item \textbf{Two exact statements about design choices that would otherwise be
-guesswork.} Using a group's own observed label frequency as the counterfactual, rather
-than leaving each case out, attenuates the estimate by exactly $(n_c-1)/n_c$ in a group
-of size $n_c$ (Proposition~\ref{prop:attenuate}) --- which is why no held-out fold is
-needed. Merging groups shifts the estimand by an explicit between-group covariance of
-either sign (Proposition~\ref{prop:coarsen}), so a coarser grouping variable cannot be
-assumed harmless. A Cauchy--Schwarz bound
-(Proposition~\ref{prop:sensitivity}) limits how far an unrecorded grouping variable could
-move the reported remainder, from a single elicited correlation.
+\item \textbf{An exact identity, and what its remainder is.} For any score the observed gain
+splits exactly --- in the population (Theorem~\ref{thm:population}) and in the finite sample
+(Theorem~\ref{thm:sample}) --- into a transported gain and a remainder that is a U-statistic
+of order two. For every Bregman score, so for the quadratic and logarithmic scores as named
+cases, that remainder is a within-group covariance between the models'
+predicted-probability difference and the label indicator (Theorem~\ref{thm:bregman}). A
+change that is constant within groups contributes exactly zero. The transported component
+splits in turn into a mean-forecast-fit term minus a dispersion term
+(Proposition~\ref{prop:transported}), which is why we do not call it a measure of prior fit.
 
-\item \textbf{Validation, and an audit of a published method.} Simulations establish
-interval coverage under clustering and delimit what the two components separate:
-prior-only improvements stay out of the covariance component, unrecorded within-group
-signal enters it, and monotone recalibration moves score between the components, which is
-why we audit calibration-matched pairs. Applied to two publicly released scene-graph
-checkpoints --- not to models of our own --- the decomposition shows that a ten-point
-improvement in mean recall is overwhelmingly transported under either of two proper scores
-(Section~\ref{sec:sggaudit}). Three further studies, in relation prediction and in
-long-tailed image and text classification, apply the identical estimator and are reported
-in Appendix~\ref{app:studies}.
+\item \textbf{Inference, and the design choices it settles.} We derive the influence function
+of the difference, giving image-cluster-robust intervals, plus a group-stratified
+randomization test; the estimator is asymptotically normal with a consistent sandwich
+variance (Theorem~\ref{thm:clt}), and at a trivial $\phi$ it reduces to a clustered
+Diebold--Mariano test of the paired score differential (Corollary~\ref{cor:dm}). Three exact
+results remove guesswork: using a group's own label frequency as the counterfactual
+attenuates the estimate by exactly $(n_c-1)/n_c$, which is why no held-out fold is needed
+(Proposition~\ref{prop:attenuate}); merging groups shifts the estimand by an explicit
+between-group covariance of either sign, so a coarser $\phi$ is not harmless
+(Proposition~\ref{prop:coarsen}); and a Cauchy--Schwarz bound limits how far an unrecorded
+grouping variable could move the result (Proposition~\ref{prop:sensitivity}). Proofs are in
+the supplementary material.
+
+\item \textbf{Validation, and honest limits.} Simulations establish interval coverage under
+image clustering and delimit what the two components do \emph{not} separate: prior-only
+improvements stay out of the covariance channel, unrecorded within-group shortcuts enter it,
+and monotone recalibration moves score between the channels --- which is why confidence
+matching is part of the procedure and not a caveat. We also show that equally fine, fully
+identified partitions can disagree without limit, so the choice of $\phi$ is a real
+modelling decision rather than a formality.
 \end{enumerate}
 
 \subsection{Terminology}\label{sec:terminology}
@@ -237,4 +259,4 @@ Section~\ref{sec:method} develops the estimator and its theory.
 Section~\ref{sec:exp} validates it and audits two released checkpoints.
 Sections~\ref{sec:discussion} and~\ref{sec:conclusion} discuss limits and conclude.
 Proofs are in Appendix~\ref{app:proofs}; three further empirical studies are in
-Appendix~\ref{app:studies}.
+Section~\ref{sec:exp}.

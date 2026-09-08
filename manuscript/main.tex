@@ -1,12 +1,18 @@
-% Submission to Econometrics and Statistics (Elsevier), Annals of Statistical Data
-% Science section. Typeset with Elsevier's elsarticle.
+% Submission to Pattern Recognition (Elsevier), typeset with elsarticle.
+% Reframed for a pattern-recognition readership on 2026-09-08 after four statistics
+% venues declined the work: the contribution is unchanged, the presentation leads with
+% the benchmark problem and the checkpoint audit instead of with the score decomposition.
 % Author details are in the manuscript; the separate title page is kept for a submission
 % system's metadata. Previously typeset for the Journal of Statistical Planning and
 % Inference, before that Computational Statistics and Data Analysis, before that Computer
 % Vision and Image Understanding, and before that with the Springer Nature sn-jnl class;
 % see git history if any of those are ever needed again.
-\documentclass[preprint,times]{elsarticle}
+\documentclass[preprint,times,10pt,a4paper]{elsarticle}
 
+% Pattern Recognition formatting: single column, double spaced, 10pt Times,
+% margins 4.3cm/4.8cm/4.3cm/4.8cm (top/right/bottom/left), numbered pages, justified.
+\usepackage[top=4.3cm,right=4.8cm,bottom=4.3cm,left=4.8cm]{geometry}
+\usepackage{setspace}
 \usepackage{graphicx}
 \usepackage{multirow}
 \usepackage{amsmath,amssymb,amsfonts}
@@ -32,15 +38,16 @@
 \newtheorem{definition}{Definition}
 
 
-\journal{Econometrics and Statistics}
+\journal{Pattern Recognition}
 
 \begin{document}
+\doublespacing
 \sloppy
 
 \begin{frontmatter}
 
-\title{An Exact Decomposition of Paired Score Differences\\
-by Relabelling Within Groups}
+\title{WAGER: An Exact Decomposition of Model-Pair Score Gains\\
+on Benchmarks with Strong Label Priors}
 
 %% Author details appear here per this journal's typical single-anonymized review
 %% (confirm current policy in JSPI's guide for authors before submission).
@@ -55,9 +62,9 @@ by Relabelling Within Groups}
 \end{abstract}
 
 \begin{keyword}
-Model comparison \sep Proper scoring rules \sep Score decomposition \sep
-Forecast comparison \sep U-statistics \sep Cluster-robust inference \sep
-Randomization tests
+Model evaluation \sep Benchmark auditing \sep Dataset bias \sep
+Scene graph generation \sep Long-tailed recognition \sep Proper scoring rules \sep
+U-statistics
 \end{keyword}
 
 \end{frontmatter}
@@ -94,10 +101,9 @@ support the writing of the manuscript and the development of the accompanying co
 author reviewed and edited the output as needed and takes full responsibility for the
 content of the published article.
 
-\bibliographystyle{elsarticle-harv}
+\bibliographystyle{elsarticle-num-names}
 \bibliography{ref}
 
 \input{7appendix.tex}
-\input{8studies.tex}
 
 \end{document}

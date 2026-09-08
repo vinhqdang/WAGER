@@ -1,29 +1,22 @@
-Two probabilistic classifiers are compared on a test set and the newer one scores higher.
-When the labels depend partly on a grouping variable both models observe --- the
-object-class pair in a relation-prediction benchmark, the frequency tier in a long-tailed
-one --- that difference mixes two improvements: the new model may fit the label
-frequencies \emph{within} groups more closely, or it may match its predictions to the
-individual cases they were made for. An aggregate difference cannot say which, and
-testing it for significance does not separate them. We give an exact decomposition into
-those two parts. The construction is elementary: score each model's prediction for one
-test case against the label of a \emph{different} case in the same group. Averaging over
-such within-group relabellings gives the \emph{transported gain}, the part that survives
-relabelling; what remains is a \emph{within-group covariance gain}. The identity is exact
-in finite samples, needs no fitted baseline model, no sample splitting and no tuning
-parameter, and costs $O(NK)$ for $N$ cases and $K$ labels. The remainder is a U-statistic
-of order two equal to the within-group covariance between the two models'
-predicted-probability difference and the label indicator. That covariance is the quantity
-a covariance rearrangement of a proper score isolates \citep{yates1982external}; it
-equals twice a difference of classical resolution terms when both models are calibrated
-within groups, but not in general, because a covariance between forecast values --- unlike
-a rank-based measure --- is not invariant to recalibration. We show the covariance
-identity holds for every Bregman score, prove asymptotic normality with a consistent
-cluster-robust variance, give a sensitivity bound for an unrecorded grouping variable
-together with the correlation at which it would overturn our own estimates, and show that
-using a group's own label frequency as the counterfactual attenuates the estimate by
-exactly $(n_c-1)/n_c$. Simulations establish interval coverage and delimit what the two
-parts separate, including a recalibration sensitivity large enough that we audit
-confidence-matched pairs. On two released scene-graph checkpoints, matched for confidence
-and grouped by object-class pair, essentially the entire proper-score difference is
-transported gain under either of two proper scores; the estimate depends on that
-configuration, and we report the alternatives rather than one of them.
+A scene graph generation method reports a ten-point gain in mean recall; a long-tailed
+classifier reports two points of accuracy. What did the gain buy? On benchmarks whose labels
+are partly determined by a feature both compared models observe --- the object-class pair in
+relation prediction, the class frequency in long-tailed recognition --- such a gain mixes
+two improvements: the new model may fit the label frequencies \emph{within} groups of that
+feature more closely, which a frequency table also achieves and a shift in those frequencies
+removes, or it may match its predictions to the individual cases they were made for. Mean
+recall, zero-shot recall and significance tests all leave the two mixed. We decompose the
+gain exactly. Score each model's prediction for one test case against the label of a
+\emph{different} case in the same group: averaging over such relabellings gives the
+\emph{transported gain}, and what remains is a \emph{within-group covariance gain}. The
+identity is exact in finite samples, needs no fitted baseline, no held-out fold and no tuning
+parameter, and costs $O(NK)$, so any pair of frozen models can be audited from cached
+predictions. The remainder is an order-two U-statistic, holds for every Bregman score, and
+admits cluster-robust interval estimation. Applied to two released MOTIFS checkpoints on
+VG150 with the original authors' code, a ten-point mean-recall improvement corresponds to a
+proper-score difference that is overwhelmingly transported, with a covariance remainder an
+order of magnitude smaller under either of two proper scores. The unmodified estimator
+transfers to a frozen-CLIP variant and to long-tailed image and text classification,
+exposing compositions that aggregate scores hide --- including a model that loses on every
+aggregate measure while discriminating individual cases significantly better than the model
+it appears to lose to.
