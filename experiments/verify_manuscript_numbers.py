@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -48,15 +49,15 @@ CHECKS = [
      sim["prior_only"]["reasoning_mean"], 5e-5),
     ("sim shortcut dR", "4experiments.tex", "+0.041",
      sim["hidden_shortcut"]["reasoning_mean"], 5e-4),
-    ("cal table CB raw dR", "8appendix_studies.tex", "-0.19427",
+    ("cal table CB raw dR", "appendix.tex", "-0.19427",
      recal["rows"]["CB vs CE (raw)"]["dR"], 1e-5),
-    ("cal table CB cal dR", "8appendix_studies.tex", "-0.23991",
+    ("cal table CB cal dR", "appendix.tex", "-0.23991",
      recal["rows"]["CB vs CE (cal-both)"]["dR"], 1e-5),
-    ("cal table DRW cal dT", "8appendix_studies.tex", "+0.02173",
+    ("cal table DRW cal dT", "appendix.tex", "+0.02173",
      recal["rows"]["DRW vs CE (cal-both)"]["dT"], 1e-5),
-    ("cal table DRW cal dR", "8appendix_studies.tex", "+0.01957",
+    ("cal table DRW cal dR", "appendix.tex", "+0.01957",
      recal["rows"]["DRW vs CE (cal-both)"]["dR"], 1e-5),
-    ("cal table control dP", "8appendix_studies.tex", "+0.37960",
+    ("cal table control dP", "appendix.tex", "+0.37960",
      recal["rows"]["CE(cal) vs CE (confound size)"]["dP"], 1e-5),
     ("consequence VISUAL' dP", "4experiments.tex", "+0.02401",
      cons_row("VISUAL' vs VISUAL")["prior"], 1e-5),
@@ -72,17 +73,17 @@ CHECKS = [
      cons_row("VISUAL vs SPATIAL cal-both (audit half)")["reasoning"], 1e-5),
     ("bridge spatial dR", "4experiments.tex", "0.01023",
      bridge["MLP-SPATIAL-S vs MLP-CLASS-S"]["dR"], 1e-5),
-    ("bridge spatial acc pts", "8appendix_studies.tex", "0.51",
+    ("bridge spatial acc pts", "appendix.tex", "0.51",
      bridge["MLP-SPATIAL-S vs MLP-CLASS-S"]["d_acc"] * 100, 0.006),
-    ("bridge spatial mrr pts", "8appendix_studies.tex", "0.60",
+    ("bridge spatial mrr pts", "appendix.tex", "0.60",
      bridge["MLP-SPATIAL-S vs MLP-CLASS-S"]["d_mrr"] * 100, 0.006),
-    ("bridge spatial r5 pts", "8appendix_studies.tex", "0.86",
+    ("bridge spatial r5 pts", "appendix.tex", "0.86",
      bridge["MLP-SPATIAL-S vs MLP-CLASS-S"]["d_r5"] * 100, 0.006),
-    ("bridge clip acc drop", "8appendix_studies.tex", "3.07",
+    ("bridge clip acc drop", "appendix.tex", "3.07",
      -bridge["MLP-VISUAL-S vs MLP-SPATIAL-S"]["d_acc"] * 100, 0.006),
-    ("bridge clip r5 drop", "8appendix_studies.tex", "2.21",
+    ("bridge clip r5 drop", "appendix.tex", "2.21",
      -bridge["MLP-VISUAL-S vs MLP-SPATIAL-S"]["d_r5"] * 100, 0.006),
-    ("bridge clip pm acc drop", "8appendix_studies.tex", "2.17",
+    ("bridge clip pm acc drop", "appendix.tex", "2.17",
      -bridge["MLP-VISUAL-S vs MLP-SPATIAL-S"]["d_acc_pm"] * 100, 0.006),
 ]
 
@@ -98,16 +99,16 @@ def find_number(res, *path):
 vg_rows = {f"{r['new']}|{r['old']}": r for r in vg["comparisons"]}
 vgv_rows = {f"{r['new']}|{r['old']}": r for r in vgv["comparisons"]}
 CHECKS += [
-    ("VG relations audited", "8appendix_studies.tex", "227,337",
+    ("VG relations audited", "appendix.tex", "227,337",
      vg["comparisons"][0]["n_identified"], 0),
-    ("VG test relations", "8appendix_studies.tex", "229,605", vgv["n_test"], 0),
+    ("VG test relations", "appendix.tex", "229,605", vgv["n_test"], 0),
     ("CLIP total gain", "4experiments.tex", "-0.04655",
      vgv_rows["MLP-VISUAL-S|MLP-SPATIAL-S"]["total_gain"], 1e-5),
     ("CLIP alignment gain", "4experiments.tex", "0.00641",
      vgv_rows["MLP-VISUAL-S|MLP-SPATIAL-S"]["reasoning_gain"], 1e-5),
-    ("CIFAR CB accuracy", "8appendix_studies.tex", "0.2627",
+    ("CIFAR CB accuracy", "appendix.tex", "0.2627",
      cif["accuracy"]["CB"], 1e-4),
-    ("CIFAR DRW accuracy", "8appendix_studies.tex", "0.3874",
+    ("CIFAR DRW accuracy", "appendix.tex", "0.3874",
      cif["accuracy"]["DRW"], 1e-4),
 ]
 
@@ -115,20 +116,20 @@ CHECKS += [
 # seed/ratio robustness table
 ms = load("cifar_multiseed.json")
 CHECKS += [
-    ("robust CB r10 dR", "8appendix_studies.tex", "-0.06903", ms["r10_s0"]["CB cal"]["dR"], 1e-5),
-    ("robust CB r50 dR", "8appendix_studies.tex", "-0.24409", ms["r50_s0"]["CB cal"]["dR"], 1e-5),
-    ("robust DRW r100s1 dR", "8appendix_studies.tex", "+0.00748",
+    ("robust CB r10 dR", "appendix.tex", "-0.06903", ms["r10_s0"]["CB cal"]["dR"], 1e-5),
+    ("robust CB r50 dR", "appendix.tex", "-0.24409", ms["r50_s0"]["CB cal"]["dR"], 1e-5),
+    ("robust DRW r100s1 dR", "appendix.tex", "+0.00748",
      ms["r100_s1"]["DRW cal"]["dR"], 1e-5),
-    ("robust DRW r100s2 dR", "8appendix_studies.tex", "+0.03124",
+    ("robust DRW r100s2 dR", "appendix.tex", "+0.03124",
      ms["r100_s2"]["DRW cal"]["dR"], 1e-5),
-    ("robust LA r50 dR", "8appendix_studies.tex", "+0.03768", ms["r50_s0"]["LA cal"]["dR"], 1e-5),
-    ("robust CB mean", "8appendix_studies.tex", "-0.25108",
+    ("robust LA r50 dR", "appendix.tex", "+0.03768", ms["r50_s0"]["LA cal"]["dR"], 1e-5),
+    ("robust CB mean", "appendix.tex", "-0.25108",
      ms["across_seeds_r100"]["CB cal.dR"]["mean"], 1e-5),
-    ("robust DRW mean", "8appendix_studies.tex", "+0.01953",
+    ("robust DRW mean", "appendix.tex", "+0.01953",
      ms["across_seeds_r100"]["DRW cal.dR"]["mean"], 1e-5),
-    ("robust r10 CE acc", "8appendix_studies.tex", "0.5388",
+    ("robust r10 CE acc", "appendix.tex", "0.5388",
      ms["r10_s0"]["accuracy"]["CE"], 1e-4),
-    ("robust r50 LA acc", "8appendix_studies.tex", "0.4550",
+    ("robust r50 LA acc", "appendix.tex", "0.4550",
      ms["r50_s0"]["accuracy"]["LA"], 1e-4),
 ]
 
@@ -193,15 +194,15 @@ CHECKS += [
      sens["delta_r_class_pair_phi"], 1e-5),
     ("sens subject dR", "4experiments.tex", "0.02181",
      sens["delta_r_subject_only_phi"], 1e-5),
-    ("sens empirical bias", "7appendix.tex", "0.00742",
+    ("sens empirical bias", "appendix.tex", "0.00742",
      sens["empirical_coarsening_bias"], 5e-5),
-    ("sens free bound", "7appendix.tex", "14.00",
+    ("sens free bound", "appendix.tex", "14.00",
      sens["crude_cauchy_schwarz_bound"], 5e-3),
-    ("sens min rho", "7appendix.tex", "0.00053",
+    ("sens min rho", "appendix.tex", "0.00053",
      sens["minimum_rho_for_bound_to_hold"], 5e-6),
-    ("sens superseded bound", "7appendix.tex", "50.00",
+    ("sens superseded bound", "appendix.tex", "50.00",
      sens["superseded_popoviciu_bound"], 5e-3),
-    ("sens looseness ratio", "7appendix.tex", "1{,}887", sens["looseness_ratio"], 1.0),
+    ("sens looseness ratio", "appendix.tex", "1{,}887", sens["looseness_ratio"], 1.0),
 ]
 
 
@@ -210,12 +211,12 @@ CHECKS += [
 # until the 2026-09 panel found the omission.
 sharp = load("sensitivity_bound.json")
 CHECKS += [
-    ("sharp bound B", "7appendix.tex", "0.23284", sharp["bound_B"], 5e-6),
-    ("sharp bound at rho=0.1", "7appendix.tex", "0.02328",
+    ("sharp bound B", "appendix.tex", "0.23284", sharp["bound_B"], 5e-6),
+    ("sharp bound at rho=0.1", "appendix.tex", "0.02328",
      sharp["bound_B"] / 10.0, 5e-6),
-    ("robustness value", "7appendix.tex", "0.06127",
+    ("robustness value", "appendix.tex", "0.06127",
      sharp["robustness_value_rho_dagger"], 5e-6),
-    ("sharp bound dR", "7appendix.tex", "0.01427", sharp["reasoning_gain"], 5e-6),
+    ("sharp bound dR", "appendix.tex", "0.01427", sharp["reasoning_gain"], 5e-6),
 ]
 
 
@@ -223,45 +224,67 @@ CHECKS += [
 txt = load("text_lt_results.json")
 txt_rows = {f"{r['prior_feature']}|{r['new']}": r for r in txt["comparisons"]}
 CHECKS += [
-    ("text CE accuracy", "8appendix_studies.tex", "0.3532", txt["accuracy"]["CE"], 5e-4),
-    ("text CB accuracy", "8appendix_studies.tex", "0.3960", txt["accuracy"]["CB"], 5e-4),
-    ("text DRW accuracy", "8appendix_studies.tex", "0.3776", txt["accuracy"]["DRW"], 5e-4),
-    ("text CB superclass dT", "8appendix_studies.tex", "0.11388",
+    ("text CE accuracy", "appendix.tex", "0.3532", txt["accuracy"]["CE"], 5e-4),
+    ("text CB accuracy", "appendix.tex", "0.3960", txt["accuracy"]["CB"], 5e-4),
+    ("text DRW accuracy", "appendix.tex", "0.3776", txt["accuracy"]["DRW"], 5e-4),
+    ("text CB superclass dT", "appendix.tex", "0.11388",
      txt_rows["superclass|MLP-CB"]["total_gain"], 1e-5),
-    ("text CB superclass dP", "8appendix_studies.tex", "0.07071",
+    ("text CB superclass dP", "appendix.tex", "0.07071",
      txt_rows["superclass|MLP-CB"]["prior_gain"], 1e-5),
-    ("text CB superclass dR", "8appendix_studies.tex", "0.04317",
+    ("text CB superclass dR", "appendix.tex", "0.04317",
      txt_rows["superclass|MLP-CB"]["reasoning_gain"], 1e-5),
-    ("text CB global dR", "8appendix_studies.tex", "0.04185",
+    ("text CB global dR", "appendix.tex", "0.04185",
      txt_rows["global|MLP-CB"]["reasoning_gain"], 1e-5),
-    ("text CB tier dR", "8appendix_studies.tex", "0.03578",
+    ("text CB tier dR", "appendix.tex", "0.03578",
      txt_rows["tier|MLP-CB"]["reasoning_gain"], 1e-5),
-    ("text DRW superclass dT", "8appendix_studies.tex", "0.11490",
+    ("text DRW superclass dT", "appendix.tex", "0.11490",
      txt_rows["superclass|MLP-DRW"]["total_gain"], 1e-5),
-    ("text DRW superclass dP", "8appendix_studies.tex", "0.11335",
+    ("text DRW superclass dP", "appendix.tex", "0.11335",
      txt_rows["superclass|MLP-DRW"]["prior_gain"], 1e-5),
-    ("text DRW superclass dR", "8appendix_studies.tex", "0.00155",
+    ("text DRW superclass dR", "appendix.tex", "0.00155",
      txt_rows["superclass|MLP-DRW"]["reasoning_gain"], 1e-5),
-    ("text DRW global dR", "8appendix_studies.tex", "-0.00319",
+    ("text DRW global dR", "appendix.tex", "-0.00319",
      txt_rows["global|MLP-DRW"]["reasoning_gain"], 1e-5),
-    ("text DRW tier dR", "8appendix_studies.tex", "-0.00901",
+    ("text DRW tier dR", "appendix.tex", "-0.00901",
      txt_rows["tier|MLP-DRW"]["reasoning_gain"], 1e-5),
 ]
 tier_rows = {(r["new"], r["tier"]): r for r in txt["per_tier_at_superclass_phi"]}
 CHECKS += [
-    ("text CB few-shot dR", "8appendix_studies.tex", "0.04991",
+    ("text CB few-shot dR", "appendix.tex", "0.04991",
      tier_rows[("MLP-CB", "few-shot (<20)")]["alignment_gain"], 1e-5),
-    ("text CB medium-shot dR", "8appendix_studies.tex", "0.19213",
+    ("text CB medium-shot dR", "appendix.tex", "0.19213",
      tier_rows[("MLP-CB", "medium-shot (20-100)")]["alignment_gain"], 1e-5),
-    ("text CB many-shot dR", "8appendix_studies.tex", "-0.09227",
+    ("text CB many-shot dR", "appendix.tex", "-0.09227",
      tier_rows[("MLP-CB", "many-shot (>100)")]["alignment_gain"], 1e-5),
-    ("text DRW few-shot dR", "8appendix_studies.tex", "0.07352",
+    ("text DRW few-shot dR", "appendix.tex", "0.07352",
      tier_rows[("MLP-DRW", "few-shot (<20)")]["alignment_gain"], 1e-5),
-    ("text DRW medium-shot dR", "8appendix_studies.tex", "0.07171",
+    ("text DRW medium-shot dR", "appendix.tex", "0.07171",
      tier_rows[("MLP-DRW", "medium-shot (20-100)")]["alignment_gain"], 1e-5),
-    ("text DRW many-shot dR", "8appendix_studies.tex", "-0.10753",
+    ("text DRW many-shot dR", "appendix.tex", "-0.10753",
      tier_rows[("MLP-DRW", "many-shot (>100)")]["alignment_gain"], 1e-5),
 ]
+
+# A check can only vouch for a file the manuscript actually pulls in.  Twice now a
+# restructure has left an old .tex on disk, unreferenced, with the checks still reading
+# it -- they pass while the live text says something else.  So resolve main.tex's
+# \input graph first and refuse to read anything outside it.
+def inputted_files(driver: pathlib.Path) -> set[str]:
+    seen, queue = set(), [driver.name]
+    while queue:
+        name = queue.pop()
+        if name in seen:
+            continue
+        seen.add(name)
+        for ref in re.findall(r"\\input\{([^}]+)\}", (MS / name).read_text()):
+            queue.append(ref if ref.endswith(".tex") else ref + ".tex")
+    return seen
+
+
+LIVE = inputted_files(MS / "main.tex")
+orphans = sorted({f for _, f, *_ in CHECKS} - LIVE)
+if orphans:
+    print("these files are checked but not \\input by main.tex: " + ", ".join(orphans))
+    sys.exit(1)
 
 fails = []
 for label, fname, literal, actual, tol in CHECKS:

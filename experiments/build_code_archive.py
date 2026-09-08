@@ -1,5 +1,10 @@
 """Build code.zip: the code-only archive to attach to a journal submission.
 
+TMLR reviews double-blind and its supplementary material must be anonymized, so this
+also scrubs the archive: the LICENSE copyright line and the declarations builder both
+name the author, and are rewritten or dropped rather than shipped. Pass --identified to
+build the normal archive instead, for a camera-ready or a single-blind venue.
+
 Contains the estimator, the analysis and figure scripts, the test suite, and the
 cached results files the scripts read (13 JSON files, ~88 KB).  Excludes the
 manuscript sources, the development log, the review panels, the large model-output
@@ -16,6 +21,8 @@ from __future__ import annotations
 
 import os
 import pathlib
+import re
+import sys
 import zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -24,11 +31,49 @@ PREFIX = "wager-code"
 
 INCLUDE_DIRS = ["wager", "experiments", "tests"]
 INCLUDE_FILES = ["requirements.txt", "README.md", "algorithm.md", "LICENSE"]
+
+# Files and rewrites needed so the archive can be attached to a double-blind submission.
+# The declarations builder names the author; this script spells the name and the
+# repository URL in its own scrub patterns, so it cannot ship in an anonymized archive.
+ANON_SKIP = {"experiments/build_declarations_docx.py",
+             "experiments/build_code_archive.py"}
+ANON_REPLACE = {"LICENSE": "Copyright (c) 2026 Anonymous authors"}
+ANON_PATTERNS = [
+    (re.compile(r"(?i)quang-?vinh dang"), "Anonymous authors"),
+    (re.compile(r"(?i)british university vietnam"), "Anonymous affiliation"),
+    (re.compile(r"(?i)vinh\.dq4@buv\.edu\.vn"), "anonymous@example.org"),
+    (re.compile(r"(?i)https://github\.com/vinhqdang/WAGER"), "[repository URL withheld for review]"),
+    (re.compile(r"(?i)0000-0002-3877-8024"), "[ORCID withheld for review]"),
+]
+
+
+def scrub(text: str) -> str:
+    for pat, sub in ANON_PATTERNS:
+        text = pat.sub(sub, text)
+    return text
 SKIP_PARTS = {"__pycache__", ".pytest_cache", ".ipynb_checkpoints"}
 SKIP_SUFFIXES = {".pyc", ".pyo"}
 
 
 def main() -> None:
+    anon = "--identified" not in sys.argv
+
+    def add(src: pathlib.Path, arc: str, z: zipfile.ZipFile) -> bool:
+        rel = arc[len(PREFIX) + 1:]
+        if anon and rel in ANON_SKIP:
+            return False
+        if anon and rel in ANON_REPLACE:
+            z.writestr(arc, ANON_REPLACE[rel] + "\n")
+            return True
+        if anon and src.suffix in {".py", ".md", ".txt", ".json"}:
+            body = src.read_text(encoding="utf-8", errors="replace")
+            cleaned = scrub(body)
+            if cleaned != body:
+                z.writestr(arc, cleaned)
+                return True
+        z.write(src, arc)
+        return True
+
     with zipfile.ZipFile(OUT, "w", zipfile.ZIP_DEFLATED) as z:
         for d in INCLUDE_DIRS:
             for p in sorted((ROOT / d).rglob("*")):
@@ -36,15 +81,16 @@ def main() -> None:
                     continue
                 if any(s in p.parts for s in SKIP_PARTS):
                     continue
-                z.write(p, f"{PREFIX}/{p.relative_to(ROOT)}")
+                add(p, f"{PREFIX}/{p.relative_to(ROOT)}", z)
         for f in INCLUDE_FILES:
             if (ROOT / f).exists():
-                z.write(ROOT / f, f"{PREFIX}/{f}")
+                add(ROOT / f, f"{PREFIX}/{f}", z)
         for p in sorted((ROOT / "results").glob("*.json")):
-            z.write(p, f"{PREFIX}/results/{p.name}")
+            add(p, f"{PREFIX}/results/{p.name}", z)
 
     n = len(zipfile.ZipFile(OUT).namelist())
-    print(f"wrote {OUT} -- {n} files, {os.path.getsize(OUT) / 1024:.0f} KB")
+    mode = "anonymized" if anon else "identified"
+    print(f"wrote {OUT} -- {n} files, {os.path.getsize(OUT) / 1024:.0f} KB ({mode})")
     print("verify with:  unzip -q code.zip -d /tmp/chk && "
           "cd /tmp/chk/wager-code && python -m pytest tests -q")
 

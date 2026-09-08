@@ -14,14 +14,14 @@ Everything is conditional on the declared $\phi$. A positive $\Delta R$ means th
 matches its probability changes to the correct case better than the old one \emph{among
 cases sharing $\phi$}; it proves nothing about causal inference, compositional
 understanding, or robustness. If an unrecorded shortcut varies inside a cell, its predictive
-use is counted in $\Delta R$, and Supplementary Proposition~\suppref{prop:sensitivity} bounds that exposure
+use is counted in $\Delta R$, and Proposition~\ref{prop:sensitivity} bounds that exposure
 rather than removing it --- at a level that, for our own Visual Genome estimates, is not
-comfortable (Supplementary Section~\suppref{app:sensitivity}). Applications should declare $\phi$ before
+comfortable (Appendix~\ref{app:sensitivity}). Applications should declare $\phi$ before
 seeing results, justify it from how the benchmark was built, and report finer and coarser
 alternatives, because coarsening adds a between-cell covariance term of either sign
-(Supplementary Proposition~\suppref{prop:coarsen}) and only the finest identified partition nets out every
+(Proposition~\ref{prop:coarsen}) and only the finest identified partition nets out every
 regularity expressible in $\phi$. Even that rule is weaker than it looks:
-Supplementary Section~\suppref{app:partition} shows two equally fine, fully identified partitions of the same
+Appendix~\ref{app:partition} shows two equally fine, fully identified partitions of the same
 four cases that disagree completely about whether an improvement is case-level or
 transported, so the choice of $\phi$ is a modelling decision and not a formality.
 
@@ -33,14 +33,14 @@ effect at $-0.488$, tens of times any real gain reported here, which is why we a
 confidence-matched pairs and why released checkpoints, which routinely differ sharply in
 calibration, cannot be compared on their raw outputs. A rank-based within-cell contrast
 would be invariant to this, at the cost of the exact additivity that is the point of the
-construction; Supplementary Section~\suppref{app:partition} says what that trade would involve. Second, a
+construction; Appendix~\ref{app:partition} says what that trade would involve. Second, a
 transported gain is not evidence of anything illegitimate. Fitting the deployment label
 distribution better is real skill whenever that distribution is the one that matters; it is
 fragile precisely under label shift, where it can be added or removed post hoc by
 re-weighting \citep{saerens2002adjusting,lipton2018detecting}, as
-Section~\ref{sec:vgvisual} demonstrates and Supplementary Section~\suppref{sec:decision}
+Section~\ref{sec:vgvisual} demonstrates and Appendix~\ref{sec:decision}
 exploits. Nor is it purely a matter of prior fit
-(Supplementary Proposition~\suppref{prop:transported}). The decomposition reports
+(Proposition~\ref{prop:transported}). The decomposition reports
 where a gain lives, not whether it is worth having.
 
 \subsection{Choosing the grouping variable, and what the estimator cannot do}
@@ -59,7 +59,7 @@ the confidence-matched and granularity rows.
 
 Exact transport needs at least two cases per cell, so a very fine $\phi$ buys confound
 control at the cost of coverage; we report the identified fraction and claim nothing for
-singletons. The image-clustered interval is asymptotic, and Supplementary Section~\suppref{app:clt}
+singletons. The image-clustered interval is asymptotic, and Appendix~\ref{app:clt}
 justifies it in a regime no heavy-tailed benchmark attains in sample: of $6{,}346$ eligible
 class-pair cells, $2{,}286$ hold fewer than five cases, though those carry only $2.7\%$ of
 identified relations. The reported $94.0\%$ empirical coverage against a nominal $95\%$

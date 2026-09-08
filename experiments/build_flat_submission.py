@@ -1,14 +1,12 @@
-"""Build the flat, single-file LaTeX bundle an Elsevier submission system wants.
+"""Build a flat, single-file LaTeX bundle of the submission.
 
-Elsevier's Editorial Manager takes a flat file set: no subdirectories, so the
-figures/ folder and the \\input{} split of manuscript/ both have to go.  This
-script flattens both main.tex and supplementary.tex, rewriting the figure paths
-from figures/x.png to x.png, and copies the figures and ref.bib alongside them.
-The supplementary is a separate file because the journal's 20-35 page limit
-applies to the manuscript, and supplementary material sits outside it.
+Some submission systems take a flat file set: no subdirectories, so the figures/ folder
+and the \\input{} split of manuscript/ both have to go.  This flattens main.tex, rewrites
+the figure paths from figures/x.png to x.png, and copies the figures, the style files and
+ref.bib alongside it.  TMLR imposes no page limit, so the appendices are inline in that
+one document and there is no second file to flatten.
 
-The output is byte-equivalent in rendered content to the modular build; the only
-reason it exists separately is packaging.
+The output renders identically to the modular build; it exists only for packaging.
 
 Run: python experiments/build_flat_submission.py [--zip]
 """
@@ -25,16 +23,7 @@ OUT = ROOT / "submission"
 
 
 def inline_inputs(text: str) -> str:
-    """Replace every \\input{f} with the contents of manuscript/f, marked.
-
-    The generated cross-reference tables are loaded behind \\IfFileExists so that each
-    document still compiles when the other has not been built.  In a flat bundle that
-    guard would fail and every cross-document number would print as ??, so the guard is
-    dropped here and the current numbers are frozen into the file.
-    """
-    text = re.sub(r"\\IfFileExists\{([^}]+)\}\{\\input\{\1\}\}\{\}",
-                  r"\\input{\1}", text)
-
+    """Replace every \\input{f} with the contents of manuscript/f, marked."""
     def sub(match: re.Match) -> str:
         name = match.group(1)
         if not name.endswith(".tex"):
@@ -50,7 +39,7 @@ def main() -> None:
         shutil.rmtree(OUT)
     OUT.mkdir()
 
-    for src, dst in (("main.tex", "main.tex"), ("supplementary.tex", "supplementary.tex")):
+    for src, dst in (("main.tex", "main.tex"),):
         flat = inline_inputs((MS / src).read_text(encoding="utf-8"))
         if "\\input{" in flat:
             raise SystemExit("an \\input{} survived inlining; nested inputs are not supported")
@@ -61,7 +50,8 @@ def main() -> None:
 
     for png in sorted((MS / "figures").glob("*.png")):
         shutil.copy(png, OUT / png.name)
-    shutil.copy(MS / "ref.bib", OUT / "ref.bib")
+    for aux in ("ref.bib", "tmlr.sty", "tmlr.bst"):
+        shutil.copy(MS / aux, OUT / aux)
 
     names = sorted(p.name for p in OUT.iterdir())
     print(f"wrote {OUT} with {len(names)} flat files:")

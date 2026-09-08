@@ -51,7 +51,7 @@ this into an identity,
 exact in the observed sample, for any proper score, with no approximation, no held-out fold
 and no tuning parameter, at a cost of $O(NK)$ for $N$ cases and $K$ labels.
 Figure~\ref{fig:concept} shows the relabelling on two real Visual Genome cases.
-Supplementary Section~\suppref{app:worked} works the whole construction through on four data points, in
+Appendix~\ref{app:worked} works the whole construction through on four data points, in
 arithmetic a reader can check by hand, and uses the same four points to exhibit a
 model-selection decision the split gets right and the aggregate score gets wrong: a
 candidate whose entire gain survives relabelling becomes \emph{worse} than the model it
@@ -132,7 +132,7 @@ limit, so declaring $\phi$ is a modelling decision.
 
 \subsection{Terminology}\label{sec:terminology}
 
-Supplementary Table~\suppref{tab:terms} in Supplementary Section~\suppref{app:terms} fixes the paper's vocabulary against
+Table~\ref{tab:terms} in Appendix~\ref{app:terms} fixes the paper's vocabulary against
 standard counterparts. Two entries carry a caveat rather than a synonym, because no standard
 term matches exactly: $\Delta P$ is named for the operation that produces it, and $\Delta R$
 is a covariance rearrangement's term rather than the classical resolution it is often
@@ -151,10 +151,9 @@ Four limits are worth stating before any result, and Section~\ref{sec:discussion
 to each. Everything is conditional on the declared $\phi$: a positive $\Delta R$ says the
 new model predicts individual cases better \emph{among cases sharing that feature}, and
 nothing about causality or robustness. Second, $\Delta R$ credits any signal varying
-within a cell, including an unrecorded shortcut; Supplementary
-Proposition~\suppref{prop:sensitivity} bounds that exposure rather than removing it, and
+within a cell, including an unrecorded shortcut; Proposition~\ref{prop:sensitivity} bounds that exposure rather than removing it, and
 for our own Visual Genome pair a covariate correlated at $0.061$ would account for the
-entire reported gain (Supplementary Section~\suppref{app:sensitivity}). Third, and this is
+entire reported gain (Appendix~\ref{app:sensitivity}). Third, and this is
 the limitation we would most want carried away, $\Delta R$ is \emph{not invariant to
 recalibration}: rescaling a fixed model's confidence changes it while changing no ranking,
 no top-1 decision and no information, and in simulation a pure recalibration moves it by
@@ -162,14 +161,14 @@ $-0.488$, tens of times any real gain reported here. Every result below is for
 confidence-matched pairs. Fourth, a transported gain is not illegitimate --- fitting the
 deployment label distribution better is real skill when that distribution is the one that
 matters --- and it is also not purely prior fit
-(Supplementary Proposition~\suppref{prop:transported}).
+(Proposition~\ref{prop:transported}).
 
 \paragraph{Organization.}
-Supplementary Section~\suppref{app:worked} works a four-point example and uses it to
+Appendix~\ref{app:worked} works a four-point example and uses it to
 exhibit a decision the split changes. Section~\ref{sec:related} places the
 construction in the literature on proper-score decomposition and forecast comparison.
 Section~\ref{sec:method} develops the estimator and its theory.
 Section~\ref{sec:exp} validates it and audits two released checkpoints.
 Sections~\ref{sec:discussion} and~\ref{sec:conclusion} discuss limits and conclude.
-Proofs are in Supplementary Section~\suppref{app:proofs}; three further empirical
-studies are in Supplementary Section~\suppref{app:studies}.
+Proofs are in Appendix~\ref{app:proofs}; three further empirical
+studies are in Appendix~\ref{app:studies}.

@@ -1,82 +1,12 @@
-% Supplementary material for "WAGER: An Exact Decomposition of Model-Pair Score Gains on
-% Benchmarks with Strong Label Priors", submitted to Pattern Recognition.
-% Submitted as a separate file: the journal's page limit applies to the manuscript, and
-% supplementary files appear online exactly as received.
-\documentclass[preprint,times,10pt,a4paper]{elsarticle}
-
-\usepackage[top=4.3cm,right=4.8cm,bottom=4.3cm,left=4.8cm]{geometry}
-\usepackage{setspace}
-\usepackage[font=footnotesize,labelfont=bf]{caption}
-\usepackage{graphicx}
-\usepackage{multirow}
-\usepackage{amsmath,amssymb,amsfonts}
-\usepackage{dsfont}
-\newcommand{\ind}{\mathds{1}}
-\usepackage{amsthm}
-\usepackage{mathrsfs}
-\usepackage{xcolor}
-\usepackage{textcomp}
-\usepackage{booktabs}
-\usepackage{algorithm}
-\usepackage{algorithmicx}
-\usepackage{algpseudocode}
-\usepackage{url}
-
-\theoremstyle{plain}
-\newtheorem{theorem}{Theorem}
-\newtheorem{proposition}{Proposition}
-\newtheorem{corollary}{Corollary}
-\theoremstyle{definition}
-\newtheorem{definition}{Definition}
-
-% Sections number as S1, S2, ...; floats and equations as S1.1 etc.
-\renewcommand{\thesection}{S\arabic{section}}
-\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
-\renewcommand{\thetable}{S\arabic{table}}
-\renewcommand{\thefigure}{S\arabic{figure}}
-\renewcommand{\theequation}{S\arabic{equation}}
-\renewcommand{\thetheorem}{S\arabic{theorem}}
-\renewcommand{\theproposition}{S\arabic{proposition}}
-\renewcommand{\thecorollary}{S\arabic{corollary}}
-
-
-%% Cross-document references into the manuscript.  The numbers are looked up in
-%% main-refs.tex, which experiments/gen_cross_refs.py regenerates from main.aux on every
-%% build, so nothing is hard-coded in the prose and the references cannot drift as the
-%% manuscript is reordered.  Without the file this document still compiles and prints a
-%% bold ?? that build.sh greps for.
-\makeatletter
-\newcommand{\mainref}[1]{%
-  \@ifundefined{mainref@#1}%
-    {\textbf{??}\@latex@warning{Cross-document reference `#1' undefined}}%
-    {\csname mainref@#1\endcsname}}
-\makeatother
-\IfFileExists{main-refs.tex}{\input{main-refs.tex}}{}
-
-\begin{document}
-\doublespacing
-\sloppy
-
-\begin{center}
-{\large\bfseries Supplementary material}\\[0.4em]
-{\large WAGER: An Exact Decomposition of Model-Pair Score Gains\\
-on Benchmarks with Strong Label Priors}
-\end{center}
-
-\vspace{1em}
-\noindent
-This document contains the proofs, the influence-function derivation, the implementation and
-reproducibility details, and the secondary empirical studies referred to in the manuscript.
-Section, equation, table and figure numbers are prefixed with \textsf{S} throughout, and the
-manuscript cites them in that form. Numbered results stated in the manuscript are restated
-here before being proved, so this document can be read on its own.
-
-\vspace{1em}
+% Appendices to the manuscript, merged into the single document TMLR expects.
+% Until 2026-09-08 these were a separate supplementary PDF, because Pattern Recognition
+% counts appendices against a 35-page limit; TMLR does not, so they are back inline and
+% every cross-reference is a plain \ref again.
 
 \section{A worked example}\label{app:worked}
 
 Four data points are enough to show the whole construction, and to exhibit in arithmetic
-the main properties Section~\mainref{sec:method} of the manuscript proves in general. Take one cell containing
+the main properties Section~\ref{sec:method} proves in general. Take one cell containing
 four test cases and two possible labels. Three of the cases carry label $1$ and one
 carries label $2$, so the cell's label frequencies are $(3/4,1/4)$. The old model $q_0$
 is uninformative within the cell: it predicts $(0.5,0.5)$ for all four cases. We compare
@@ -127,7 +57,7 @@ case 4 is scored against $\{1,1,1\}$, giving $+\tfrac38$. So
 $\Delta P=\tfrac14[3\cdot\tfrac1{24}+\tfrac38]=\tfrac18$ and $\Delta R=0$ --- exactly, in
 this sample, not on average over hypothetical resamples. That is the general fact: a
 prediction change constant within a cell contributes nothing to $\Delta R$
-(Theorem~\mainref{thm:population} of the manuscript). Note also that $\Delta P=1/8$ is the largest transported
+(Theorem~\ref{thm:population}). Note also that $\Delta P=1/8$ is the largest transported
 gain any within-cell-constant prediction can earn here, since a proper score is maximised in
 expectation at the true frequencies $(3/4,1/4)$ --- which is what A predicts.
 
@@ -142,7 +72,7 @@ Two things follow. First, B's aggregate gain of $3/8$ \emph{understates} its cas
 improvement of $1/2$, and not because B fits the cell frequencies worse --- it fits them
 better, moving the cell-mean prediction from $0.5$ to $0.625$ against a truth of $0.75$, an
 improvement of exactly $0.09375$. What offsets it is dispersion: B's forecasts vary inside
-the cell where the old model's did not, and by Supplementary Proposition~S2 the
+the cell where the old model's did not, and by Proposition~\ref{prop:transported} the
 transported channel charges that variation at the same $0.09375$, so the two cancel and the
 in-sample transported gain is zero. The $-1/8$ the estimator reports is what remains once
 each case is scored against the \emph{other} cases' labels only, removing the
@@ -155,7 +85,7 @@ the paper, in miniature --- aggregate scores are not merely imprecise about comp
 can order two models by the wrong criterion.
 
 \paragraph{The covariance form, and why leaving one out matters.}
-Theorem~\mainref{thm:population} of the manuscript says $\Delta R$ is a within-cell covariance between the
+Theorem~\ref{thm:population} says $\Delta R$ is a within-cell covariance between the
 probability change and the label indicator. Computing it directly for model B gives
 $2\sum_y\operatorname{Cov}(\Delta q_y,\ind\{Y=y\})=3/8$, not the $1/2$ transport returned.
 Neither is wrong: the covariance uses the cell's \emph{own} four labels to form its
@@ -163,14 +93,14 @@ reference, so each case contributes to the reference it is compared against, and
 in-sample plug-in is attenuated by exactly $(n_c-1)/n_c=3/4$ --- indeed
 $\tfrac34\cdot\tfrac12=\tfrac38$. Transport, which scores each case only against the
 \emph{other} cases' labels, removes the attenuation with no held-out data.
-Proposition~\mainref{prop:attenuate} of the manuscript shows this holds for every cell with $n_c\ge2$ and every
+Proposition~\ref{prop:attenuate} shows this holds for every cell with $n_c\ge2$ and every
 grouping variable, which is why the method needs no sample splitting. The example is
 reproduced as a unit test in the accompanying software.
 
 One property the example cannot show, because both candidates happen to be equally
 confident, is the estimator's sensitivity to confidence itself. Multiply every prediction's
 odds by a constant and $\Delta R$ moves, though no case has been reordered and no
-information added; Section~\mainref{sec:simulation} of the manuscript measures that at $-0.488$ in a design where
+information added; Section~\ref{sec:simulation} measures that at $-0.488$ in a design where
 the two models carry identical case-level information. Every result in this paper is
 therefore reported for confidence-matched pairs.
 
@@ -188,7 +118,7 @@ a change in label frequencies acts on --- and B's in the covariance channel, whi
 change leaves alone. That is the operational content of the split: $\widehat{\Delta P}$ is
 the part of a reported improvement contingent on the evaluation set's label frequencies
 matching deployment, and $\widehat{\Delta R}$ is the part that is not.
-Section~\mainref{sec:vgvisual} of the manuscript exhibits the same structure on real models.
+Section~\ref{sec:vgvisual} exhibits the same structure on real models.
 
 \begin{figure*}[t]
 \centering
@@ -201,38 +131,12 @@ randomization $p$-values, and controls type-I error in 200 null runs.}
 
 \section{Bregman-score identity}\label{app:bregman}
 
-\begin{theorem}[Bregman-score covariance identity]\label{thm:bregman}
-Let $H_x(y)=S_\psi(q_1(\cdot\mid x),y)-S_\psi(q_0(\cdot\mid x),y)$ for a Bregman score generated by a strictly convex, differentiable $\psi$, and write $\Delta g_y(x)=\partial_y\psi(q_1(\cdot\mid x))-\partial_y\psi(q_0(\cdot\mid x))$ for the contrast of the $y$-th gradient coordinate. Then
-\begin{equation}
-\Delta R_c=\sum_{y=1}^K\operatorname{Cov}\!\bigl(\Delta g_y(X),\,\ind\{Y=y\}\mid C=c\bigr).
-\label{eq:bregman-cov-id}
-\end{equation}
-\end{theorem}
 
-\begin{corollary}[Quadratic and log score]\label{cor:bregman}
-For $\psi(q)=\lVert q\rVert_2^2$, $\Delta g_y(x)=2\Delta q_y(x)$ and Eq.~\eqref{eq:bregman-cov-id} is Eq.~(\mainref{eq:cov-id}) of the manuscript. For $\psi(q)=\sum_kq_k\log q_k$, $\Delta g_y(x)=\log q_1(y\mid x)-\log q_0(y\mid x)$, and
-\begin{equation}
-\Delta R_c=\sum_{y=1}^K\operatorname{Cov}\!\left(\log\frac{q_1(y\mid X)}{q_0(y\mid X)},\ \ind\{Y=y\}\ \middle|\ C=c\right).
-\label{eq:log-cov-id}
-\end{equation}
-\end{corollary}
 
-Eq.~\eqref{eq:log-cov-id} gives the log-score check of Section~\mainref{sec:sggaudit} of the manuscript the same exact covariance meaning that Eq.~(\mainref{eq:cov-id}) of the manuscript gives the quadratic score: within-group covariance under the log score is the within-cell covariance between the log-likelihood-ratio contrast of the two models and the observed label indicator, not merely "a sensitivity analysis." Any other Bregman score -- the spherical or power-family scores catalogued by \citet{gneiting2007proper}, for instance -- inherits an identity of the same form through its own $\psi$, so Theorem~\ref{thm:bregman} fixes the scope of the estimator's scoring-rule dependence once, rather than leaving each alternative score to be checked separately. The implemented log score floors each probability at $\epsilon=10^{-6}$ to avoid $-\infty$ on an unseen label; Eq.~\eqref{eq:log-cov-id} is exact for the unfloored $\log q_y$, and the floored version used throughout is a sensitivity check on that exact identity rather than a literal instance of it, negligibly different whenever no relevant probability is within $\epsilon$ of zero.
+Eq.~\eqref{eq:log-cov-id} gives the log-score check of Section~\ref{sec:sggaudit} the same exact covariance meaning that Eq.~\eqref{eq:cov-id} gives the quadratic score: within-group covariance under the log score is the within-cell covariance between the log-likelihood-ratio contrast of the two models and the observed label indicator, not merely "a sensitivity analysis." Any other Bregman score -- the spherical or power-family scores catalogued by \citet{gneiting2007proper}, for instance -- inherits an identity of the same form through its own $\psi$, so Theorem~\ref{thm:bregman} fixes the scope of the estimator's scoring-rule dependence once, rather than leaving each alternative score to be checked separately. The implemented log score floors each probability at $\epsilon=10^{-6}$ to avoid $-\infty$ on an unseen label; Eq.~\eqref{eq:log-cov-id} is exact for the unfloored $\log q_y$, and the floored version used throughout is a sensitivity check on that exact identity rather than a literal instance of it, negligibly different whenever no relevant probability is within $\epsilon$ of zero.
 
 \section{Finite-sample identity}\label{app:finite}
 
-\begin{theorem}[Finite-sample WAGER identity]\label{thm:sample}
-For every cell with $n_c\ge2$, without a distributional assumption,
-\begin{equation}
-\widehat{\Delta T}_c=\widehat{\Delta P}_c+\widehat{\Delta R}_c.
-\end{equation}
-Moreover, when the cell's examples are drawn i.i.d.\ from the cell population,
-$\widehat{\Delta R}_c$ is an unbiased order-two U-statistic for $\Delta R_c$.
-Independence, not exchangeability alone, is what unbiasedness requires: the
-independent-coupling definition of $\Delta P_c$ pairs an example with a label drawn
-independently from the same cell, so $\mathbb E[H_1(Y_2)]$ matches it only for
-independent within-cell draws.
-\end{theorem}
 
 \section{Randomization test}\label{app:randtest}
 
@@ -250,22 +154,11 @@ test is reported as a secondary relation-level diagnostic.
 
 \section{Coarsening and unrecorded covariates}\label{app:coarsen}
 
-Supplementary Section~S10.4 reports that replacing the class-pair cell with a coarser
+Appendix~\ref{sec:ablations} reports that replacing the class-pair cell with a coarser
 subject-only cell changes the estimated covariance gain. The following result gives that
 sensitivity an exact population-level mechanism rather than treating it as an empirical
 curiosity.
 
-\begin{proposition}[Coarsening decomposition]\label{prop:coarsen}
-Let $\bar\phi=g(\phi)$ be any coarsening of the grouping variable, so that each cell
-$\bar c$ of $\bar\phi$ is a union of cells of $\phi$. Then
-\begin{equation}
-\Delta R_{\bar c}
-=\mathbb E\!\left[\Delta R_C \mid \bar\phi=\bar c\right]
-+\sum_{y=1}^K\operatorname{Cov}\!\left(\mathbb E[H_X(y)\mid C],\,
-\Pr(Y=y\mid C)\ \middle|\ \bar\phi=\bar c\right).
-\label{eq:coarsen}
-\end{equation}
-\end{proposition}
 
 The first term is the coarse cell's share of the fine-grained covariance gain; the second is
 a between-cell covariance, over the finer cells nested inside $\bar c$, between each fine
@@ -275,7 +168,7 @@ exactly when either quantity is constant within each coarse cell. This is why th
 defensible $\phi$ is the conservative default: coarsening adds cross-cell prior structure
 into $\Delta R$, while the finer partition's gain is preserved on average through the first
 term. The proof is a per-label application of the law of total covariance
-(Supplementary Section~S1).
+(Appendix~\ref{app:proofs}).
 
 \subsection{Sensitivity to an unrecorded confounder}\label{sec:sensitivity}
 
@@ -295,28 +188,24 @@ the bias of using $\phi$ alone. The identity is exact but needs $Z$'s joint law 
 $(H,Y)$. The following bound replaces that with a judgement about how strongly an unrecorded
 variable could plausibly act, in the spirit of \citet{rosenbaum2002observational}.
 
-Supplementary Proposition~S1 in Supplementary Section~S5 states the bound: for a
-single elicited correlation $\bar\rho$ between an unrecorded variable's effect on the
-within-cell gain and its effect on the within-cell label distribution, the bias of using
-$\phi$ alone is at most $\bar\rho$ times a product of two dispersion factors, with a
-data-free form $\bar\rho M\sqrt{K-1}$ needing only the label cardinality and the score
-bound. Because $\bar\rho$ is a correlation rather than a domain-specific odds ratio, it can
-be elicited the same way across benchmarks. Supplementary Section~S5 evaluates both
-forms on our own estimates, and the sharp one is the less comfortable: an unrecorded
-covariate correlated at $0.061$ would account for the entire covariance gain reported in
-Supplementary Section~S10.2.
+Proposition~\ref{prop:sensitivity} states that bound and Corollary~\ref{cor:sensitivity-crude}
+its data-free form; both are proved in Appendix~\ref{app:proofs}. Because $\bar\rho$ is a
+correlation rather than a domain-specific odds ratio, it can be elicited the same way across
+benchmarks. Appendix~\ref{app:sensitivity} evaluates both forms on our own estimates, and
+the sharp one is the less comfortable: an unrecorded covariate correlated at $0.061$ would
+account for the entire covariance gain reported in Appendix~\ref{sec:results}.
 
 
 
 \section{Proofs}\label{app:proofs}
 
-\subsection{Proof of Theorem~\mainref{thm:population} of the manuscript}
+\subsection{Proof of Theorem~\ref{thm:population}}
 Condition throughout on $C=c$. Expanding over labels gives
 \[
 \Delta T_c=\sum_y\mathbb E[H_X(y)\ind \{Y=y\}],\qquad
 \Delta P_c=\sum_y\mathbb E[H_X(y)]\Pr(Y=y).
 \]
-Subtracting yields the covariance sum in Eq.~(\mainref{eq:population-id}) of the manuscript; the first
+Subtracting yields the covariance sum in Eq.~\eqref{eq:population-id}; the first
 identity is the definition of $\Delta R_c$. Under the quadratic score,
 \[
 H_X(y)=2\Delta q_y(X)-\{\lVert q_1(\cdot\mid X)\rVert_2^2-
@@ -324,7 +213,7 @@ H_X(y)=2\Delta q_y(X)-\{\lVert q_1(\cdot\mid X)\rVert_2^2-
 \]
 The bracketed term is independent of the label index. Its contribution summed over $y$
 is $\operatorname{Cov}(B(X),\sum_y\ind \{Y=y\})=
-\operatorname{Cov}(B(X),1)=0$. The remaining terms give Eq.~(\mainref{eq:cov-id}) of the manuscript. If
+\operatorname{Cov}(B(X),1)=0$. The remaining terms give Eq.~\eqref{eq:cov-id}. If
 $H_X(y)=H_c(y)$ almost surely, every covariance is zero. \qed
 
 \subsection{Proof of Proposition~\ref{prop:transported}}
@@ -349,7 +238,7 @@ $\Delta P_c=\mathbb E[S_{\rm B}(q_1,Y')\mid c]-\mathbb E[S_{\rm B}(q_0,Y')\mid c
 definition. \qed
 
 \subsection{Proof of Theorem~\ref{thm:bregman}}
-Condition on $C=c$. The proof of Theorem~\mainref{thm:population} of the manuscript above establishes
+Condition on $C=c$. The proof of Theorem~\ref{thm:population} above establishes
 $\Delta R_c=\sum_y\operatorname{Cov}(H_X(y),\ind\{Y=y\}\mid C=c)$ for \emph{any} score
 contrast $H$, not only the quadratic one; only the identification of $H_x(y)$ with a
 specific functional form is score-dependent. For the Bregman score of
@@ -361,7 +250,7 @@ H_x(y)=\underbrace{\bigl[\psi(q_1(x))-\psi(q_0(x))\bigr]
 \]
 writing $q_i(x)$ for $q_i(\cdot\mid x)$, where $B(x)$ collects every term not indexed by
 $y$ and $\Delta g_y(x)=\partial_y\psi(q_1(x))-\partial_y\psi(q_0(x))$ is the $y$-indexed
-remainder, exactly as in the proof of Theorem~\mainref{thm:population} of the manuscript for the quadratic
+remainder, exactly as in the proof of Theorem~\ref{thm:population} for the quadratic
 case. Substituting,
 \begin{align*}
 \sum_y\operatorname{Cov}(H_X(y),\ind\{Y=y\}\mid c)
@@ -372,7 +261,7 @@ The first term is $\operatorname{Cov}(B(X),1\mid c)=0$ since $\sum_y\ind\{Y=y\}=
 almost surely. The second term is Eq.~\eqref{eq:bregman-cov-id}. \qed
 
 \subsection{Proof of Theorem~\ref{thm:sample}}
-Summing the kernel in Eq.~(\mainref{eq:kernel}) of the manuscript over unordered pairs, every observed term
+Summing the kernel in Eq.~\eqref{eq:kernel} over unordered pairs, every observed term
 $H_i(y_i)$ occurs in $n_c-1$ pairs with coefficient $1/2$, while the two crossed terms
 together enumerate every ordered pair $H_i(y_j)$, $i\ne j$, with coefficient $1/2$.
 Since $\binom{n_c}{2}=n_c(n_c-1)/2$,
@@ -401,14 +290,14 @@ nested inside $\bar c$ gives
    \Pr(Y=y\mid C)\;\middle|\;\bar\phi=\bar c\right),
 \end{align*}
 using $\mathbb E[\ind \{Y=y\}\mid C]=\Pr(Y=y\mid C)$. Summing over $y=1,\ldots,K$ and
-applying the population identity of Theorem~\mainref{thm:population} of the manuscript to the left side (at
+applying the population identity of Theorem~\ref{thm:population} to the left side (at
 $\bar\phi=\bar c$) and to the first term on the right side (at $C=c$, then averaged over
 $c$ within $\bar c$) yields Eq.~\eqref{eq:coarsen}. \qed
 
-\subsection{Proof of Proposition~\mainref{prop:attenuate} of the manuscript}
+\subsection{Proof of Proposition~\ref{prop:attenuate}}
 Fix a cell $c$ with $n_c\ge2$ and $i\in c$. By definition of the label count,
 $\sum_{y=1}^K m_{cy}H_i(y)=\sum_{j\in c}H_i(y_j)=H_i(y_i)+\sum_{j\ne i}H_i(y_j)$, and
-Eq.~(\mainref{eq:linear}) of the manuscript gives $\sum_{j\ne i}H_i(y_j)=(n_c-1)\hat P_i$. Hence
+Eq.~\eqref{eq:linear} gives $\sum_{j\ne i}H_i(y_j)=(n_c-1)\hat P_i$. Hence
 \[
 \tilde P_i=\frac1{n_c}\sum_{y}m_{cy}H_i(y)
 =\frac{H_i(y_i)+(n_c-1)\hat P_i}{n_c}.
@@ -489,7 +378,7 @@ conditional on identification and report the identified fraction alongside every
 estimate (99.0\% of relations on VG150, 100\% on CIFAR-100-LT), so the gap between the
 conditional and full-population targets is bounded by the reported coverage.
 
-\paragraph{Derivation of Eq.~(\mainref{eq:influence}) of the manuscript.} Fix a cell $c$ and let
+\paragraph{Derivation of Eq.~\eqref{eq:influence}.} Fix a cell $c$ and let
 $\theta_c=\Delta R_c$ with $g_c(z)=\mathbb E[A(z,Z')\mid Z'\in c]$ the kernel
 projection. The classical H\'ajek projection of the order-two U-statistic
 $\widehat{\Delta R}_c$ is
@@ -521,16 +410,16 @@ worth stating: the sharper per-cell rate is what allows a condition on the cell
 \emph{count} alone, with no further requirement on individual cell sizes. On VG150,
 $C=6{,}346$ against $N_*=227{,}337$, so $C/\sqrt{N_*}\approx13.3$ --- the condition is a
 statement about the limit, and at these finite sample sizes it is the coverage simulation
-of Section~\mainref{sec:simulation} of the manuscript, not Eq.~\eqref{eq:cellcount}, that supports the reported
+of Section~\ref{sec:simulation}, not Eq.~\eqref{eq:cellcount}, that supports the reported
 intervals.
 Estimating $g_{C_i}(Z_i)$ by the pair-kernel mean $\bar A_i$, $\theta_c$ by
 $\widehat{\Delta R}_c$, and $\theta$ by $\widehat{\Delta R}$ gives the plug-in
 influence contribution
 $\widehat\psi_i=2(\bar A_i-\widehat{\Delta R}_{c})+(\widehat{\Delta R}_{c}
 -\widehat{\Delta R})=2\bar A_i-\widehat{\Delta R}_{c}-\widehat{\Delta R}$, which is
-Eq.~(\mainref{eq:influence}) of the manuscript and has exactly zero sample mean by construction. Its empirical
+Eq.~\eqref{eq:influence} and has exactly zero sample mean by construction. Its empirical
 95\% coverage in a VG-like regime (image-clustered examples, heavy-tailed cell sizes with
-a large mass of near-minimum cells) is validated in Section~\mainref{sec:simulation} of the manuscript.
+a large mass of near-minimum cells) is validated in Section~\ref{sec:simulation}.
 
 \paragraph{Proof of Theorem~\ref{thm:clt}.} The linearization above gives
 $\widehat{\Delta R}-\theta=N_*^{-1}\sum_i\psi_i+o_p(N_*^{-1/2})$, under
@@ -565,7 +454,7 @@ $\widehat\sigma^2$ -- a sum of squares of cluster-aggregated $\widehat\psi_i$, n
 by $N_*$ and $G$ -- is a continuous functional of these consistent plug-ins, hence
 $\widehat\sigma^2\to_p\sigma^2$ by the continuous mapping theorem. \qed
 
-\paragraph{Efficient computation.} The implementation does not instantiate all pairs. In addition to Eq.~(\mainref{eq:linear}) of the manuscript,
+\paragraph{Efficient computation.} The implementation does not instantiate all pairs. In addition to Eq.~\eqref{eq:linear},
 let $G_c(y)=\sum_{j\in c}H_j(y)$ and $O_c=\sum_{j\in c}H_j(y_j)$. The pair-kernel mean
 for observation $i$ is
 \[
@@ -583,7 +472,7 @@ implemented variance is
 \left(\sum_{i\in g}\widehat\psi_i\right)^2,
 \]
 where $G$ is the number of images and $\widehat\psi_i$ is
-Eq.~(\mainref{eq:influence}) of the manuscript. We use a normal critical value; with 27,955 image clusters,
+Eq.~\eqref{eq:influence}. We use a normal critical value; with 27,955 image clusters,
 small-$G$ corrections are immaterial.
 
 \section{Randomization algorithm}\label{app:random}
@@ -592,7 +481,7 @@ For each cell, sort examples once and index them $0,\ldots,n_c-1$. Randomization
 draws $o_c^{(b)}$ uniformly from this index set and maps label position $r$ to
 $(r+o_c^{(b)})\bmod n_c$. Independent offsets across cells define an element of the
 product of cyclic groups. The cell label histogram is unchanged, so
-$\sum_y m_{cy}H_i(y)$ in Eq.~(\mainref{eq:linear}) of the manuscript is precomputed; only the assigned label
+$\sum_y m_{cy}H_i(y)$ in Eq.~\eqref{eq:linear} is precomputed; only the assigned label
 lookup changes. One randomization is $O(N)$ after the $O(NK)$ setup. The plus-one Monte
 Carlo correction includes the observed assignment and prevents zero $p$-values.
 
@@ -627,10 +516,10 @@ checks are in \texttt{experiments/\allowbreak antisymmetric\_simulation.py} and
 \texttt{experiments/\allowbreak antisymmetric\_ablations.py}. All random seeds are fixed. Unit tests
 cover the decomposition identity, quadratic covariance identity, cell-constant null,
 singleton reporting, cluster inference, randomization power, and log-score path, plus
-direct numerical checks of Propositions~\mainref{prop:attenuate} of the manuscript and~\ref{prop:coarsen}
+direct numerical checks of Propositions~\ref{prop:attenuate} and~\ref{prop:coarsen}
 (the latter against an explicit discrete population with exact expectations, independent
 of the estimator's own code path), Corollary~\ref{cor:bregman}'s log-score covariance
-identity, Corollary~\mainref{cor:dm} of the manuscript's equivalence to the (unclustered) Diebold--Mariano
+identity, Corollary~\ref{cor:dm}'s equivalence to the (unclustered) Diebold--Mariano
 statistic at a trivial grouping variable, and Proposition~\ref{prop:sensitivity}'s bound
 ordering (exact bias $\le$ tight, per-cell bound $\le$ crude, data-free bound) on a second
 explicit discrete population with a known omitted confounder. The covariance-identity
@@ -660,7 +549,7 @@ standardized features and train with AdamW (learning rate $10^{-3}$, weight deca
 $10^{-5}$, batch size $4096$): MLP-CLASS with hidden sizes $(256,128)$ for $12$ epochs,
 MLP-SPATIAL with $(256,128)$ for $15$ epochs, and MLP-SPATIAL+ with $(512,256,128)$ for
 $20$ epochs -- the ``+'' variant differs in both width and schedule, as noted in
-Section~\mainref{sec:data} of the manuscript.
+Section~\ref{sec:data}.
 
 \paragraph{Data availability.} The repository ships the estimator, every driver script,
 and the cached results files that every printed number traces to
@@ -675,9 +564,9 @@ does not require retraining.
 Model training and feature extraction for both new experiments ran on a single NVIDIA
 T4 (15\,GB) GPU. The WAGER decomposition itself is pure NumPy and requires no
 accelerator: it consumes the resulting cached probability arrays, as in
-Section~\mainref{sec:data} of the manuscript. All Python code runs under a pinned environment (Python 3.13).
+Section~\ref{sec:data}. All Python code runs under a pinned environment (Python 3.13).
 
-\paragraph{Matched-subsample models (Section~\mainref{sec:vgvisual} of the manuscript).} The three compared
+\paragraph{Matched-subsample models (Section~\ref{sec:vgvisual}).} The three compared
 predictors share a fixed, seeded ($\text{seed}=0$) subsample of $100{,}000$ of the
 $532{,}987$ training relations, drawn without replacement uniformly at the relation
 level (not the image level); the full $229{,}605$-relation test split is always used for
@@ -759,7 +648,7 @@ therefore do not claim that a confounder would have to be implausibly strong to 
 these Visual Genome gains away; on this evidence a modest one would suffice, and the
 reader should treat Section~\ref{sec:results}'s covariance gains as conditional on the
 declared $\phi$ being close to complete. The flagship audit of
-Section~\mainref{sec:sggaudit} of the manuscript is not exposed in the same way, because its reported
+Section~\ref{sec:sggaudit} is not exposed in the same way, because its reported
 $\widehat{\Delta R}$ is indistinguishable from zero and a sensitivity bound on a null
 result changes nothing about it.
 
@@ -806,9 +695,9 @@ unconditional target. We have therefore dropped that assumption rather than stat
 conditions that cannot both bind. The price is that the theorem does not describe the
 regime the paper's own applications sit in, where $\theta$ is a random, $N$-dependent
 target because coverage is short of one ($99.0\%$ on VG150, $98.9\%$ in
-Section~\mainref{sec:sggaudit} of the manuscript). What the theorem licenses is the interval's form and its
+Section~\ref{sec:sggaudit}). What the theorem licenses is the interval's form and its
 variance estimator; what licenses reading the reported intervals at finite $N$ is the
-coverage simulation of Section~\mainref{sec:simulation} of the manuscript, and Section~\mainref{sec:discussion} of the manuscript
+coverage simulation of Section~\ref{sec:simulation}, and Section~\ref{sec:discussion}
 states the gap between the two rather than eliding it.
 
 The proof (Section~\ref{app:proofs}) combines the exact linearization of
@@ -830,7 +719,7 @@ comfortably ($C=6{,}346$ against $N_*=227{,}337$). Condition (ii) is what rules 
 sum -- an image contributing a positive fraction of all relations, for instance -- and
 is a standard requirement for cluster-robust inference generally, not specific to this
 estimator. This theorem licenses reading the image-clustered intervals reported
-throughout Section~\mainref{sec:exp} of the manuscript as asymptotically valid in the idealized regime where
+throughout Section~\ref{sec:exp} as asymptotically valid in the idealized regime where
 every eligible cell's size grows without bound. That regime is not attained in-sample:
 VG150's eligible cells are heavy-tailed, and $2{,}286$ of the $6{,}346$ eligible
 class-pair cells hold fewer than five examples (Table~\ref{tab:sensitivity}). The
@@ -838,7 +727,7 @@ proportion is smaller than earlier drafts of this paper asserted --- those cells
 $2.7\%$ of identified relations, and the median eligible cell holds appreciably more than
 the minimum --- but a third of the cells still sit where condition (iv)'s divergence is
 plainly hypothetical. The reported $94.0\%$ empirical coverage against a nominal $95\%$
-(Section~\mainref{sec:simulation} of the manuscript), not this theorem directly, is therefore the evidence that
+(Section~\ref{sec:simulation}), not this theorem directly, is therefore the evidence that
 the interval remains a good approximation well short of the idealization.
 
 \section{Choice of the grouping variable}\label{app:partition}
@@ -896,52 +785,7 @@ one invariant and non-additive --- is what we would now recommend to a benchmark
 could choose.
 
 % --- statements relocated from the method section for length ---
-\begin{proposition}[Sensitivity bound for an unrecorded confounder]\label{prop:sensitivity}
-Suppose $H_x(y)\in[-M,M]$ for all $x,y$ (WAGER already requires a bounded score). Fix a
-cell $c$ of $\phi$, write $a_y=\mathbb E[H_X(y)\mid\phi,Z]$, $b_y=\Pr(Y=y\mid\phi,Z)$
-(both conditional on $\phi=c$) for the two $K$-vectors on the right of
-Eq.~\eqref{eq:coarsen}, and let
-\begin{equation}
-\rho=\frac{\sum_{y=1}^K\operatorname{Cov}(a_y,b_y\mid c)}
-{\sqrt{\sum_{y=1}^K\operatorname{Var}(a_y\mid c)}\sqrt{\sum_{y=1}^K\operatorname{Var}(b_y\mid c)}}
-\in[-1,1]
-\end{equation}
-be their aggregate correlation. Then
-\begin{align}
-\left|\Delta R_c(\phi)-\mathbb E[\Delta R_{(\phi,Z)}\mid\phi=c]\right|
-&\ \le\ |\rho|\sqrt{\textstyle\sum_{y=1}^K\operatorname{Var}(a_y\mid c)}\,
-\sqrt{\textstyle\sum_{y=1}^K\operatorname{Var}(b_y\mid c)}\notag\\
-&\ \le\ |\rho|\sqrt{\textstyle\sum_{y=1}^K\operatorname{Var}(H_X(y)\mid\phi=c)}\,
-\sqrt{\textstyle\sum_{y=1}^Kp_y(c)\bigl(1-p_y(c)\bigr)},
-\label{eq:sensitivity-bound}
-\end{align}
-where $p_y(c)=\Pr(Y=y\mid\phi=c)$; the second inequality holds termwise
-($\operatorname{Var}(a_y\mid c)\le\operatorname{Var}(H_X(y)\mid c)$ and
-$\operatorname{Var}(b_y\mid c)\le p_y(c)(1-p_y(c))$ by the law of total variance, since
-conditioning on more variables cannot increase the variance of a conditional
-expectation) followed by monotonicity of the square root applied to each sum
-separately -- a product of two square-root sums, not a sum of per-label square roots,
-which the law of total variance alone would not license.
-\end{proposition}
 
-\begin{corollary}[Free bound]\label{cor:sensitivity-crude}
-Each $a_y$ ranges over $[-M,M]$ as a conditional expectation of $H$, so
-$\operatorname{Var}(a_y\mid c)\le M^2$ and $\sum_y\operatorname{Var}(a_y\mid c)\le KM^2$.
-The label probabilities satisfy $\sum_yb_y=1$, which gives $\sum_yb_y^2\le1$ and, by
-Cauchy--Schwarz, $\sum_y(\mathbb E b_y)^2\ge1/K$; hence
-\begin{equation}
-\sum_{y=1}^K\operatorname{Var}(b_y\mid c)
-=\mathbb E\Bigl[\textstyle\sum_yb_y^2\Bigr]-\sum_y\bigl(\mathbb E b_y\bigr)^2
-\ \le\ 1-\frac1K .
-\label{eq:simplex-var}
-\end{equation}
-Substituting both into Eq.~\eqref{eq:sensitivity-bound} gives the data-free bound
-\begin{equation}
-\left|\Delta R_c(\phi)-\mathbb E[\Delta R_{(\phi,Z)}\mid\phi=c]\right|
-\ \le\ |\rho|\,M\sqrt{K-1}.
-\label{eq:sensitivity-crude}
-\end{equation}
-\end{corollary}
 
 Earlier versions of this corollary bounded $\sum_y\operatorname{Var}(b_y\mid c)$ by
 Popoviciu's inequality applied label by label, giving $K/4$ and hence $|\rho|KM/2$. That
@@ -965,30 +809,15 @@ correct but far too loose to certify anything, while the sharp per-cell form is
 \emph{less} reassuring than the free one: an unrecorded covariate whose aggregate
 correlation with both channels reaches $0.061$ would account for the entire covariance gain
 reported in Section~\ref{sec:results}. We therefore do not claim those gains are robust to
-confounding, and Section~\mainref{sec:sggaudit} of the manuscript's audit is unaffected only because its estimate
+confounding, and Section~\ref{sec:sggaudit}'s audit is unaffected only because its estimate
 is already indistinguishable from zero.
 
-\begin{theorem}[Asymptotic normality of the covariance-gain estimator]\label{thm:clt}
-Suppose (i) $H_x(y)\in[-M,M]$ for all $x,y$; (ii) examples are partitioned into clusters
-$g=1,\dots,G$ (e.g.\ images) that are mutually independent, with cluster sizes having a
-finite third moment and $\max_g|g|=o(\sqrt{G})$; (iii) the limiting variance
-$\sigma^2=\lim_{G\to\infty}\operatorname{Var}\!\bigl(\sqrt{N_*}(\widehat{\Delta R}-\theta)\bigr)$
-exists and is strictly positive, where $\theta$ is the identified-subpopulation estimand
-of Section~\ref{app:influence}; and (iv) $\phi$ takes values in a fixed, finite set,
-each with strictly positive limiting population mass, so that every eligible cell's size
-$n_c$ diverges almost surely as $N\to\infty$. Then
-\begin{equation}
-\sqrt{N_*}\bigl(\widehat{\Delta R}-\theta\bigr)\ \xrightarrow{d}\ \mathcal N(0,\sigma^2),
-\end{equation}
-and the plug-in sandwich variance $\widehat\sigma^2=N_*\dfrac{G}{G-1}\sum_{g}\bigl(\sum_{i\in g}\widehat\psi_i/N_*\bigr)^2$
-of Section~\ref{app:influence} is consistent for $\sigma^2$.
-\end{theorem}
 
 Section~\ref{app:clt} discusses what condition (iv) costs --- it forces every cell to be
 eventually identified, so the theorem does not describe the finite-sample regime our own
 applications sit in --- and states the additional condition on the number of cells that the
 dataset-level remainder requires. What licenses reading the reported intervals at finite $N$
-is the coverage simulation of Section~\mainref{sec:simulation} of the manuscript, not this theorem.
+is the coverage simulation of Section~\ref{sec:simulation}, not this theorem.
 
 \section{Terminology}\label{app:terms}
 
@@ -1041,21 +870,6 @@ $\Delta P$ a prior-fit gain, since transport replaces a case's label by an indep
 draw from its cell; several earlier drafts of this paper did exactly that. The following
 identity shows the name is wrong, and says what the quantity is instead.
 
-\begin{proposition}[Composition of the transported gain]\label{prop:transported}
-Under the quadratic score, write $\bar q_m(c)=\mathbb E[q_m(\cdot\mid X)\mid C=c]$ for
-model $m$'s mean forecast in cell $c$, $\operatorname{Var}(q_m\mid c)$ for the
-within-cell covariance matrix of its forecast vector, and $p(c)$ for the cell's transport
-law. Then
-\begin{equation}
-\Delta P_c=
-\underbrace{\Bigl[\lVert p(c)-\bar q_0(c)\rVert^2-\lVert p(c)-\bar q_1(c)\rVert^2\Bigr]}
-_{\text{improvement in mean-forecast fit}}
-\;-\;
-\underbrace{\Bigl[\operatorname{tr}\operatorname{Var}(q_1\mid c)-
-\operatorname{tr}\operatorname{Var}(q_0\mid c)\Bigr]}_{\text{increase in within-cell dispersion}} .
-\label{eq:transported-composition}
-\end{equation}
-\end{proposition}
 
 Only the first bracket is prior fit: it is positive exactly when the new model's average
 within-cell forecast sits closer to the cell's label frequencies. The second has nothing to
@@ -1074,11 +888,11 @@ confidence matching moves $\widehat{\Delta P}$ so sharply, since a temperature c
 almost purely a change in dispersion.
 
 
-\section{Supplementary studies}\label{app:studies}
+\section{Further empirical studies}\label{app:studies}
 
-This section reports the two studies summarized in Section~\mainref{sec:further} of the manuscript and the
+This section reports the two studies summarized in Section~\ref{sec:further} and the
 granularity, score and cell-size sensitivity analyses referred to there. Each applies the
-estimator of Section~\mainref{sec:method} of the manuscript without modification; only the declared grouping
+estimator of Section~\ref{sec:method} without modification; only the declared grouping
 variable $\phi$ changes.
 
 \subsection{Controlled predictors on VG150 in full}\label{app:vgmain-full}
@@ -1091,7 +905,7 @@ directly from the released relationship annotations: the 150 most frequent objec
 classes and 50 most frequent predicates form the vocabulary, and images are split
 $70/30$ into a pool for fitting the compared predictors and a pool on which the audit
 runs. We use this reconstruction rather than the canonical VG150 release because these
-predictors are trained here from annotations alone; Section~\mainref{sec:sggaudit} of the manuscript audits
+predictors are trained here from annotations alone; Section~\ref{sec:sggaudit} audits
 \emph{released third-party checkpoints} on the canonical split itself, so both settings
 appear in the paper and neither is asked to stand for the other. The reconstruction
 provides 532,987 training and 229,605 test relations, drawn from 65,228 and 27,955
@@ -1188,7 +1002,7 @@ straightforward: MLP-SPATIAL-S's $\widehat{\Delta R}=+0.01023$ over MLP-CLASS-S
 accompanies $+0.51$ points of top-1 predicate accuracy, $+0.60$ of mean reciprocal rank
 and $+0.86$ of recall@5, so in these data a hundredth of quadratic-score gain is worth
 roughly half an accuracy point. The covariance channel is not, however, a re-description
-of any rank metric, and the real-pixel comparison of Section~\mainref{sec:vgvisual} of the manuscript is
+of any rank metric, and the real-pixel comparison of Section~\ref{sec:vgvisual} is
 where that becomes visible: there $\widehat{\Delta R}=+0.00641$ while top-1 accuracy
 falls by $3.07$ points and recall@5 by $2.21$. Prior-matching both models before scoring
 narrows the accuracy gap to $2.17$ points without closing it. The rank metrics aggregate
@@ -1203,7 +1017,7 @@ the quadratic score. CI is image-cluster robust; $p$ is the 499-shift relation-l
 randomization diagnostic (granularity floor $.002$). ``--'' denotes an undefined share
 because total gain is negative. The MLP-CLASS row's zero-width interval is exact by
 construction, not a sampling statement: a gain vector constant within every cell makes
-the antisymmetric kernel identically zero (Theorem~\mainref{thm:population} of the manuscript), so no
+the antisymmetric kernel identically zero (Theorem~\ref{thm:population}), so no
 variability exists for the interval to measure.}
 \label{tab:wager-results}
 \resizebox{\textwidth}{!}{%
@@ -1234,11 +1048,11 @@ with image-cluster-robust intervals.}
 \end{figure*}
 
 \paragraph{Reading $\widehat{\Delta T}$ as a comparative forecast test.}
-Corollary~\mainref{cor:dm} of the manuscript identifies $\widehat{\Delta T}$ and its image-clustered interval in Table
+Corollary~\ref{cor:dm} identifies $\widehat{\Delta T}$ and its image-clustered interval in Table
 \ref{tab:wager-results} as a grouped Diebold--Mariano statistic and interval, on the identified subsample, for
 each pair's paired score differential, so every row already reports what that classical
 test would report. What it does not report is the next two columns: whether MOTIFS-TDE
-(Section~\mainref{sec:sggaudit} of the manuscript) or MLP-SPATIAL beat their baseline for a reason a
+(Section~\ref{sec:sggaudit}) or MLP-SPATIAL beat their baseline for a reason a
 frequency-only remodeling of the same benchmark could not reproduce, which is the
 question $\widehat{\Delta P}$ and $\widehat{\Delta R}$ answer and DM/GW do not ask.
 
@@ -1387,8 +1201,8 @@ Min.\ cell size & 20 & $0.00570$ & $0.01225\,[0.01155,0.01295]$ & 1757 & $86.7\%
 
 \subsection{Long-tailed image classification}\label{app:lt}\label{sec:cifarlt}
 
-Sections~\mainref{sec:data}--\mainref{sec:vgvisual} of the manuscript are all instances of one task (predicate
-classification on an ordered object pair). Section~\mainref{sec:related-applied} of the manuscript argued
+Sections~\ref{sec:data}--\ref{sec:vgvisual} are all instances of one task (predicate
+classification on an ordered object pair). Section~\ref{sec:related-applied} argued
 that long-tailed image classification poses a structurally identical question: a
 class-frequency prior can be fit better without any per-instance improvement. We test
 this directly on CIFAR-100-LT \citep{cui2019classbalanced}, an exponential-imbalance
@@ -1414,13 +1228,13 @@ the global class marginal and so instantiates Proposition~\ref{prop:coarsen} in 
 domain, and a partition into head, medium and tail training-frequency tiers. CIFAR-100
 test images are independent, unlike the several relations VG draws from one photograph,
 so no cluster grouping is required and the plain H\'ajek interval of
-Section~\mainref{sec:inference} of the manuscript applies directly. One semantic point matters in this domain:
+Section~\ref{sec:inference} applies directly. One semantic point matters in this domain:
 transport uses each cell's \emph{test} label histogram, which on CIFAR-100-LT is
 balanced. A positive $\Delta P$ here therefore records movement \emph{toward} the
 balanced test marginal -- undoing the training-frequency skew -- which is precisely the
 adjustment long-tailed evaluation is designed to reward; a transported gain is a
 description of where score was earned, not an accusation
-(Section~\mainref{sec:discussion} of the manuscript).
+(Section~\ref{sec:discussion}).
 
 \paragraph{Result.} The three classifiers reach top-1 accuracies of $0.3662$ (CE),
 $0.2627$ (CB) and $0.3874$ (DRW), so re-weighting from initialization degrades the
@@ -1440,7 +1254,7 @@ effect but two large ones that happen to cancel.
 \paragraph{A calibration-matched regime.} A channel split of that shape could, however,
 be produced by confidence scaling alone. Under the quadratic score the covariance channel
 is a covariance between probability movements and labels
-(Eq.~(\mainref{eq:cov-id}) of the manuscript), and a monotone recalibration moves it: softening an
+(Eq.~\eqref{eq:cov-id}), and a monotone recalibration moves it: softening an
 overconfident model transfers score mass from the covariance channel to the transported channel while
 adding no information about any individual image. The baseline invites exactly this
 concern, assigning a mean maximum probability of $0.764$ while being correct on only
@@ -1517,7 +1331,7 @@ needs replication rather than a single audit.
 
 Third, LA is an instructive falsification of a natural expectation. A purely post-hoc
 prior correction might be expected to register as almost pure transported channel, as the
-within-cell prior matching of Section~\mainref{sec:vgvisual} of the manuscript does. It does not:
+within-cell prior matching of Section~\ref{sec:vgvisual} does. It does not:
 calibration-matched, LA reads as almost entirely covariance gain ($+0.022$ to $+0.038$) with a
 transported channel near zero, while achieving the best balanced accuracy of any arm at every
 ratio. The reason is visible in the construction. Dividing by the \emph{global} class
@@ -1566,12 +1380,12 @@ supplies, then, is not only how much of a long-tail gain is real but where in th
 frequency spectrum it was earned.
 
 These numbers also provide an implementation check on real inputs. Computing the
-within-group covariance gain directly from the identity of Eq.~(\mainref{eq:cov-id}) of the manuscript, through a
+within-group covariance gain directly from the identity of Eq.~\eqref{eq:cov-id}, through a
 code path that shares nothing with the transport estimator, gives $-0.19530$; multiplying
-by the factor $n_c/(n_c-1)$ that Proposition~\mainref{prop:attenuate} of the manuscript predicts, at the
+by the factor $n_c/(n_c-1)$ that Proposition~\ref{prop:attenuate} predicts, at the
 $n_c=500$ of a balanced superclass cell, returns $-0.195693$ against the estimator's
-$-0.19569$. The identities of Theorem~\mainref{thm:population} of the manuscript and
-Proposition~\mainref{prop:attenuate} of the manuscript are algebraic, so this verifies the implementation
+$-0.19569$. The identities of Theorem~\ref{thm:population} and
+Proposition~\ref{prop:attenuate} are algebraic, so this verifies the implementation
 rather than the theory; the point of the check is that two independent code paths agree
 to the fifth decimal on real trained models, not only on the synthetic populations used
 in the unit tests.
@@ -1646,7 +1460,7 @@ and now in a second domain.
 
 Sections~\ref{sec:results}--\ref{app:lt} test two vision tasks that share cached
 probability vectors and grouping variables grounded in class frequency or object geometry.
-To test the breadth Section~\mainref{sec:discussion} of the manuscript claims -- any benchmark supplying two
+To test the breadth Section~\ref{sec:discussion} claims -- any benchmark supplying two
 models' full probability vectors, labels, and a declared discrete grouping variable -- we
 apply the identical estimator, unmodified, to document category prediction on 20
 Newsgroups \citep{lang1995newsweeder}. Neither the predictors nor the grouping variable are
@@ -1666,7 +1480,7 @@ TF-IDF vector reduced to $300$ dimensions by truncated SVD, and the three compar
 classifiers -- CE, CB, and DRW -- follow the same three-arm protocol as
 Section~\ref{app:lt}: an identical small MLP architecture and optimizer across runs,
 differing only in per-example loss weight (Section~\ref{app:implementation}). Test
-documents are independent units, so the plain H\'ajek interval of Section~\mainref{sec:inference} of the manuscript
+documents are independent units, so the plain H\'ajek interval of Section~\ref{sec:inference}
 applies directly, as for CIFAR.
 
 \paragraph{Result.} Table~\ref{tab:textlt} decomposes both re-weighting schedules' gain
@@ -1693,7 +1507,7 @@ partition to $0.04185$ at the global cell and $0.03578$ at the tier partition, w
 DRW's changes sign twice, from a small positive residual (superclass) to a small
 negative one (global) to a significant negative one (tier). None of these differences
 overturns CB's conclusion, but DRW's illustrates exactly why the finest defensible
-partition is the conservative default (Section~\mainref{sec:coarsening} of the manuscript): a reader stopping
+partition is the conservative default (Section~\ref{sec:coarsening}): a reader stopping
 at the coarser tier partition would report a significant covariance \emph{loss} for a
 method whose finer-grained residual is not distinguishable from zero.
 
@@ -1761,8 +1575,3 @@ This third domain uses a single trained pair per schedule rather than the multi-
 calibration-matched protocol Section~\ref{app:lt} applies to CIFAR-100-LT; extending
 that fuller protocol to text is the natural next replication, not a step this section
 claims to have taken.
-
-\bibliographystyle{elsarticle-num-names}
-\bibliography{ref}
-
-\end{document}

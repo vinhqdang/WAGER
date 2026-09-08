@@ -1,20 +1,25 @@
-% Submission to Pattern Recognition (Elsevier), typeset with elsarticle.
-% Reframed for a pattern-recognition readership on 2026-09-08 after four statistics
-% venues declined the work: the contribution is unchanged, the presentation leads with
-% the benchmark problem and the checkpoint audit instead of with the score decomposition.
-% Author details are in the manuscript; the separate title page is kept for a submission
-% system's metadata. Previously typeset for the Journal of Statistical Planning and
-% Inference, before that Computational Statistics and Data Analysis, before that Computer
-% Vision and Image Understanding, and before that with the Springer Nature sn-jnl class;
-% see git history if any of those are ever needed again.
-\documentclass[preprint,times,10pt,a4paper]{elsarticle}
+% Submission to Transactions on Machine Learning Research (TMLR), 2026-09-08.
+%
+% Venue history, kept because it explains the shape of the paper: typeset for Pattern
+% Recognition (Elsevier) immediately before this, and before that the Journal of
+% Statistical Planning and Inference, Computational Statistics and Data Analysis,
+% Computer Vision and Image Understanding, and a Springer Nature sn-jnl class. The
+% Pattern Recognition version was never submitted -- the author had another manuscript
+% with that editor -- so the retarget here is a formatting change, not a response to a
+% referee. See git history for any of the earlier classes.
+%
+% Two things TMLR changes materially. It imposes no page limit, so the 45-page
+% supplementary document that Pattern Recognition's 35-page cap forced out of the paper
+% is back inline as appendices, and every cross-reference is a plain \ref again. And it
+% is double-blind: tmlr.sty replaces the \author block below with "Anonymous authors"
+% unless the [accepted] or [preprint] option is given, so the real details stay in the
+% source for the camera-ready. Nothing else in the paper may identify the author --- in
+% particular the code repository is cited as supplementary material, not by its URL.
+\documentclass[10pt]{article}
+\usepackage{tmlr}
+% On acceptance: \usepackage[accepted]{tmlr}, and set \month and \year below.
+% For a preprint posting: \usepackage[preprint]{tmlr}.
 
-% Pattern Recognition formatting: single column, double spaced, 10pt Times,
-% margins 4.3cm/4.8cm/4.3cm/4.8cm (top/right/bottom/left), numbered pages, justified.
-\usepackage[top=4.3cm,right=4.8cm,bottom=4.3cm,left=4.8cm]{geometry}
-\usepackage{setspace}
-% The journal asks for 8pt footnotes and captions; at a 10pt base that is \footnotesize.
-\usepackage[font=footnotesize,labelfont=bf]{caption}
 \usepackage{graphicx}
 \usepackage{multirow}
 \usepackage{amsmath,amssymb,amsfonts}
@@ -31,6 +36,7 @@
 \usepackage{algorithmicx}
 \usepackage{algpseudocode}
 \usepackage{url}
+\usepackage{hyperref}
 
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}
@@ -39,54 +45,25 @@
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}
 
+\def\month{MM}
+\def\year{YYYY}
+\def\openreview{\url{https://openreview.net/forum?id=XXXX}}
 
+\title{WAGER: An Exact Decomposition of Model-Pair Score Gains
+on Benchmarks with Strong Label Priors}
 
-% Cross-document references.  The manuscript and the supplementary are separate
-% documents, so LaTeX cannot resolve a reference from one into the other.  The numbers
-% below are looked up in supp-refs.tex, which experiments/gen_cross_refs.py regenerates from
-% supplementary.aux on every build; nothing is hard-coded in the prose, so the references cannot
-% drift as either document is reordered.  Without the file the document still compiles
-% and prints a bold ?? that build.sh greps for.
-\makeatletter
-\newcommand{\suppref}[1]{%
-  \@ifundefined{suppref@#1}%
-    {\textbf{??}\@latex@warning{Cross-document reference `#1' undefined}}%
-    {\csname suppref@#1\endcsname}}
-\makeatother
-\IfFileExists{supp-refs.tex}{\input{supp-refs.tex}}{}
-
-\journal{Pattern Recognition}
+% Hidden by tmlr.sty during review; restored by the [accepted] or [preprint] option.
+\author{\name Quang-Vinh Dang \email vinh.dq4@buv.edu.vn \\
+      \addr British University Vietnam \\
+      Ecopark Township, Hung Yen, Vietnam}
 
 \begin{document}
-\doublespacing
-\sloppy
 
-\begin{frontmatter}
-
-% The journal asks for a 14pt title; elsarticle sets \@title in \Large, which is 14.4pt
-% at a 10pt base, so the size is pinned here instead.
-\title{\fontsize{14}{17}\selectfont WAGER: An Exact Decomposition of Model-Pair
-Score Gains on Benchmarks with Strong Label Priors}
-
-%% Author details appear here per this journal's typical single-anonymized review
-%% (confirm current policy in JSPI's guide for authors before submission).
-\author[buv]{Quang-Vinh Dang\corref{cor1}}
-\ead{vinh.dq4@buv.edu.vn}
-\cortext[cor1]{Corresponding author.}
-\affiliation[buv]{organization={British University Vietnam},
-  addressline={Ecopark Township}, city={Hung Yen}, country={Vietnam}}
+\maketitle
 
 \begin{abstract}
 \input{0abstract.tex}
 \end{abstract}
-
-\begin{keyword}
-Model evaluation \sep Benchmark auditing \sep Dataset bias \sep
-Scene graph generation \sep Long-tailed recognition \sep Proper scoring rules \sep
-U-statistics
-\end{keyword}
-
-\end{frontmatter}
 
 \input{1intro.tex}
 \input{2related.tex}
@@ -95,43 +72,47 @@ U-statistics
 \input{5discussion.tex}
 \input{6conclusions.tex}
 
-\section*{Supplementary material}
-Proofs of all numbered results, the influence-function derivation, implementation and
-reproducibility details, two further empirical studies (long-tailed image and text
-classification) and the granularity, score and minimum-cell-size sensitivity analyses are
-provided as supplementary material, whose sections, tables and figures carry an
-\textsf{S} prefix and are cited in that form throughout.
+\subsubsection*{Broader Impact Statement}
+This paper supplies an auditing tool, and the way it can go wrong is by being read as a
+verdict. A small or negative $\widehat{\Delta R}$ says that a reported gain is mostly
+attributable to fitting label frequencies within cells of one declared grouping variable;
+it does not say that the gain is spurious, that the authors of the audited system did
+anything wrong, or that the system is worse. Fitting the deployment label distribution
+better is real skill whenever that distribution is the one that matters. Three properties
+in particular limit what an audit licenses, and all three are established in this paper
+rather than left to the reader: the estimand is conditional on the grouping variable an
+analyst declares, so a different defensible choice can give a different answer even at
+equal granularity (Appendix~\ref{app:partition}); the covariance channel credits any
+signal varying inside a cell, including a shortcut nobody recorded, and our own bound on
+that exposure is not reassuring (Appendix~\ref{app:sensitivity}); and the estimand is not
+invariant to recalibration, so an audit of two checkpoints that were not
+confidence-matched measures partly their calibration and not their evidence. Used against
+published work without those caveats, the method could support unfair claims about other
+researchers' contributions. Used as intended --- by a benchmark, on a grouping variable
+declared before a leaderboard opens, with the confidence-matched row reported alongside
+--- it makes visible a distinction that aggregate metrics currently hide.
 
-\section*{Data and code availability}
-All code, cached model outputs and scripts needed to reproduce every number, table and
-figure are publicly available at \url{https://github.com/vinhqdang/WAGER}: the estimator,
-its unit tests, every experiment driver, and the cached results each reported value is
-checked against by an included verification script. The two audited scene-graph checkpoints
-are the public release of \citet{tang2020unbiased}; Visual Genome
-\citep{krishna2017visual} and CIFAR-100 are public benchmarks.
+\subsubsection*{Reproducibility Statement}
+Every experiment uses public data: Visual Genome through the canonical VG150
+predicate-classification split, the two publicly released MOTIFS and MOTIFS-TDE
+checkpoints of \citet{tang2020unbiased} evaluated with their authors' own code,
+CIFAR-100 and 20-Newsgroups. No proprietary or restricted data is used. The estimator,
+its unit tests, every experiment driver, the cached model outputs and a verification
+script that checks each of the reported numerical values against the committed results
+files are submitted as anonymized supplementary material; the public repository is
+withheld here only because it would identify the author, and will be cited on
+acceptance. Appendix~\ref{app:implementation} gives the architectures, schedules, seeds
+and compute environment.
 
-\section*{CRediT authorship contribution statement}
-\textbf{Quang-Vinh Dang:} Conceptualization; Methodology; Formal analysis; Software;
-Investigation; Validation; Visualization; Writing -- original draft; Writing -- review and
-editing.
+\subsubsection*{Use of Generative AI}
+Generative AI tools were used to support the writing of this manuscript and the
+development of the accompanying code. The author reviewed and edited the output and
+takes full responsibility for the content.
 
-\section*{Declaration of competing interests}
-The author declares no competing financial interests or personal relationships that
-could have appeared to influence the work reported in this paper.
-
-\section*{Funding}
-This research did not receive any specific grant from funding agencies in the public,
-commercial, or not-for-profit sectors.
-
-\section*{Declaration of generative AI and AI-assisted technologies in the manuscript
-preparation process}
-During the preparation of this work the author used generative AI tools in order to
-support the writing of the manuscript and the development of the accompanying code. The
-author reviewed and edited the output as needed and takes full responsibility for the
-content of the published article.
-
-\bibliographystyle{elsarticle-num-names}
+\bibliographystyle{tmlr}
 \bibliography{ref}
 
+\appendix
+\input{appendix.tex}
 
 \end{document}
