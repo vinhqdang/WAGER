@@ -8,13 +8,12 @@ positioning claim wrong, and this revision corrects it (see
 [`report/REPORT.md`](report/REPORT.md)). Previously desk-rejected at *Computational
 Statistics and Data Analysis* and *Computer Vision and Image Understanding*.
 
-**Status (2026-09-08): under review at *Econometrics and Statistics*,** Annals of
-Statistical Data Science section. A scope desk-rejection is the identified risk — the paper
-still reads as computer vision on first impression, which is the axis all four previous
-rejections turned on. If it is declined, the plan of record is to re-aim at computer vision
-rather than at another statistics venue; see the submission-status section of
-[`report/REPORT.md`](report/REPORT.md) for the diagnosis, the framing pass that would need
-to be inverted, and candidate venues.
+**Status (2026-09-08): reframed for *Pattern Recognition*.** The Econometrics and Statistics
+submission was sent back on a procedural point and withdrawn rather than resubmitted; the
+paper is now aimed at computer vision, where its evidence base actually sits. Manuscript is
+35 pages including references, with a separate 46-page supplementary document. See
+[`report/REPORT.md`](report/REPORT.md) for the reframing, the page-limit reading that had to
+be corrected, and what moved where.
 
 When two models are compared on a benchmark whose labels are partly determined by a
 feature both of them observe, the score difference sums two different improvements. WAGER

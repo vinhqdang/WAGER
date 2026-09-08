@@ -20,11 +20,11 @@ sit inside the same number.
 
 The problem is general and the community knows it. Frequency baselines are competitive on
 Visual Genome \citep{zellers2018neural}; VQA systems collapse under changed answer priors
-\citep{goyal2017making,agrawal2018dont}; standard metrics obscure tail behaviour
+\citep{agrawal2018dont}; standard metrics obscure tail behaviour
 \citep{li2022rethinking}; and benchmark audits keep finding multimodal models exploiting
 non-visual shortcuts that inflate exactly this kind of aggregate score
-\citep{brown2025benchmark,zhou2025shortcut}. Reporting standards have responded --- mean
-recall broken down by predicate frequency \citep{tang2020unbiased,li2022rethinking},
+\citep{zhou2025shortcut}. Reporting standards have responded --- mean
+recall broken down by predicate frequency \citep{li2022rethinking},
 zero-shot recall on unseen triplets \citep{lu2016visual}, GQA-OOD stratified by answer rarity
 \citep{kervadec2021roses} --- and every one is a prior-aware slicing of a \emph{single}
 model's performance. None attributes the gain between two submitted systems.
@@ -53,21 +53,13 @@ this into an identity,
 \]
 exact in the observed sample, for any proper score, with no approximation, no held-out fold
 and no tuning parameter, at a cost of $O(NK)$ for $N$ cases and $K$ labels.
-Figure~\ref{fig:concept} shows the relabelling on two real Visual Genome cases, and
-Section~\ref{sec:worked} works the arithmetic through on four data points ---
-including, in Section~\ref{sec:decision}, a model-selection decision the split gets right
-and the aggregate score gets wrong.
-
-\paragraph{What we find.}
-Pointed at two publicly released scene-graph checkpoints rather than at predictors of our
-own, the decomposition gives a precise account of a widely cited debiasing method. Once the
-two models are matched for confidence, essentially the entire proper-score difference between
-MOTIFS-TDE and the MOTIFS baseline it debiases is transported gain, with a covariance
-remainder at least an order of magnitude smaller under either of two proper scores
-(Section~\ref{sec:sggaudit}). A metric the field reads as evidence about rare predicates moves
-ten points while the quantity that would measure case-level evidence barely moves. Since
-TDE's construction subtracts a context-only prediction, this characterises the method rather
-than indicting it --- but the headline number is not the evidence it is generally taken for.
+Figure~\ref{fig:concept} shows the relabelling on two real Visual Genome cases.
+Supplementary Section~S1 works the whole construction through on four data points, in
+arithmetic a reader can check by hand, and uses the same four points to exhibit a
+model-selection decision the split gets right and the aggregate score gets wrong: a
+candidate whose entire gain survives relabelling becomes \emph{worse} than the model it
+replaces once the deployment label frequencies shift, while one whose gain does not survive
+is untouched.
 
 \begin{figure*}[t]
 \centering
@@ -87,17 +79,17 @@ probability vectors, the labels, and the group identifiers.}
 The component destroyed by relabelling is not new, and naming it correctly predicts how it
 behaves. Written out, it equals the covariance, inside each group, between how much the new
 model moved its predicted probability for a label and whether that label occurred
-(Theorem~\ref{thm:population}). Such a covariance is the object isolated by the covariance
-rearrangement of a proper score going back to \citet{yates1982external}, so we call it the
-\emph{within-group covariance gain}. It is close to, but not the same as, the
-\emph{resolution} term of the classical reliability--resolution partition
-\citep{murphy1973vector,degroot1983comparison,brocker2009reliability}, and the difference has
-a practical consequence: classical resolution depends on a forecast only through the partition
+(Theorem~\ref{thm:population}) --- the object isolated by the covariance rearrangement of a
+proper score going back to \citet{yates1982external}, so we call it the \emph{within-group
+covariance gain}. It is close to, but not the same as, the \emph{resolution} term of the
+classical reliability--resolution partition
+\citep{murphy1973vector,degroot1983comparison,brocker2009reliability}, and the difference
+matters in practice: classical resolution depends on a forecast only through the partition
 its level sets generate, so it survives any monotone rescaling of forecast values, whereas a
 covariance between those values does not. The two coincide exactly when both models are
-calibrated within groups. Section~\ref{sec:simulation} measures the gap --- large enough that
-every comparison we report is between confidence-matched models, and released checkpoints,
-which routinely differ sharply in calibration, cannot be audited on raw outputs.
+calibrated within groups. Section~\ref{sec:simulation} measures the gap, and it is large
+enough that every comparison we report is between confidence-matched models --- released
+checkpoints, which routinely differ sharply in calibration, cannot be audited on raw outputs.
 
 We call the estimator WAGER; the acronym is a label, not a claim, and we do not expand it.
 Its two components are the \emph{transported gain} $\Delta P$ --- named for the operation
@@ -111,49 +103,39 @@ $\Delta R$.
 checkpoints of \citet{tang2020unbiased}, evaluated on the canonical VG150 PredCls split with
 the original authors' code, TDE's ten-point mean-recall improvement corresponds to a
 proper-score difference that is overwhelmingly transported, with a within-group covariance
-remainder at most a small fraction of it (Section~\ref{sec:sggaudit}). This is the paper's
-headline result: a statement about somebody else's published method, on the benchmark the
-field uses.
+remainder at most a small fraction of it (Section~\ref{sec:sggaudit}).
 
 \item \textbf{A drop-in tool for any closed-set benchmark.} The estimator needs four aligned
 arrays --- two $N\times K$ probability matrices, the labels, the group identifiers --- runs
-in $O(NK)$ on cached predictions with no refitting, no held-out fold and no tuning
-parameter, and returns both components with cluster-robust intervals in one pass. We apply
-it unchanged to relation prediction, a frozen-CLIP variant, and long-tailed image and text
-classification; only $\phi$ changes. Code, cached outputs and a verification script are
-released.
+in $O(NK)$ on cached predictions with no refitting, no held-out fold and no tuning parameter,
+and returns both components with cluster-robust intervals in one pass. We apply it unchanged
+to relation prediction, a frozen-CLIP variant, and long-tailed image and text classification;
+only $\phi$ changes. Code, cached outputs and a verification script are released.
 
-\item \textbf{An exact identity, and what its remainder is.} For any score the gain splits
-exactly, in the population (Theorem~\ref{thm:population}) and in the finite sample
-(Theorem~\ref{thm:sample}), into a transported gain and a remainder that is an order-two
-U-statistic. For every Bregman score that remainder is a within-group covariance between the
-models' predicted-probability difference and the label indicator
-(Theorem~\ref{thm:bregman}), and a change constant within groups contributes exactly zero.
-The transported component splits in turn into a mean-forecast-fit term minus a dispersion
-term (Proposition~\ref{prop:transported}), which is why we do not call it prior fit.
-
-\item \textbf{Inference, and the design choices it settles.} The influence function of the
-difference gives image-cluster-robust intervals in one pass, alongside a group-stratified
-randomization test; the estimator is asymptotically normal with a consistent sandwich
-variance (Theorem~\ref{thm:clt}) and reduces at a trivial $\phi$ to a clustered
-Diebold--Mariano test (Corollary~\ref{cor:dm}). Three exact results remove guesswork: the
-in-sample plug-in is attenuated by exactly $(n_c-1)/n_c$, which is why no held-out fold is
-needed (Proposition~\ref{prop:attenuate}); merging groups shifts the estimand by an explicit
-between-group covariance of either sign (Proposition~\ref{prop:coarsen}); and a
-Cauchy--Schwarz bound limits what an unrecorded grouping variable could do
-(Proposition~\ref{prop:sensitivity}).
+\item \textbf{An exact identity, with inference.} For any score the gain splits exactly, in
+population and finite sample, into a transported gain and a remainder that is an order-two
+U-statistic; for every Bregman score that remainder is a within-group covariance between the
+models' predicted-probability difference and the label indicator, and a change constant
+within groups contributes exactly zero. The influence function of the difference gives
+image-cluster-robust intervals in one pass, the estimator is asymptotically normal with a
+consistent sandwich variance, and at a trivial $\phi$ it reduces to a clustered
+Diebold--Mariano test. Three further exact results remove guesswork about design choices: the
+in-sample plug-in is attenuated by exactly $(n_c-1)/n_c$, merging groups shifts the estimand
+by an explicit between-group covariance of either sign, and the transported component splits
+into a mean-forecast-fit term minus a dispersion term --- which is why we do not call it
+prior fit.
 
 \item \textbf{Validation, and honest limits.} Simulations establish interval coverage under
 image clustering and delimit what the components do \emph{not} separate: prior-only
 improvements stay out of the covariance channel, unrecorded within-group shortcuts enter it,
-and monotone recalibration moves score between the channels --- which is why confidence
-matching is part of the procedure. We also show that equally fine, fully identified
-partitions can disagree without limit, so declaring $\phi$ is a modelling decision.
+and monotone recalibration moves score between the channels, which is why confidence matching
+is part of the procedure. Equally fine, fully identified partitions can also disagree without
+limit, so declaring $\phi$ is a modelling decision.
 \end{enumerate}
 
 \subsection{Terminology}\label{sec:terminology}
 
-Table~\ref{tab:terms} in Appendix~\ref{app:terms} fixes the paper's vocabulary against
+Supplementary Table~S2 in Supplementary Section~S8 fixes the paper's vocabulary against
 standard counterparts. Two entries carry a caveat rather than a synonym, because no standard
 term matches exactly: $\Delta P$ is named for the operation that produces it, and $\Delta R$
 is a covariance rearrangement's term rather than the classical resolution it is often
@@ -173,8 +155,8 @@ Four limits are worth stating before any result. Everything is conditional on th
 $\phi$: a positive $\Delta R$ says the new model predicts individual cases better
 \emph{among cases sharing that feature}, and nothing about causality or robustness. Second,
 $\Delta R$ credits any signal varying within a cell, including a shortcut the analyst did
-not record, and Proposition~\ref{prop:sensitivity} bounds that exposure rather than removing
-it --- for the Visual Genome pair of Section~\ref{sec:results} an unrecorded covariate
+not record, and Supplementary Proposition~S1 bounds that exposure rather than removing
+it --- for the Visual Genome pair of Supplementary Section~S10.2 an unrecorded covariate
 correlated at $0.061$ would account for the entire reported gain. Third, and this is the
 limitation we would most want carried away, $\Delta R$ is \emph{not invariant to
 recalibration}: rescaling a fixed model's confidence changes it while changing no ranking,
@@ -183,14 +165,14 @@ $-0.488$, tens of times any real gain reported here. Every result below is for
 confidence-matched pairs. Fourth, a transported gain is not illegitimate --- fitting the
 deployment label distribution better is real skill when that distribution is the one that
 matters --- and it is also not purely prior fit
-(Proposition~\ref{prop:transported}).
+(Supplementary Proposition~S2).
 
 \paragraph{Organization.}
-Section~\ref{sec:worked} works a four-point example and, in
-Section~\ref{sec:decision}, uses it to exhibit a decision the split changes. Section~\ref{sec:related} places the
+Supplementary Section~S1 works a four-point example and, in
+Supplementary Section~S1, uses it to exhibit a decision the split changes. Section~\ref{sec:related} places the
 construction in the literature on proper-score decomposition and forecast comparison.
 Section~\ref{sec:method} develops the estimator and its theory.
 Section~\ref{sec:exp} validates it and audits two released checkpoints.
 Sections~\ref{sec:discussion} and~\ref{sec:conclusion} discuss limits and conclude.
-Proofs are in Appendix~\ref{app:proofs}; three further empirical studies are in
+Proofs are in Supplementary Section~S1; three further empirical studies are in
 Section~\ref{sec:exp}.

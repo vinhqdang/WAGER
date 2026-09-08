@@ -2,9 +2,10 @@
 
 Elsevier's Editorial Manager takes a flat file set: no subdirectories, so the
 figures/ folder and the \\input{} split of manuscript/ both have to go.  This
-script inlines every \\input{} into one main.tex in document order, rewrites the
-figure paths from figures/x.png to x.png, and copies the figures and ref.bib
-alongside it.
+script flattens both main.tex and supplementary.tex, rewriting the figure paths
+from figures/x.png to x.png, and copies the figures and ref.bib alongside them.
+The supplementary is a separate file because the journal's 20-35 page limit
+applies to the manuscript, and supplementary material sits outside it.
 
 The output is byte-equivalent in rendered content to the modular build; the only
 reason it exists separately is packaging.
@@ -41,13 +42,14 @@ def main() -> None:
         shutil.rmtree(OUT)
     OUT.mkdir()
 
-    flat = inline_inputs((MS / "main.tex").read_text(encoding="utf-8"))
-    if "\\input{" in flat:
-        raise SystemExit("an \\input{} survived inlining; nested inputs are not supported")
-    flat = flat.replace("{figures/", "{")
-    if "figures/" in flat:
-        raise SystemExit("a figures/ path survived flattening")
-    (OUT / "main.tex").write_text(flat, encoding="utf-8")
+    for src, dst in (("main.tex", "main.tex"), ("supplementary.tex", "supplementary.tex")):
+        flat = inline_inputs((MS / src).read_text(encoding="utf-8"))
+        if "\\input{" in flat:
+            raise SystemExit("an \\input{} survived inlining; nested inputs are not supported")
+        flat = flat.replace("{figures/", "{")
+        if "figures/" in flat:
+            raise SystemExit("a figures/ path survived flattening")
+        (OUT / dst).write_text(flat, encoding="utf-8")
 
     for png in sorted((MS / "figures").glob("*.png")):
         shutil.copy(png, OUT / png.name)

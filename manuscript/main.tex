@@ -70,12 +70,19 @@ U-statistics
 \end{frontmatter}
 
 \input{1intro.tex}
-\input{1b_worked.tex}
 \input{2related.tex}
 \input{3method.tex}
 \input{4experiments.tex}
 \input{5discussion.tex}
 \input{6conclusions.tex}
+
+\section*{Supplementary material}
+Proofs of all numbered results, the influence-function derivation, implementation and
+reproducibility details, and two further empirical studies (long-tailed image classification
+on CIFAR-100-LT and long-tailed text classification on 20-Newsgroups-LT), together with the
+granularity, score and minimum-cell-size sensitivity analyses, are provided as supplementary
+material. Sections, tables and figures there are numbered with an \textsf{S} prefix and are
+cited in that form throughout this paper.
 
 \section*{Data and code availability}
 All code, cached model outputs and scripts needed to reproduce every number, table and
@@ -109,7 +116,5 @@ content of the published article.
 \bibliographystyle{elsarticle-num-names}
 \bibliography{ref}
 
-\input{7appendix.tex}
-\input{8appendix_studies.tex}
 
 \end{document}

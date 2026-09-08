@@ -37,7 +37,7 @@ biased estimate of the contrast. Inference does not transfer. Variance estimator
 single-model decomposition \citep{siegert2014variance} target one resolution term in
 isolation and supply no covariance between it and a second model's estimate from the same
 data. Rebuilding that from the joint law is routine rather than open, and the field is not
-silent about it \citep{ferro2007comparing,delsole2014comparing,delong1988comparing}. What is
+silent about it \citep{ferro2007comparing,delong1988comparing}. What is
 new is not that a contrast can be given a variance, but that it admits an \emph{exact
 finite-sample decomposition} whose remainder is an antisymmetric U-statistic with a one-pass
 influence function, so the split and its uncertainty come from one construction.
@@ -63,7 +63,7 @@ Two further literatures locate the same object from other directions. The transp
 component is precisely what label-shift procedures manipulate post hoc: re-weighting a
 classifier's outputs towards a new label distribution
 \citep{saerens2002adjusting,lipton2018detecting} can add or remove transported gain without
-touching case-level evidence, which Appendix~\ref{app:vgvisual} exploits as a
+touching case-level evidence, which Section~\ref{sec:vgvisual} exploits as a
 falsification test. And evaluating calibration within cells of a declared grouping,
 uniformly over many candidate groupings, is the subject of multicalibration
 \citep{hebert2018multicalibration}, which is the formal treatment of the multiplicity
@@ -87,38 +87,37 @@ Two further connections are worth naming. The transported component is what labe
 procedures manipulate post hoc: re-weighting a classifier's outputs towards a new label
 distribution \citep{saerens2002adjusting,lipton2018detecting} can add or remove transported
 gain without touching case-level evidence, which Section~\ref{sec:vgvisual} exploits as a
-falsification test, and which is why Section~\ref{sec:decision}'s model-selection reversal
+falsification test, and which is why Supplementary Section~S1's model-selection reversal
 is a label-shift argument. And what an unrecorded grouping variable can hide is the subject
 of omitted-variable sensitivity analysis \citep{rosenbaum2002observational};
-Proposition~\ref{prop:sensitivity} adapts that style of argument to bound how far an
+Supplementary Proposition~S1 adapts that style of argument to bound how far an
 unrecorded covariate could move $\Delta R$.
 
-Usable-information analyses measure information accessible to a chosen predictor family
-\citep{xu2020theory}. Their central objects are model- or family-level quantities; ours is
-narrower and more operational, attributing the score difference between two concrete frozen
-models. A positive $\Delta R$ establishes nothing about causal or compositional structure.
+Usable-information analyses measure information accessible to a chosen predictor family;
+their central objects are model- or family-level quantities, whereas ours is narrower and
+operational, attributing the score difference between two concrete frozen models. A positive
+$\Delta R$ establishes nothing about causal or compositional structure.
 
 \subsection{Prior-aware evaluation in vision}\label{sec:related-applied}
 
 Dataset bias has long complicated comparisons between recognition systems
-\citep{torralba2011unbiased,geirhos2020shortcut}. In scene graph generation a frequency
+\citep{geirhos2020shortcut}. In scene graph generation a frequency
 predictor of $p(\text{predicate}\mid\text{subject},\text{object})$ is surprisingly
 competitive \citep{zellers2018neural}; mean recall and causal interventions were proposed to
-reduce that dependence \citep{chen2019knowledge,tang2019learning,tang2020unbiased}, though
+reduce that dependence \citep{tang2020unbiased}, though
 metric pathologies remain \citep{li2022rethinking} and the same diagnosis recurs in
 open-vocabulary and knowledge-enhanced work
-\citep{li2024pixels,zhang2024hiker,sun2024unbiased}. In visual question answering, GQA-OOD
+\citep{li2024pixels}. In visual question answering, GQA-OOD
 stratifies by answer rarity within question groups \citep{kervadec2021roses} and VQA-CP
-changes language priors between train and test \citep{agrawal2018dont}, though
-changing-prior splits can themselves be exploited \citep{teney2020value}; the shortcut is
-still targeted directly \citep{xu2025qirl,kuang2024debiasing}, and benchmark-level audits of
+changes language priors between train and test \citep{agrawal2018dont}; the shortcut is
+still targeted directly \citep{kuang2024debiasing}, and benchmark-level audits of
 exploitable non-visual shortcuts have widened to multimodal evaluation generally
-\citep{brown2025benchmark,zhou2025shortcut}. In long-tailed recognition a classifier can
+\citep{zhou2025shortcut}. In long-tailed recognition a classifier can
 raise aggregate accuracy by fitting training class frequencies more precisely without
-discriminating better within a class \citep{ma2024geometric,duan2024longtailed}; the
+discriminating better within a class \citep{duan2024longtailed}; the
 canonical remedies rebalance the objective or the classifier
-\citep{cui2019classbalanced,cao2019learning,menon2021long,kang2020decoupling}, with a
-continuing stream of variants \citep{li2026pih2t,luo2025rebalancing}.
+\citep{cui2019classbalanced,cao2019learning,menon2021long}, with a
+continuing stream of variants \citep{luo2025rebalancing}.
 
 Reporting standards have responded to the shortcut: mean recall alongside recall, often
 broken down by predicate frequency \citep{tang2020unbiased,li2022rethinking}, and zero-shot

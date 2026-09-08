@@ -11,7 +11,7 @@ complementary evidence a released checkpoint cannot give: there the ground truth
 each model can see is known, so the decomposition can be checked against it. Two further
 studies --- long-tailed image classification on CIFAR-100-LT across seeds and imbalance
 ratios, and long-tailed text classification on 20-Newsgroups-LT --- apply the identical
-estimator in other data modalities and are reported in Appendix~\ref{app:studies}, together
+estimator in other data modalities and are reported in Supplementary Section~S10, together
 with the granularity, score and minimum-cell-size sensitivity analyses. All confidence
 intervals are $95\%$.
 
@@ -22,7 +22,7 @@ Dirichlet law and taking the old model to be exactly the cell prior. The new mod
 interpolates towards an oracle, $q_1=(1-\beta)q_0+\beta q_{\rm oracle}$ with $q_{\rm oracle}$
 placing $0.98$ on the realized label; forty repetitions run at each
 $\beta\in\{0,.1,\ldots,.8\}$. The estimated covariance gain grows linearly and monotonically
-with the injected signal (Figure~\ref{fig:simulation}, left). Type-I behaviour is assessed by
+with the injected signal. Type-I behaviour is assessed by
 perturbing the prior predictions with mean-zero noise and reassigning the perturbed vectors
 within each cell, which guarantees no systematic prediction--label alignment survives: over
 200 such datasets the 99-shift randomization test rejects in $0.030$ of runs at level $0.05$,
@@ -37,22 +37,18 @@ cluster-robust interval covers in $94.0\%$ of 500 runs while an interval treatin
 as independent covers in only $88.6\%$ --- quantifying both the mild finite-sample
 undercoverage and the necessity of clustering.
 
-\paragraph{Discriminant validity.} Three designs test that the channels separate what they
-claim to. A \emph{calibration-only} alternative, where the new model is a temperature-softened
-copy of an overconfident informative model so the pair contains identical case information,
-is credited raw with a large negative covariance gain (mean $-0.488$) --- the confound
-quantified on real models in Appendix~\ref{app:lt} --- which the protocol below reduces to
-$-0.0003$ (sd $0.0017$ over 200 runs). A \emph{prior-only} improvement, where the new model
-corrects a heteroscedastically noisy estimate of the cell prior, yields a covariance gain
-centred at zero ($0.0002$, sd $0.0035$) with a clearly positive transported channel: prior
-improvements do not leak beyond the algebraic guarantee of
-Theorem~\ref{thm:population}. An \emph{unrecorded within-cell shortcut} --- a binary feature
-varying inside each cell that shifts the label distribution and is used by the new model ---
-is credited to covariance ($+0.041$, sd $0.004$), quantifying the limitation that
-$\widehat{\Delta R}$ measures all within-cell predictive signal relative to the declared
-$\phi$, shortcut or otherwise.
-
-
+\paragraph{Discriminant validity} Three designs test that the channels separate what they
+claim to. A \emph{calibration-only} alternative, where the new model is a
+temperature-softened copy of an overconfident informative model so the pair carries identical
+case information, is credited raw with a large negative covariance gain (mean $-0.488$),
+which the protocol below reduces to $-0.0003$ (sd $0.0017$ over 200 runs). A
+\emph{prior-only} improvement, where the new model corrects a heteroscedastically noisy
+estimate of the cell prior, yields a covariance gain centred at zero ($0.0002$, sd $0.0035$)
+with a clearly positive transported channel. And an \emph{unrecorded within-cell shortcut}
+--- a binary feature varying inside each cell that shifts the label distribution and is used
+by the new model --- is credited to covariance ($+0.041$, sd $0.004$), quantifying the
+limitation that $\widehat{\Delta R}$ measures all within-cell predictive signal relative to
+the declared $\phi$, shortcut or otherwise.
 
 \paragraph{The calibration-matched protocol.} The third of those designs identifies a
 limitation serious enough to be part of the procedure rather than a caveat about it.
@@ -70,9 +66,9 @@ audited half, and it is what the simulation above shows removes the confidence-s
 channel almost exactly.
 
 How many splits each study averages over differs, and the difference is worth stating
-rather than glossing. The long-tailed classification study of Section~\ref{app:lt}
+rather than glossing. The long-tailed classification study of Supplementary Section~S10.5
 averages over twenty random splits. The audit of Section~\ref{sec:sggaudit} and the
-matched rows of Section~\ref{app:vgvisual} each use a single split at a fixed seed. For
+matched rows of Section~\ref{sec:vgvisual} each use a single split at a fixed seed. For
 those two the split is a source of variability the reported interval does not include, and
 it is not negligible: the calibration-only arm above has a between-split standard
 deviation of $0.001725$, exceeding the half-width of the audit's own reported interval
@@ -83,14 +79,6 @@ within-split uncertainty only. It does not make $\Delta R$ invariant to recalibr
 general; it fixes the confidence scale at which the comparison is made, which is what a
 comparison of two \emph{fixed} models needs.
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/fig3_new_simulation.png}
-\caption{\textbf{Controlled validation.} WAGER recovers injected within-cell signal
-monotonically (mean $\pm$ one standard deviation), produces approximately uniform null
-randomization $p$-values, and controls type-I error in 200 null runs.}
-\label{fig:simulation}
-\end{figure*}
 
 \subsection{Auditing a published debiasing method}\label{sec:sggaudit}
 
@@ -110,13 +98,12 @@ $mR@50=0.2476$ and raising zero-shot recall to $zR@50=0.1432$. Top-1 predicate a
 from $0.6981$ to $0.5577$. The audit uses $183{,}639$ relations over $26{,}446$ images and
 $7{,}127$ class-pair cells, of which $98.9\%$ are identified.
 
-\paragraph{What is audited.} The rows labelled calibration-matched do not decompose the
-checkpoints as released; they decompose the two models after each is rescaled by its own
-temperature ($T^*=2.50$ for the baseline, $0.92$ for TDE) fitted on a held-out half of the
-images. That is the comparison we argue is meaningful, because a proper score punishes
-miscalibration and these models differ sharply in it. The released pair, scored as it ships,
-gives a \emph{significant} covariance loss ($-0.01355$, interval excluding zero), and a
-practitioner who downloads those weights is looking at the raw rows. We report both.
+\paragraph{What is audited} The calibration-matched rows do not decompose the checkpoints as
+released; they decompose the two models after each is rescaled by its own temperature
+($T^*=2.50$ for the baseline, $0.92$ for TDE) fitted on a held-out half of the images. That
+is the comparison we argue is meaningful, because a proper score punishes miscalibration and
+these models differ sharply in it. The released pair, scored as it ships, gives a
+\emph{significant} covariance loss ($-0.01355$, interval excluding zero). We report both.
 
 \paragraph{Result.} Read raw, TDE loses $0.11651$ of quadratic score, of which $0.10296$ sits
 in the transported channel and a small but significant $0.01355$ in covariance. That reading
@@ -131,7 +118,7 @@ $+0.04396$, CI $[+0.04079,+0.04714]$, excluding zero. The two scores therefore d
 whether any real covariance change survives confidence matching, while agreeing that
 whichever value is right is far smaller than the calibrated transported shift ($-0.18258$
 under the quadratic score, $-0.59157$ under the log score). We do not adjudicate: nothing in
-Section~\ref{sec:setup} privileges one proper score, and Theorem~\ref{thm:bregman} is why
+Section~\ref{sec:setup} privileges one proper score, and Supplementary Theorem~S1 is why
 this is not a defect to argue away --- each Bregman generator defines its own exact estimand,
 so two scores disagreeing are answering two well-posed questions, and which one an evaluator
 wants is a declaration. The claim the audit supports is what both scores agree on: TDE's
@@ -145,7 +132,7 @@ and at two of the five ``overwhelmingly transported'' is simply false: the raw l
 has $|\widehat{\Delta R}|=0.126$ against $|\widehat{\Delta P}|=0.159$, and the subject-only
 row has $-0.217$ dominating $+0.102$. We report all five and argue for one on stated grounds
 --- matched confidence, because a proper score punishes miscalibration; the finest defensible
-cell, because Proposition~\ref{prop:coarsen} makes coarsening non-neutral.
+cell, because Supplementary Proposition~S1 makes coarsening non-neutral.
 
 \paragraph{Reading} This characterises what TDE does rather than indicting it: its
 construction subtracts the context-only prediction, so a method operating on the transported
@@ -192,7 +179,7 @@ because the ground truth about what the model can see is unavailable. We therefo
 compare five predictors on VG150 whose information content is controlled by construction: a
 frequency table (FREQ) that sees only the class pair, an MLP on class embeddings
 (MLP-CLASS), and MLPs adding box geometry (MLP-SPATIAL, MLP-SPATIAL+). Full protocol,
-per-pair tables and the accuracy figures are in Appendix~\ref{app:vgmain-full}; the audit
+per-pair tables and the accuracy figures are in Supplementary Section~S10.1; the audit
 covers $227{,}337$ of $229{,}605$ test relations, a coverage of $99.0\%$, over $6{,}346$
 identified class-pair cells.
 
@@ -206,7 +193,7 @@ nothing to case-level evidence when none exists. Adding box geometry then produc
 covariance gain of $0.01439$ (CI $[0.01373,0.01504]$, $p=.002$) that no aggregate score
 separates out, and against MLP-CLASS the total gain of $0.00885$ actually understates it,
 because the transported channel deteriorates by $0.00554$ --- the same structure as model B
-of Section~\ref{sec:worked}, now on real predictors.
+of Supplementary Section~S1, now on real predictors.
 
 \subsection{Real pixels against a geometric proxy}\label{app:vgvisual}\label{sec:vgvisual}
 
@@ -219,7 +206,7 @@ already uses. CLIP is never fine-tuned, so whatever covariance the model gains r
 information its pretraining had already recovered. All three compared predictors are
 retrained on one fixed subsample of $100{,}000$ training relations so that any gap between
 them isolates the features rather than the training-set size; the full protocol, tables and
-figure are in Appendix~\ref{app:vgvisual-full}.
+figure are in Supplementary Section~S10.3.
 
 This is the sharpest case in the paper for separating the components. By every aggregate
 measure the CLIP model is the worst of the three: top-1 accuracy $0.6161$ against $0.6467$
@@ -240,18 +227,17 @@ survives confidence matching ($+0.00467$, CI $[+0.00314,+0.00621]$).
 
 \subsection{Other modalities, and sensitivity}\label{sec:further}
 
-Appendix~\ref{app:studies} reports two further studies and the sensitivity analyses in full.
-On CIFAR-100-LT, with the benchmark's coarse superclasses as $\phi$, two standard
-re-weighting schedules have opposite compositions, and the confidence-matched reading
-reverses what the raw scores suggest about both: the schedule whose aggregate score barely
-moves has lost within-class discrimination, while the one that improves has bought covariance
-rather than the prior refit its raw decomposition implies, and this replicates across seeds
-and imbalance ratios. A long-tailed 20-Newsgroups split runs unmodified and returns
-interpretable output, but rests on a single trained pair per schedule with no
-confidence-matched row, so we report it as transfer rather than corroboration. On sensitivity:
-substituting a floored log score, coarsening $\phi$ to the subject class, and raising the
-minimum cell size from $2$ to $20$ all move the estimate, and the coarsening moves it most,
-from $0.01439$ to $0.02181$ --- which Proposition~\ref{prop:coarsen} predicts as the addition
-of a between-cell covariance term of either sign. The finest defensible $\phi$ is therefore
-the conservative choice, and Section~\ref{sec:discussion} explains why even that rule is
-weaker than it looks.
+Supplementary Section~S11 reports two further studies and the sensitivity analyses. On
+CIFAR-100-LT, with the benchmark's coarse superclasses as $\phi$, two standard re-weighting
+schedules have opposite compositions, and the confidence-matched reading reverses what the raw
+scores suggest about both: the schedule whose aggregate score barely moves has lost
+within-class discrimination, while the one that improves has bought covariance rather than
+the prior refit its raw decomposition implies, replicating across seeds and imbalance ratios.
+A long-tailed 20-Newsgroups split runs unmodified and returns interpretable output, but rests
+on a single trained pair per schedule with no confidence-matched row, so we report it as
+transfer rather than corroboration. On sensitivity: substituting a floored log score,
+coarsening $\phi$ to the subject class, and raising the minimum cell size from $2$ to $20$ all
+move the estimate, and the coarsening moves it most, from $0.01439$ to $0.02181$ --- the
+between-cell covariance term of Supplementary Section~S2 in action. The finest defensible
+$\phi$ is therefore the conservative choice, and Section~\ref{sec:discussion} explains why
+even that rule is weaker than it looks.

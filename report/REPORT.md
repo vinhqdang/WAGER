@@ -866,3 +866,80 @@ corrections in particular — the remainder is not the classical resolution term
 transported gain is not prior fit, the sensitivity bound is reported against the paper's own
 estimates — must survive any reframing. They were expensive to find and they are what makes
 the paper honest.
+
+
+---
+
+## Addendum: reframed for Pattern Recognition (2026-09-08)
+
+The Econometrics and Statistics submission was sent back for a procedural reason (remove
+author details for double-blind review) and, rather than resubmit, the decision was taken to
+re-aim at computer vision. The send-back was the cheapest possible exit: no review had
+happened and no editor had formed a view.
+
+### What changed, and what did not
+
+The contribution is unchanged. Every framing correction the 2026-09-07 panel forced survives
+intact: the remainder is a Yates-type covariance and not the classical resolution term, the
+transported gain is not prior fit, and the sensitivity bound is reported against our own
+estimates. What changed is presentation: the paper now opens on what a reported benchmark
+gain buys, states the MOTIFS/MOTIFS-TDE audit as the headline result, and keeps the
+photographic Figure 1 rather than the domain-neutral schematic built for the opposite purpose
+(`experiments/make_fig1_schematic.py` is retained unused, in case a statistics venue is ever
+targeted again).
+
+### The page limit, and a bet I got wrong
+
+Pattern Recognition's guide states its length rule three times and contradicts itself:
+"20-35 pages (incl. figures, tables, references, bio-sketches, appendices)" is immediately
+followed by "Appendices are not included in the page limit", while the submission checklist
+says "including ... appendices". I built the first version on the one clause that excludes
+appendices, reaching 35 main-text pages inside a 78-page document. The author caught it. Two
+of the three statements include appendices, so the conservative reading is the right one, and
+the fix is the provision I should have used from the start: supplementary material, which the
+guide treats as separate files outside the manuscript.
+
+The manuscript is now 35 pages including references, and everything else is a standalone
+46-page supplementary document. Getting there took the main text from 67 pages to 31 plus 4
+of references:
+
+- The worked example, the controlled-predictor study, the real-pixel study's detail, the
+  long-tailed studies, the sensitivity analyses, the proofs, the influence-function
+  derivation, the terminology table, the algorithm box, and the statements of the Bregman
+  identity, the finite-sample identity, the limit theorem, the sensitivity bound, the
+  transported-gain composition and the coarsening proposition all moved to the supplementary,
+  each behind a main-text summary that keeps the finding.
+- Cut outright: the adjacent-literatures subsection, the broader-applicability subsection
+  (which repeated the scope subsection), the preprint-heavy permutation passages, and roughly
+  6,000 words of prose.
+- The bibliography went 76 to 39 entries. Twelve of those cuts came from thinning citation
+  clusters, which the guide separately asks for: it warns against citing groups without
+  commenting on them individually, and the related-work section had exactly that pattern.
+
+Cross-document references are hard-coded rather than resolved with `xr`, so each document
+compiles standalone: the manuscript cites "Supplementary Section S3", the supplementary cites
+"Theorem 1 of the manuscript". `experiments/build_flat_submission.py` now flattens both.
+
+### Also per the guide
+
+Single anonymized review, so author details stay. Added a CRediT statement. The conclusion
+was rewritten to exceed the abstract and to cover weaknesses and future work under their own
+headings, as the guide requires. Highlights are five bullets, longest 83 characters. The cover
+letter answers the three mandatory questions; the state-of-the-art one needed care rather
+than a dodge, since an evaluation method has no accuracy to beat, so it names the five works
+representing current practice on the same question and says what this adds to them.
+
+### One near-miss, recorded because it nearly went into the paper
+
+Intending to correct eight bibliography entries recorded with arXiv DOIs, I checked them
+against CrossRef first. Every hit was spurious --- the CLIP paper matched a paper in
+*Aquacultural Engineering*. CrossRef does not index ICML/NeurIPS/ICLR proceedings, and those
+entries already carried correct venues. Applied blindly, that pass would have put eight
+fabricated attributions into the bibliography.
+
+### State
+
+Manuscript 35 pages (31 body + 4 references), supplementary 46, 39 references of which four
+cite a preprint venue. Suite 20/20, verifier 89/89 after repointing file references five
+times as material moved. Both documents build clean with no undefined references, and the
+flat bundle is confirmed identical to the modular build for both.

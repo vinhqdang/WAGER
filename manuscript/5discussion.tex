@@ -14,14 +14,14 @@ Everything is conditional on the declared $\phi$. A positive $\Delta R$ means th
 matches its probability changes to the correct case better than the old one \emph{among
 cases sharing $\phi$}; it proves nothing about causal inference, compositional
 understanding, or robustness. If an unrecorded shortcut varies inside a cell, its predictive
-use is counted in $\Delta R$, and Proposition~\ref{prop:sensitivity} bounds that exposure
+use is counted in $\Delta R$, and Supplementary Proposition~S1 bounds that exposure
 rather than removing it --- at a level that, for our own Visual Genome estimates, is not
-comfortable (Appendix~\ref{app:sensitivity}). Applications should declare $\phi$ before
+comfortable (Supplementary Section~S5). Applications should declare $\phi$ before
 seeing results, justify it from how the benchmark was built, and report finer and coarser
 alternatives, because coarsening adds a between-cell covariance term of either sign
-(Proposition~\ref{prop:coarsen}) and only the finest identified partition nets out every
+(Supplementary Proposition~S1) and only the finest identified partition nets out every
 regularity expressible in $\phi$. Even that rule is weaker than it looks:
-Appendix~\ref{app:partition} shows two equally fine, fully identified partitions of the same
+Supplementary Section~S7 shows two equally fine, fully identified partitions of the same
 four cases that disagree completely about whether an improvement is case-level or
 transported, so the choice of $\phi$ is a modelling decision and not a formality.
 
@@ -34,13 +34,13 @@ information --- tens of times any real gain reported here --- which is why we au
 confidence-matched pairs and why released checkpoints, which routinely differ sharply in
 calibration, cannot be compared on their raw outputs. A rank-based within-cell contrast
 would be invariant to this, at the cost of the exact additivity that is the point of the
-construction; Appendix~\ref{app:partition} says what that trade would involve. Second, a
+construction; Supplementary Section~S7 says what that trade would involve. Second, a
 transported gain is not evidence of anything illegitimate. Fitting the deployment label
 distribution better is real skill whenever that distribution is the one that matters; it is
 fragile precisely under label shift, where it can be added or removed post hoc by
 re-weighting \citep{saerens2002adjusting,lipton2018detecting}, as
-Section~\ref{sec:vgvisual} demonstrates and Section~\ref{sec:decision} exploits. Nor is it
-purely a matter of prior fit (Proposition~\ref{prop:transported}). The decomposition reports
+Section~\ref{sec:vgvisual} demonstrates and Supplementary Section~S1 exploits. Nor is it
+purely a matter of prior fit (Supplementary Proposition~S2). The decomposition reports
 where a gain lives, not whether it is worth having.
 
 \subsection{Choosing the grouping variable, and what the estimator cannot do}
@@ -60,17 +60,13 @@ interval, the confidence-matched row, and the granularity rows.
 
 Exact transport needs at least two cases per cell, so a very fine $\phi$ buys confound
 control at the cost of coverage; we report the identified fraction and claim nothing for
-singletons. Because cells identified at one granularity need not coincide with those at
-another, cross-granularity comparisons mix Proposition~\ref{prop:coarsen}'s between-cell term
-with a change of identified subpopulation --- immaterial at VG150's $99.0\%$ coverage, but
-worth restricting to a common subsample when coverage is low. The image-clustered interval is
-asymptotic, and Theorem~\ref{thm:clt} justifies it in a regime no heavy-tailed benchmark
-attains in sample: of $6{,}346$ eligible class-pair cells, $2{,}286$ hold fewer than five
-cases, though those carry only $2.7\%$ of identified relations. The reported $94.0\%$
-empirical coverage against a nominal $95\%$ therefore remains the operative evidence for the
-interval. The randomization test is finite-group exact only under a sharper within-cell
-exchangeability null and treats relations rather than images as the randomized units, so it
-stays a secondary diagnostic.
+singletons. The image-clustered interval is asymptotic, and Supplementary Section~S7
+justifies it in a regime no heavy-tailed benchmark attains in sample: of $6{,}346$ eligible
+class-pair cells, $2{,}286$ hold fewer than five cases, though those carry only $2.7\%$ of
+identified relations. The reported $94.0\%$ empirical coverage against a nominal $95\%$
+therefore remains the operative evidence for the interval. The randomization test is
+finite-group exact only under a sharper within-cell exchangeability null and treats relations
+rather than images as the randomized units, so it stays a secondary diagnostic.
 
 Finally, the estimator reads probability vectors, not top-1 decisions. That is a feature ---
 it detects useful redistribution below the argmax --- but it needs released logits or
@@ -80,9 +76,7 @@ code, and nothing in that workflow is specific to scene graph generation. What b
 elsewhere is disclosure, not compute: benchmarks overwhelmingly archive ranked predictions.
 
 Nothing in Sections~\ref{sec:setup}--\ref{sec:inference} is specific to relation prediction,
-and the long-tailed studies of Appendix~\ref{app:studies} test that in two other modalities.
-The constraint on $\phi$ shows its teeth there: the fine class label cannot serve as a cell,
-since it would leave every cell label-homogeneous and drive $\Delta R$ to zero by
-construction, producing an artefact that reads exactly like a null result. Elsewhere the
-natural choices are easy to name --- a predeclared question template for VQA, an answer
-format for other multimodal benchmarks --- though we have not evaluated them.
+and the long-tailed studies test that in two other modalities. The constraint on $\phi$ shows
+its teeth there: the fine class label cannot serve as a cell, since it would leave every cell
+label-homogeneous and drive $\Delta R$ to zero by construction, producing an artefact that
+reads exactly like a null result.
