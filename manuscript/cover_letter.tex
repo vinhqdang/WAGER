@@ -1,12 +1,10 @@
-% Cover letter for submission to Econometrics and Statistics (Elsevier), Annals of
-% Statistical Data Science section. The previous version of this file was a revision
-% letter addressed to the Journal of Statistical Planning and Inference (Ms. Ref. No.
-% JSPI-D-26-00452), a round that closed with a rejection on presentation grounds; see
-% report/REPORT.md for the submission history.
+% Cover letter for submission to Pattern Recognition (Elsevier).
+% The guide requires the letter to explain why the content is important and why it fits the
+% journal's scope, and to answer three specific questions (state-of-the-art comparison,
+% public datasets, validation measures). Those are answered under their own headings below.
 \documentclass[11pt,a4paper]{article}
-\usepackage[margin=0.9in]{geometry}
+\usepackage[margin=1in]{geometry}
 \usepackage{parskip}
-\setlength{\parskip}{0.42em}
 \usepackage{url}
 \pagestyle{empty}
 
@@ -21,133 +19,108 @@ Hung Yen, Vietnam\\
 \vspace{1em}
 \noindent
 To the Editors,\\
-\emph{Econometrics and Statistics}
+\emph{Pattern Recognition}
 
 \vspace{1em}
 
 \noindent
-Re: ``An Exact Decomposition of Paired Score Differences by Relabelling Within
-Groups'' --- new submission
+Re: ``WAGER: An Exact Decomposition of Model-Pair Score Gains on Benchmarks with Strong
+Label Priors'' --- new submission
 
 \vspace{1em}
 
 Dear Editors,
 
-Please consider the enclosed manuscript for publication in \emph{Econometrics and
-Statistics}, in the \emph{Annals of Statistical Data Science} section. The paper is a
-methodological contribution to the comparison of probabilistic prediction models, and its
-applications are machine-learning benchmarks rather than economic or financial data, which
-is why I am directing it to that section rather than to Part A.
+Please consider the enclosed manuscript for publication in \emph{Pattern Recognition}.
 
-\textbf{The problem, in one paragraph.} Two probabilistic classifiers are compared on a
-test set and the newer one scores higher. If the labels depend partly on a grouping
-variable that both models observe, the score difference sums two distinct improvements:
-the new model may fit the label frequencies \emph{within} groups more closely, or it may
-match its predictions to the individual cases they were made for more closely. These are
-different achievements --- the first is skill a lookup table also supplies and that a
-shift in label frequencies removes; the second is not --- and neither an aggregate score
-difference nor a significance test on it can tell them apart, since both components sit
-inside the same number.
+\textbf{Why the content matters.} A scene graph generation method reports a ten-point gain in
+mean recall; a long-tailed classifier reports two points of accuracy. On benchmarks whose
+labels are partly determined by a feature both compared models observe --- the object-class
+pair in relation prediction, the class frequency in long-tailed recognition --- such a gain
+mixes two distinct improvements. The new model may fit the label frequencies \emph{within}
+groups of that feature more closely, which a frequency table also achieves and which a shift
+in those frequencies removes; or it may match its predictions to the individual cases they
+were made for. Mean recall, zero-shot recall, GQA-OOD-style stratification and significance
+tests all leave the two mixed together, because every one of them slices a single model's
+performance rather than attributing the gain between two systems.
 
-\textbf{The contribution.} The paper decomposes the difference exactly, using no fitted
-reference model. The construction is elementary: because both models emit a full
-probability vector for every test case, each model's score can be recomputed against any
-label, so one can score a case's predictions against a \emph{different} case's label from
-the same group. That relabelling preserves the group and its label frequencies while
-breaking the correspondence between a prediction and the case it was made for. The gain
-that survives is the \emph{transported gain}; the gain that disappears is a
-\emph{within-group covariance gain}. The resulting identity is exact in the observed
-sample, for any score, with no held-out fold and no tuning parameter, at a cost of
-$O(NK)$ in $N$ cases and $K$ labels.
-
-The remainder is a U-statistic of order two, and it is not a new quantity: it equals the
+This paper decomposes that gain exactly. Score each model's prediction for one test case
+against the label of a \emph{different} case in the same group: averaging over such
+within-group relabellings gives the part of the gain that survives, and what remains is a
 within-group covariance between the two models' predicted-probability difference and the
-label indicator, which is the object isolated by Yates's (1982) covariance decomposition
-of a proper score, here evaluated for a \emph{pair} of forecasters instead of one. One
-correction relative to earlier drafts bears on how the contribution is framed, so I state
-it rather than leave it to be found: this remainder is \emph{not} the resolution term of
-the classical reliability--resolution partition. Classical resolution depends on a
-forecast only through the partition its level sets generate, so it survives any monotone
-rescaling of forecast values; a covariance between those values does not. The two coincide
-only when both models are calibrated within groups. The paper states that relation
-precisely and adopts confidence matching as procedure rather than caveat. What the
-classical decomposition does not supply in either reading is inference for the pairwise
-contrast, and that is where the paper's technical content sits: the covariance identity
-holds for the whole Bregman-score family, so the quadratic and logarithmic scores are named
-cases of one theorem; the dataset-level estimator is asymptotically normal with a
-consistent cluster-robust sandwich variance; and at a trivial grouping variable the
-statistic reduces exactly to a clustered Diebold--Mariano/Giacomini--White test, which
-locates it precisely relative to comparative forecast evaluation. Three further exact
-results settle design choices that would otherwise be judgement calls --- an
-$(n_c-1)/n_c$ attenuation that is why no sample splitting is needed, an explicit
-between-group covariance term for what merging groups does, and a composition of the
-transported component that shows it is not a measure of prior fit --- and a
-Cauchy--Schwarz sensitivity bound, in the tradition of Rosenbaum and Cinelli \& Hazlett,
-limits how far an unrecorded grouping variable could move the result. On that last point
-the paper reports the bound against its own estimates rather than only in the abstract:
-for one appendix study an unrecorded covariate correlated at $0.061$ would account for the
-whole reported gain, and I say so.
+label indicator. The identity is exact in finite samples, needs no fitted baseline model, no
+held-out fold and no tuning parameter, and costs $O(NK)$ on cached predictions, so any pair
+of frozen models can be audited from released probability outputs. It comes with a one-pass
+influence function giving image-cluster-robust intervals, a group-stratified randomization
+test, and a limit theorem.
 
-\textbf{Validation, and one application in detail.} Because the object is a measuring
-instrument, the paper validates it before using it: signal recovery, null calibration,
-interval coverage in the clustered small-group regime that stresses it, and
-discriminant-validity designs establishing what the two components do \emph{not}
-separate. One of those is a genuine limitation rather than a strength --- a monotone
-recalibration moves score between the components while adding no information --- and the
-paper responds with a matching protocol that is part of the procedure rather than a caveat
-attached to it.
+The result we would put first is an audit of somebody else's published method. Applied to the
+two publicly released MOTIFS checkpoints of Tang et al.\ (CVPR 2020) on the canonical VG150
+PredCls split, evaluated with the original authors' own code, the decomposition shows that
+TDE's ten-point mean-recall improvement corresponds to a proper-score difference that is
+overwhelmingly of the group-frequency kind, with a case-level remainder at least an order of
+magnitude smaller under either of two proper scores. Since TDE's construction subtracts a
+context-only prediction, this characterises the method rather than indicting it --- but it
+does mean a metric the field reads as evidence about rare predicates can move ten points
+while the quantity that would measure case-level evidence barely moves.
 
-The main application audits two publicly released scene-graph checkpoints of a widely
-cited debiasing method, evaluated in both modes with the original authors' code, so the
-models are not ours and the claimed improvement is one the field already reports. Once
-confidence is matched on held-out images and the audit runs at the object-class-pair
-grouping, the proper-score difference is overwhelmingly transported under both the
-quadratic and the logarithmic score, although the two disagree on whether any covariance
-remainder survives ($-0.00006$ under the quadratic score, interval containing zero;
-$+0.04396$ under the log score, interval excluding it) --- in either reading at least an
-order of magnitude smaller than the transported shift. That configuration qualifier
-appears wherever the claim does, because two of the five configurations reported for this
-same pair do not support it. Since the method's construction subtracts a context-only
-prediction, the finding characterises it rather than indicting it, and the paper is
-explicit that the ten-point mean-recall movement and the proper-score decomposition are in
-different units with no bridge between them.
+\textbf{Why it fits this journal.} The contribution is a methodological one about how
+pattern-recognition systems are compared, grounded in the pattern-recognition literature on
+dataset bias, scene graph debiasing, long-tailed recognition and prior-aware evaluation
+metrics, and validated on the public benchmarks that literature uses. It is not a routine
+application of existing methods to a new dataset: the decomposition, its exactness, and the
+inference attached to it are new. The audience is the reader who has to decide what a
+leaderboard improvement means.
 
-Three further studies are reported in an appendix, including a case in which a model that
-loses on every aggregate measure is shown to discriminate individual cases significantly
-better than the model it appears to lose to.
+\textbf{Was your study compared to the state of the art?}
+Not in the usual sense, and we want to be straightforward about why: this is an evaluation
+method, not a predictor, so there is no accuracy to beat and no leaderboard position to
+claim. What it can be compared against is the existing practice for the same question --- how
+the field currently tries to tell prior-fitting from case-level improvement --- and the paper
+does that throughout Section 3. The five works that represent that state of the art, and that
+we position against directly, are: Zellers et al.\ (2018), whose frequency baseline is the
+standard prior-only reference; Tang et al.\ (2020), whose mean-recall reporting and causal
+intervention are the dominant debiasing practice in scene graph generation and whose released
+checkpoints we audit; Li et al.\ (2022), on the pathologies of the mean-recall metric itself;
+Kervadec et al.\ (2021), whose GQA-OOD stratifies evaluation by answer rarity within question
+groups; and Lu et al.\ (2016), which introduced zero-shot recall. Each is a prior-aware
+slicing, split or stress test of a \emph{single} model. None decomposes the gain between two
+fixed systems with a finite-sample identity and uncertainty, which is what we add.
 
-\textbf{Fit, and one thing I want to be straightforward about.} The central contribution
-is an estimand together with its exact finite-sample and asymptotic inference theory. The
-benchmarks are where the instrument is exercised and validated, not the claim: no
-state-of-the-art result is asserted, and none is needed for the argument.
+\textbf{Which public datasets are used?}
+All experiments use public benchmarks and, where possible, publicly released model weights.
+The main study uses Visual Genome via the canonical VG150 PredCls split, with the two
+released MOTIFS/MOTIFS-TDE checkpoints of Tang et al.\ evaluated using the authors' own code;
+a second study on the same benchmark uses predictors we train ourselves, including one built
+on a frozen CLIP ViT-B/32 encoder reading real image crops. Two further studies, reported in
+the appendices, use CIFAR-100-LT across seeds and imbalance ratios, and a long-tailed
+20-Newsgroups split. No proprietary or restricted data is used. All code, cached model
+outputs and analysis scripts are released, including a verification script that checks each
+of the 89 reported numerical values against the committed results files.
 
-Corollary 3 places the work in the tradition of comparative predictive ability. I should
-say plainly, though, that the empirical evidence is drawn from image and text
-classification benchmarks rather than economic or financial forecasting, and the
-references reflect that: a referee expecting a forecasting application will not find one.
-My judgement is that the contribution is a statistical one for which the data-science
-section is the right home, and that adding a token macroeconomic example would strengthen
-the paper's appearance more than its substance --- but if the editors disagree I would
-rather be told at this stage than have referees spend time on it. I have written the paper so that the contribution is legible
-before any notation appears --- a plain statement of the identity in the introduction, a
-four-point worked example that exhibits the main properties proved later, and a table
-fixing the paper's vocabulary against its standard statistical counterparts. The same
-four points then exhibit a model-selection decision the decomposition gets right and the
-aggregate score gets wrong: a candidate whose entire gain is transported becomes
-\emph{worse} than the model it replaces under a shift in label frequencies, while one
-whose gain is covariance is untouched.
+\textbf{Which validation measures are used?}
+Because the object is a measuring instrument rather than a predictor, validation is of the
+estimator itself and uses four kinds of measure. First, recovery and calibration under known
+ground truth: monotone recovery of injected within-group signal, and type-I error of the
+randomization test ($0.030$ at level $0.05$ over 200 null datasets). Second, coverage of the
+primary interval: $94.0\%$ against a nominal $95\%$ in an image-clustered, heavy-tailed
+regime, against $88.6\%$ for an interval that wrongly assumes independence. Third,
+discriminant validity: designs establishing that prior-only improvements stay out of the
+case-level channel, that unrecorded within-group shortcuts enter it, and that monotone
+recalibration moves score between the channels --- the last being a genuine limitation, for
+which the paper adopts a confidence-matching protocol and shows it works. Fourth, on real
+data, the conventional benchmark measures are reported alongside the decomposition so the two
+can be read against each other: top-1 accuracy, recall@50, mean recall@50 and zero-shot
+recall@50 for scene graph generation, and accuracy by frequency tier for the long-tailed
+studies.
 
-All code, cached model outputs and scripts needed to reproduce every number, table and
-figure are publicly available at \url{https://github.com/vinhqdang/WAGER}, including a
-verification script that checks each of the 89 reported values against the committed
-results files.
-
-The manuscript is original, has not been published previously, and is not under
-consideration elsewhere. An earlier and substantially different version was submitted to
-another journal and declined; that submission is closed. I am the sole author and approve
-this submission, declare no competing financial or personal interests, and received no
-specific grant for this work. The manuscript includes a declaration of generative AI use
-in its preparation, in accordance with journal policy.
+\textbf{Declarations.} The manuscript is original, has not been published previously, and is
+not under consideration elsewhere. An earlier and substantially different version was
+submitted to a statistics journal and declined; that submission is closed. I am the sole
+author and approve this submission, declare no competing financial or personal interests, and
+received no specific grant for this work. The manuscript includes a CRediT statement and a
+declaration of generative AI use in its preparation, in accordance with journal policy.
+Highlights are supplied as a separate file.
 
 Thank you for your consideration.
 

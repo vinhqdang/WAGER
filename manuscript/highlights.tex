@@ -1,25 +1,21 @@
-% Highlights for a submission system, venue-neutral.
-% Elsevier requires 3-5 bullets, each at most 85 characters including spaces.
+% Highlights for Pattern Recognition: 3-5 bullets, max 85 characters each.
 \documentclass[11pt,a4paper]{article}
 \usepackage[margin=1in]{geometry}
 \usepackage{parskip}
 \pagestyle{empty}
-
 \begin{document}
-
 \noindent\textbf{Highlights}
 
 \vspace{0.5em}
-\noindent An Exact Decomposition of Paired Score Differences by Relabelling Within Groups
+\noindent WAGER: An Exact Decomposition of Model-Pair Score Gains on Benchmarks with Strong
+Label Priors
 
 \vspace{1em}
-
 \begin{itemize}
-\item Exact identity splits a paired score gain by relabelling cases within groups
-\item The remainder is a within-group forecast-outcome covariance, not classical resolution
-\item Cluster-robust inference, a CLT, and reduction to a clustered Diebold-Mariano test
-\item Only the covariance part of a reported gain survives a shift in label frequencies
-\item A released debiasing method's proper-score gain is almost all transported
+\item Exact split of a model-pair score gain into label-prior fit and case-level evidence
+\item Audits released scene-graph checkpoints: a 10-point mean-recall gain is prior-fit
+\item Runs in O(NK) on cached predictions; no baseline model, fold or tuning parameter
+\item Cluster-robust intervals, a limit theorem, and a group-stratified permutation test
+\item A CLIP model losing on every aggregate metric is shown to discriminate cases better
 \end{itemize}
-
 \end{document}

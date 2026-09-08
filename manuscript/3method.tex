@@ -72,58 +72,28 @@ For the quadratic score, writing $\Delta q_y(X)=q_1(y\mid X)-q_0(y\mid X)$,
 Consequently, if the gain vector is a function of $c$ alone, then $\Delta R_c=0$.
 \end{theorem}
 
-Equation~\eqref{eq:cov-id} is the operational meaning of WAGER: the new model receives
-covariance credit only to the extent that its probability change aligns more strongly
-with the label of the correct instance within the same cell. Cell-constant score
-improvements, including improved fitting of the cell's label histogram, remain in
-$\Delta P$. The result does not assert that a nonzero covariance reflects causal or
-compositional understanding; unrecorded within-cell shortcuts can also contribute, so
-$\phi$ must be declared and stress-tested.
+Equation~\eqref{eq:cov-id} is the operational meaning of the construction: the new model
+receives covariance credit only to the extent that its probability change aligns more
+strongly with the label of the correct case within the same cell. Cell-constant score
+improvements, including a better fit to the cell's label histogram, remain in $\Delta P$. A
+nonzero covariance does not assert causal or compositional understanding; unrecorded
+within-cell shortcuts contribute to it too, so $\phi$ must be declared and stress-tested.
 
 \subsection{What the transported gain measures}\label{sec:transported}
 
-The component that survives transport is easy to misname. It is tempting to call
-$\Delta P$ a prior-fit gain, since transport replaces a case's label by an independent
-draw from its cell; several earlier drafts of this paper did exactly that. The following
-identity shows the name is wrong, and says what the quantity is instead.
-
-\begin{proposition}[Composition of the transported gain]\label{prop:transported}
-Under the quadratic score, write $\bar q_m(c)=\mathbb E[q_m(\cdot\mid X)\mid C=c]$ for
-model $m$'s mean forecast in cell $c$, $\operatorname{Var}(q_m\mid c)$ for the
-within-cell covariance matrix of its forecast vector, and $p(c)$ for the cell's transport
-law. Then
-\begin{equation}
-\Delta P_c=
-\underbrace{\Bigl[\lVert p(c)-\bar q_0(c)\rVert^2-\lVert p(c)-\bar q_1(c)\rVert^2\Bigr]}
-_{\text{improvement in mean-forecast fit}}
-\;-\;
-\underbrace{\Bigl[\operatorname{tr}\operatorname{Var}(q_1\mid c)-
-\operatorname{tr}\operatorname{Var}(q_0\mid c)\Bigr]}_{\text{increase in within-cell dispersion}} .
-\label{eq:transported-composition}
-\end{equation}
-\end{proposition}
-
-Only the first bracket is prior fit: it is positive exactly when the new model's average
-within-cell forecast sits closer to the cell's label frequencies. The second bracket has
-nothing to do with the prior at all. It rewards the new model for making \emph{less}
-dispersed predictions inside the cell, and it does so at a fixed mean forecast, so
-$\Delta P$ can be large and positive when neither model's prior fit has changed by
-anything. A single cell suffices to see it: with two labels and cell frequencies
-$(\tfrac12,\tfrac12)$, let $q_0$ alternate between $(1,0)$ and $(0,1)$ in a pattern
-uncorrelated with the label, and let $q_1$ predict $(\tfrac12,\tfrac12)$ throughout. Both
-models' mean forecasts equal the cell frequencies exactly, so the first bracket is zero;
-the whole observed gain of $\tfrac12$ is transported, produced entirely by the collapse in
-dispersion. The channel is therefore the reliability-and-sharpness channel of the
-classical partition rather than a prior-fitting channel, which is why we name it for the
-operation that produces it and not for an interpretation of it.
-
-Two consequences are worth stating. First, a claim that some gain is
-``mostly prior-fitting'' does not follow from a large $\widehat{\Delta P}$ alone; where
-this paper reports such a reading it is the two brackets of
-Eq.~\eqref{eq:transported-composition} that carry it, and
-Section~\ref{sec:sggaudit} reports them separately for the audited pair. Second,
-Eq.~\eqref{eq:transported-composition} explains why calibration matching moves
-$\widehat{\Delta P}$ so sharply (Section~\ref{sec:simulation}): a temperature change is
+The surviving component is easy to misname. It is tempting to call $\Delta P$ a prior-fit
+gain, since transport replaces a case's label by an independent draw from its cell; earlier
+drafts of this paper did. Proposition~\ref{prop:transported} in
+Appendix~\ref{app:transported} shows the name is wrong and says what the quantity is
+instead: under the quadratic score $\Delta P_c$ equals the improvement in how closely the new
+model's \emph{mean} within-cell forecast sits to the cell's label frequencies, minus the
+increase in the within-cell dispersion of its forecasts. Only the first term is prior fit.
+The second rewards the new model for making less dispersed predictions at a fixed mean
+forecast, so $\Delta P$ can absorb an entire observed gain with both models' mean forecasts
+sitting exactly on the cell frequencies --- a four-point counterexample in that appendix does
+just that. This is the reliability-and-sharpness channel of the classical partition, not a
+prior-fitting channel, which is why we name it for the operation that produces it; it is also
+why confidence matching moves $\widehat{\Delta P}$ so sharply, since a temperature change is
 almost purely a change in dispersion.
 
 \subsection{Generalization: the Bregman-score family}\label{sec:bregman}
@@ -248,15 +218,13 @@ independently from the same cell, so $\mathbb E[H_1(Y_2)]$ matches it only for
 independent within-cell draws.
 \end{theorem}
 
-The dataset-level quantities weight cells by their number of identified examples:
-$\widehat{\Delta Z}=N_*^{-1}\sum_{c:n_c\ge2}n_c\widehat{\Delta Z}_c$ for
-$Z\in\{T,P,R\}$. Singleton cells cannot identify a within-cell counterfactual; WAGER
-excludes and reports them instead of inventing a smoothed estimate. If
-$\widehat{\Delta T}>0$, the descriptive covariance share is
-$\widehat\rho=\widehat{\Delta R}/\widehat{\Delta T}$. It may exceed one when
-within-group covariance improves while the transported channel deteriorates, and it is undefined for a
-nonpositive total gain. We therefore report $\widehat{\Delta R}$ as the primary result,
-not a thresholded ratio.
+Dataset-level quantities weight cells by their identified counts,
+$\widehat{\Delta Z}=N_*^{-1}\sum_{c:n_c\ge2}n_c\widehat{\Delta Z}_c$ for $Z\in\{T,P,R\}$.
+Singleton cells cannot identify a within-cell counterfactual, so we exclude and report them
+rather than inventing a smoothed estimate. If $\widehat{\Delta T}>0$ the descriptive share
+$\widehat{\Delta R}/\widehat{\Delta T}$ may exceed one, when covariance improves while the
+transported channel deteriorates, and it is undefined for a nonpositive total; we therefore
+report $\widehat{\Delta R}$ as the primary result rather than a thresholded ratio.
 
 \subsection{Linear-time computation}\label{sec:efficient}
 
@@ -296,18 +264,13 @@ multiplicative shrinkage of every cell's leave-one-out covariance gain by the fa
 $(n_c-1)/n_c$.
 \end{proposition}
 
-The shrinkage in Eq.~\eqref{eq:attenuation} is deterministic, not a variance statement:
-whenever $\widehat{\Delta R}_c\neq0$, the in-sample plug-in is biased for it at every
-finite $n_c$, with the largest relative attenuation exactly in the smallest identified
-cells (50\% at $n_c=2$, vanishing only as $n_c\to\infty$). The standard remedy for this
-kind of self-prediction bias is a projection/evaluation split: a held-out fold restores
-unbiasedness by fitting $\hat p_c$ on data disjoint from the scored examples, but it
-does so by discarding examples from both stages and by introducing a split-fraction
-hyperparameter and, typically, higher variance. WAGER's leave-one-out U-statistic removes the bias exactly,
-at the full sample, for every $\phi$-cell with $n_c\ge2$, without a fitted nuisance
-distribution at all. Section~\ref{sec:related-decomposition} situates this result
-against the classical single-model score decomposition, where the analogous
-self-prediction bias affects each model's covariance estimate separately.
+The shrinkage is deterministic, not a variance statement: whenever
+$\widehat{\Delta R}_c\neq0$ the in-sample plug-in is biased for it at every finite $n_c$,
+worst in the smallest identified cells ($50\%$ at $n_c=2$). The standard remedy for such
+self-prediction bias is a projection/evaluation split, which restores unbiasedness by
+discarding examples from both stages and introduces a split-fraction hyperparameter and
+typically higher variance. Leave-one-out transport removes the bias exactly, at the full
+sample, for every cell with $n_c\ge2$, with no fitted nuisance distribution at all.
 
 \subsection{Inference}\label{sec:inference}
 
@@ -363,55 +326,15 @@ Diebold--Mariano statistic for that differential \citep{diebold1995comparing}; b
 the conditioning information set is empty, it is equivalently a degenerate instance of
 the Giacomini--White conditional predictive-ability test \citep{giacomini2006tests}.
 \end{corollary}
-This corollary is immediate from the definitions: DM and GW test whether a paired loss
-differential's (conditional) mean is zero, and $\widehat{\Delta T}$ at the trivial
-partition is exactly that differential's sample mean. $\widehat{\Delta P}$ and
-$\widehat{\Delta R}$ remain perfectly well defined at the trivial partition too --- the
-single giant cell still supports leave-one-out label transport whenever $N\ge2$ --- but
-neither DM nor GW forms them: both tests target $\Delta T$ alone and stop there.
-At the trivial partition $\widehat{\Delta R}$ is the
-\emph{unconditional} prediction--outcome covariance contrast --- the Yates-type quantity
-of Section~\ref{sec:related-decomposition} with an empty conditioning set. It is not a
-classical resolution term: a resolution term computed with no conditioning variable is
-identically zero, since it is the variance of a conditional mean given nothing, and
-$\widehat{\Delta P}$ is correspondingly not a calibration term. An earlier version of
-this paper asserted both identifications and they were wrong. What is true, and is the
-contribution at this special case, is the further exact split of the DM/GW differential
-into two components neither test forms. Conditioning on
-a nontrivial $\phi$ is what separates WAGER's estimand from the classical target more
-generally: DM/GW ask whether one forecaster beats another on average, optionally
-conditional on a test function of an information set \citep{giacomini2006tests}; WAGER
-asks the same question at every declared cell \emph{and} attributes the answer, cell by
-cell, into a component recoverable from the label histogram alone and a component that is
-not. One qualification on how far this reading travels. Corollary~\ref{cor:dm} is stated at the
-trivial partition, and the statistic it identifies with a clustered DM test is
-$N^{-1}\sum_iH_i(y_i)$ over every example. The totals reported at a nontrivial $\phi$ in
-Section~\ref{sec:exp} are instead $N_*$-weighted means over the \emph{identified}
-subsample, since cells of size one are excluded. Because $\Delta T$ itself does not depend
-on $\phi$ except through that exclusion, each reported $\widehat{\Delta T}$ is a clustered
-DM statistic for the paired differential \emph{on its identified subsample} --- which at
-the coverages reported here ($99.0\%$ on VG150, $98.9\%$ in
-Section~\ref{sec:sggaudit}) differs from the full-sample DM statistic only in the excluded
-singletons. That is the precise claim; ``exactly a clustered DM statistic'' without the
-subsample qualifier, as earlier drafts had it in Appendix~\ref{sec:results}, is not
-right at a nontrivial $\phi$.
+The corollary is immediate from the definitions: DM and GW test whether a paired loss
+differential's mean is zero, and $\widehat{\Delta T}$ at the trivial partition is exactly
+that differential's sample mean. Neither test forms $\widehat{\Delta P}$ or
+$\widehat{\Delta R}$; both target $\Delta T$ and stop. One qualification on how far the
+reading travels: the corollary is stated at the trivial partition, whereas the totals
+reported at a nontrivial $\phi$ are $N_*$-weighted means over the \emph{identified}
+subsample. Because $\Delta T$ does not depend on $\phi$ except through that exclusion, each
+reported $\widehat{\Delta T}$ is a clustered DM statistic for the paired differential on its
+identified subsample, which at the coverages here ($99.0\%$ on VG150, $98.9\%$ in
+Section~\ref{sec:sggaudit}) differs from the full-sample statistic only in the excluded
+singletons.
 
-\begin{algorithm}[t]
-\caption{WAGER gain decomposition}\label{alg:wager}
-\begin{algorithmic}[1]
-\Require frozen $q_1,q_0$; labels $y$; cells $\phi$; proper score $S$
-\Ensure $\widehat{\Delta T},\widehat{\Delta P},\widehat{\Delta R}$ and uncertainty
-\State $H_i(k)\gets S(q_{1i},k)-S(q_{0i},k)$ for all $i,k$
-\For{each cell $c$ with $n_c\ge2$}
-  \State count labels $m_{c1},\ldots,m_{cK}$
-  \For{each $i\in c$}
-    \State $P_i\gets(\sum_k m_{ck}H_i(k)-H_i(y_i))/(n_c-1)$
-    \State $R_i\gets H_i(y_i)-P_i$
-  \EndFor
-\EndFor
-\State $\widehat{\Delta T}\gets\operatorname{mean}H_i(y_i)$;
-$\widehat{\Delta P}\gets\operatorname{mean}P_i$;
-$\widehat{\Delta R}\gets\operatorname{mean}R_i$
-\State compute image-clustered H\'ajek interval and cell-shift randomization $p$
-\end{algorithmic}
-\end{algorithm}

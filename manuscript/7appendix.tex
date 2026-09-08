@@ -294,6 +294,26 @@ $\sum_y m_{cy}H_i(y)$ in Eq.~\eqref{eq:linear} is precomputed; only the assigned
 lookup changes. One randomization is $O(N)$ after the $O(NK)$ setup. The plus-one Monte
 Carlo correction includes the observed assignment and prevents zero $p$-values.
 
+\begin{algorithm}[t]
+\caption{WAGER gain decomposition}\label{alg:wager}
+\begin{algorithmic}[1]
+\Require frozen $q_1,q_0$; labels $y$; cells $\phi$; proper score $S$
+\Ensure $\widehat{\Delta T},\widehat{\Delta P},\widehat{\Delta R}$ and uncertainty
+\State $H_i(k)\gets S(q_{1i},k)-S(q_{0i},k)$ for all $i,k$
+\For{each cell $c$ with $n_c\ge2$}
+  \State count labels $m_{c1},\ldots,m_{cK}$
+  \For{each $i\in c$}
+    \State $P_i\gets(\sum_k m_{ck}H_i(k)-H_i(y_i))/(n_c-1)$
+    \State $R_i\gets H_i(y_i)-P_i$
+  \EndFor
+\EndFor
+\State $\widehat{\Delta T}\gets\operatorname{mean}H_i(y_i)$;
+$\widehat{\Delta P}\gets\operatorname{mean}P_i$;
+$\widehat{\Delta R}\gets\operatorname{mean}R_i$
+\State compute image-clustered H\'ajek interval and cell-shift randomization $p$
+\end{algorithmic}
+\end{algorithm}
+
 \section{Implementation and reproducibility}\label{app:implementation}
 
 The NumPy implementation is in \texttt{wager/antisymmetric.py}. The primary routine
@@ -667,3 +687,88 @@ eventually identified, so the theorem does not describe the finite-sample regime
 applications sit in --- and states the additional condition on the number of cells that the
 dataset-level remainder requires. What licenses reading the reported intervals at finite $N$
 is the coverage simulation of Section~\ref{sec:simulation}, not this theorem.
+
+\section{Terminology}\label{app:terms}
+
+\begin{table}[t]
+\centering
+\small
+\caption{The paper's vocabulary, and what it corresponds to in standard terms.}
+\label{tab:terms}
+\begin{tabular}{@{}p{0.24\textwidth}p{0.30\textwidth}p{0.38\textwidth}@{}}
+\toprule
+Term used here & Standard counterpart & Meaning \\
+\midrule
+grouping variable $\phi$ &
+stratifying / conditioning variable &
+a discrete function of the input, declared before the audit, whose levels the labels
+depend on \\
+cell $c$ &
+level of $\phi$; stratum &
+the set of test cases sharing one value of $\phi$ \\
+label transport &
+within-stratum relabelling; permutation within blocks &
+replacing a case's label with another case's label from the same cell \\
+total gain $\Delta T$ &
+paired score differential &
+the observed mean score of the new model minus that of the old \\
+transported gain $\Delta P$ &
+no exact counterpart; a mean-forecast-fit term minus a dispersion term
+(Proposition~\ref{prop:transported}), \emph{not} a measure of prior fit &
+the part of $\Delta T$ that survives label transport \\
+within-group covariance gain $\Delta R$ &
+the covariance term of a covariance rearrangement of a proper score
+\citep{yates1982external}; twice a classical resolution difference \emph{only} under
+within-cell calibration &
+the part destroyed by transport; a within-cell prediction--label covariance \\
+coverage &
+identified fraction &
+share of test cases in cells of size $\ge2$, the only cells in which $\Delta R$ is
+identified \\
+calibration-matched &
+temperature-scaled on held-out data &
+both models rescaled to comparable confidence before the audit \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Composition of the transported gain}\label{app:transported}
+
+The component that survives transport is easy to misname. It is tempting to call
+$\Delta P$ a prior-fit gain, since transport replaces a case's label by an independent
+draw from its cell; several earlier drafts of this paper did exactly that. The following
+identity shows the name is wrong, and says what the quantity is instead.
+
+\begin{proposition}[Composition of the transported gain]\label{prop:transported}
+Under the quadratic score, write $\bar q_m(c)=\mathbb E[q_m(\cdot\mid X)\mid C=c]$ for
+model $m$'s mean forecast in cell $c$, $\operatorname{Var}(q_m\mid c)$ for the
+within-cell covariance matrix of its forecast vector, and $p(c)$ for the cell's transport
+law. Then
+\begin{equation}
+\Delta P_c=
+\underbrace{\Bigl[\lVert p(c)-\bar q_0(c)\rVert^2-\lVert p(c)-\bar q_1(c)\rVert^2\Bigr]}
+_{\text{improvement in mean-forecast fit}}
+\;-\;
+\underbrace{\Bigl[\operatorname{tr}\operatorname{Var}(q_1\mid c)-
+\operatorname{tr}\operatorname{Var}(q_0\mid c)\Bigr]}_{\text{increase in within-cell dispersion}} .
+\label{eq:transported-composition}
+\end{equation}
+\end{proposition}
+
+Only the first bracket is prior fit: it is positive exactly when the new model's average
+within-cell forecast sits closer to the cell's label frequencies. The second has nothing to
+do with the prior. It rewards the new model for making \emph{less} dispersed predictions
+inside the cell, at a fixed mean forecast, so $\Delta P$ can be large and positive when
+neither model's prior fit has changed at all. One cell suffices: with two labels and
+frequencies $(\tfrac12,\tfrac12)$, let $q_0$ alternate between $(1,0)$ and $(0,1)$ in a
+pattern uncorrelated with the label and let $q_1$ predict $(\tfrac12,\tfrac12)$ throughout.
+Both mean forecasts equal the cell frequencies exactly, so the first bracket is zero, and the
+whole observed gain of $\tfrac12$ is transported, produced entirely by the collapse in
+dispersion. The channel is therefore the reliability-and-sharpness channel of the classical
+partition, not a prior-fitting channel, which is why we name it for the operation. Two
+consequences: a claim that some gain is ``mostly prior-fitting'' does not follow from a large
+$\widehat{\Delta P}$ alone, and Eq.~\eqref{eq:transported-composition} explains why
+confidence matching moves $\widehat{\Delta P}$ so sharply, since a temperature change is
+almost purely a change in dispersion.
+
+

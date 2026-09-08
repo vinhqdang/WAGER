@@ -23,20 +23,18 @@ Visual Genome \citep{zellers2018neural}; VQA systems collapse under changed answ
 \citep{goyal2017making,agrawal2018dont}; standard metrics obscure tail behaviour
 \citep{li2022rethinking}; and benchmark audits keep finding multimodal models exploiting
 non-visual shortcuts that inflate exactly this kind of aggregate score
-\citep{brown2025benchmark,zhou2025shortcut}. The reporting standards have responded --- mean
-recall alongside recall, broken down by predicate frequency
-\citep{tang2020unbiased,li2022rethinking}, zero-shot recall on unseen triplets
-\citep{lu2016visual}, GQA-OOD stratified by answer rarity \citep{kervadec2021roses} --- and
-every one of those is a prior-aware slicing of a \emph{single} model's performance. None
-attributes the gain between two submitted systems.
+\citep{brown2025benchmark,zhou2025shortcut}. Reporting standards have responded --- mean
+recall broken down by predicate frequency \citep{tang2020unbiased,li2022rethinking},
+zero-shot recall on unseen triplets \citep{lu2016visual}, GQA-OOD stratified by answer rarity
+\citep{kervadec2021roses} --- and every one is a prior-aware slicing of a \emph{single}
+model's performance. None attributes the gain between two submitted systems.
 
-The customary audit builds a prior-only reference: fit $\widehat\Pr(Y\mid\phi)$ from
-training data, score it, and see how far the full models beat it \citep{zellers2018neural}.
-As a diagnostic for one model that is useful. As an answer to the pairwise question it is
-indirect and noisy --- the reference has to be estimated, it needs a smoothing rule for rare
-cells and a model family that may match neither compared system, and decomposing two models
-separately then subtracting gives no uncertainty for the difference, which is the quantity
-actually in dispute.
+The customary audit builds a prior-only reference: fit $\widehat\Pr(Y\mid\phi)$ from training
+data, score it, and see how far the full models beat it \citep{zellers2018neural}. As a
+diagnostic for one model that is useful; as an answer to the pairwise question it is indirect
+and noisy. The reference has to be estimated, it needs a smoothing rule for rare cells and a
+model family that may match neither compared system, and decomposing two models separately
+then subtracting gives no uncertainty for the difference --- the quantity actually in dispute.
 
 \paragraph{What this paper does.}
 We decompose the score difference itself, exactly, with no fitted reference at all. The idea
@@ -63,14 +61,13 @@ and the aggregate score gets wrong.
 \paragraph{What we find.}
 Pointed at two publicly released scene-graph checkpoints rather than at predictors of our
 own, the decomposition gives a precise account of a widely cited debiasing method. Once the
-two models are matched for confidence, essentially the entire proper-score difference
-between MOTIFS-TDE and the MOTIFS baseline it debiases is transported gain, with a
-within-group covariance remainder at least an order of magnitude smaller under either of two
-proper scores (Section~\ref{sec:sggaudit}). A metric the field reads as evidence about rare
-predicates moves ten points while the quantity that would measure case-level evidence barely
-moves at all. Since TDE's own construction subtracts a context-only prediction, this
-characterises the method rather than indicting it --- but it does mean the headline number
-is not the evidence it is generally taken for.
+two models are matched for confidence, essentially the entire proper-score difference between
+MOTIFS-TDE and the MOTIFS baseline it debiases is transported gain, with a covariance
+remainder at least an order of magnitude smaller under either of two proper scores
+(Section~\ref{sec:sggaudit}). A metric the field reads as evidence about rare predicates moves
+ten points while the quantity that would measure case-level evidence barely moves. Since
+TDE's construction subtracts a context-only prediction, this characterises the method rather
+than indicting it --- but the headline number is not the evidence it is generally taken for.
 
 \begin{figure*}[t]
 \centering
@@ -86,27 +83,21 @@ probability vectors, the labels, and the group identifiers.}
 \label{fig:concept}
 \end{figure*}
 
-\paragraph{What the second component is.}
-The component destroyed by relabelling is not a new invention, and it is worth naming
-correctly because the name predicts how it behaves. Written out, it equals the covariance,
-inside each group, between how much the new model moved its predicted probability for a
-label and whether that label actually occurred (Theorem~\ref{thm:population}). A covariance
-between a forecast and an outcome indicator is the object isolated by the covariance
-rearrangement of a proper score that goes back to \citet{yates1982external}, so we call our
-second component the \emph{within-group covariance gain}.
-
-It is close to, but not the same as, the \emph{resolution} term of the classical
-reliability--resolution partition of a proper score
-\citep{murphy1973vector,degroot1983comparison,brocker2009reliability}, and the difference
-has a practical consequence. Classical resolution depends on a forecast only through the
-partition its level sets generate, so it is invariant under any strictly monotone relabelling
-of the forecast values. A covariance between forecast \emph{values} is not: rescaling a fixed
-model's confidence changes it while changing no ranking, no top-1 decision and no
-information. The two coincide exactly when both models are calibrated within groups.
-Section~\ref{sec:related-decomposition} states the discrepancy and
-Section~\ref{sec:simulation} measures it --- large enough that every comparison we report is
-between confidence-matched models. Models that differ sharply in calibration, which released
-checkpoints routinely do, cannot be audited on their raw outputs.
+\paragraph{What the second component is}
+The component destroyed by relabelling is not new, and naming it correctly predicts how it
+behaves. Written out, it equals the covariance, inside each group, between how much the new
+model moved its predicted probability for a label and whether that label occurred
+(Theorem~\ref{thm:population}). Such a covariance is the object isolated by the covariance
+rearrangement of a proper score going back to \citet{yates1982external}, so we call it the
+\emph{within-group covariance gain}. It is close to, but not the same as, the
+\emph{resolution} term of the classical reliability--resolution partition
+\citep{murphy1973vector,degroot1983comparison,brocker2009reliability}, and the difference has
+a practical consequence: classical resolution depends on a forecast only through the partition
+its level sets generate, so it survives any monotone rescaling of forecast values, whereas a
+covariance between those values does not. The two coincide exactly when both models are
+calibrated within groups. Section~\ref{sec:simulation} measures the gap --- large enough that
+every comparison we report is between confidence-matched models, and released checkpoints,
+which routinely differ sharply in calibration, cannot be audited on raw outputs.
 
 We call the estimator WAGER; the acronym is a label, not a claim, and we do not expand it.
 Its two components are the \emph{transported gain} $\Delta P$ --- named for the operation
@@ -162,53 +153,11 @@ partitions can disagree without limit, so declaring $\phi$ is a modelling decisi
 
 \subsection{Terminology}\label{sec:terminology}
 
-Table~\ref{tab:terms} fixes the paper's vocabulary against standard counterparts. Two rows
-carry a caveat rather than a synonym, because no standard term matches exactly: $\Delta P$
-is named for the operation that produces it, and $\Delta R$ is a covariance
-rearrangement's term rather than the classical resolution it is often mistaken for. We use
-``group'' and ``cell'' interchangeably.
-
-\begin{table}[t]
-\centering
-\small
-\caption{The paper's vocabulary, and what it corresponds to in standard terms.}
-\label{tab:terms}
-\begin{tabular}{@{}p{0.24\textwidth}p{0.30\textwidth}p{0.38\textwidth}@{}}
-\toprule
-Term used here & Standard counterpart & Meaning \\
-\midrule
-grouping variable $\phi$ &
-stratifying / conditioning variable &
-a discrete function of the input, declared before the audit, whose levels the labels
-depend on \\
-cell $c$ &
-level of $\phi$; stratum &
-the set of test cases sharing one value of $\phi$ \\
-label transport &
-within-stratum relabelling; permutation within blocks &
-replacing a case's label with another case's label from the same cell \\
-total gain $\Delta T$ &
-paired score differential &
-the observed mean score of the new model minus that of the old \\
-transported gain $\Delta P$ &
-no exact counterpart; a mean-forecast-fit term minus a dispersion term
-(Proposition~\ref{prop:transported}), \emph{not} a measure of prior fit &
-the part of $\Delta T$ that survives label transport \\
-within-group covariance gain $\Delta R$ &
-the covariance term of a covariance rearrangement of a proper score
-\citep{yates1982external}; twice a classical resolution difference \emph{only} under
-within-cell calibration &
-the part destroyed by transport; a within-cell prediction--label covariance \\
-coverage &
-identified fraction &
-share of test cases in cells of size $\ge2$, the only cells in which $\Delta R$ is
-identified \\
-calibration-matched &
-temperature-scaled on held-out data &
-both models rescaled to comparable confidence before the audit \\
-\bottomrule
-\end{tabular}
-\end{table}
+Table~\ref{tab:terms} in Appendix~\ref{app:terms} fixes the paper's vocabulary against
+standard counterparts. Two entries carry a caveat rather than a synonym, because no standard
+term matches exactly: $\Delta P$ is named for the operation that produces it, and $\Delta R$
+is a covariance rearrangement's term rather than the classical resolution it is often
+mistaken for. We use ``group'' and ``cell'' interchangeably.
 
 \subsection{Scope, and what is not claimed}\label{sec:scope}
 

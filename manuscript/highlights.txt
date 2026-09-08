@@ -1,8 +1,7 @@
-Highlights
-(Elsevier requires 3-5 bullets, each at most 85 characters including spaces.)
+Highlights (3-5 bullets, max 85 characters each including spaces)
 
-Exact identity splits a paired score gain by relabelling cases within groups
-The remainder is a within-group forecast-outcome covariance, not classical resolution
-Cluster-robust inference, a CLT, and reduction to a clustered Diebold-Mariano test
-Only the covariance part of a reported gain survives a shift in label frequencies
-A released debiasing method's proper-score gain is almost all transported
+Exact split of a model-pair score gain into label-prior fit and case-level evidence
+Audits released scene-graph checkpoints: a 10-point mean-recall gain is prior-fit
+Runs in O(NK) on cached predictions; no baseline model, fold or tuning parameter
+Cluster-robust intervals, a limit theorem, and a group-stratified permutation test
+A CLIP model losing on every aggregate metric is shown to discriminate cases better

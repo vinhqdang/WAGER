@@ -43,75 +43,46 @@ Section~\ref{sec:vgvisual} demonstrates and Section~\ref{sec:decision} exploits.
 purely a matter of prior fit (Proposition~\ref{prop:transported}). The decomposition reports
 where a gain lives, not whether it is worth having.
 
-\subsection{Choosing and declaring the grouping variable}
+\subsection{Choosing the grouping variable, and what the estimator cannot do}
 
-``Declare $\phi$ before looking'' is advice, not a mechanism. Our recommendation is that
-the \emph{benchmark}, not the submitting author, fix it: the annotation prior is a property
-of the dataset, and a maintainer-declared $\phi$ removes the incentive to report only the
-most favourable candidate. That only moves the discretion, however. Maintainers are often
-authors of methods evaluated on their own benchmark, and a $\phi$ that flatters the
-benchmark's own baseline is no better than an author-chosen one. What we would defend is the
-weaker claim that $\phi$ should be fixed and public \emph{before} a leaderboard opens, by
-whoever does it, and that every pre-declared candidate be reported as our sensitivity rows
-do. Guarantees holding uniformly over a class of groupings are the subject of
-multicalibration \citep{hebert2018multicalibration}, and porting that style of guarantee to
-pairwise attribution is a natural extension. To make reports comparable we suggest a fixed
-block per audited pair: the declared $\phi$ and its rationale, the identified coverage, both
-channels signed with the covariance interval, the confidence-matched row, and the
-granularity rows.
-
-\subsection{What the estimator cannot do}
+``Declare $\phi$ before looking'' is advice, not a mechanism. We recommend that the
+\emph{benchmark}, not the submitting author, fix it: the annotation prior is a property of
+the dataset, and a maintainer-declared $\phi$ removes the incentive to report only the most
+favourable candidate. That only moves the discretion, since maintainers are often authors of
+methods evaluated on their own benchmark. What we would defend is the weaker claim that
+$\phi$ be fixed and public \emph{before} a leaderboard opens, by whoever does it, with every
+pre-declared candidate reported as our sensitivity rows are. Guarantees holding uniformly
+over a class of groupings are the subject of multicalibration
+\citep{hebert2018multicalibration}, and porting that to pairwise attribution is a natural
+extension. For comparability we suggest a fixed block per audited pair: the declared $\phi$
+and its rationale, the identified coverage, both components signed with the covariance
+interval, the confidence-matched row, and the granularity rows.
 
 Exact transport needs at least two cases per cell, so a very fine $\phi$ buys confound
 control at the cost of coverage; we report the identified fraction and claim nothing for
 singletons. Because cells identified at one granularity need not coincide with those at
-another, cross-granularity comparisons mix Proposition~\ref{prop:coarsen}'s between-cell
-term with a change of identified subpopulation --- immaterial at VG150's $99.0\%$ coverage,
-but worth restricting to a common subsample when coverage is low. Approximate matching would
-extend the method to continuous priors but would trade the exact identity for modelling
-assumptions, and we leave that open.
-
-The image-clustered interval is asymptotic. Theorem~\ref{thm:clt} justifies it in a regime
-no heavy-tailed benchmark attains in sample: of $6{,}346$ eligible class-pair cells,
-$2{,}286$ hold fewer than five cases, though those carry only $2.7\%$ of identified
-relations, so most of the evidence comes from cells well above the minimum. The reported
-$94.0\%$ empirical coverage against a nominal $95\%$ (Section~\ref{sec:simulation})
-therefore remains the operative evidence for the interval, with the theorem supplying the
-limiting justification the simulation checks against. The randomization test is
-finite-group exact only under a sharper within-cell exchangeability null and treats
-relations rather than images as the randomized units, so it stays a secondary diagnostic; an
-image-level design preserving several relation-cell margins at once would strengthen it.
+another, cross-granularity comparisons mix Proposition~\ref{prop:coarsen}'s between-cell term
+with a change of identified subpopulation --- immaterial at VG150's $99.0\%$ coverage, but
+worth restricting to a common subsample when coverage is low. The image-clustered interval is
+asymptotic, and Theorem~\ref{thm:clt} justifies it in a regime no heavy-tailed benchmark
+attains in sample: of $6{,}346$ eligible class-pair cells, $2{,}286$ hold fewer than five
+cases, though those carry only $2.7\%$ of identified relations. The reported $94.0\%$
+empirical coverage against a nominal $95\%$ therefore remains the operative evidence for the
+interval. The randomization test is finite-group exact only under a sharper within-cell
+exchangeability null and treats relations rather than images as the randomized units, so it
+stays a secondary diagnostic.
 
 Finally, the estimator reads probability vectors, not top-1 decisions. That is a feature ---
-it detects useful redistribution below the argmax --- but it requires released logits or
-probabilities, and this is the real obstacle to routine use. The audit of
+it detects useful redistribution below the argmax --- but it needs released logits or
+probabilities, and that is the real obstacle to routine use. The audit of
 Section~\ref{sec:sggaudit} needed nothing but two checkpoints evaluated with their authors'
-code; the method consumed the resulting arrays and returned a decomposition with intervals
-in seconds. Nothing in that workflow is specific to scene graph generation. What blocks it
-elsewhere is neither compute nor complexity but disclosure, since benchmarks overwhelmingly
-archive ranked predictions. A leaderboard that stored per-example probabilities would make
-this kind of attribution available for every pair it ranks.
+code, and nothing in that workflow is specific to scene graph generation. What blocks it
+elsewhere is disclosure, not compute: benchmarks overwhelmingly archive ranked predictions.
 
-\subsection{Broader applicability}\label{sec:broader}
-
-Four aligned arrays are all the algorithm requires -- two models' probability vectors,
-the labels, and the prior-cell identifiers -- and nothing in
-Sections~\ref{sec:setup}--\ref{sec:inference} is specific to relation prediction.
-Appendix~\ref{app:lt} puts that generality to the test on long-tailed image
-classification, where taking the benchmark's coarse superclasses as $\phi$ lets the
-decomposition distinguish a re-weighting schedule whose near-zero aggregate score hides
-two large cancelling channels from one whose genuine improvement is part prior-refitting
-and part rare-class covariance. The claim of breadth thereby acquires empirical content
-instead of resting on analogy. That second domain is also where the constraint on $\phi$
-shows its teeth, since the fine class label cannot serve as a cell: it would leave
-every cell label-homogeneous and drive $\Delta R$ to zero by construction, producing an
-artifact that reads exactly like a null result. Elsewhere the natural choices are easy
-enough to name -- a predeclared question template for VQA, an answer format or prompt
-family for other multimodal benchmarks -- though we have not evaluated them, and we flag
-them as the obvious next domains rather than claim a coverage we have not earned.
-Whatever the setting, the scientific claim has to stay precise, because what WAGER
-measures is new prediction--label alignment within the declared cells and nothing more.
-Its value lies not in any single $\phi$ settling what counts as understanding, but in
-making every attribution an explicit and reproducible counterfactual tied to a declared
-nuisance structure, one that the same unmodified construction has now answered sensibly
-on two structurally different tasks.
+Nothing in Sections~\ref{sec:setup}--\ref{sec:inference} is specific to relation prediction,
+and the long-tailed studies of Appendix~\ref{app:studies} test that in two other modalities.
+The constraint on $\phi$ shows its teeth there: the fine class label cannot serve as a cell,
+since it would leave every cell label-homogeneous and drive $\Delta R$ to zero by
+construction, producing an artefact that reads exactly like a null result. Elsewhere the
+natural choices are easy to name --- a predeclared question template for VQA, an answer
+format for other multimodal benchmarks --- though we have not evaluated them.

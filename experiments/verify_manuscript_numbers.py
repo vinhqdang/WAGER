@@ -195,11 +195,11 @@ CHECKS += [
      sens["delta_r_subject_only_phi"], 1e-5),
     ("sens empirical bias", "7appendix.tex", "0.00742",
      sens["empirical_coarsening_bias"], 5e-5),
-    ("sens free bound", "3method.tex", "14.00",
+    ("sens free bound", "7appendix.tex", "14.00",
      sens["crude_cauchy_schwarz_bound"], 5e-3),
     ("sens min rho", "7appendix.tex", "0.00053",
      sens["minimum_rho_for_bound_to_hold"], 5e-6),
-    ("sens superseded bound", "3method.tex", "50.00",
+    ("sens superseded bound", "7appendix.tex", "50.00",
      sens["superseded_popoviciu_bound"], 5e-3),
     ("sens looseness ratio", "7appendix.tex", "1{,}887", sens["looseness_ratio"], 1.0),
 ]

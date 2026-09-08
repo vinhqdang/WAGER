@@ -99,41 +99,18 @@ information added; Section~\ref{sec:simulation} measures that at $-0.488$ in a d
 the two models carry identical case-level information. Every result in this paper is
 therefore reported for confidence-matched pairs.
 
-\subsection{A decision the split changes}\label{sec:decision}
-
-A decomposition that no decision depends on would be an ornament. The four points above
-are enough to show one, and to show that the split predicts it where the aggregate score
-cannot.
-
-Read at the benchmark's own label frequencies, both candidate models improve on $q_0$ and
-model B improves by three times as much: $\Delta T=1/8$ against $3/8$. An evaluator
-choosing between them on the reported score picks B, and is right to. Now suppose the
-system will be deployed where the label frequencies in this cell are
-$(\tfrac14,\tfrac34)$ rather than the $(\tfrac34,\tfrac14)$ the test set happens to
-exhibit --- a label shift, the situation post-hoc prior correction exists to address
-\citep{saerens2002adjusting,lipton2018detecting}. Reweighting each case by
-$p'(y_i)/p(y_i)$ and rescoring gives
-\begin{equation}
-\text{model A}:\ +\tfrac18\ \longrightarrow\ -\tfrac38,
-\qquad
-\text{model B}:\ +\tfrac38\ \longrightarrow\ +\tfrac38 .
-\end{equation}
-Model A does not merely lose its margin; it becomes \emph{worse} than the model it was
-meant to replace, while model B is untouched. The ranking of A against $q_0$ reverses on a
-change in the deployment distribution that leaves every model and every prediction
-exactly as it was.
-
-The decomposition says in advance which of the two is exposed, and the aggregate score
-does not. A's entire gain sits in the transported channel, which is the channel a change
-in label frequencies acts on; B's sits in the covariance channel, which such a change
-leaves alone, because scoring each case against its own label is unaffected by how often
-that label occurs once the case is reweighted. This is the operational content of the
-split: $\widehat{\Delta P}$ is the part of a reported improvement that is contingent on
-the evaluation set's label frequencies matching the deployment's, and
-$\widehat{\Delta R}$ is the part that is not. Two systems with the same headline gain and
-different compositions are different bets, and only the decomposition prices them
-differently. Section~\ref{sec:discussion} returns to what this does and does not license,
-and Appendix~\ref{app:vgvisual} exhibits the same structure on real models, where
-correcting a model's within-cell prior post hoc registers as almost pure transported gain
-($+0.02401$ against $+0.00111$) exactly as a correction carrying no case-level
-information must.
+\paragraph{A decision the split changes.}\label{sec:decision}
+At the benchmark's own label frequencies both candidates improve and B improves three times
+as much, so an evaluator reading the score picks B, rightly. Suppose deployment sees label
+frequencies in this cell of $(\tfrac14,\tfrac34)$ instead of the observed
+$(\tfrac34,\tfrac14)$ --- a label shift, the situation post-hoc prior correction addresses
+\citep{saerens2002adjusting,lipton2018detecting}. Reweighting each case by $p'(y_i)/p(y_i)$
+and rescoring sends A from $+\tfrac18$ to $-\tfrac38$ while leaving B at $+\tfrac38$: A
+becomes \emph{worse} than the model it was meant to replace, on a change that leaves every
+prediction exactly as it was. The decomposition says in advance which is exposed and the
+aggregate score does not, because A's whole gain sits in the transported channel --- the one
+a change in label frequencies acts on --- and B's in the covariance channel, which such a
+change leaves alone. That is the operational content of the split: $\widehat{\Delta P}$ is
+the part of a reported improvement contingent on the evaluation set's label frequencies
+matching deployment, and $\widehat{\Delta R}$ is the part that is not.
+Section~\ref{sec:vgvisual} exhibits the same structure on real models.

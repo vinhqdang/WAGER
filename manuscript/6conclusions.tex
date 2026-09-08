@@ -1,90 +1,47 @@
 \section{Conclusion}\label{sec:conclusion}
 
-When two probabilistic classifiers are compared on a benchmark whose labels depend partly
-on a feature both models observe, the reported score difference answers a question nobody
-asked. It sums a closer fit to the label frequencies within groups and a closer match
-between predictions and the individual cases they were made for, and those are different
-achievements with different consequences: the first is real skill that a lookup table also
-supplies and that a shift in label frequencies removes, the second is not.
+When two models are compared on a benchmark whose labels are partly determined by a feature
+both of them observe, the reported gain answers a question nobody asked. It sums a closer fit
+to the label frequencies within groups of that feature and a closer match between predictions
+and the individual cases they were made for --- different achievements with different
+consequences, since the first is skill a frequency table also supplies and that a shift in
+label frequencies removes, and the second is not.
 
-This paper separates them exactly. Scoring each model's prediction for one test case
-against the label of a different case in the same group leaves the group and its label
-frequencies intact while breaking the correspondence between prediction and case, and the
-gain that survives that relabelling is the transported component. The identity
-$\Delta T=\Delta P+\Delta R$ then holds in the observed sample, for any score, with no
-fitted reference model, no held-out fold and no tuning parameter, at a cost of $O(NK)$.
-The remainder is a U-statistic of order two whose value is a within-group covariance
-between the two models' probability change and the label indicator --- for every Bregman
-score, so the quadratic and logarithmic cases are one result rather than two
-(Theorem~\ref{thm:bregman}). That covariance is the object a covariance rearrangement of a
-proper score isolates \citep{yates1982external}, evaluated for a pair of forecasters
-instead of one. It is not the resolution term of the classical
-reliability--resolution partition, which is invariant to monotone rescaling of the
-forecast where a covariance between forecast values is not; the two coincide only under
-within-cell calibration, and Section~\ref{sec:related-decomposition} states the
-discrepancy. Naming the quantity correctly is what makes the recalibration sensitivity
-predictable rather than surprising, and it is why confidence matching is part of the
-procedure here.
+This paper separates them exactly. Scoring each model's prediction for one test case against
+the label of a different case in the same group leaves the group and its label frequencies
+intact while breaking the correspondence between prediction and case, so the gain surviving
+that relabelling is the transported component and the remainder is a within-group covariance
+gain. The identity holds in the observed sample for any proper score, with no fitted
+reference model, no held-out fold and no tuning parameter, at $O(NK)$ on cached predictions.
+The remainder is an order-two U-statistic equal, for every Bregman score, to a within-group
+covariance between the models' probability change and the label indicator, and it comes with
+a one-pass influence function, cluster-robust intervals, a randomization test and a limit
+theorem.
 
-What makes it usable rather than merely exact is that the pairwise contrast comes with its
-own inference. The influence function of the difference gives cluster-robust intervals in
-one pass; the estimator is asymptotically normal with a consistent sandwich variance
-(Theorem~\ref{thm:clt}); and at a trivial grouping variable the undecomposed statistic is
-a clustered Diebold--Mariano test (Corollary~\ref{cor:dm}), so every comparison reported
-here already contains what that classical test would say, plus the split it does not
-provide. Four exact statements settle design choices that would otherwise be judgment
-calls: using a group's own label frequencies as the counterfactual attenuates the estimate
-by precisely $(n_c-1)/n_c$, which is why no sample splitting is needed
-(Proposition~\ref{prop:attenuate}); merging groups moves the estimand by an explicit
-between-group covariance of either sign, so a coarser grouping cannot be assumed harmless
-(Proposition~\ref{prop:coarsen}); the transported component splits exactly into a
-mean-forecast-fit term minus a within-cell dispersion term, so it is not a measure of
-prior fit and we do not call it one (Proposition~\ref{prop:transported}); and a
-Cauchy--Schwarz bound limits how far an unrecorded grouping variable could move the result,
-from one elicited correlation (Proposition~\ref{prop:sensitivity}). On that last point we
-report the bound against our own numbers: for the Visual Genome pair of
-Appendix~\ref{app:vgmain} an unrecorded covariate correlated at $0.061$ would account for
-the entire reported gain, so those covariance gains are conditional on the declared
-grouping being close to complete.
+\paragraph{What it buys} Pointed at two released MOTIFS checkpoints with their authors' own
+code, the decomposition shows a ten-point mean-recall improvement corresponding to a
+proper-score difference that is overwhelmingly transported. On predictors whose information
+content we control it returns exactly zero covariance gain when both models are functions of
+the grouping variable alone, and shows a frozen-CLIP model that loses on every aggregate
+measure discriminating individual cases significantly better than the model it appears to
+lose to.
 
-The controlled experiments are as informative about the limits as about the capability.
-Prior-only improvements stay out of the covariance component, and injected within-group
-signal is recovered monotonically with intervals that cover at $94.0\%$ against a nominal
-$95\%$ in the clustered, small-cell regime that stresses them hardest. But unrecorded
-within-group signal is credited to resolution, shortcut or not, and a monotone
-recalibration moves score between the two components while adding no information --- which
-is why calibration matching is part of the procedure and not a caveat attached to it.
+\paragraph{Weaknesses} Three are structural. The estimator is not invariant to
+recalibration, so we compare only confidence-matched pairs and released checkpoints cannot be
+audited on raw outputs. It credits any signal varying inside a cell, shortcuts included, and
+our own sensitivity bound is not reassuring: an unrecorded covariate correlated at $0.061$
+would account for the entire covariance gain we report on Visual Genome. And the estimand is
+not determined by the granularity of $\phi$ --- two equally fine, fully identified partitions
+of the same four cases can disagree completely --- so declaring $\phi$ is a modelling decision
+that choosing the finest defensible partition does not settle.
 
-Applied to two released scene-graph checkpoints, evaluated with their authors' own code,
-the decomposition gives a precise account of a widely cited debiasing method: its
-ten-point mean-recall improvement is, once calibration is matched, overwhelmingly
-transported under either of two proper scores, with a covariance remainder the two scores
-disagree about --- indistinguishable from zero under one, small but significant under the
-other --- and in both readings at least an order of magnitude smaller than the prior-side
-shift. Since the method's own construction subtracts a context-only prediction, this
-characterizes what it does rather than indicting it. The consequence for evaluation is the
-paper's thesis in a published setting: a metric the field reads as evidence about rare
-predicates can move ten points while case-level evidence changes by at most a small
-fraction of that, possibly none. Three further studies, on predictors whose information
-content is controlled by construction and in two other data modalities
-(Section~\ref{sec:exp}), show the same estimator returning sensible attributions
-without modification, including a case in which a model that loses on every aggregate
-measure is shown to resolve individual cases significantly better than the model it
-appears to lose to.
-
-Two limits deserve to be carried out of the paper alongside the construction. The
-estimand is not determined by the granularity of the grouping variable: two equally fine,
-fully identified partitions of the same four cases can split the same total gain as
-entirely case-level or entirely transported (Section~\ref{sec:discussion}), and the advice
-to choose the finest defensible $\phi$ cannot arbitrate between them because neither
-coarsens the other. And a rank-based within-cell contrast would be invariant to the
-recalibration this construction is sensitive to, at the cost of the exact additivity that
-is the point here; the two are companions rather than competitors, and a benchmark able to
-report both should.
-
-The estimator's requirements are its main obstacle to routine use, and they are about
-disclosure rather than difficulty: it needs both models' full probability vectors, and
-benchmarks overwhelmingly archive ranked predictions instead. A leaderboard that stored
-per-example probabilities, and whose maintainers declared the grouping variable rather
-than leaving it to submitting authors, would make this kind of attribution available for
-every pair it ranks.
+\paragraph{Future work} A rank-based within-cell contrast would be invariant to the
+recalibration this construction is sensitive to, at the cost of the exact additivity that is
+the point here; reporting both is what we would now recommend to a benchmark able to choose.
+Approximate matching would extend the identity to continuous grouping variables, trading
+exactness for modelling assumptions. An image-level randomization design preserving several
+relation-cell margins at once would strengthen finite-sample inference on structured
+benchmarks. And porting multicalibration-style guarantees to pairwise attribution would
+address the choice of $\phi$ more convincingly than a declaration rule can. The obstacle to
+all of it is the one that limits the method today: benchmarks archive ranked predictions, not
+probabilities.

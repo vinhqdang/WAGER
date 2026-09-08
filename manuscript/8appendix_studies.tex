@@ -168,6 +168,92 @@ frequency-only remodeling of the same benchmark could not reproduce, which is th
 question $\widehat{\Delta P}$ and $\widehat{\Delta R}$ answer and DM/GW do not ask.
 
 
+\subsection{Real pixels against a geometric proxy, in full}\label{app:vgvisual-full}
+
+None of the predictors above ever sees an image: they are functions of the class pair and,
+for MLP-SPATIAL(+), of box coordinates recorded in the annotation. Since box geometry is
+only a proxy for image content, a sceptical reader may ask whether the covariance channel
+responds to pixel evidence or merely to that proxy. Figure~\ref{fig:samples} sharpens the
+question --- the cell $\phi=(\text{man},\text{surfboard})$ holds both ``riding'' and
+``carrying'', and what distinguishes them is what the photograph shows.
+
+MLP-VISUAL answers it. Subject and object regions are cropped from the original image and
+each encoded by a frozen CLIP ViT-B/32 encoder \citep{radford2021learning}; the two
+$512$-dimensional embeddings are concatenated with the class embeddings MLP-CLASS already
+uses and passed to a small trained head. Because CLIP is never fine-tuned, whatever
+covariance the model gains reflects information its pretraining already recovered from
+pixels rather than representation learning on Visual Genome.
+
+Encoding every training relation with CLIP is expensive, so MLP-VISUAL must be trained on a
+subsample; setting a subsampled model against the full-data MLP-SPATIAL would confound
+feature content with training-set size. All three compared predictors are therefore
+retrained on one fixed, seeded subsample of $100{,}000$ of the $532{,}987$ training
+relations, written MLP-CLASS-S, MLP-SPATIAL-S and MLP-VISUAL-S, so any gap between them
+isolates the features. The audit still uses the full $229{,}605$-relation test split with
+the same class-pair $\phi$ and image-clustered intervals.
+
+\paragraph{Result.} By any aggregate measure the CLIP model is the worst of the three: top-1
+accuracy $0.6161$ against $0.6467$ for MLP-SPATIAL-S and $0.6416$ for MLP-CLASS-S, and a
+quadratic score $0.04655$ below MLP-SPATIAL-S. An evaluator reading either number would
+discard it.
+
+The decomposition contradicts that reading on the axis that matters. Against MLP-SPATIAL-S
+the CLIP model loses $0.05296$ of transported gain while \emph{gaining} $0.00641$ of
+covariance (95\% CI $[0.00514,0.00769]$, randomization $p=.002$): its entire deficit sits in
+the transported channel and its within-cell discrimination is significantly better, not
+worse. Against the class-only baseline the point is plainer still --- pixels buy $0.01665$
+of covariance where box geometry buys $0.01023$, with well-separated intervals. Real image
+content carries more case-specific signal than the geometric proxy standing in for it.
+
+A plausible mechanism, stated as hypothesis rather than finding: the $1024$ CLIP dimensions
+dominate the $64$ dimensions of class embedding the head also receives, so the model fits
+VG150's class-pair frequency structure markedly less well than a predictor built around it. A
+benchmark whose headline metric rewards transported gain will punish this model, and the
+aggregate numbers duly do. What the decomposition adds is that the punishment is not for
+failing to use the image. Two falsification checks, reported in
+Appendix~\ref{app:implementation}, support that reading: correcting a model's within-cell
+prior towards the training histogram registers as almost pure transported movement
+($+0.02401$ against $+0.00111$ of covariance), as a correction carrying no case-level
+information must, and applied to the CLIP model it halves the aggregate deficit ($-0.04655$
+to $-0.02143$) while the covariance advantage persists ($+0.00752$, and $+0.00663$ when both
+models are corrected) and survives confidence matching ($+0.00467$, CI
+$[+0.00314,+0.00621]$).
+
+\begin{table}[t]
+\centering
+\caption{Matched-subsample real-pixel study on the full VG150 test split (coverage
+$99.0\%$, as in Table~\ref{tab:wager-results}). All three predictors are trained on the
+same $100{,}000$ relations and differ only in features. CI is image-cluster robust on
+$\widehat{\Delta R}$; $p$ is the 499-shift randomization diagnostic.}
+\label{tab:vgvisual}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+New model & Old model & $\widehat{\Delta T}$ & $\widehat{\Delta P}$ &
+$\widehat{\Delta R}$ (95\% CI) & $p$ \\
+\midrule
+MLP-SPATIAL-S & MLP-CLASS-S   & $0.00503$  & $-0.00520$ & $0.01023\,[0.00967,0.01079]$ & .002 \\
+MLP-VISUAL-S  & MLP-CLASS-S   & $-0.04152$ & $-0.05816$ & $0.01665\,[0.01534,0.01796]$ & .002 \\
+MLP-VISUAL-S  & MLP-SPATIAL-S & $-0.04655$ & $-0.05296$ & $0.00641\,[0.00514,0.00769]$ & .002 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig7_vg_visual.png}
+\caption{\textbf{Pixels beat geometry on covariance while losing on the aggregate.}
+Left: the exact decomposition for the three matched-subsample pairs. Both comparisons
+involving the CLIP model have strongly negative totals (green) driven entirely by the
+transported channel (blue), while their covariance channel (red) is positive in every case.
+Right: the covariance channel alone, with 95\% image-clustered intervals. Replacing box
+geometry with real image content raises within-group covariance from $0.01023$ to $0.01665$
+over the same class-only baseline.}
+\label{fig:vgvisual}
+\end{figure*}
+
+
 \subsection{Sensitivity analyses}\label{sec:ablations}
 
 For MLP-SPATIAL versus MLP-CLASS, the conclusion survives every planned sensitivity
@@ -485,7 +571,7 @@ and now in a second domain.
 
 Sections~\ref{sec:results}--\ref{app:lt} test two vision tasks that share cached
 probability vectors and grouping variables grounded in class frequency or object geometry.
-To test the breadth Section~\ref{sec:broader} claims -- any benchmark supplying two
+To test the breadth Section~\ref{sec:discussion} claims -- any benchmark supplying two
 models' full probability vectors, labels, and a declared discrete grouping variable -- we
 apply the identical estimator, unmodified, to document category prediction on 20
 Newsgroups \citep{lang1995newsweeder}. Neither the predictors nor the grouping variable are

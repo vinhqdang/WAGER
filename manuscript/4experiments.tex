@@ -94,102 +94,71 @@ randomization $p$-values, and controls type-I error in 200 null runs.}
 
 \subsection{Auditing a published debiasing method}\label{sec:sggaudit}
 
-The question the decomposition exists to answer concerns systems that other people
-release and that the field already compares, so the primary application is to a published
-pair rather than to predictors of our own. Tang et al.\ \cite{tang2020unbiased} release a causal MOTIFS PredCls
-checkpoint that yields two models from one set of weights: the biased baseline
-(MOTIFS-SUM) and its Total Direct Effect counterpart (MOTIFS-TDE), which subtracts a
-context-only counterfactual at inference. TDE is among the most cited debiasing methods
-in scene graph generation, and it is reported through mean recall, so it is exactly the
-kind of claimed improvement whose composition is at issue.
+The question the decomposition exists to answer concerns systems other people release and
+the field already compares, so the primary application is to a published pair.
+\citet{tang2020unbiased} release a causal MOTIFS PredCls checkpoint that yields two models
+from one set of weights: the biased baseline (MOTIFS-SUM) and its Total Direct Effect
+counterpart (MOTIFS-TDE), which subtracts a context-only counterfactual at inference. TDE is
+among the most cited debiasing methods in scene graph generation and is reported through mean
+recall, so it is exactly the kind of claimed improvement whose composition is at issue.
 
-We evaluate both variants with the authors' own code on the canonical VG150 test split,
-which fixes the vocabulary, the split and the relation set, and makes the two prediction
-sets aligned relation-for-relation by construction. Our reproduction matches the
-published behaviour: the baseline reaches $R@50=0.6612$ with $mR@50=0.1459$, and TDE
-trades the former for the latter, reaching $R@50=0.4588$ with $mR@50=0.2476$ and raising
-zero-shot recall from $zR@50=0.1102$ to $0.1432$. Top-1 predicate accuracy falls from
-$0.6981$ to $0.5577$. The audit uses $183{,}639$ relations over $26{,}446$ images and
+We evaluate both variants with the authors' own code on the canonical VG150 test split, which
+fixes the vocabulary, split and relation set and makes the two prediction sets aligned
+relation-for-relation. Our reproduction matches the published behaviour: the baseline reaches
+$R@50=0.6612$ with $mR@50=0.1459$, and TDE trades the former for the latter, reaching
+$mR@50=0.2476$ and raising zero-shot recall to $zR@50=0.1432$. Top-1 predicate accuracy falls
+from $0.6981$ to $0.5577$. The audit uses $183{,}639$ relations over $26{,}446$ images and
 $7{,}127$ class-pair cells, of which $98.9\%$ are identified.
 
-\paragraph{What is audited, precisely.} One point of bookkeeping before the numbers, since
-it changes what the headline row is a statement about. The rows labelled
-calibration-matched do not decompose the released checkpoints as released; they decompose
-the two models after each has been rescaled by its own temperature ($T^*=2.50$ for the
-baseline, $0.92$ for TDE) fitted on a held-out half of the images. That is the comparison
-we argue is meaningful, because a proper score punishes miscalibration and these two
-models differ sharply in it. But the released pair, scored as it ships, gives a
-\emph{significant} covariance loss ($-0.01355$, interval excluding zero), and a
-practitioner who downloads those weights and scores them is looking at the raw rows. We
-report both and label which is which.
+\paragraph{What is audited.} The rows labelled calibration-matched do not decompose the
+checkpoints as released; they decompose the two models after each is rescaled by its own
+temperature ($T^*=2.50$ for the baseline, $0.92$ for TDE) fitted on a held-out half of the
+images. That is the comparison we argue is meaningful, because a proper score punishes
+miscalibration and these models differ sharply in it. The released pair, scored as it ships,
+gives a \emph{significant} covariance loss ($-0.01355$, interval excluding zero), and a
+practitioner who downloads those weights is looking at the raw rows. We report both.
 
-\paragraph{Result.} Table~\ref{tab:sggaudit} decomposes the pair. Read raw, TDE loses
-$0.11651$ of quadratic score, of which $0.10296$ sits in the transported channel and a small
-but significant $0.01355$ in within-group covariance. That reading does not survive the
-control this paper insists on. The two models differ sharply in confidence --- the
-baseline is overconfident at $T^*=2.50$ while TDE, having subtracted a counterfactual,
-is already near-calibrated at $T^*=0.92$ --- and once temperatures are fitted on a
-held-out half of the images and the audit runs on the other half, the quadratic-score
-covariance channel is indistinguishable from zero: $\widehat{\Delta R}=-0.00006$ with a
-$95\%$ interval of $[-0.00120,+0.00109]$ and a randomization $p$ of $.555$. Essentially
-the entire proper-score difference, $-0.18258$ of $-0.18264$, is transported.
+\paragraph{Result.} Read raw, TDE loses $0.11651$ of quadratic score, of which $0.10296$ sits
+in the transported channel and a small but significant $0.01355$ in covariance. That reading
+does not survive the control. Once temperatures are fitted on held-out images and the audit
+runs on the other half, the quadratic-score covariance channel is indistinguishable from
+zero: $\widehat{\Delta R}=-0.00006$ with interval $[-0.00120,+0.00109]$ and randomization
+$p=.555$. Essentially the entire proper-score difference, $-0.18258$ of $-0.18264$, is
+transported.
 
-The log-score row of the same calibrated comparison does not repeat this null: it
-returns $\widehat{\Delta R}=+0.04396$, $95\%$ CI $[+0.04079,+0.04714]$, an interval that
-excludes zero. The two proper scores therefore disagree on whether any real covariance
-change survives calibration matching -- one reads exactly null, the other reads small
-but significantly positive -- while agreeing that whichever value is correct is far
-smaller than the calibrated prior-channel shift ($-0.18258$ under the quadratic score,
-$-0.59157$ under the log score, both an order of magnitude or more larger than either
-covariance estimate). We do not adjudicate between the two scores here: nothing in
-Section~\ref{sec:setup} privileges one proper score's covariance estimate as the
-``true'' one, and this is the reason the paper's default score is stated as a
-declared choice rather than derived. The claim this audit actually supports is the one
-both scores agree on --- that TDE's proper-score improvement over the baseline is
-overwhelmingly transported \emph{at the calibration-matched, class-pair configuration},
-with a covariance remainder at most a small fraction of the total and possibly exactly
-zero --- not the stronger, single-score claim that within-group covariance is unchanged.
+The log-score row of the same calibrated comparison does not repeat the null: it returns
+$+0.04396$, CI $[+0.04079,+0.04714]$, excluding zero. The two scores therefore disagree on
+whether any real covariance change survives confidence matching, while agreeing that
+whichever value is right is far smaller than the calibrated transported shift ($-0.18258$
+under the quadratic score, $-0.59157$ under the log score). We do not adjudicate: nothing in
+Section~\ref{sec:setup} privileges one proper score, and Theorem~\ref{thm:bregman} is why
+this is not a defect to argue away --- each Bregman generator defines its own exact estimand,
+so two scores disagreeing are answering two well-posed questions, and which one an evaluator
+wants is a declaration. The claim the audit supports is what both scores agree on: TDE's
+proper-score improvement over the baseline is overwhelmingly transported \emph{at the
+calibration-matched, class-pair configuration}, with a covariance remainder at most a small
+fraction of the total and possibly exactly zero.
 
-That qualifier is load-bearing, and we would rather state its force than let a reader
-discover it in the table. Table~\ref{tab:sggaudit}'s five configurations of this one pair
-give covariance gains of $-0.21711$, $-0.12619$, $-0.01355$, $-0.00006$ and $+0.04396$.
-At two of the five, ``overwhelmingly transported'' is simply false: the raw log-score row
-has $|\widehat{\Delta R}|=0.126$ against $|\widehat{\Delta P}|=0.159$, and the
-subject-only row has $\widehat{\Delta R}=-0.217$ dominating $\widehat{\Delta P}=+0.102$.
-We report all five and argue for one on stated grounds --- matched confidence, because a
-proper score punishes miscalibration; the finest defensible cell, because
-Proposition~\ref{prop:coarsen} makes coarsening non-neutral --- rather than presenting the
-favourable configuration as the finding. Theorem~\ref{thm:bregman} is the reason the
-score-dependence is not a defect to be argued away: each Bregman generator defines its own
-exact estimand, so two proper scores disagreeing about $\Delta R$ are answering two
-well-posed questions, and which one an evaluator wants is a declaration, not a fact about
-the models.
+That qualifier is load-bearing. Table~\ref{tab:sggaudit}'s five configurations of this one
+pair give covariance gains of $-0.21711$, $-0.12619$, $-0.01355$, $-0.00006$ and $+0.04396$,
+and at two of the five ``overwhelmingly transported'' is simply false: the raw log-score row
+has $|\widehat{\Delta R}|=0.126$ against $|\widehat{\Delta P}|=0.159$, and the subject-only
+row has $-0.217$ dominating $+0.102$. We report all five and argue for one on stated grounds
+--- matched confidence, because a proper score punishes miscalibration; the finest defensible
+cell, because Proposition~\ref{prop:coarsen} makes coarsening non-neutral.
 
-This is a precise and, we think, fair characterization of what TDE does. Its own
-construction subtracts the context-only prediction, so a method that operates on the
-transported channel is what its authors built; WAGER quantifies that the intervention is
-almost purely of that kind, and that the model's ability to tell which relation belongs
-to which image within a class-pair cell is left, at most, only marginally changed. The
-consequence for evaluation needs stating carefully, because it is easy to state in a way
-that is not quite true. Mean recall rose by $10.2$ points; the quadratic-score covariance
-gain, calibration-matched at the class-pair cell, is $-0.00006$ with an interval
-containing zero. Those are different units and we have no bridge between them. Nothing
-here licenses the claim that ten points of mean recall bought $0.00006$ of case-level
-evidence, and it would be equally wrong to say the mean-recall gain \emph{is} transported,
-since the transported channel on the proper score \emph{fell} over the same comparison
-($\widehat{\Delta P}=-0.18258$). What the audit supports is a conjunction of two separate
-statements: the field's headline metric moved ten points, and the proper-score difference
-between the same two models decomposes almost entirely into the transported channel, with
-a covariance remainder at most a small fraction of it. A reader may conclude that the
-metric movement is not evidence about within-cell case-level discrimination, because the
-quantity that would measure that barely moves. A reader may not conclude a conversion
-rate, and we do not supply one.
-
-One further qualification: TDE is designed to change the decision rule rather than to
-emit calibrated probabilities, and a proper score evaluates the latter; the
-calibration-matched regime is what makes the comparison meaningful at all, and its
-necessity here is the clearest practical argument for the protocol of
-Section~\ref{sec:simulation}.
+\paragraph{Reading} This characterises what TDE does rather than indicting it: its
+construction subtracts the context-only prediction, so a method operating on the transported
+channel is what its authors built, and the decomposition quantifies that the intervention is
+almost purely of that kind. The consequence for evaluation needs care. Mean recall rose
+$10.2$ points; the calibration-matched quadratic covariance gain is $-0.00006$ with an
+interval containing zero. Those are different units and we supply no bridge: nothing licenses
+saying ten points bought $0.00006$ of case-level evidence, and it would be equally wrong to
+say the mean-recall gain \emph{is} transported, since the transported channel on the proper
+score \emph{fell}. What the audit supports is a conjunction --- the headline metric moved ten
+points, and the proper-score difference decomposes almost entirely into the transported
+channel --- from which a reader may conclude that the metric movement is not evidence about
+within-cell case-level discrimination, but may not read off a conversion rate.
 
 \begin{table}[t]
 \centering
@@ -241,115 +210,48 @@ of Section~\ref{sec:worked}, now on real predictors.
 
 \subsection{Real pixels against a geometric proxy}\label{app:vgvisual}\label{sec:vgvisual}
 
-None of the predictors above ever sees an image: they are functions of the class pair and,
-for MLP-SPATIAL(+), of box coordinates recorded in the annotation. Since box geometry is
-only a proxy for image content, a sceptical reader may ask whether the covariance channel
-responds to pixel evidence or merely to that proxy. Figure~\ref{fig:samples} sharpens the
-question --- the cell $\phi=(\text{man},\text{surfboard})$ holds both ``riding'' and
-``carrying'', and what distinguishes them is what the photograph shows.
+None of the predictors above ever sees an image: they are functions of the class pair and, for
+MLP-SPATIAL(+), of box coordinates recorded in the annotation. Since box geometry is only a
+proxy for image content, we also compare a model that reads pixels --- subject and object
+regions cropped from the original image and encoded by a frozen CLIP ViT-B/32
+\citep{radford2021learning}, concatenated with the class embeddings the class-only model
+already uses. CLIP is never fine-tuned, so whatever covariance the model gains reflects
+information its pretraining had already recovered. All three compared predictors are
+retrained on one fixed subsample of $100{,}000$ training relations so that any gap between
+them isolates the features rather than the training-set size; the full protocol, tables and
+figure are in Appendix~\ref{app:vgvisual-full}.
 
-MLP-VISUAL answers it. Subject and object regions are cropped from the original image and
-each encoded by a frozen CLIP ViT-B/32 encoder \citep{radford2021learning}; the two
-$512$-dimensional embeddings are concatenated with the class embeddings MLP-CLASS already
-uses and passed to a small trained head. Because CLIP is never fine-tuned, whatever
-covariance the model gains reflects information its pretraining already recovered from
-pixels rather than representation learning on Visual Genome.
-
-Encoding every training relation with CLIP is expensive, so MLP-VISUAL must be trained on a
-subsample; setting a subsampled model against the full-data MLP-SPATIAL would confound
-feature content with training-set size. All three compared predictors are therefore
-retrained on one fixed, seeded subsample of $100{,}000$ of the $532{,}987$ training
-relations, written MLP-CLASS-S, MLP-SPATIAL-S and MLP-VISUAL-S, so any gap between them
-isolates the features. The audit still uses the full $229{,}605$-relation test split with
-the same class-pair $\phi$ and image-clustered intervals.
-
-\paragraph{Result.} By any aggregate measure the CLIP model is the worst of the three: top-1
-accuracy $0.6161$ against $0.6467$ for MLP-SPATIAL-S and $0.6416$ for MLP-CLASS-S, and a
-quadratic score $0.04655$ below MLP-SPATIAL-S. An evaluator reading either number would
-discard it.
-
-The decomposition contradicts that reading on the axis that matters. Against MLP-SPATIAL-S
-the CLIP model loses $0.05296$ of transported gain while \emph{gaining} $0.00641$ of
-covariance (95\% CI $[0.00514,0.00769]$, randomization $p=.002$): its entire deficit sits in
-the transported channel and its within-cell discrimination is significantly better, not
-worse. Against the class-only baseline the point is plainer still --- pixels buy $0.01665$
-of covariance where box geometry buys $0.01023$, with well-separated intervals. Real image
-content carries more case-specific signal than the geometric proxy standing in for it.
-
-A plausible mechanism, stated as hypothesis rather than finding: the $1024$ CLIP dimensions
-dominate the $64$ dimensions of class embedding the head also receives, so the model fits
-VG150's class-pair frequency structure markedly less well than a predictor built around it.
-A benchmark whose headline metric rewards transported gain will punish this model, and the
-aggregate numbers duly do. What the decomposition adds is that the punishment is not for
-failing to use the image.
-
-Two falsification checks follow, both reported in full in
-Appendix~\ref{app:implementation}. Correcting a model's within-cell prior towards the
-training histogram registers as almost pure transported movement ($+0.02401$ against
-$+0.00111$ of covariance), as a correction carrying no case-level information must; applied
-to the CLIP model it halves the aggregate deficit ($-0.04655$ to $-0.02143$) while the
-covariance advantage persists ($+0.00752$, and $+0.00663$ when both models are corrected),
-and it also survives confidence matching ($+0.00467$, CI $[+0.00314,+0.00621]$). Together with the long-tailed study of
-Appendix~\ref{app:lt} this brackets the failure mode from both sides: there a near-zero
-total gain concealed a large covariance loss, here a clearly negative total conceals a real
-covariance gain.
-
-\begin{table}[t]
-\centering
-\caption{Matched-subsample real-pixel study on the full VG150 test split (coverage
-$99.0\%$, as in Table~\ref{tab:wager-results}). All three predictors are trained on the
-same $100{,}000$ relations and differ only in features. CI is image-cluster robust on
-$\widehat{\Delta R}$; $p$ is the 499-shift randomization diagnostic.}
-\label{tab:vgvisual}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}llrrrr@{}}
-\toprule
-New model & Old model & $\widehat{\Delta T}$ & $\widehat{\Delta P}$ &
-$\widehat{\Delta R}$ (95\% CI) & $p$ \\
-\midrule
-MLP-SPATIAL-S & MLP-CLASS-S   & $0.00503$  & $-0.00520$ & $0.01023\,[0.00967,0.01079]$ & .002 \\
-MLP-VISUAL-S  & MLP-CLASS-S   & $-0.04152$ & $-0.05816$ & $0.01665\,[0.01534,0.01796]$ & .002 \\
-MLP-VISUAL-S  & MLP-SPATIAL-S & $-0.04655$ & $-0.05296$ & $0.00641\,[0.00514,0.00769]$ & .002 \\
-\bottomrule
-\end{tabular}
-}
-\end{table}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/fig7_vg_visual.png}
-\caption{\textbf{Pixels beat geometry on covariance while losing on the aggregate.}
-Left: the exact decomposition for the three matched-subsample pairs. Both comparisons
-involving the CLIP model have strongly negative totals (green) driven entirely by the
-transported channel (blue), while their covariance channel (red) is positive in every case.
-Right: the covariance channel alone, with 95\% image-clustered intervals. Replacing box
-geometry with real image content raises within-group covariance from $0.01023$ to $0.01665$
-over the same class-only baseline.}
-\label{fig:vgvisual}
-\end{figure*}
+This is the sharpest case in the paper for separating the components. By every aggregate
+measure the CLIP model is the worst of the three: top-1 accuracy $0.6161$ against $0.6467$
+for the geometry model, and a quadratic score $0.04655$ lower. An evaluator reading either
+number would discard it. The decomposition contradicts that reading on the axis that
+matters. Against the geometry model the CLIP model loses $0.05296$ of transported gain while
+\emph{gaining} $0.00641$ of covariance (95\% CI $[0.00514,0.00769]$, randomization
+$p=.002$): its entire deficit sits in the transported channel and its within-cell
+discrimination is significantly better, not worse. Against the class-only baseline, pixels
+buy $0.01665$ of covariance where box geometry buys $0.01023$, with well-separated intervals.
+Real image content carries more case-specific signal than the geometric proxy standing in for
+it, and a benchmark whose headline metric rewards transported gain will nonetheless rank the
+pixel model last. Two falsification checks support the reading: post-hoc prior correction
+registers as almost pure transported movement ($+0.02401$ against $+0.00111$), and applied to
+the CLIP model it halves the aggregate deficit ($-0.04655$ to $-0.02143$) while the
+covariance advantage persists ($+0.00752$, and $+0.00663$ when both models are corrected) and
+survives confidence matching ($+0.00467$, CI $[+0.00314,+0.00621]$).
 
 \subsection{Other modalities, and sensitivity}\label{sec:further}
 
-Two questions remain that relation prediction cannot answer on its own: whether the
-estimator behaves sensibly on a task with a different kind of label prior, and how much its
-conclusions depend on the declared $\phi$. Appendix~\ref{app:studies} reports both in full;
-the summary is as follows.
-
-On CIFAR-100-LT, with the benchmark's own coarse superclasses as $\phi$, two standard
-re-weighting schedules turn out to have opposite compositions, and the confidence-matched
-reading reverses what the raw scores suggest about both: the schedule whose aggregate score
-barely moves has in fact lost within-class discrimination, while the one that improves has
-bought covariance rather than the prior refit its raw decomposition implies. The result
-replicates across seeds and imbalance ratios. A long-tailed 20-Newsgroups split, which
-carries neither a spatial nor a class-frequency prior of the kind vision benchmarks have,
-runs unmodified and returns interpretable output; it rests on a single trained pair per
-schedule with no confidence-matched row, so we report it as a demonstration of transfer
-rather than as corroboration of the CIFAR reading.
-
-The sensitivity analyses matter more for how the audit above should be read. Replacing the
-quadratic score with a floored log score, coarsening $\phi$ from the class pair to the
-subject class, and raising the minimum cell size from $2$ to $20$ all move the estimate, and
-the coarsening moves it most --- from $0.01439$ to $0.02181$, which
-Proposition~\ref{prop:coarsen} predicts as the addition of a between-cell covariance term of
-either sign. The finest defensible $\phi$ is therefore the conservative choice, and
-Section~\ref{sec:discussion} explains why even that rule is weaker than it looks.
+Appendix~\ref{app:studies} reports two further studies and the sensitivity analyses in full.
+On CIFAR-100-LT, with the benchmark's coarse superclasses as $\phi$, two standard
+re-weighting schedules have opposite compositions, and the confidence-matched reading
+reverses what the raw scores suggest about both: the schedule whose aggregate score barely
+moves has lost within-class discrimination, while the one that improves has bought covariance
+rather than the prior refit its raw decomposition implies, and this replicates across seeds
+and imbalance ratios. A long-tailed 20-Newsgroups split runs unmodified and returns
+interpretable output, but rests on a single trained pair per schedule with no
+confidence-matched row, so we report it as transfer rather than corroboration. On sensitivity:
+substituting a floored log score, coarsening $\phi$ to the subject class, and raising the
+minimum cell size from $2$ to $20$ all move the estimate, and the coarsening moves it most,
+from $0.01439$ to $0.02181$ --- which Proposition~\ref{prop:coarsen} predicts as the addition
+of a between-cell covariance term of either sign. The finest defensible $\phi$ is therefore
+the conservative choice, and Section~\ref{sec:discussion} explains why even that rule is
+weaker than it looks.
