@@ -1038,3 +1038,77 @@ reference and no unresolved cross-document reference, and the flat bundle render
 to the modular build for both. Deliverables: manuscript, supplementary, cover letter (2 pp,
 1,078 words), highlights, title page, `declarations.docx` for the attach-files step, and
 `code.zip` (61 files).
+
+## Addendum: retargeted to TMLR (2026-09-08)
+
+The Pattern Recognition version was never submitted. The author has another manuscript
+with that editor, a month in and still unassigned, and did not want a second concurrent
+submission. That is a strategy call rather than a rule — Pattern Recognition does not bar
+an author from having two papers in the system — but it is the author's call, so the paper
+moved.
+
+### Choosing the venue
+
+The burn list at this point is CVIU (desk-reject, boilerplate), CSDA (desk-reject), JSPI
+(rejected after review, on legibility) and Econometrics and Statistics (sent back before
+review). Four rejections, none of them on correctness: two on novelty and fit, one on
+whether the paper could be read. The shortlist put to the author was TMLR, IJCV, Machine
+Learning and Neurocomputing, and TMLR was chosen.
+
+The argument for it is that its acceptance test is published and is exactly the axis this
+paper is strong on: are the claims supported by accurate, convincing and clear evidence,
+and would anyone in the audience be interested. Novelty and impact — what the paper keeps
+losing on — are explicitly not criteria. It is free, has no page limit, and decides in
+about two months. Two costs were put to the author with the recommendation: TMLR is not in
+JCR and has no impact factor, which may matter for an institutional evaluation, and the
+anonymized submission goes public on OpenReview once reviewers are assigned.
+
+### What the move changed
+
+**Anonymity.** TMLR is double-blind. `tmlr.sty` hides the author block, but the paper had
+three other tells: the data-availability section cited a personal GitHub URL, the CRediT
+statement named the author, and `code.zip` shipped a LICENSE with a copyright line and a
+script that writes the author's name into a .docx. The URL is now a pointer to the
+anonymized archive, the declarations are held for the camera-ready as the TMLR template
+instructs, and `build_code_archive.py` scrubs by default — `--identified` restores the
+normal archive. The PDF and the archive both contain no name, affiliation, email, ORCID or
+repository URL.
+
+**The page limit going away undid two compressions.** The 45-page supplementary document
+that Pattern Recognition's 35-page cap forced out is inline again as appendices, so every
+cross-document reference is a plain `\ref` and the generator built two commits ago is
+deleted. More importantly, the eight formal statements the same cap had exiled came back
+into Section 3: the Bregman identity and its corollary, the finite-sample identity, the
+coarsening proposition, the sensitivity bound and its free form, the transported-gain
+composition, and the limit theorem. The body now states all eleven numbered results in
+reading order and the appendices hold the proofs. Asking a reviewer to judge whether the
+claims are supported, while the claims themselves are in an appendix, was never going to
+work.
+
+Moving them exposed where they had been parked. The sensitivity bound and the limit
+theorem were not simply in an appendix — they were at the end of *Choice of the grouping
+variable*, under a comment reading "statements relocated from the method section for
+length". And the move emptied four appendices, which were then pruned: *Finite-sample
+identity* had literally nothing left, *Randomization test* repeated Section 3.9 almost
+verbatim, and two more were named for results they no longer contained. What was unique in
+each was folded into the body first.
+
+### The verifier had been checking dead files
+
+Repointing the number-verifier turned up a regression from three commits earlier. The
+supplementary split had orphaned `7appendix.tex` and `8appendix_studies.tex` — still on
+disk, `\input` by nothing — and 52 of the 89 checks were still reading them. They would
+have passed even if the live text had lost a number entirely, and the report claimed 89/89
+on that basis. All 89 now read the live appendix and all 89 pass, and the script resolves
+`main.tex`'s `\input` graph first and exits non-zero if any check names a file outside it,
+which is the part that matters: this is the second restructure to hollow it out, and the
+guard is what stops a third.
+
+### State
+
+42 pages: 17 of body and references, 25 of appendices across twelve sections, the thinnest
+172 words. 39 references, abstract 241 words. Suite 20/20, verifier 89/89 against live
+files, no undefined reference and no overfull box, the flat bundle renders identically to
+the modular build, and the anonymized `code.zip` passes its own test suite with no
+identifying string in it. `submission_notes/tmlr_submission.md` carries the OpenReview
+checklist and the camera-ready restore steps.
