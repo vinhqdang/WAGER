@@ -782,3 +782,87 @@ application, 30 ML conference citations against two econometrics ones — is a v
 judgment, not a defect in the work, and it is the open question for the transfer decision
 (see the Venue section above). The panel's remaining Minor findings are tracked in the
 roadmap and not all acted on.
+
+---
+
+## Submission status (2026-09-08): under review at Econometrics and Statistics
+
+Submitted to *Econometrics and Statistics* (Elsevier), via the transfer offer that followed
+the JSPI rejection.
+
+| field | value |
+|---|---|
+| Article type | Annals of Statistical Data Science (SDS) |
+| Classifications | 10.50 prediction; 10.38 model selection; 10.29 hypothesis testing; 10.33 machine learning |
+| Suggested associate editors | Eric Beutner (VU Amsterdam); Ansgar Steland (RWTH Aachen); Armelle Guillou (Strasbourg); Yoonkyung Lee (Ohio State) |
+| Files | flat single-file `main.tex` + 8 figures + `ref.bib`; `cover_letter.pdf`; `title_page.pdf` |
+| Manuscript state | commit `9304b98`, 61 pp., suite 20/20, verifier 89/89 |
+
+The SDS section was chosen over Part A deliberately: the contribution is statistical and the
+applications are ML benchmarks, so routing to the econometrics side would have invited the
+fit objection the 2026-09-07 panel raised. The cover letter states the fit problem outright
+rather than letting a referee find it.
+
+### Known risk at the time of submission
+
+A scope desk-rejection is the live risk, and it was identified *before* submission rather
+than after, so if one arrives it needs no re-diagnosis. Measured on the submitted PDF:
+
+- **Figure 1, page 3, full text width, is two photographs of surfers with bounding boxes.**
+  It is the first visual in the paper.
+- The abstract's second sentence names "the object-class pair in a relation-prediction
+  benchmark."
+- The introduction's motivating example is Visual Genome.
+- **43 of 76 references (57%) are ML/CV venues or arXiv preprints**; 18 are statistics or
+  econometrics journals.
+
+So the first impression is computer vision, and this is the axis all four previous
+rejections turned on. CVIU declined it as not meeting their bar; CSDA and JSPI declined it
+as insufficiently interesting to statisticians, while JSPI's referee said it "had something
+interesting to contribute." The paper reads as computer vision to statisticians and as
+statistics to computer-vision people.
+
+A front-door pass was proposed and **not** carried out, because submission had already
+happened: rebuild Figure 1 as a schematic without photographs, replace the abstract's CV
+example clause, and open on a statistically-native example (industry sector for credit
+default, age band for diagnostic prevalence) with the ML benchmarks introduced as the place
+the structure is extreme and the data public. That pass is still the right move for any
+*statistics* venue.
+
+### Contingency: on rejection, re-aim at computer vision
+
+The author's decision, recorded 2026-09-08. If EcoSta declines, stop trying to enter
+statistics venues and target computer vision / machine learning instead. Notes for whoever
+picks this up:
+
+**The framing pass inverts.** Everything in the front-door pass above should be done in
+reverse. For a CV venue: keep the photographs, promote Figure 1 rather than demote it, lead
+with the benchmark problem (frequency baselines are competitive on Visual Genome; mean
+recall moves ten points on evidence that is mostly transported), bring the MOTIFS/MOTIFS-TDE
+checkpoint audit to the front as the headline result, and compress Sections 3–4 into one
+methods section with the proofs, the CLT and the sensitivity theory moved to supplementary
+material. The theory is the paper's strength for a statistics audience and its liability for
+a CV one; length is also a liability there, since 61 pages is far outside CV norms.
+
+**Do not resubmit to CVIU.** It desk-rejected an earlier and substantially different version
+in August 2026 with boilerplate. That version had no Bregman theorem, no CLT, no sensitivity
+analysis and no text-domain study, so a resubmission is not obviously futile — but it is a
+second attempt at an office that already said no, and the reason was never disclosed.
+
+**Candidate venues**, in the order I would try them:
+1. **TMLR** — no page limit, values careful evaluation methodology, and reviews claims rather
+   than novelty. The single best match for a long, rigorous, benchmark-auditing paper.
+2. **A CV conference with an evaluation/benchmarks track** — the audit of a published
+   debiasing method is exactly the kind of result those tracks exist for. Deadline-driven,
+   and 61 pages must become 8 plus supplementary.
+3. **IJCV** — journal-length CV work, tolerant of methodology, would accept the SGG audit as
+   the centrepiece.
+4. **JMLR** — a fit on rigour and length, but its reviewers may read the contribution as an
+   evaluation metric rather than a learning-theoretic result.
+
+**What travels unchanged.** The estimator, all 20 tests, the 89 verified numbers, and every
+correction the 2026-09-07 panel produced. None of that is venue-specific, and the framing
+corrections in particular — the remainder is not the classical resolution term, the
+transported gain is not prior fit, the sensitivity bound is reported against the paper's own
+estimates — must survive any reframing. They were expensive to find and they are what makes
+the paper honest.

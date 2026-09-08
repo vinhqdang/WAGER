@@ -6,8 +6,15 @@ grounds and restructured accordingly; a 5-seat review panel then found the centr
 positioning claim wrong, and this revision corrects it (see
 [`reviews/2026-09-07-panel/`](reviews/2026-09-07-panel/) and
 [`report/REPORT.md`](report/REPORT.md)). Previously desk-rejected at *Computational
-Statistics and Data Analysis* and *Computer Vision and Image Understanding*. Awaiting a
-new statistics venue.
+Statistics and Data Analysis* and *Computer Vision and Image Understanding*.
+
+**Status (2026-09-08): under review at *Econometrics and Statistics*,** Annals of
+Statistical Data Science section. A scope desk-rejection is the identified risk — the paper
+still reads as computer vision on first impression, which is the axis all four previous
+rejections turned on. If it is declined, the plan of record is to re-aim at computer vision
+rather than at another statistics venue; see the submission-status section of
+[`report/REPORT.md`](report/REPORT.md) for the diagnosis, the framing pass that would need
+to be inverted, and candidate venues.
 
 When two models are compared on a benchmark whose labels are partly determined by a
 feature both of them observe, the score difference sums two different improvements. WAGER
