@@ -943,3 +943,98 @@ Manuscript 35 pages (31 body + 4 references), supplementary 46, 39 references of
 cite a preprint venue. Suite 20/20, verifier 89/89 after repointing file references five
 times as material moved. Both documents build clean with no undefined references, and the
 flat bundle is confirmed identical to the modular build for both.
+
+## Filling in the submission questionnaire, and what it exposed (2026-09-08)
+
+Pattern Recognition's submission form asks about thirty small factual questions --- word
+count, font sizes, margins, reference count, abstract length --- under a heading that calls
+references a "common desk-check failure". Answering them honestly meant measuring the built
+PDFs rather than the source, and three of the answers came back non-compliant.
+
+### The measurement discipline is the finding
+
+- **Abstract.** Recorded as 249 words from `0abstract.tex`. On the rendered page it was
+  254: `$O(NK)$`, `$\Delta R$` and the em dashes are one token each in the source and a
+  visible word each to a reader. Now 241, with the thesis sentence ("We decompose the gain
+  exactly") that an earlier trim had silently dropped put back.
+- **Title.** The guide asks for 14 pt. `elsarticle` sets `\@title` in `\Large`, which is
+  14.4 pt at a 10 pt base, so the size is now pinned with `\fontsize{14}{17}\selectfont`.
+  At the smaller size the manual line break stranded "Gains" on a line of its own, so the
+  title wraps naturally instead.
+- **Captions and footnotes.** The guide asks for 8 pt. Captions were unset, inheriting the
+  10 pt base; `\usepackage[font=footnotesize,labelfont=bf]{caption}` fixes both documents.
+- **References.** The guide requests 35--55. The manuscript's list held 33: `ref.bib` has
+  39 entries but six were cited only by the supplementary.
+
+### The cross-reference rot
+
+Checking the reference count turned up something worse. The manuscript and the supplementary
+are separate documents, so neither can `\ref` into the other, and the numbers had been
+written out by hand. They had gone stale wholesale. The manuscript pointed at Supplementary
+Sections S2 through S11 and S10.1--S10.5, of which almost none named the section meant:
+proofs were cited as S1, the terminology table as S8, the influence function as S2, the limit
+theorem as S6. The supplementary cited manuscript Theorems 2 and 3, Propositions 1 and 2,
+Corollaries 1 and 2 and Equations 8, 16, 18 and 20 --- none of which exist in the manuscript
+any more, since those results moved into the supplementary itself. Several sites carried a
+duplicated word from an earlier `sed` pass ("Theorem Theorem 1 of the manuscript"), and one
+subsection was titled "Compute environment for Appendices Section 5.4 of the
+manuscript--S15.5".
+
+Renumbering by hand is what produced the mess, so the fix removes hand-numbering entirely.
+`experiments/gen_cross_refs.py` reads each document's `.aux` and writes the other a table of
+`\csname suppref@<label>\endcsname` definitions; the prose now says `\suppref{app:proofs}`
+and `\mainref{sec:sggaudit}`. A label that disappears prints a bold `??`, which
+`manuscript/build.sh` greps for after alternating LaTeX passes with the generator. The flat
+submission builder drops the `\IfFileExists` guard so a single-file bundle freezes the
+current numbers instead of printing `??`. Determining what each of the 105 sites was
+*supposed* to point at was the work; keeping them right is now automatic.
+
+Two smaller things fell out of the same audit: three supplementary sections the manuscript
+cites had no `\label` at all, the document called itself an appendix in fifteen places
+although it is supplementary material with S-numbered sections, and the related-work section
+stated the label-shift connection twice --- in Sections 2.2 and 2.3, same two citations,
+same forward reference.
+
+### Getting the references right without breaking the page limit
+
+The six missing references were not padding; each is an attribution the main text owed. The
+elicited-correlation bound is a Cinelli--Hazlett robustness value and said so nowhere; the
+Hajek expansion is the standard route for order-two U-statistics and cited neither Serfling
+nor van der Vaart; the CIFAR-100-LT study uses a residual backbone and the text study the
+20-Newsgroups corpus, both uncited; and the related-work tour of scene graph generation began
+with the frequency baseline without naming the message-passing formulation it is competitive
+against. Adding them took the list to 39 and the manuscript to 36 pages, one over.
+
+Closing that page took about 190 words, and the duplicated label-shift paragraph supplied
+most of it. The rest came from passages that said the same thing a third time: the four scope
+limits are stated in Section 1.3, again in Section 5.1 and again in Section 6, so the
+forward statement keeps every limit and every number and drops the restatement. Nothing was
+cut that is stated only once.
+
+### Three answers that are the author's, not ours
+
+The questionnaire has three items that are decisions rather than measurements, and
+`submission_notes/pattern_recognition_questionnaire.md` flags them as such: the Software
+Impacts co-submission (recommend declining --- a second reviewed article about the same
+released code adds a fee and a review process without adding reach), the SSRN preprint
+(recommend accepting --- free DOI, no editorial effect), and the data statement. On the last,
+"Data will be made available on request" is the default option and it understates a release
+that is already public; worse, Pattern Recognition applies Elsevier's Option C, which wants a
+deposit that can be *cited*, and GitHub has no DOI. The accurate answer is the
+public-repository option plus a Zenodo DOI for the release.
+
+One item is flagged to check rather than answer: "under consideration elsewhere" can be
+answered No only once every earlier statistics-venue submission is closed, and a manuscript
+sent back for double-blind reformatting rather than withdrawn may still be open in that
+system. The cover letter makes the same claim, so the two have to agree.
+
+### State
+
+Manuscript 35 pages (31 text and declarations + 4 references), supplementary 45, 39
+references of which four cite a preprint venue, abstract 241 words, title 14 words at 14 pt,
+7 keywords, 5 highlights at most 83 characters, 6 numbered sections and 24 subsections.
+Suite 20/20, verifier 89/89. Both documents build with no undefined citation, no undefined
+reference and no unresolved cross-document reference, and the flat bundle renders identically
+to the modular build for both. Deliverables: manuscript, supplementary, cover letter (2 pp,
+1,078 words), highlights, title page, `declarations.docx` for the attach-files step, and
+`code.zip` (61 files).
