@@ -1,22 +1,18 @@
-A scene graph generation method reports a ten-point gain in mean recall; a long-tailed
-classifier reports two points of accuracy. What did the gain buy? On benchmarks whose labels
-are partly determined by a feature both compared models observe --- the object-class pair in
-relation prediction, the class frequency in long-tailed recognition --- such a gain mixes
-two improvements: the new model may fit the label frequencies \emph{within} groups of that
-feature more closely, which a frequency table also achieves and a shift in those frequencies
-removes, or it may match its predictions to the individual cases they were made for. Mean
-recall, zero-shot recall and significance tests all leave the two mixed. We decompose the
-gain exactly. Score each model's prediction for one test case against the label of a
-\emph{different} case in the same group: averaging over such relabellings gives the
-\emph{transported gain}, and what remains is a \emph{within-group covariance gain}. The
-identity is exact in finite samples, needs no fitted baseline, no held-out fold and no tuning
-parameter, and costs $O(NK)$, so any pair of frozen models can be audited from cached
-predictions. The remainder is an order-two U-statistic, holds for every Bregman score, and
-admits cluster-robust interval estimation. Applied to two released MOTIFS checkpoints on
-VG150 with the original authors' code, a ten-point mean-recall improvement corresponds to a
-proper-score difference that is overwhelmingly transported, with a covariance remainder an
-order of magnitude smaller under either of two proper scores. The unmodified estimator
-transfers to a frozen-CLIP variant and to long-tailed image and text classification,
-exposing compositions that aggregate scores hide --- including a model that loses on every
-aggregate measure while discriminating individual cases significantly better than the model
-it appears to lose to.
+A scene graph generation method reports a ten-point gain in mean recall. What did it buy? On
+benchmarks whose labels are partly determined by a feature both compared models observe ---
+the object-class pair in relation prediction, the class frequency in long-tailed recognition
+--- such a gain mixes two improvements: the new model may fit the label frequencies
+\emph{within} groups of that feature more closely, which a frequency table also achieves, or
+it may match its predictions to the individual cases they were made for. Mean recall, zero-shot
+recall and significance tests leave the two mixed. We decompose the gain exactly. Score each model's prediction
+for one test case against the label of a \emph{different} case in the same group: averaging
+over such relabellings gives the \emph{transported gain}, and what remains is a
+\emph{within-group covariance gain}. The identity is exact in finite samples, needs no fitted
+baseline, no held-out fold and no tuning parameter, and costs $O(NK)$, so any frozen pair can be
+audited from cached predictions. The remainder is an order-two U-statistic,
+holds for every Bregman score, and admits cluster-robust intervals. On two released MOTIFS
+checkpoints evaluated with the original authors' code, a ten-point mean-recall improvement
+corresponds to a proper-score difference that is overwhelmingly transported. The unmodified
+estimator transfers to a frozen-CLIP variant and to long-tailed image and text
+classification, exposing compositions aggregate scores hide, including a model that loses on
+every aggregate measure while discriminating individual cases significantly better.
