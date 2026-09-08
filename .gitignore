@@ -257,3 +257,7 @@ report/summary.html
 
 # Derived text dumps of the built manuscript, produced for review passes.
 reviews/*/_manuscript_text.txt
+
+# Generated flat submission bundle (rebuild: python experiments/build_flat_submission.py --zip)
+submission/
+submission.zip

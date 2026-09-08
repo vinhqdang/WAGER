@@ -1,11 +1,12 @@
-% Cover letter for a fresh submission, venue-neutral (Elsevier elsarticle manuscript).
-% Replace the bracketed journal name before submitting. The previous version of this
-% file was a revision letter addressed to the Journal of Statistical Planning and
-% Inference (Ms. Ref. No. JSPI-D-26-00452), a round that closed with a rejection on
-% presentation grounds; see report/REPORT.md for the submission history.
+% Cover letter for submission to Econometrics and Statistics (Elsevier), Annals of
+% Statistical Data Science section. The previous version of this file was a revision
+% letter addressed to the Journal of Statistical Planning and Inference (Ms. Ref. No.
+% JSPI-D-26-00452), a round that closed with a rejection on presentation grounds; see
+% report/REPORT.md for the submission history.
 \documentclass[11pt,a4paper]{article}
-\usepackage[margin=1in]{geometry}
+\usepackage[margin=0.9in]{geometry}
 \usepackage{parskip}
+\setlength{\parskip}{0.42em}
 \usepackage{url}
 \pagestyle{empty}
 
@@ -20,7 +21,7 @@ Hung Yen, Vietnam\\
 \vspace{1em}
 \noindent
 To the Editors,\\
-\emph{[Journal name]}
+\emph{Econometrics and Statistics}
 
 \vspace{1em}
 
@@ -32,7 +33,11 @@ Groups'' --- new submission
 
 Dear Editors,
 
-Please consider the enclosed manuscript for publication in \emph{[Journal name]}.
+Please consider the enclosed manuscript for publication in \emph{Econometrics and
+Statistics}, in the \emph{Annals of Statistical Data Science} section. The paper is a
+methodological contribution to the comparison of probabilistic prediction models, and its
+applications are machine-learning benchmarks rather than economic or financial data, which
+is why I am directing it to that section rather than to Part A.
 
 \textbf{The problem, in one paragraph.} Two probabilistic classifiers are compared on a
 test set and the newer one scores higher. If the labels depend partly on a grouping
@@ -40,9 +45,9 @@ variable that both models observe, the score difference sums two distinct improv
 the new model may fit the label frequencies \emph{within} groups more closely, or it may
 match its predictions to the individual cases they were made for more closely. These are
 different achievements --- the first is skill a lookup table also supplies and that a
-shift in label frequencies removes; the second is not --- and an aggregate score
-difference cannot tell them apart. Neither can a significance test on that difference,
-since both components are present in the same number.
+shift in label frequencies removes; the second is not --- and neither an aggregate score
+difference nor a significance test on it can tell them apart, since both components sit
+inside the same number.
 
 \textbf{The contribution.} The paper decomposes the difference exactly, using no fitted
 reference model. The construction is elementary: because both models emit a full
@@ -59,64 +64,71 @@ The remainder is a U-statistic of order two, and it is not a new quantity: it eq
 within-group covariance between the two models' predicted-probability difference and the
 label indicator, which is the object isolated by Yates's (1982) covariance decomposition
 of a proper score, here evaluated for a \emph{pair} of forecasters instead of one. One
-correction relative to earlier versions of this work bears directly on how the
-contribution is framed, so I state it rather than leave it to be found: this remainder is
-\emph{not} the resolution term of the classical reliability--resolution partition, as
-earlier drafts claimed. Classical resolution depends on a forecast only through the
-partition its level sets generate and is therefore invariant to any monotone rescaling of
-forecast values; a covariance between those values is not. The two coincide only when both
-models are calibrated within groups. The paper now states that relation precisely and
-adopts confidence matching as part of the procedure rather than as a caveat. What the
+correction relative to earlier drafts bears on how the contribution is framed, so I state
+it rather than leave it to be found: this remainder is \emph{not} the resolution term of
+the classical reliability--resolution partition. Classical resolution depends on a
+forecast only through the partition its level sets generate, so it survives any monotone
+rescaling of forecast values; a covariance between those values does not. The two coincide
+only when both models are calibrated within groups. The paper states that relation
+precisely and adopts confidence matching as procedure rather than caveat. What the
 classical decomposition does not supply in either reading is inference for the pairwise
-contrast, and that is where the paper's technical content sits. Specifically, we prove: the covariance
-identity for the whole Bregman-score family, so the quadratic and logarithmic scores are
-named cases of one theorem; asymptotic normality of the dataset-level estimator with a
-consistent cluster-robust sandwich variance; an exact reduction, at a trivial grouping
-variable, to a clustered Diebold--Mariano/Giacomini--White test, which locates the
-estimator precisely relative to comparative forecast evaluation; an exact $(n_c-1)/n_c$
-attenuation of the in-sample plug-in, which is why no sample splitting is needed; an
-explicit between-group covariance term for what happens when groups are merged; an exact
-composition of the transported component into a mean-forecast-fit term minus a dispersion
-term, which is what shows that component is not a measure of prior fit; and a
+contrast, and that is where the paper's technical content sits: the covariance identity
+holds for the whole Bregman-score family, so the quadratic and logarithmic scores are named
+cases of one theorem; the dataset-level estimator is asymptotically normal with a
+consistent cluster-robust sandwich variance; and at a trivial grouping variable the
+statistic reduces exactly to a clustered Diebold--Mariano/Giacomini--White test, which
+locates it precisely relative to comparative forecast evaluation. Three further exact
+results settle design choices that would otherwise be judgement calls --- an
+$(n_c-1)/n_c$ attenuation that is why no sample splitting is needed, an explicit
+between-group covariance term for what merging groups does, and a composition of the
+transported component that shows it is not a measure of prior fit --- and a
 Cauchy--Schwarz sensitivity bound, in the tradition of Rosenbaum and Cinelli \& Hazlett,
-for how far an unrecorded grouping variable could move the result. On that last point the
-paper reports the bound against its own estimates rather than only in the abstract: for
-one of the appendix studies an unrecorded covariate with an aggregate correlation of
-$0.061$ would account for the whole reported gain, and I say so.
+limits how far an unrecorded grouping variable could move the result. On that last point
+the paper reports the bound against its own estimates rather than only in the abstract:
+for one appendix study an unrecorded covariate correlated at $0.061$ would account for the
+whole reported gain, and I say so.
 
 \textbf{Validation, and one application in detail.} Because the object is a measuring
 instrument, the paper validates it before using it: signal recovery, null calibration,
-coverage of the primary interval in the clustered small-group regime that stresses it,
-and discriminant-validity designs establishing what the two components do \emph{not}
+interval coverage in the clustered small-group regime that stresses it, and
+discriminant-validity designs establishing what the two components do \emph{not}
 separate. One of those is a genuine limitation rather than a strength --- a monotone
 recalibration moves score between the components while adding no information --- and the
-paper responds with a calibration-matching protocol that is part of the procedure, plus a
-demonstration that it works.
+paper responds with a matching protocol that is part of the procedure rather than a caveat
+attached to it.
 
 The main application audits two publicly released scene-graph checkpoints of a widely
 cited debiasing method, evaluated in both modes with the original authors' code, so the
 models are not ours and the claimed improvement is one the field already reports. Once
 confidence is matched on held-out images and the audit runs at the object-class-pair
 grouping, the proper-score difference is overwhelmingly transported under both the
-quadratic and the logarithmic score, although the two scores disagree on whether any
-covariance remainder survives ($-0.00006$, 95\% CI $[-0.00120,+0.00109]$ under the
-quadratic score; $+0.04396$, CI $[+0.04079,+0.04714]$ under the log score) --- in either
-reading at least an order of magnitude smaller than the transported shift. That
-configuration qualifier appears in the paper wherever the claim does, because two of the
-five configurations reported for this same pair do not support it. Since the method's
-construction subtracts a context-only prediction, the finding characterises it rather than
-indicting it, and the paper is explicit that the ten-point mean-recall movement and the
-proper-score decomposition are in different units with no bridge supplied between them.
+quadratic and the logarithmic score, although the two disagree on whether any covariance
+remainder survives ($-0.00006$ under the quadratic score, interval containing zero;
+$+0.04396$ under the log score, interval excluding it) --- in either reading at least an
+order of magnitude smaller than the transported shift. That configuration qualifier
+appears wherever the claim does, because two of the five configurations reported for this
+same pair do not support it. Since the method's construction subtracts a context-only
+prediction, the finding characterises it rather than indicting it, and the paper is
+explicit that the ten-point mean-recall movement and the proper-score decomposition are in
+different units with no bridge between them.
 
-Three further studies --- our own relation predictors, a frozen-CLIP variant of them, and
-long-tailed classification in images and in text --- are reported in an appendix, and
-include a case in which a model that loses on every aggregate measure is shown to resolve
-individual cases significantly better than the model it appears to lose to.
+Three further studies are reported in an appendix, including a case in which a model that
+loses on every aggregate measure is shown to discriminate individual cases significantly
+better than the model it appears to lose to.
 
-\textbf{Fit.} The central contribution is an estimand together with its exact
-finite-sample and asymptotic inference theory. The benchmarks are where the instrument is
-exercised and validated, not the claim: no state-of-the-art result is asserted, and none
-is needed for the argument. I have written the paper so that the contribution is legible
+\textbf{Fit, and one thing I want to be straightforward about.} The central contribution
+is an estimand together with its exact finite-sample and asymptotic inference theory. The
+benchmarks are where the instrument is exercised and validated, not the claim: no
+state-of-the-art result is asserted, and none is needed for the argument.
+
+Corollary 3 places the work in the tradition of comparative predictive ability. I should
+say plainly, though, that the empirical evidence is drawn from image and text
+classification benchmarks rather than economic or financial forecasting, and the
+references reflect that: a referee expecting a forecasting application will not find one.
+My judgement is that the contribution is a statistical one for which the data-science
+section is the right home, and that adding a token macroeconomic example would strengthen
+the paper's appearance more than its substance --- but if the editors disagree I would
+rather be told at this stage than have referees spend time on it. I have written the paper so that the contribution is legible
 before any notation appears --- a plain statement of the identity in the introduction, a
 four-point worked example that exhibits the main properties proved later, and a table
 fixing the paper's vocabulary against its standard statistical counterparts. The same
@@ -127,15 +139,15 @@ whose gain is covariance is untouched.
 
 All code, cached model outputs and scripts needed to reproduce every number, table and
 figure are publicly available at \url{https://github.com/vinhqdang/WAGER}, including a
-verification script that checks each reported value against the committed results files.
+verification script that checks each of the 89 reported values against the committed
+results files.
 
 The manuscript is original, has not been published previously, and is not under
-consideration for publication elsewhere. An earlier and substantially different version
-was submitted to another journal and declined; that submission is closed. I am the sole
-author and approve this submission. I declare no competing financial or personal
-interests, and the work received no specific grant from any funding agency. In accordance
-with journal policy, the manuscript includes a declaration of generative AI use in its
-preparation.
+consideration elsewhere. An earlier and substantially different version was submitted to
+another journal and declined; that submission is closed. I am the sole author and approve
+this submission, declare no competing financial or personal interests, and received no
+specific grant for this work. The manuscript includes a declaration of generative AI use
+in its preparation, in accordance with journal policy.
 
 Thank you for your consideration.
 
