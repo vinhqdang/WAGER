@@ -532,7 +532,9 @@ Elsevier offered five transfer suggestions against the JSPI submission. Assessed
 what the paper actually is — an estimand for a *paired score differential* with exact
 finite-sample and asymptotic inference — they rank as follows.
 
-1. **Econometrics and Statistics** (IF 2.5, CiteScore 4.0) — the recommendation. The
+1. **Econometrics and Statistics** (IF 2.5, CiteScore 4.0) — recommended when this
+   section was written, and **withdrawn** by the 2026-09-07 panel; see the note at the end
+   of this section before acting on it. The
    paper's inferential target is the comparison of two forecasters, and
    Corollary~\ref{cor:dm} establishes that its undecomposed statistic *is* a clustered
    Diebold--Mariano/Giacomini--White test. Comparative predictive ability is native
@@ -554,10 +556,37 @@ finite-sample and asymptotic inference — they rank as follows.
    forecast evaluation or scoring rules.
 
 A transfer would carry the *old* title and files, so if the transfer route is taken the
-restructured manuscript in this commit should be uploaded in place of the transferred
-version before the submission is completed. The front matter is deliberately left
-venue-neutral (`\journal{}` removed, cover letter addressed to `[Journal name]`) so that
-retargeting is a one-line change.
+restructured manuscript should be uploaded in place of the transferred version before the
+submission is completed. The front matter is deliberately left venue-neutral
+(`\journal{}` removed, cover letter addressed to `[Journal name]`) so that retargeting is
+a one-line change.
+
+### Correction to the above, after the 2026-09-07 panel
+
+The ranking above was written from the paper's *theory* and is wrong about its *evidence*.
+The panel's Journal-Fit seat raised a CRITICAL finding that settles the point: the
+manuscript contains no econometric or forecasting application at all. Thirty of its
+references are ML conference papers (13 CVPR, 5 ICML, 4 NeurIPS, 3 ICLR) against exactly
+two econometrics journal citations — Diebold & Mariano (1995) and Giacomini & White (2006)
+— with nothing from that literature after 2006 and no discussion of frozen versus
+estimated forecasts. That seat judged the gap not repairable by rewriting, and its
+recommendation flips to reject-at-venue for Econometrics and Statistics without an added
+application.
+
+So the recommendation is now conditional, and the condition is an author decision rather
+than an editorial one:
+
+- **With a forecasting application added**, Econometrics and Statistics remains the best
+  fit on the transfer list, for the Corollary 3 reason given above.
+- **Without one**, the honest targets are the *International Journal of Forecasting*, the
+  *Journal of Forecasting*, or JBES if the Diebold–Mariano framing is kept and given real
+  forecasting evidence; or JMLR/TMLR if the benchmark-auditing framing is kept instead and
+  the statistical apparatus is presented as the means rather than the claim.
+- **CSDA remains a non-option** regardless, for the reason above: it already desk-rejected
+  this manuscript.
+
+Nothing in the panel treated this as a defect in the work — the finding is about audience,
+not correctness — and no rewriting in the sixth revision addressed it, deliberately.
 
 ---
 
