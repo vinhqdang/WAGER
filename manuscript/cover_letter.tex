@@ -77,7 +77,7 @@ Not in the usual sense, and we want to be straightforward about why: this is an 
 method, not a predictor, so there is no accuracy to beat and no leaderboard position to
 claim. What it can be compared against is the existing practice for the same question --- how
 the field currently tries to tell prior-fitting from case-level improvement --- and the paper
-does that throughout Section 3. The five works that represent that state of the art, and that
+does that throughout Section 2. The five works that represent that state of the art, and that
 we position against directly, are: Zellers et al.\ (2018), whose frequency baseline is the
 standard prior-only reference; Tang et al.\ (2020), whose mean-recall reporting and causal
 intervention are the dominant debiasing practice in scene graph generation and whose released
@@ -93,7 +93,7 @@ The main study uses Visual Genome via the canonical VG150 PredCls split, with th
 released MOTIFS/MOTIFS-TDE checkpoints of Tang et al.\ evaluated using the authors' own code;
 a second study on the same benchmark uses predictors we train ourselves, including one built
 on a frozen CLIP ViT-B/32 encoder reading real image crops. Two further studies, reported in
-the appendices, use CIFAR-100-LT across seeds and imbalance ratios, and a long-tailed
+the supplementary material, use CIFAR-100-LT across seeds and imbalance ratios, and a long-tailed
 20-Newsgroups split. No proprietary or restricted data is used. All code, cached model
 outputs and analysis scripts are released, including a verification script that checks each
 of the 89 reported numerical values against the committed results files.
@@ -115,8 +115,8 @@ recall@50 for scene graph generation, and accuracy by frequency tier for the lon
 studies.
 
 \textbf{Declarations.} The manuscript is original, has not been published previously, and is
-not under consideration elsewhere. An earlier and substantially different version was
-submitted to a statistics journal and declined; that submission is closed. I am the sole
+not under consideration elsewhere. Earlier and substantially different versions were submitted to statistics journals;
+none of those submissions remains open. I am the sole
 author and approve this submission, declare no competing financial or personal interests, and
 received no specific grant for this work. The manuscript includes a CRediT statement and a
 declaration of generative AI use in its preparation, in accordance with journal policy.
