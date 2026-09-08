@@ -176,37 +176,6 @@ released logits or probabilities. The quadratic score is bounded and strictly pr
 other proper scores answer scale-dependent variants of the same question and should be
 declared in advance.
 
-\subsection{Where else this construction lives}\label{sec:adjacent}
-
-Decomposing a difference between two groups or systems into a part attributable to
-composition and a part attributable to conditional behaviour is not specific to forecast
-evaluation, and a reader arriving from another field will recognize the shape of
-$\Delta T=\Delta P+\Delta R$ immediately. In labour economics, the Oaxaca--Blinder
-decomposition splits a mean wage gap into an endowments component and a coefficients
-component \citep{oaxaca1973male,blinder1973wage}, and its semiparametric successors
-reweight one group's covariate distribution to another's
-\citep{dinardo1996labor} --- which is what within-cell label transport does, in the other
-direction, to labels rather than covariates. In epidemiology, the Mantel--Haenszel
-estimator aggregates a within-stratum association across strata precisely so that
-composition cannot drive it \citep{mantel1959statistical}, and the observation that a
-within-stratum association need not agree with the marginal one is non-collapsibility ---
-of which Proposition~\ref{prop:coarsen}'s between-cell covariance term is an instance.
-Psychometrics asks a structurally identical question of test items: differential item
-functioning tests whether an item behaves differently across groups \emph{conditional on
-ability}, and does so through a Mantel--Haenszel statistic
-\citep{holland1986differential}. Clinical prediction has long separated discrimination
-from calibration for a single model, which is the single-forecaster ancestor of the split
-this paper takes for a pair.
-
-We claim no technical novelty from these connections and have not adapted any of their
-machinery. They are worth stating for two reasons. They locate the construction for
-readers who would otherwise see only a scoring-rule paper, and they suggest where the
-open problems already have answers: the analyst-chosen-partition problem this section
-worries about is the multiple-comparisons problem those literatures have faced for
-decades, and the label-shift exposure of Section~\ref{sec:decision} is a reweighting
-problem \citet{dinardo1996labor} solve in a setting where the weights are estimated rather
-than known.
-
 \subsection{Broader applicability}\label{sec:broader}
 
 Four aligned arrays are all the algorithm requires -- two models' probability vectors,

@@ -214,8 +214,8 @@ bias of using $\phi$ alone. Eq.~\eqref{eq:sensitivity-exact} is exact but requir
 knowing $Z$'s joint law with $(H,Y)$ to evaluate. The following bound turns it into a
 sensitivity analysis that requires only a judgment about how strongly an unrecorded
 variable could plausibly act, in the spirit of \citet{rosenbaum2002observational} and
-recent partial-correlation sensitivity models for unmeasured confounding
-\citep{freidling2025optimization,zhang2026average}.
+partial-correlation sensitivity models for unmeasured confounding
+\citep{cinelli2020making}.
 
 \begin{proposition}[Sensitivity bound for an unrecorded confounder]\label{prop:sensitivity}
 Suppose $H_x(y)\in[-M,M]$ for all $x,y$ (WAGER already requires a bounded score). Fix a
@@ -276,74 +276,18 @@ could jointly move a model's within-cell score gain and the within-cell label
 distribution -- obtains a numeric limit on how far $\widehat{\Delta R}_c$ can be from
 what a fully adjusted audit would find, without observing or modeling $Z$, in the spirit
 of \citet{rosenbaum2002observational} and recent partial-correlation sensitivity models
-for unmeasured confounding \citep{cinelli2020making,freidling2025optimization,zhang2026average}.
+for unmeasured confounding \citep{cinelli2020making}.
 Because $\bar\rho$ is a correlation rather than a domain-specific odds or risk ratio, it
 can be elicited the same way across benchmarks.
 
-\paragraph{What the bound says about this paper's own estimates.}
-Table~\ref{tab:sensitivity-numeric} reports both forms of the bound on the Visual Genome
-pair of Appendix~\ref{sec:results}, together with the coarsening from the class-pair to
-the subject-only cell, which instantiates Eq.~\eqref{eq:sensitivity-exact} exactly with
-$Z=$ object class. The free bound is directionally correct and, at $K=50$, still
-$1{,}887$ times the actual coarsening bias, so any $\bar\rho$ an analyst would plausibly
-declare certifies a limit far above what is observed. That looseness is a property of a
-worst-case inequality applied to label probabilities that concentrate away from the
-extremes at which it binds, not a defect of this dataset --- but it also means the free
-bound cannot support a claim about whether any particular reported $\widehat{\Delta R}$
-would survive confounding.
-
-The sharp per-cell form of Eq.~\eqref{eq:sensitivity-bound}, which replaces the
-worst-case sums by the cell's own $\sum_y\operatorname{Var}(H_X(y)\mid c)$ and
-$\sum_yp_y(c)(1-p_y(c))$, can support such a claim, and it is less reassuring than the
-free bound. Computed by \texttt{experiments/sensitivity\_analysis.py} from per-instance
-arrays for the same pair, it gives $B=0.23284$ at $\bar\rho=1$, so the
-\emph{robustness value} --- the smallest aggregate correlation at which the bound reaches
-the estimate --- is
-\begin{equation}
-\rho^\dagger=\frac{\bigl|\widehat{\Delta R}\bigr|}{B}
-=\frac{0.01427}{0.23284}=0.06127 .
-\label{eq:robustness-value}
-\end{equation}
-An unrecorded covariate whose aggregate correlation with the within-cell gain and the
-within-cell label distribution reaches $0.061$ is enough to account for the whole of that
-$\widehat{\Delta R}$. At the $\bar\rho=0.1$ that this section suggests as a plausible
-elicited value, the sharp bound is $0.02328$, which \emph{exceeds} the estimate. We
-therefore do not claim that a confounder would have to be implausibly strong to explain
-these Visual Genome gains away; on this evidence a modest one would suffice, and the
-reader should treat Appendix~\ref{sec:results}'s covariance gains as conditional on the
-declared $\phi$ being close to complete. The flagship audit of
-Section~\ref{sec:sggaudit} is not exposed in the same way, because its reported
-$\widehat{\Delta R}$ is indistinguishable from zero and a sensitivity bound on a null
-result changes nothing about it.
-
-\begin{table}[t]
-\centering
-\caption{Both forms of the Proposition~\ref{prop:sensitivity} bound on the
-MLP-SPATIAL vs.\ MLP-CLASS pair, and the coarsening already reported in
-Table~\ref{tab:sensitivity} ($K=50$, $M=2$ for the quadratic score). The empirical bias
-is the law-of-total-expectation aggregate of Eq.~\eqref{eq:sensitivity-exact}'s covariance
-term across all subject-only cells.
-\texttt{experiments/sensitivity\_bound\_check.py} reproduces the free-bound rows from the
-committed ablation results and \texttt{experiments/sensitivity\_analysis.py} the sharp
-rows from per-instance arrays.}
-\label{tab:sensitivity-numeric}
-\begin{tabular}{lr}
-\toprule
-Quantity & Value \\
-\midrule
-$\widehat{\Delta R}$, $\phi=$ subject-only & $0.02181$ \\
-$\widehat{\Delta R}$, $\phi=$ class-pair & $0.01439$ \\
-Empirical coarsening bias & $0.00742$ \\
-\midrule
-Free bound, $M\sqrt{K-1}$, at $\bar\rho=1$ & $14.00$ \\
-Minimum $\bar\rho$ for the free bound to reach the bias & $0.00053$ \\
-\midrule
-Sharp bound $B$ at $\bar\rho=1$ & $0.23284$ \\
-Sharp bound at $\bar\rho=0.1$ & $0.02328$ \\
-Robustness value $\rho^\dagger$ & $0.06127$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+Both forms of the bound are evaluated on this paper's own Visual Genome estimates in
+Appendix~\ref{app:sensitivity}. The short version is that the free bound is directionally
+correct but far too loose to certify anything, while the sharp per-cell form is
+\emph{less} reassuring than the free one: an unrecorded covariate whose aggregate
+correlation with both channels reaches $0.061$ would account for the entire covariance gain
+reported in Section~\ref{sec:results}. We therefore do not claim those gains are robust to
+confounding, and Section~\ref{sec:sggaudit}'s audit is unaffected only because its estimate
+is already indistinguishable from zero.
 
 \begin{figure*}[t]
 \centering
@@ -499,52 +443,11 @@ and the plug-in sandwich variance $\widehat\sigma^2=N_*\dfrac{G}{G-1}\sum_{g}\bi
 of Appendix~\ref{app:influence} is consistent for $\sigma^2$.
 \end{theorem}
 
-Two things about condition (iv) deserve saying plainly rather than in a footnote. It is
-what licenses treating the per-cell plug-ins $\widehat{\Delta R}_c$ as consistent for
-$\Delta R_c$ in the variance argument, and a cell's size is not controlled by the
-aggregate identified count, so this needs its own divergence requirement. But it also
-forces every cell to be eventually identified, hence $N_*/N\to1$: an earlier version of
-this theorem additionally assumed an identified fraction converging to some
-$\kappa\in(0,1]$, which condition (iv) makes vacuous, and under which the
-identified-subpopulation estimand $\theta$ would in any case coincide with the
-unconditional target. We have therefore dropped that assumption rather than state two
-conditions that cannot both bind. The price is that the theorem does not describe the
-regime the paper's own applications sit in, where $\theta$ is a random, $N$-dependent
-target because coverage is short of one ($99.0\%$ on VG150, $98.9\%$ in
-Section~\ref{sec:sggaudit}). What the theorem licenses is the interval's form and its
-variance estimator; what licenses reading the reported intervals at finite $N$ is the
-coverage simulation of Section~\ref{sec:simulation}, and Section~\ref{sec:discussion}
-states the gap between the two rather than eliding it.
-
-The proof (Appendix~\ref{app:proofs}) combines the exact linearization of
-Appendix~\ref{app:influence} with a Lindeberg--Feller central limit theorem for the
-independent-across-cluster sum of mean-zero, uniformly bounded terms
-\citep{serfling1980approximation,vandervaart1998asymptotic}; boundedness (i) makes the
-Lindeberg condition automatic given (ii), and consistency of $\widehat\sigma^2$ follows
-from the weak law of large numbers applied to each plug-in $\widehat{\Delta R}_c,
-\widehat{\Delta R}$ together with continuity of the variance functional. One step needs
-more care than the appendix's per-cell statement supplies: a per-cell H\'ajek remainder of
-order $o_p(n_c^{-1/2})$ does not aggregate to $o_p(N_*^{-1/2})$ at the dataset level when
-the number of cells grows, since summing $C$ such remainders admits a $\sqrt C$ inflation.
-The repair does not need a new condition on cell sizes, only that the cell count be
-negligible relative to the identified sample, $\#\{c:n_c\ge2\}=o(N_*)$: the second-order
-degenerate term of a two-sample U-statistic is $O_p(n_c^{-1})$ rather than
-$o_p(n_c^{-1/2})$, and $\sum_c n_c\cdot O_p(n_c^{-1})=O_p(C)=o_p(N_*)$ gives the
-dataset-level rate directly. We state that condition explicitly; on VG150 it holds
-comfortably ($C=6{,}346$ against $N_*=227{,}337$). Condition (ii) is what rules out a single cluster dominating the
-sum -- an image contributing a positive fraction of all relations, for instance -- and
-is a standard requirement for cluster-robust inference generally, not specific to this
-estimator. This theorem licenses reading the image-clustered intervals reported
-throughout Section~\ref{sec:exp} as asymptotically valid in the idealized regime where
-every eligible cell's size grows without bound. That regime is not attained in-sample:
-VG150's eligible cells are heavy-tailed, and $2{,}286$ of the $6{,}346$ eligible
-class-pair cells hold fewer than five examples (Table~\ref{tab:sensitivity}). The
-proportion is smaller than earlier drafts of this paper asserted --- those cells carry
-$2.7\%$ of identified relations, and the median eligible cell holds appreciably more than
-the minimum --- but a third of the cells still sit where condition (iv)'s divergence is
-plainly hypothetical. The reported $94.0\%$ empirical coverage against a nominal $95\%$
-(Section~\ref{sec:simulation}), not this theorem directly, is therefore the evidence that
-the interval remains a good approximation well short of the idealization.
+Appendix~\ref{app:clt} discusses what condition (iv) costs --- it forces every cell to be
+eventually identified, so the theorem does not describe the finite-sample regime our own
+applications sit in --- and states the additional condition on the number of cells that the
+dataset-level remainder requires. What licenses reading the reported intervals at finite $N$
+is the coverage simulation of Section~\ref{sec:simulation}, not this theorem.
 
 \paragraph{Relation to comparative forecast evaluation.}
 \begin{corollary}[Relation to Diebold--Mariano/Giacomini--White]\label{cor:dm}
