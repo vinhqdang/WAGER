@@ -44,82 +44,60 @@ This vector, evaluable at labels that were never observed for case $i$, is the o
 the method needs beyond the labels themselves.
 
 \paragraph{Model A: a pure prior refit.}
-Every case gets the same prediction, so $h_i(1)=+3/8$ and $h_i(2)=-5/8$ for all four
-cases. The \emph{observed} mean gain uses each case's own label,
-\begin{equation}
-\Delta T=\tfrac14\left[3\cdot\tfrac38+1\cdot\left(-\tfrac58\right)\right]=\tfrac18 .
-\end{equation}
-Now transport labels: replace each case's label, in turn, by each of the other three cases'
-labels and average. Case~1 is scored against labels $\{1,1,2\}$, giving
-$\frac13(\frac38+\frac38-\frac58)=\frac{1}{24}$, and likewise for cases 2 and 3; case~4 is
-scored against $\{1,1,1\}$, giving $+\frac38$. The mean transported gain is
-\begin{equation}
-\Delta P=\tfrac14\left[3\cdot\tfrac{1}{24}+\tfrac38\right]=\tfrac18 ,
-\qquad\text{so}\qquad
-\Delta R=\Delta T-\Delta P=0 .
-\end{equation}
-Model A's entire advantage survives the relabelling, and its covariance gain is exactly
-zero --- not approximately, and not zero on average over hypothetical resamples, but zero
-in this sample. That is the general fact: a prediction change that is constant within a
-cell contributes nothing to $\Delta R$ (Theorem~\ref{thm:population}). Note also that
-$\Delta P=1/8$ is the largest transported gain any within-cell-constant prediction can earn
-here, because a proper score is maximized in expectation at the true frequencies
-$(3/4,1/4)$ --- which is exactly what model A predicts.
+Every case gets the same prediction, so $h_i(1)=+3/8$ and $h_i(2)=-5/8$ throughout, and the
+observed mean gain is $\Delta T=\tfrac14[3\cdot\tfrac38-\tfrac58]=\tfrac18$. Now transport:
+replace each case's label in turn by each of the other three and average. Cases 1--3 are
+each scored against $\{1,1,2\}$, giving $\tfrac13(\tfrac38+\tfrac38-\tfrac58)=\tfrac1{24}$;
+case 4 is scored against $\{1,1,1\}$, giving $+\tfrac38$. So
+$\Delta P=\tfrac14[3\cdot\tfrac1{24}+\tfrac38]=\tfrac18$ and $\Delta R=0$ --- exactly, in
+this sample, not on average over hypothetical resamples. That is the general fact: a
+prediction change constant within a cell contributes nothing to $\Delta R$
+(Theorem~\ref{thm:population}). Note also that $\Delta P=1/8$ is the largest transported
+gain any within-cell-constant prediction can earn here, since a proper score is maximised in
+expectation at the true frequencies $(3/4,1/4)$ --- which is what A predicts.
 
 \paragraph{Model B: a case-specific improvement.}
-Cases 1--3 are unchanged, but case~4 now moves towards label $2$, so
-$h_4(1)=-5/8$ and $h_4(2)=+3/8$. Every case is now scored at $+3/8$ on its own label, so
-$\Delta T=3/8$. Under transport, cases 1--3 are unaffected ($\frac{1}{24}$ each), but
-case~4 is scored against three label-$1$ cases at $-5/8$ apiece. The mean transported gain
-turns negative,
-\begin{equation}
-\Delta P=\tfrac14\left[3\cdot\tfrac{1}{24}-\tfrac58\right]=-\tfrac18 ,
-\qquad
-\Delta R=\tfrac38-\left(-\tfrac18\right)=\tfrac12 .
-\end{equation}
-Two things are worth reading off this. First, model B's aggregate gain of $3/8$
-\emph{understates} its case-level improvement of $1/2$, and the reason is \emph{not} that
-B fits the cell's label frequencies worse. It fits them better: averaged over the cell it
-predicts $0.625$ for label 1 against the old model's $0.5$, and the truth is $0.75$, so
-its mean-forecast fit improves by exactly $0.09375$. What offsets that is dispersion.
-B's forecasts vary inside the cell where the old model's did not, and by
-Proposition~\ref{prop:transported} the transported channel charges that variation at
-exactly the same $0.09375$; the two brackets cancel, so the transported gain computed with
-the cell's own frequencies is exactly zero. The $-1/8$ the estimator reports is what
-remains after each case is scored against the \emph{other} cases' labels only, which
-removes the $\tfrac1{n_c}\widehat{\Delta R}=1/8$ that the in-sample plug-in had credited
-to the transported channel. Both numbers are right; they answer slightly different
-questions, and Proposition~\ref{prop:attenuate} relates them exactly.
+Cases 1--3 are unchanged, but case 4 now moves towards label $2$, so $h_4(1)=-5/8$ and
+$h_4(2)=+3/8$. Every case is scored at $+3/8$ on its own label, so $\Delta T=3/8$. Under
+transport cases 1--3 are unaffected, but case 4 is scored against three label-1 cases at
+$-5/8$ apiece, so $\Delta P=\tfrac14[3\cdot\tfrac1{24}-\tfrac58]=-\tfrac18$ and
+$\Delta R=\tfrac12$.
 
-Second, an evaluator reading only the total would credit model B with three times model
-A's improvement, whereas the decomposition shows the two improving on disjoint grounds: A
-earns $1/8$ purely by moving to the cell's frequencies and gains no covariance at all,
-while B's $1/2$ of covariance gain is partly concealed by a transported term that turns
-negative. This is the failure mode that motivates the paper, in miniature: aggregate
-scores are not merely imprecise about composition, they can order two models by the wrong
-criterion.
+Two things follow. First, B's aggregate gain of $3/8$ \emph{understates} its case-level
+improvement of $1/2$, and not because B fits the cell frequencies worse --- it fits them
+better, moving the cell-mean prediction from $0.5$ to $0.625$ against a truth of $0.75$, an
+improvement of exactly $0.09375$. What offsets it is dispersion: B's forecasts vary inside
+the cell where the old model's did not, and by Proposition~\ref{prop:transported} the
+transported channel charges that variation at the same $0.09375$, so the two cancel and the
+in-sample transported gain is zero. The $-1/8$ the estimator reports is what remains once
+each case is scored against the \emph{other} cases' labels only, removing the
+$\tfrac1{n_c}\widehat{\Delta R}=1/8$ the in-sample plug-in had credited to the transported
+channel. Second, an evaluator reading only the total would credit B with three times A's
+improvement, whereas the two improve on disjoint grounds: A earns $1/8$ purely by moving to
+the cell frequencies and gains no covariance, while B's $1/2$ of covariance is partly
+concealed by a transported term that turns negative. This is the failure mode that motivates
+the paper, in miniature --- aggregate scores are not merely imprecise about composition, they
+can order two models by the wrong criterion.
 
 \paragraph{The covariance form, and why leaving one out matters.}
 Theorem~\ref{thm:population} says $\Delta R$ is a within-cell covariance between the
-probability change and the label indicator. Computing that covariance directly for model
-B, over the four cases, gives
-$2\sum_y\operatorname{Cov}(\Delta q_y,\ind\{Y=y\})=3/8$ --- not the $1/2$ the transport
-calculation returned. The discrepancy is not an error in either: the covariance uses the
-cell's \emph{own} four labels to form the reference frequencies, so each case contributes
-to the reference it is compared against. That in-sample plug-in is attenuated by exactly
-$(n_c-1)/n_c$, here $3/4$, and indeed $\frac34\cdot\frac12=\frac38$. Transport, which
-scores each case only against the \emph{other} cases' labels, removes the attenuation
-without any held-out data. Proposition~\ref{prop:attenuate} shows this holds exactly, for
-every cell with $n_c\ge2$ and every grouping variable, which is why the method needs no
-sample splitting. The example is reproduced as a unit test in the accompanying software.
+probability change and the label indicator. Computing it directly for model B gives
+$2\sum_y\operatorname{Cov}(\Delta q_y,\ind\{Y=y\})=3/8$, not the $1/2$ transport returned.
+Neither is wrong: the covariance uses the cell's \emph{own} four labels to form its
+reference, so each case contributes to the reference it is compared against, and that
+in-sample plug-in is attenuated by exactly $(n_c-1)/n_c=3/4$ --- indeed
+$\tfrac34\cdot\tfrac12=\tfrac38$. Transport, which scores each case only against the
+\emph{other} cases' labels, removes the attenuation with no held-out data.
+Proposition~\ref{prop:attenuate} shows this holds for every cell with $n_c\ge2$ and every
+grouping variable, which is why the method needs no sample splitting. The example is
+reproduced as a unit test in the accompanying software.
 
-One property the example cannot show, because both of its candidate models happen to be
-as confident as each other, is the estimator's sensitivity to confidence itself. Multiply
-every prediction's odds by a constant and $\Delta R$ moves, even though no case has been
-reordered and no information added. That is a real limitation rather than a technicality
---- Section~\ref{sec:simulation} measures it at $-0.488$ in a design where the two models
-carry identical case-level information --- and it is why every result in this paper is
-reported for confidence-matched pairs.
+One property the example cannot show, because both candidates happen to be equally
+confident, is the estimator's sensitivity to confidence itself. Multiply every prediction's
+odds by a constant and $\Delta R$ moves, though no case has been reordered and no
+information added; Section~\ref{sec:simulation} measures that at $-0.488$ in a design where
+the two models carry identical case-level information. Every result in this paper is
+therefore reported for confidence-matched pairs.
 
 \subsection{A decision the split changes}\label{sec:decision}
 

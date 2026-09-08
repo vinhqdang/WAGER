@@ -116,64 +116,57 @@ $\Delta R$.
 \subsection{Contributions}\label{sec:contributions}
 
 \begin{enumerate}
-\item \textbf{An audit of a released debiasing method.} Applied to the two publicly released
-MOTIFS checkpoints of \citet{tang2020unbiased} on the canonical VG150 PredCls split,
-evaluated with the original authors' code, the decomposition shows that TDE's ten-point
-mean-recall improvement corresponds to a proper-score difference that is overwhelmingly
-transported, with a within-group covariance remainder at most a small fraction of it
-(Section~\ref{sec:sggaudit}). This is a statement about somebody else's published method, on
-the benchmark the field actually uses, and it is the paper's headline result.
+\item \textbf{An audit of a released debiasing method.} On the two publicly released MOTIFS
+checkpoints of \citet{tang2020unbiased}, evaluated on the canonical VG150 PredCls split with
+the original authors' code, TDE's ten-point mean-recall improvement corresponds to a
+proper-score difference that is overwhelmingly transported, with a within-group covariance
+remainder at most a small fraction of it (Section~\ref{sec:sggaudit}). This is the paper's
+headline result: a statement about somebody else's published method, on the benchmark the
+field uses.
 
 \item \textbf{A drop-in tool for any closed-set benchmark.} The estimator needs four aligned
 arrays --- two $N\times K$ probability matrices, the labels, the group identifiers --- runs
-in $O(NK)$ on cached predictions with no model refitting, no held-out fold and no tuning
-parameter, and returns both components with cluster-robust intervals in one pass. We apply it
-unchanged to relation prediction, to a frozen-CLIP variant of it, to long-tailed image
-classification across seeds and imbalance ratios, and to long-tailed text classification;
-only the declared $\phi$ changes. Code, cached model outputs and a script that verifies every
-reported number are released.
+in $O(NK)$ on cached predictions with no refitting, no held-out fold and no tuning
+parameter, and returns both components with cluster-robust intervals in one pass. We apply
+it unchanged to relation prediction, a frozen-CLIP variant, and long-tailed image and text
+classification; only $\phi$ changes. Code, cached outputs and a verification script are
+released.
 
-\item \textbf{An exact identity, and what its remainder is.} For any score the observed gain
-splits exactly --- in the population (Theorem~\ref{thm:population}) and in the finite sample
-(Theorem~\ref{thm:sample}) --- into a transported gain and a remainder that is a U-statistic
-of order two. For every Bregman score, so for the quadratic and logarithmic scores as named
-cases, that remainder is a within-group covariance between the models'
-predicted-probability difference and the label indicator (Theorem~\ref{thm:bregman}). A
-change that is constant within groups contributes exactly zero. The transported component
-splits in turn into a mean-forecast-fit term minus a dispersion term
-(Proposition~\ref{prop:transported}), which is why we do not call it a measure of prior fit.
+\item \textbf{An exact identity, and what its remainder is.} For any score the gain splits
+exactly, in the population (Theorem~\ref{thm:population}) and in the finite sample
+(Theorem~\ref{thm:sample}), into a transported gain and a remainder that is an order-two
+U-statistic. For every Bregman score that remainder is a within-group covariance between the
+models' predicted-probability difference and the label indicator
+(Theorem~\ref{thm:bregman}), and a change constant within groups contributes exactly zero.
+The transported component splits in turn into a mean-forecast-fit term minus a dispersion
+term (Proposition~\ref{prop:transported}), which is why we do not call it prior fit.
 
-\item \textbf{Inference, and the design choices it settles.} We derive the influence function
-of the difference, giving image-cluster-robust intervals, plus a group-stratified
+\item \textbf{Inference, and the design choices it settles.} The influence function of the
+difference gives image-cluster-robust intervals in one pass, alongside a group-stratified
 randomization test; the estimator is asymptotically normal with a consistent sandwich
-variance (Theorem~\ref{thm:clt}), and at a trivial $\phi$ it reduces to a clustered
-Diebold--Mariano test of the paired score differential (Corollary~\ref{cor:dm}). Three exact
-results remove guesswork: using a group's own label frequency as the counterfactual
-attenuates the estimate by exactly $(n_c-1)/n_c$, which is why no held-out fold is needed
-(Proposition~\ref{prop:attenuate}); merging groups shifts the estimand by an explicit
-between-group covariance of either sign, so a coarser $\phi$ is not harmless
-(Proposition~\ref{prop:coarsen}); and a Cauchy--Schwarz bound limits how far an unrecorded
-grouping variable could move the result (Proposition~\ref{prop:sensitivity}). Proofs are in
-the supplementary material.
+variance (Theorem~\ref{thm:clt}) and reduces at a trivial $\phi$ to a clustered
+Diebold--Mariano test (Corollary~\ref{cor:dm}). Three exact results remove guesswork: the
+in-sample plug-in is attenuated by exactly $(n_c-1)/n_c$, which is why no held-out fold is
+needed (Proposition~\ref{prop:attenuate}); merging groups shifts the estimand by an explicit
+between-group covariance of either sign (Proposition~\ref{prop:coarsen}); and a
+Cauchy--Schwarz bound limits what an unrecorded grouping variable could do
+(Proposition~\ref{prop:sensitivity}).
 
 \item \textbf{Validation, and honest limits.} Simulations establish interval coverage under
-image clustering and delimit what the two components do \emph{not} separate: prior-only
+image clustering and delimit what the components do \emph{not} separate: prior-only
 improvements stay out of the covariance channel, unrecorded within-group shortcuts enter it,
 and monotone recalibration moves score between the channels --- which is why confidence
-matching is part of the procedure and not a caveat. We also show that equally fine, fully
-identified partitions can disagree without limit, so the choice of $\phi$ is a real
-modelling decision rather than a formality.
+matching is part of the procedure. We also show that equally fine, fully identified
+partitions can disagree without limit, so declaring $\phi$ is a modelling decision.
 \end{enumerate}
 
 \subsection{Terminology}\label{sec:terminology}
 
-The construction needs few new words, and Table~\ref{tab:terms} fixes them against their
-standard statistical counterparts. Two of the rows carry a caveat rather than a synonym,
-because no standard term matches exactly: $\Delta P$ is named for the operation that
-produces it, and $\Delta R$ is a covariance rearrangement's term rather than the
-classical resolution it is often mistaken for. We use ``group'' and ``cell''
-interchangeably --- ``cell'' where the contingency-table sense is natural, ``group''
-where a reader outside that tradition would prefer it.
+Table~\ref{tab:terms} fixes the paper's vocabulary against standard counterparts. Two rows
+carry a caveat rather than a synonym, because no standard term matches exactly: $\Delta P$
+is named for the operation that produces it, and $\Delta R$ is a covariance
+rearrangement's term rather than the classical resolution it is often mistaken for. We use
+``group'' and ``cell'' interchangeably.
 
 \begin{table}[t]
 \centering
@@ -219,37 +212,29 @@ both models rescaled to comparable confidence before the audit \\
 
 \subsection{Scope, and what is not claimed}\label{sec:scope}
 
-The \emph{identity} needs exactly four aligned arrays: two $N\times K$ matrices of
-predicted probabilities, the $N$ observed labels, and the $N$ cell identifiers. Any
-closed-set probabilistic prediction task supplies them. The \emph{procedure} we actually
-recommend needs more --- cluster identifiers for the intervals, and, whenever the compared
-models differ visibly in confidence, a random split of the clusters and a temperature
-fitted per model on the held-out half (Section~\ref{sec:simulation}). We state the
-distinction here because the four-array framing, taken alone, understates what a faithful
-audit costs. Free-form or generative evaluation, where no $K$-way probability vector
-exists, is out of reach altogether, and we make no claim there.
+The \emph{identity} needs four aligned arrays: two $N\times K$ probability matrices, the
+labels, and the cell identifiers. Any closed-set probabilistic prediction task supplies
+them; free-form or generative evaluation, where no $K$-way vector exists, does not, and we
+claim nothing there. The \emph{procedure} we recommend needs more --- cluster identifiers
+for the intervals, and, whenever the models differ visibly in confidence, a random split of
+the clusters and a temperature fitted per model on the held-out half
+(Section~\ref{sec:simulation}).
 
-Four limits on interpretation are worth stating before any result rather than after all of
-them. First, everything is conditional on the declared $\phi$: a positive $\Delta R$ says
-the new model predicts individual cases better \emph{among cases sharing that feature},
-and nothing about causality, reasoning, or robustness. Second, $\Delta R$ credits any
-signal that varies within a cell, including a shortcut the analyst did not record.
-Proposition~\ref{prop:sensitivity} bounds that exposure rather than removing it, and the
-bound is not always comfortable: for the Visual Genome pair of
-Appendix~\ref{app:vgmain} an unrecorded covariate with an aggregate correlation of
-$0.061$ would account for the entire reported gain (Section~\ref{sec:sensitivity}).
-Third --- and this is the limitation we would most want a reader to carry --- $\Delta R$
-is \emph{not invariant to recalibration}. Rescaling a fixed model's confidence changes it
-while changing no ranking and adding no information about any case, and the effect is
-large enough to reverse verdicts: in simulation a pure recalibration moves $\Delta R$ by
-$-0.488$, tens of times the size of any real gain reported in this paper. Everything we
-report is therefore for confidence-matched pairs, by the protocol of
-Section~\ref{sec:simulation}, and a reader who applies the estimator to unmatched models
-should expect the split to be dominated by their confidence difference. Fourth, a
-transported gain is not illegitimate --- fitting the deployment label distribution better
-is real skill whenever that distribution is the one that matters --- and it is also not
-purely a matter of prior fit (Proposition~\ref{prop:transported}). The decomposition says
-where a gain lives, not whether it is worth having.
+Four limits are worth stating before any result. Everything is conditional on the declared
+$\phi$: a positive $\Delta R$ says the new model predicts individual cases better
+\emph{among cases sharing that feature}, and nothing about causality or robustness. Second,
+$\Delta R$ credits any signal varying within a cell, including a shortcut the analyst did
+not record, and Proposition~\ref{prop:sensitivity} bounds that exposure rather than removing
+it --- for the Visual Genome pair of Section~\ref{sec:results} an unrecorded covariate
+correlated at $0.061$ would account for the entire reported gain. Third, and this is the
+limitation we would most want carried away, $\Delta R$ is \emph{not invariant to
+recalibration}: rescaling a fixed model's confidence changes it while changing no ranking,
+no top-1 decision and no information, and in simulation a pure recalibration moves it by
+$-0.488$, tens of times any real gain reported here. Every result below is for
+confidence-matched pairs. Fourth, a transported gain is not illegitimate --- fitting the
+deployment label distribution better is real skill when that distribution is the one that
+matters --- and it is also not purely prior fit
+(Proposition~\ref{prop:transported}).
 
 \paragraph{Organization.}
 Section~\ref{sec:worked} works a four-point example and, in

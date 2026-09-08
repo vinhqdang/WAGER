@@ -1,180 +1,96 @@
-\section{Discussion and Limitations}\label{sec:discussion}
+\section{Discussion and limitations}\label{sec:discussion}
 
 \subsection{What the decomposition does and does not establish}
 
-The unit of analysis is a model-pair gain rather than a model, and that change is what
-makes the two failure modes visible. A model may be a better estimator of the label
-frequencies within groups without predicting any individual case better, and be credited
-for the first as though it had achieved the second. Conversely, a model may resolve
-individual cases better while losing enough prior fit to hide the improvement in its
-aggregate score --- Appendix~\ref{app:vgvisual} contains a case where the aggregate score
-and the accuracy both point the wrong way. The signed identity
-$\Delta T=\Delta P+\Delta R$ exposes both without a separately fitted reference
-forecaster, and the four-point example of Section~\ref{sec:worked} exhibits both in
-arithmetic.
+The unit of analysis is a model-pair gain rather than a model, and that is what makes the
+two failure modes visible. A model may estimate within-group label frequencies better
+without predicting any individual case better, and be credited as though it had done the
+second. Conversely it may discriminate cases better while losing enough prior fit to hide
+the improvement --- Section~\ref{sec:vgvisual} contains a case where the aggregate score
+and the accuracy both point the wrong way. The signed identity $\Delta T=\Delta P+\Delta R$
+exposes both without a fitted reference forecaster.
 
-The interpretation remains conditional on the declared grouping variable $\phi$. A positive
-$\Delta R$ means the new model aligns its probability changes with the correct example
-better than the old model among examples sharing $\phi$. It does not prove causal
-inference, compositional understanding, or robustness. Where this paper calls a covariance
-estimate ``genuine,'' the word distinguishes a real statistical effect from a calibration
-or prior artifact; it is not a claim about reasoning, causal structure, or any
-compositional property of the model. If an unrecorded shortcut varies
-inside a cell, WAGER will count its predictive use in $\Delta R$; Proposition
-\ref{prop:sensitivity} turns this qualitative caveat into a numeric one, bounding how far
-the reported covariance gain could be from what a fully adjusted audit would find as a
-function of a single, elicitable correlation parameter $\bar\rho$, though
-Table~\ref{tab:sensitivity-numeric} shows that bound is conservative at VG150's label
-cardinality. Applications should
-therefore choose $\phi$ before looking at results, justify it from the benchmark's data
-generation process, and report finer and coarser alternatives. The observed increase
-under subject-only cells illustrates Proposition~\ref{prop:coarsen}: coarsening adds a
-between-cell covariance term of either sign, so it cannot be assumed to leave the
-estimate unchanged, and only the finest identified partition isolates covariance gain net
-of every prior regularity expressible in $\phi$. This is why the finest defensible prior
-feature is the conservative primary choice, not merely an empirical convention.
+Everything is conditional on the declared $\phi$. A positive $\Delta R$ means the new model
+matches its probability changes to the correct case better than the old one \emph{among
+cases sharing $\phi$}; it proves nothing about causal inference, compositional
+understanding, or robustness. If an unrecorded shortcut varies inside a cell, its predictive
+use is counted in $\Delta R$, and Proposition~\ref{prop:sensitivity} bounds that exposure
+rather than removing it --- at a level that, for our own Visual Genome estimates, is not
+comfortable (Appendix~\ref{app:sensitivity}). Applications should declare $\phi$ before
+seeing results, justify it from how the benchmark was built, and report finer and coarser
+alternatives, because coarsening adds a between-cell covariance term of either sign
+(Proposition~\ref{prop:coarsen}) and only the finest identified partition nets out every
+regularity expressible in $\phi$. Even that rule is weaker than it looks:
+Appendix~\ref{app:partition} shows two equally fine, fully identified partitions of the same
+four cases that disagree completely about whether an improvement is case-level or
+transported, so the choice of $\phi$ is a modelling decision and not a formality.
 
-Two further interpretation limits deserve explicit statement. First, $\Delta R$ is not
-invariant to monotone recalibration: because the covariance channel is a covariance
-between probability movements and labels, sharpening or softening a fixed model shifts
-score mass between the two channels while adding no information about any individual
-example. Appendix~\ref{app:lt} quantifies the effect on real models and adopts the
-corresponding control -- decompose calibration-matched model pairs, with temperatures
-chosen on data disjoint from the audit -- which we recommend whenever the compared
-systems differ visibly in confidence. Second, a transported gain is not evidence
-of anything illegitimate. Fitting the deployment label distribution better is genuine,
-decision-relevant skill whenever that distribution matches the benchmark's; it is
-fragile precisely under label shift, where transported gain can be added or
-removed post hoc by re-weighting \citep{saerens2002adjusting,lipton2018detecting}, as
-the prior-matching experiment of Appendix~\ref{app:vgvisual} demonstrates directly.
-The decomposition reports where a gain lives; whether the transported channel is worth paying
-for is a property of the deployment, not of the model pair.
+Two limits deserve stating flatly. First, $\Delta R$ is not invariant to monotone
+recalibration: it is a covariance between probability movements and labels, so sharpening or
+softening a fixed model shifts score between the channels while adding no information about
+any case, changing no ranking and no top-1 decision. Section~\ref{sec:simulation} measures
+the effect at $-0.488$ in a design where both models carry identical case-level
+information --- tens of times any real gain reported here --- which is why we audit
+confidence-matched pairs and why released checkpoints, which routinely differ sharply in
+calibration, cannot be compared on their raw outputs. A rank-based within-cell contrast
+would be invariant to this, at the cost of the exact additivity that is the point of the
+construction; Appendix~\ref{app:partition} says what that trade would involve. Second, a
+transported gain is not evidence of anything illegitimate. Fitting the deployment label
+distribution better is real skill whenever that distribution is the one that matters; it is
+fragile precisely under label shift, where it can be added or removed post hoc by
+re-weighting \citep{saerens2002adjusting,lipton2018detecting}, as
+Section~\ref{sec:vgvisual} demonstrates and Section~\ref{sec:decision} exploits. Nor is it
+purely a matter of prior fit (Proposition~\ref{prop:transported}). The decomposition reports
+where a gain lives, not whether it is worth having.
 
-\paragraph{Fineness is not a total order, and the guidance needs that qualification.}
-The advice to prefer the finest defensible $\phi$ is sound against \emph{coarsening},
-which is what Proposition~\ref{prop:coarsen} governs. It gives no guidance at all between
-two partitions of the same granularity, neither of which coarsens the other --- and there
-the estimand can differ without limit. Four cases suffice. Take two labels, $q_0$
-uninformative at $(\tfrac12,\tfrac12)$, and a new model that is confidently right on all
-four: $q_1=(0.9,0.1)$ on the two cases labelled $1$ and $(0.1,0.9)$ on the two labelled
-$2$. The total gain is $\widehat{\Delta T}=+0.480$ under every partition, and every
-partition below is fully identified at $100\%$ coverage:
-\begin{center}
-\begin{tabular}{@{}lccr@{}}
-\toprule
-declared $\phi$ & cells & $\widehat{\Delta P}$ & $\widehat{\Delta R}$ \\
-\midrule
-$\{1,3\},\{2,4\}$ (labels differ within each cell) & $2\times2$ & $-1.120$ & $+1.600$ \\
-$\{1,2,3,4\}$ (one cell)                           & $1\times4$ & $-0.587$ & $+1.067$ \\
-$\{1,2\},\{3,4\}$ (labels agree within each cell)  & $2\times2$ & $+0.480$ & $\phantom{+}0.000$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-The first and third partitions are equally fine, both fully identified, and they disagree
-about whether this model pair's improvement is entirely case-level or entirely
-transported. The third is the degenerate case the paper already warns about --- grouping
-by something that determines the label leaves each cell label-homogeneous and drives
-$\widehat{\Delta R}$ to zero algebraically --- but the warning was previously attached to
-the choice $\phi=Y$, and the point here is more general and less comfortable: any $\phi$
-correlated with the label inside a cell partially degenerates the estimand, ``finest
-defensible'' cannot detect it, and Proposition~\ref{prop:coarsen} is silent because
-neither partition is a coarsening of the other. What the analyst actually needs to
-declare, and what we recommend reporting alongside $\phi$, is the within-cell label
-heterogeneity that remains: a partition whose cells are nearly label-homogeneous cannot
-identify much of anything, and the coverage statistic does not reveal it. This is a
-limitation of the construction rather than of any application of it, and we do not have a
-procedure that resolves it.
+\subsection{Choosing and declaring the grouping variable}
 
-\paragraph{A recalibration-invariant alternative, and what it would cost.}
-Because $\Delta R$ is a covariance between forecast values, its sensitivity to
-recalibration is structural rather than incidental, and a reader may reasonably ask why we
-do not use a rank-based within-cell contrast instead --- a within-cell paired AUC
-difference, say, for which \citet{delong1988comparing} already supply the
-correlated-U-statistic variance. Such a quantity would be invariant to any monotone
-rescaling of either model and would dissolve the confound this paper spends a protocol on.
-We think the trade is worth stating and is not obviously in our favour on every axis.
-What a rank-based contrast gives up is the exact identity: it is not a component of the
-score difference, so it cannot be added to anything to recover $\Delta T$, and a benchmark
-reporting it learns how the models rank cases but not how the reported score gain
-decomposes. The construction here buys exact additivity with respect to a declared proper
-score, and pays for it with scale dependence. A rank-based diagnostic is the natural
-companion rather than a competitor, and reporting both --- one exact and scale-dependent,
-one invariant and non-additive --- is what we would now recommend to a benchmark that
-could choose.
+``Declare $\phi$ before looking'' is advice, not a mechanism. Our recommendation is that
+the \emph{benchmark}, not the submitting author, fix it: the annotation prior is a property
+of the dataset, and a maintainer-declared $\phi$ removes the incentive to report only the
+most favourable candidate. That only moves the discretion, however. Maintainers are often
+authors of methods evaluated on their own benchmark, and a $\phi$ that flatters the
+benchmark's own baseline is no better than an author-chosen one. What we would defend is the
+weaker claim that $\phi$ should be fixed and public \emph{before} a leaderboard opens, by
+whoever does it, and that every pre-declared candidate be reported as our sensitivity rows
+do. Guarantees holding uniformly over a class of groupings are the subject of
+multicalibration \citep{hebert2018multicalibration}, and porting that style of guarantee to
+pairwise attribution is a natural extension. To make reports comparable we suggest a fixed
+block per audited pair: the declared $\phi$ and its rationale, the identified coverage, both
+channels signed with the covariance interval, the confidence-matched row, and the
+granularity rows.
 
-``Choose $\phi$ before looking'' is stated advice, not an enforced mechanism, and the
-analyst-chosen-subgroup problem has structural answers that WAGER should inherit. Our
-recommendation is that the \emph{benchmark}, not the submitting author, declare the
-grouping variable -- the annotation prior is a property of the dataset, and
-maintainer-declared $\phi$ removes the incentive to report only the most favorable of
-several candidates. We should be candid that this only moves the discretion rather than
-eliminating it. Maintainers are not disinterested: they are often the authors of methods
-evaluated on their own benchmark, sometimes a single unfunded volunteer, and sometimes
-absent, and a maintainer-declared $\phi$ that happens to flatter the benchmark's own
-baseline is no better than an author-declared one. The recommendation also sits in slight
-tension with our own advice to report every pre-declared candidate: if all candidates are
-reported, the declaration matters less, and if one is privileged, the choice matters more.
-What we would defend is the weaker claim that $\phi$ should be fixed and public
-\emph{before} a leaderboard opens, by whoever does it, so that the partition is not a
-degree of freedom exercised after seeing results. Where several defensible priors exist, all pre-declared candidates
-should be reported, as our sensitivity tables do; guarantees that hold uniformly over a
-class of groupings are the subject of multicalibration
-\citep{hebert2018multicalibration}, and porting that style of guarantee to pairwise
-gain attribution is a natural extension. To make reports comparable across papers, we
-suggest a fixed reporting block per audited pair: the declared $\phi$ and its
-rationale, the identified coverage, both channels signed with the covariance interval,
-the calibration-matched row when the models differ visibly in confidence, and the
-granularity sensitivity rows.
+\subsection{What the estimator cannot do}
 
-Exact transport also has a positivity requirement: a cell needs at least two examples.
-WAGER reports the identified fraction and makes no claim for singletons. Very fine
-$\phi$ can therefore improve confound control while reducing coverage. One further
-subtlety: cells identified at a fine granularity need not coincide with those at a
-coarse one, so cross-granularity comparisons mix the between-cell covariance term of
-Proposition~\ref{prop:coarsen} with a change of identified subpopulation -- immaterial
-at VG150's $99.0\%$ coverage, but worth restricting to a common identified subsample
-when coverage is low. Approximate
-matching could extend the method to continuous priors, but would replace the exact
-identity's clear intervention with modeling assumptions; we leave that extension open.
+Exact transport needs at least two cases per cell, so a very fine $\phi$ buys confound
+control at the cost of coverage; we report the identified fraction and claim nothing for
+singletons. Because cells identified at one granularity need not coincide with those at
+another, cross-granularity comparisons mix Proposition~\ref{prop:coarsen}'s between-cell
+term with a change of identified subpopulation --- immaterial at VG150's $99.0\%$ coverage,
+but worth restricting to a common subsample when coverage is low. Approximate matching would
+extend the method to continuous priors but would trade the exact identity for modelling
+assumptions, and we leave that open.
 
-The image-clustered confidence interval is asymptotic, and Theorem~\ref{thm:clt} is what
-justifies that: under a bounded score, a mild condition ruling out one cluster from
-dominating the sample, a cell count negligible against the identified sample
-(Eq.~\eqref{eq:cellcount}), and a fixed, finite $\phi$-support whose every cell's size
-diverges in the limit, the dataset-level estimator is asymptotically normal around the
-identified-subpopulation estimand, with a consistent sandwich variance. The last
-condition is an idealization no heavy-tailed application attains in-sample. Earlier
-drafts of this paper put the point too strongly, asserting that most eligible VG150 cells
-sit at the minimum size $n_c=2$; that is not so, and the correction runs in the paper's
-favour. Of $6{,}346$ eligible class-pair cells, $2{,}286$ hold fewer than five examples
-and those carry $2.7\%$ of identified relations, so the bulk of the evidence comes from
-cells appreciably larger than the minimum. A third of the cells nonetheless sit where the
-divergence condition is hypothetical, which is why the reported $94.0\%$ empirical
-coverage against a nominal $95\%$ (Section~\ref{sec:simulation}) remains the operative
-evidence for the interval's finite-sample adequacy, with the theorem supplying the
-limiting justification the simulation checks against. The cyclic
-randomization test is finite-group
-exact only under its sharper within-cell exchangeability null and treats relations as
-the randomized units, so it is secondary in the SGG analysis. A future
-image-level randomization design that preserves several relation-cell margins
-simultaneously would strengthen finite-sample inference for structured benchmarks.
+The image-clustered interval is asymptotic. Theorem~\ref{thm:clt} justifies it in a regime
+no heavy-tailed benchmark attains in sample: of $6{,}346$ eligible class-pair cells,
+$2{,}286$ hold fewer than five cases, though those carry only $2.7\%$ of identified
+relations, so most of the evidence comes from cells well above the minimum. The reported
+$94.0\%$ empirical coverage against a nominal $95\%$ (Section~\ref{sec:simulation})
+therefore remains the operative evidence for the interval, with the theorem supplying the
+limiting justification the simulation checks against. The randomization test is
+finite-group exact only under a sharper within-cell exchangeability null and treats
+relations rather than images as the randomized units, so it stays a secondary diagnostic; an
+image-level design preserving several relation-cell margins at once would strengthen it.
 
-The audit of Section~\ref{sec:sggaudit} indicates what adoption actually requires. Two
-released checkpoints, evaluated with their authors' own code, were enough: the method
-consumed the resulting probability arrays and returned a decomposition with intervals in
-seconds. Nothing about that workflow is specific to scene graph generation, and the
-practical obstacle is neither compute nor complexity but disclosure --- benchmarks
-overwhelmingly collect ranked predictions rather than predictive distributions. A
-benchmark that archived per-example probabilities alongside its leaderboard would make
-this kind of audit routine for every submitted pair. Where several grouping variables are
-defensible, we would further recommend that the benchmark, rather than the submitting
-author, declare $\phi$, and that all pre-declared candidates be reported.
-
-Finally, WAGER evaluates probability vectors, not only top-1 decisions. This is a
-feature---the method can detect useful redistribution below the argmax---but it requires
-released logits or probabilities. The quadratic score is bounded and strictly proper;
-other proper scores answer scale-dependent variants of the same question and should be
-declared in advance.
+Finally, the estimator reads probability vectors, not top-1 decisions. That is a feature ---
+it detects useful redistribution below the argmax --- but it requires released logits or
+probabilities, and this is the real obstacle to routine use. The audit of
+Section~\ref{sec:sggaudit} needed nothing but two checkpoints evaluated with their authors'
+code; the method consumed the resulting arrays and returned a decomposition with intervals
+in seconds. Nothing in that workflow is specific to scene graph generation. What blocks it
+elsewhere is neither compute nor complexity but disclosure, since benchmarks overwhelmingly
+archive ranked predictions. A leaderboard that stored per-example probabilities would make
+this kind of attribution available for every pair it ranks.
 
 \subsection{Broader applicability}\label{sec:broader}
 

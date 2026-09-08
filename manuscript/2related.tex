@@ -30,37 +30,23 @@ reverses the sign verdict of the audit in Section~\ref{sec:sggaudit}. We therefo
 $\Delta R$ for the covariance it is, treat the classical resolution reading as the
 special case it is, and adopt calibration matching as procedure rather than caveat.
 
-What the classical decomposition does not supply is inference for a pairwise contrast.
-The point estimates do combine: both models share the same $\phi$-partition and hence the
-same per-cell $n_c$, so the same $(n_c-1)/n_c$ attenuation
-(Proposition~\ref{prop:attenuate}) applies to each model's separately estimated in-sample
-resolution, and subtracting two naive plug-ins recovers exactly the biased estimate of
-the contrast, term for term. We do not claim this is the same correction that
-\citet{ferro2012bias} apply to a single forecaster's decomposition: theirs is an additive
-adjustment to a differently parameterized resolution estimate and ours a multiplicative
-factor on a leave-one-out contrast, and we have not established an equivalence between
-them. What we do claim is narrower and checkable, namely that
-Proposition~\ref{prop:attenuate} gives the exact factor for the contrast, which is what
-the estimator needs. Inference, however,
-does not transfer. Variance estimators for the single-model decomposition
-\citep{siegert2014variance} target one resolution term in isolation and supply no
-covariance between it and a second model's covariance estimated from the same data, so
-subtracting two single-model estimates leaves the contrast's own sampling variability
-unaddressed; a variance for the difference would have to be rebuilt from the joint law of
-the two marginal estimators. That rebuilding is a routine exercise rather than an open
-problem, and the field is not silent about it: \citet{ferro2007comparing} compares
-probabilistic forecasting systems through the Brier score directly,
-\citet{delsole2014comparing} treat the comparison of forecast skill as an inference
-problem in its own right, \citet{siegert2017detecting} give tests and a power analysis for
-detecting skill improvements, and the paired-U-statistic covariance construction of
-\citet{delong1988comparing} is exactly the joint-law argument in another setting. What is
-new here is not that a contrast can be given a variance, but that the contrast admits an
-\emph{exact finite-sample decomposition} whose remainder is an antisymmetric U-statistic
-with a one-pass influence function --- so the split and its uncertainty come from one
-construction rather than from combining two marginal ones. Forming the paired gain vector first and targeting the
-contrast directly makes the influence function that of the \emph{difference} itself, in
-one pass, and is also what makes the exact finite-sample identity and the antisymmetric
-kernel available without constructing two single-model estimators at all.
+What the classical decomposition does not supply is inference for a pairwise contrast. The
+point estimates do combine: both models share the $\phi$-partition and hence the same
+per-cell $n_c$, so the same $(n_c-1)/n_c$ attenuation (Proposition~\ref{prop:attenuate})
+applies to each model's separately estimated in-sample resolution, and subtracting two naive
+plug-ins recovers exactly the biased estimate of the contrast. Inference does not transfer.
+Variance estimators for the single-model decomposition \citep{siegert2014variance} target one
+resolution term in isolation and supply no covariance between it and a second model's
+estimate from the same data, so subtracting two single-model estimates leaves the contrast's
+own sampling variability unaddressed. Rebuilding it from the joint law is a routine exercise
+rather than an open problem, and the field is not silent about it:
+\citet{ferro2007comparing} compares probabilistic forecasting systems through the Brier
+score, \citet{delsole2014comparing} treat skill comparison as an inference problem in its own
+right, and the paired-U-statistic covariance construction of \citet{delong1988comparing} is
+that joint-law argument in another setting. What is new here is not that a contrast can be
+given a variance, but that it admits an \emph{exact finite-sample decomposition} whose
+remainder is an antisymmetric U-statistic with a one-pass influence function, so the split
+and its uncertainty come from one construction rather than from combining two marginal ones.
 
 \subsection{Comparing two forecasters}\label{sec:related-dm}
 

@@ -51,7 +51,7 @@ Condition on $C=c$. The proof of Theorem~\ref{thm:population} above establishes
 $\Delta R_c=\sum_y\operatorname{Cov}(H_X(y),\ind\{Y=y\}\mid C=c)$ for \emph{any} score
 contrast $H$, not only the quadratic one; only the identification of $H_x(y)$ with a
 specific functional form is score-dependent. For the Bregman score of
-Eq.~\eqref{eq:bregman-score},
+the Bregman score $S_\psi(q,y)=\psi(q)+\langle\nabla\psi(q),e_y-q\rangle$,
 \[
 H_x(y)=\underbrace{\bigl[\psi(q_1(x))-\psi(q_0(x))\bigr]
 -\bigl[\langle\nabla\psi(q_1(x)),q_1(x)\rangle-\langle\nabla\psi(q_0(x)),q_0(x)\rangle\bigr]}_{=:B(x)}
@@ -518,3 +518,152 @@ the minimum --- but a third of the cells still sit where condition (iv)'s diverg
 plainly hypothetical. The reported $94.0\%$ empirical coverage against a nominal $95\%$
 (Section~\ref{sec:simulation}), not this theorem directly, is therefore the evidence that
 the interval remains a good approximation well short of the idealization.
+
+\section{Choice of the grouping variable}\label{app:partition}
+
+\paragraph{Fineness is not a total order, and the guidance needs that qualification.}
+The advice to prefer the finest defensible $\phi$ is sound against \emph{coarsening},
+which is what Proposition~\ref{prop:coarsen} governs. It gives no guidance at all between
+two partitions of the same granularity, neither of which coarsens the other --- and there
+the estimand can differ without limit. Four cases suffice. Take two labels, $q_0$
+uninformative at $(\tfrac12,\tfrac12)$, and a new model that is confidently right on all
+four: $q_1=(0.9,0.1)$ on the two cases labelled $1$ and $(0.1,0.9)$ on the two labelled
+$2$. The total gain is $\widehat{\Delta T}=+0.480$ under every partition, and every
+partition below is fully identified at $100\%$ coverage:
+\begin{center}
+\begin{tabular}{@{}lccr@{}}
+\toprule
+declared $\phi$ & cells & $\widehat{\Delta P}$ & $\widehat{\Delta R}$ \\
+\midrule
+$\{1,3\},\{2,4\}$ (labels differ within each cell) & $2\times2$ & $-1.120$ & $+1.600$ \\
+$\{1,2,3,4\}$ (one cell)                           & $1\times4$ & $-0.587$ & $+1.067$ \\
+$\{1,2\},\{3,4\}$ (labels agree within each cell)  & $2\times2$ & $+0.480$ & $\phantom{+}0.000$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+The first and third partitions are equally fine, both fully identified, and they disagree
+about whether this model pair's improvement is entirely case-level or entirely
+transported. The third is the degenerate case the paper already warns about --- grouping
+by something that determines the label leaves each cell label-homogeneous and drives
+$\widehat{\Delta R}$ to zero algebraically --- but the warning was previously attached to
+the choice $\phi=Y$, and the point here is more general and less comfortable: any $\phi$
+correlated with the label inside a cell partially degenerates the estimand, ``finest
+defensible'' cannot detect it, and Proposition~\ref{prop:coarsen} is silent because
+neither partition is a coarsening of the other. What the analyst actually needs to
+declare, and what we recommend reporting alongside $\phi$, is the within-cell label
+heterogeneity that remains: a partition whose cells are nearly label-homogeneous cannot
+identify much of anything, and the coverage statistic does not reveal it. This is a
+limitation of the construction rather than of any application of it, and we do not have a
+procedure that resolves it.
+
+\paragraph{A recalibration-invariant alternative, and what it would cost.}
+Because $\Delta R$ is a covariance between forecast values, its sensitivity to
+recalibration is structural rather than incidental, and a reader may reasonably ask why we
+do not use a rank-based within-cell contrast instead --- a within-cell paired AUC
+difference, say, for which \citet{delong1988comparing} already supply the
+correlated-U-statistic variance. Such a quantity would be invariant to any monotone
+rescaling of either model and would dissolve the confound this paper spends a protocol on.
+We think the trade is worth stating and is not obviously in our favour on every axis.
+What a rank-based contrast gives up is the exact identity: it is not a component of the
+score difference, so it cannot be added to anything to recover $\Delta T$, and a benchmark
+reporting it learns how the models rank cases but not how the reported score gain
+decomposes. The construction here buys exact additivity with respect to a declared proper
+score, and pays for it with scale dependence. A rank-based diagnostic is the natural
+companion rather than a competitor, and reporting both --- one exact and scale-dependent,
+one invariant and non-additive --- is what we would now recommend to a benchmark that
+could choose.
+
+% --- statements relocated from the method section for length ---
+\begin{proposition}[Sensitivity bound for an unrecorded confounder]\label{prop:sensitivity}
+Suppose $H_x(y)\in[-M,M]$ for all $x,y$ (WAGER already requires a bounded score). Fix a
+cell $c$ of $\phi$, write $a_y=\mathbb E[H_X(y)\mid\phi,Z]$, $b_y=\Pr(Y=y\mid\phi,Z)$
+(both conditional on $\phi=c$) for the two $K$-vectors on the right of
+Eq.~\eqref{eq:sensitivity-exact}, and let
+\begin{equation}
+\rho=\frac{\sum_{y=1}^K\operatorname{Cov}(a_y,b_y\mid c)}
+{\sqrt{\sum_{y=1}^K\operatorname{Var}(a_y\mid c)}\sqrt{\sum_{y=1}^K\operatorname{Var}(b_y\mid c)}}
+\in[-1,1]
+\end{equation}
+be their aggregate correlation. Then
+\begin{align}
+\left|\Delta R_c(\phi)-\mathbb E[\Delta R_{(\phi,Z)}\mid\phi=c]\right|
+&\ \le\ |\rho|\sqrt{\textstyle\sum_{y=1}^K\operatorname{Var}(a_y\mid c)}\,
+\sqrt{\textstyle\sum_{y=1}^K\operatorname{Var}(b_y\mid c)}\notag\\
+&\ \le\ |\rho|\sqrt{\textstyle\sum_{y=1}^K\operatorname{Var}(H_X(y)\mid\phi=c)}\,
+\sqrt{\textstyle\sum_{y=1}^Kp_y(c)\bigl(1-p_y(c)\bigr)},
+\label{eq:sensitivity-bound}
+\end{align}
+where $p_y(c)=\Pr(Y=y\mid\phi=c)$; the second inequality holds termwise
+($\operatorname{Var}(a_y\mid c)\le\operatorname{Var}(H_X(y)\mid c)$ and
+$\operatorname{Var}(b_y\mid c)\le p_y(c)(1-p_y(c))$ by the law of total variance, since
+conditioning on more variables cannot increase the variance of a conditional
+expectation) followed by monotonicity of the square root applied to each sum
+separately -- a product of two square-root sums, not a sum of per-label square roots,
+which the law of total variance alone would not license.
+\end{proposition}
+
+\begin{corollary}[Free bound]\label{cor:sensitivity-crude}
+Each $a_y$ ranges over $[-M,M]$ as a conditional expectation of $H$, so
+$\operatorname{Var}(a_y\mid c)\le M^2$ and $\sum_y\operatorname{Var}(a_y\mid c)\le KM^2$.
+The label probabilities satisfy $\sum_yb_y=1$, which gives $\sum_yb_y^2\le1$ and, by
+Cauchy--Schwarz, $\sum_y(\mathbb E b_y)^2\ge1/K$; hence
+\begin{equation}
+\sum_{y=1}^K\operatorname{Var}(b_y\mid c)
+=\mathbb E\Bigl[\textstyle\sum_yb_y^2\Bigr]-\sum_y\bigl(\mathbb E b_y\bigr)^2
+\ \le\ 1-\frac1K .
+\label{eq:simplex-var}
+\end{equation}
+Substituting both into Eq.~\eqref{eq:sensitivity-bound} gives the data-free bound
+\begin{equation}
+\left|\Delta R_c(\phi)-\mathbb E[\Delta R_{(\phi,Z)}\mid\phi=c]\right|
+\ \le\ |\rho|\,M\sqrt{K-1}.
+\label{eq:sensitivity-crude}
+\end{equation}
+\end{corollary}
+
+Earlier versions of this corollary bounded $\sum_y\operatorname{Var}(b_y\mid c)$ by
+Popoviciu's inequality applied label by label, giving $K/4$ and hence $|\rho|KM/2$. That
+discards Eq.~\eqref{eq:simplex-var}: the $b_y$ are not $K$ unconstrained quantities in
+$[0,1]$ but a point on the simplex, and $K/4$ is unattainable for $K>2$. At VG150's
+$K=50$ and $M=2$ the corrected free bound is $14.00|\rho|$ rather than $50.00|\rho|$, a
+factor of $3.57$.
+
+An analyst willing to bound $|\rho|\le\bar\rho$ -- how strongly an unrecorded variable
+could jointly move a model's within-cell score gain and the within-cell label
+distribution -- obtains a numeric limit on how far $\widehat{\Delta R}_c$ can be from
+what a fully adjusted audit would find, without observing or modeling $Z$, in the spirit
+of \citet{rosenbaum2002observational} and recent partial-correlation sensitivity models
+for unmeasured confounding \citep{cinelli2020making}.
+Because $\bar\rho$ is a correlation rather than a domain-specific odds or risk ratio, it
+can be elicited the same way across benchmarks.
+
+Both forms of the bound are evaluated on this paper's own Visual Genome estimates in
+Appendix~\ref{app:sensitivity}. The short version is that the free bound is directionally
+correct but far too loose to certify anything, while the sharp per-cell form is
+\emph{less} reassuring than the free one: an unrecorded covariate whose aggregate
+correlation with both channels reaches $0.061$ would account for the entire covariance gain
+reported in Section~\ref{sec:results}. We therefore do not claim those gains are robust to
+confounding, and Section~\ref{sec:sggaudit}'s audit is unaffected only because its estimate
+is already indistinguishable from zero.
+
+\begin{theorem}[Asymptotic normality of the covariance-gain estimator]\label{thm:clt}
+Suppose (i) $H_x(y)\in[-M,M]$ for all $x,y$; (ii) examples are partitioned into clusters
+$g=1,\dots,G$ (e.g.\ images) that are mutually independent, with cluster sizes having a
+finite third moment and $\max_g|g|=o(\sqrt{G})$; (iii) the limiting variance
+$\sigma^2=\lim_{G\to\infty}\operatorname{Var}\!\bigl(\sqrt{N_*}(\widehat{\Delta R}-\theta)\bigr)$
+exists and is strictly positive, where $\theta$ is the identified-subpopulation estimand
+of Appendix~\ref{app:influence}; and (iv) $\phi$ takes values in a fixed, finite set,
+each with strictly positive limiting population mass, so that every eligible cell's size
+$n_c$ diverges almost surely as $N\to\infty$. Then
+\begin{equation}
+\sqrt{N_*}\bigl(\widehat{\Delta R}-\theta\bigr)\ \xrightarrow{d}\ \mathcal N(0,\sigma^2),
+\end{equation}
+and the plug-in sandwich variance $\widehat\sigma^2=N_*\dfrac{G}{G-1}\sum_{g}\bigl(\sum_{i\in g}\widehat\psi_i/N_*\bigr)^2$
+of Appendix~\ref{app:influence} is consistent for $\sigma^2$.
+\end{theorem}
+
+Appendix~\ref{app:clt} discusses what condition (iv) costs --- it forces every cell to be
+eventually identified, so the theorem does not describe the finite-sample regime our own
+applications sit in --- and states the additional condition on the number of cells that the
+dataset-level remainder requires. What licenses reading the reported intervals at finite $N$
+is the coverage simulation of Section~\ref{sec:simulation}, not this theorem.

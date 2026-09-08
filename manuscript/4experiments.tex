@@ -17,50 +17,42 @@ intervals are $95\%$.
 
 \subsection{Controlled validation}\label{sec:simulation}
 
-We generate 24 cells over five labels, drawing each cell's label distribution from
-a Dirichlet law and taking the old model to be exactly the cell prior. The new model
-interpolates toward an oracle, $q_1=(1-\beta)q_0+\beta q_{\rm oracle}$ with
-$q_{\rm oracle}$ placing $0.98$ on the realized label, and forty repetitions are run at
-each $\beta\in\{0,.1,\ldots,.8\}$. Across that range the estimated covariance gain grows
-linearly and monotonically with the injected signal (Figure~\ref{fig:simulation}, left).
+We generate 24 cells over five labels, drawing each cell's label distribution from a
+Dirichlet law and taking the old model to be exactly the cell prior. The new model
+interpolates towards an oracle, $q_1=(1-\beta)q_0+\beta q_{\rm oracle}$ with $q_{\rm oracle}$
+placing $0.98$ on the realized label; forty repetitions run at each
+$\beta\in\{0,.1,\ldots,.8\}$. The estimated covariance gain grows linearly and monotonically
+with the injected signal (Figure~\ref{fig:simulation}, left). Type-I behaviour is assessed by
+perturbing the prior predictions with mean-zero noise and reassigning the perturbed vectors
+within each cell, which guarantees no systematic prediction--label alignment survives: over
+200 such datasets the 99-shift randomization test rejects in $0.030$ of runs at level $0.05$,
+with a mean estimate of $-8.97\times10^{-5}$ and approximately uniform null $p$-values.
 
-Type-I behaviour is assessed by perturbing the prior predictions with mean-zero noise
-and then randomly reassigning the perturbed vectors within each cell, which guarantees
-that no systematic prediction--label alignment survives. Over 200 such datasets the
-99-shift randomization test rejects in $0.030$ of runs at level $0.05$, with a mean
-estimated covariance gain of $-8.97\times10^{-5}$; the null $p$-values come out
-approximately uniform and the null estimates stay centred at zero
-(Figure~\ref{fig:simulation}, centre and right).
+\paragraph{Coverage of the primary interval.} The paper's primary uncertainty statement is
+the image-clustered H\'ajek interval, so we validate it in the regime that stresses it:
+relations grouped into images (one to about thirty each) whose oracle weight shares a latent
+per-image effect, with Zipf-distributed cell sizes in which most identified cells hold
+exactly two examples. Against the design expectation from 4{,}000 replications, the
+cluster-robust interval covers in $94.0\%$ of 500 runs while an interval treating relations
+as independent covers in only $88.6\%$ --- quantifying both the mild finite-sample
+undercoverage and the necessity of clustering.
 
-\paragraph{Coverage of the primary interval.} The oracle-signal and null designs above
-validate the estimator's centering and the randomization diagnostic, but the paper's
-primary uncertainty statement is the image-clustered H\'ajek interval, so we validate
-its coverage directly in the regime that stresses it: relations grouped into images
-(one to about thirty per image) whose oracle weight shares a latent per-image effect,
-and Zipf-distributed cell sizes in which most identified cells hold exactly two
-examples. Against the design expectation estimated from 4{,}000 independent
-replications, the cluster-robust interval covers in $94.0\%$ of 500 runs, while an
-interval that wrongly treats relations as independent covers in only $88.6\%$ --
-quantifying both the mild finite-sample undercoverage of the asymptotic interval and
-the necessity of clustering.
+\paragraph{Discriminant validity.} Three designs test that the channels separate what they
+claim to. A \emph{calibration-only} alternative, where the new model is a temperature-softened
+copy of an overconfident informative model so the pair contains identical case information,
+is credited raw with a large negative covariance gain (mean $-0.488$) --- the confound
+quantified on real models in Appendix~\ref{app:lt} --- which the protocol below reduces to
+$-0.0003$ (sd $0.0017$ over 200 runs). A \emph{prior-only} improvement, where the new model
+corrects a heteroscedastically noisy estimate of the cell prior, yields a covariance gain
+centred at zero ($0.0002$, sd $0.0035$) with a clearly positive transported channel: prior
+improvements do not leak beyond the algebraic guarantee of
+Theorem~\ref{thm:population}. An \emph{unrecorded within-cell shortcut} --- a binary feature
+varying inside each cell that shifts the label distribution and is used by the new model ---
+is credited to covariance ($+0.041$, sd $0.004$), quantifying the limitation that
+$\widehat{\Delta R}$ measures all within-cell predictive signal relative to the declared
+$\phi$, shortcut or otherwise.
 
-\paragraph{Discriminant validity.} Three further designs test that the channels
-separate what they claim to separate. First, a \emph{calibration-only} alternative:
-the new model is a temperature-softened copy of an overconfident informative model, so
-the pair contains identical instance information. The raw decomposition credits it with
-a large negative covariance gain (mean $-0.488$) -- the confound quantified on real
-models in Section~\ref{app:lt} -- while the calibration-matched protocol below reduces
-it to $-0.0003$ (sd $0.0017$ over 200 runs), confirming that the protocol removes
-exactly the confidence-scaling channel. Second, a \emph{prior-only} improvement (the
-new model corrects a heteroscedastically noisy estimate of the cell prior, adding no
-instance information) yields a covariance gain centred at zero ($0.0002$, sd $0.0035$)
-with a clearly positive transported channel: prior improvements do not leak into
-$\widehat{\Delta R}$ beyond the algebraic guarantee of Theorem~\ref{thm:population}.
-Third, an \emph{unrecorded within-cell shortcut} (a binary feature, varying inside each
-cell, that shifts the label distribution and is used by the new model) is credited to
-covariance ($+0.041$, sd $0.004$), quantifying the stated limitation that
-$\widehat{\Delta R}$ measures all within-cell predictive signal relative to the
-declared $\phi$, shortcut or otherwise, and cannot by itself distinguish the two.
+
 
 \paragraph{The calibration-matched protocol.} The third of those designs identifies a
 limitation serious enough to be part of the procedure rather than a caveat about it.
@@ -226,252 +218,81 @@ calibration-matched & log       & class pair & $-0.54760$ & $-0.59157$ & $+0.043
 
 \subsection{Relation prediction with controlled predictors}\label{app:vgmain}\label{sec:data}
 
-We work with Visual Genome \cite{krishna2017visual} in the PredCls regime
-\cite{xu2017scene}, where ground-truth boxes and object labels are supplied and
-the model has only to predict one of 50 predicate labels for each ordered object pair.
-The predictors of this section are audited on a VG150-\emph{style} dataset we build
-directly from the released relationship annotations: the 150 most frequent object
-classes and 50 most frequent predicates form the vocabulary, and images are split
-$70/30$ into a pool for fitting the compared predictors and a pool on which the audit
-runs. We use this reconstruction rather than the canonical VG150 release because these
-predictors are trained here from annotations alone; Section~\ref{sec:sggaudit} audits
-\emph{released third-party checkpoints} on the canonical split itself, so both settings
-appear in the paper and neither is asked to stand for the other. The reconstruction
-provides 532,987 training and 229,605 test relations, drawn from 65,228 and 27,955
-images respectively, and the cell throughout is
-$\phi=(\text{subject class},\text{object class})$, two real examples of which appear in
-Figure~\ref{fig:samples}. Of the 8,614 cells present in the test split, 6,346 contain at
-least two relations and are therefore identified; the remaining 2,268 are singletons,
-which WAGER excludes and reports rather than smoothing over, leaving 227,337 relations
-(99.0\%) under audit.
+A released checkpoint cannot tell us whether the decomposition is measuring what it claims,
+because the ground truth about what the model can see is unavailable. We therefore also
+compare five predictors on VG150 whose information content is controlled by construction: a
+frequency table (FREQ) that sees only the class pair, an MLP on class embeddings
+(MLP-CLASS), and MLPs adding box geometry (MLP-SPATIAL, MLP-SPATIAL+). Full protocol,
+per-pair tables and the accuracy figures are in Appendix~\ref{app:vgmain-full}; the audit
+covers $227{,}337$ of $229{,}605$ test relations, a coverage of $99.0\%$, over $6{,}346$
+identified class-pair cells.
 
-The five predictors are deliberately constructed so that each exposes a different kind
-of information. FREQ is the training-count distribution conditioned on the class pair,
-with add-one smoothing and a subject-marginal and then global backoff for class pairs
-unseen in training; FREQ+OVERLAP adds to it a single binary box-overlap indicator.
-MLP-CLASS consumes fixed subject and object class embeddings, which makes it a function
-of $\phi$ alone; MLP-SPATIAL extends those embeddings with 12 normalized box-geometry
-features covering relative centre, scale, aspect, intersection, containment and IoU,
-while MLP-SPATIAL+ both widens the network and trains longer (Appendix
-\ref{app:implementation} lists every architecture and schedule), so its increment over
-MLP-SPATIAL reflects capacity and optimization jointly rather than capacity alone. Each
-is trained once on the training split, and WAGER thereafter consumes nothing but their
-cached test distributions, scored quadratically with image-clustered intervals and 499
-within-cell cyclic randomizations, whose smallest attainable $p$-value is
-$1/500=.002$; table entries of $.002$ are at this granularity floor and should be read
-as $p\le.002$. With confidence intervals as the primary uncertainty statement and every
-significant effect many standard errors from zero, we do not additionally adjust the
-diagnostic $p$-values for the number of reported comparisons.
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/fig6_dataset_samples.png}
-\caption{\textbf{What a cell contains, on both benchmarks.} Each row shows two
-real test examples that share the same declared grouping variable $\phi$ but carry
-different labels -- precisely the configuration within-cell transport exploits.
-\emph{Top:} two Visual Genome relations from the cell $\phi=(\text{man},
-\text{surfboard})$. The class pair is identical and therefore cannot distinguish
-``riding'' from ``carrying''; only the image content can, which is what
-$\Delta R$ is designed to credit. Boxes are the annotated subject (red) and object
-(blue) regions that MLP-SPATIAL turns into geometry features and MLP-VISUAL crops and
-encodes with CLIP. \emph{Bottom:} two CIFAR-100 test images from the superclass
-$\phi=\text{aquatic\_mammals}$, drawn from opposite ends of the long-tailed training
-distribution ($415$ versus $6$ training images). Crossing the labels within a row
-preserves the cell and its label histogram while destroying which prediction belongs
-with which instance.}
-\label{fig:samples}
-\end{figure*}
-
-\begin{table}[t]
-\centering
-\caption{Frozen-model top-1 accuracy on VG150 PredCls. Similar accuracies do not reveal
-whether the difference is transported.}
-\label{tab:accuracy}
-\begin{tabular}{@{}lr@{}}
-\toprule
-Model & Accuracy \\
-\midrule
-FREQ & 0.6564 \\
-FREQ+OVERLAP & 0.6545 \\
-MLP-CLASS & 0.6554 \\
-MLP-SPATIAL & 0.6639 \\
-MLP-SPATIAL+ & 0.6674 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Gain attribution for the controlled predictors}\label{sec:results}
-
-The central result is collected in Table~\ref{tab:wager-results} and
-Figure~\ref{fig:results}. MLP-CLASS improves on FREQ by $0.03386$ of quadratic score,
-yet because its gain vector is constant inside every class-pair cell, the estimator
-assigns that entire improvement to prior transport and precisely nothing to instance
-covariance. The zero is worth dwelling on: it follows algebraically from the construction
-rather than from a learned baseline happening to pass a sanity check.
-
-Adding box geometry changes the picture. MLP-SPATIAL gains $0.04270$ over FREQ, of which
-$0.02832$ survives label transport and $0.01439$ is within-group covariance (CI
-$[0.01373,0.01504]$). More revealing still is the direct comparison against MLP-CLASS,
-where the total gain falls to $0.00885$ only because the transported channel deteriorates by
-$0.00554$ even as the covariance gain from spatial features rises by $0.01439$. The resulting covariance share
-of 1.63 records a genuinely useful instance-specific change that the aggregate score
-partly conceals behind a worse prior component, and it is exactly the configuration that
-a ratio confined to $[0,1]$, or thresholded at $0.5$, would misdescribe.
-
-The remaining two comparisons bracket the interesting range. MLP-SPATIAL+ adds $0.00374$
-over MLP-SPATIAL, nearly all of it covariance gain at $0.00321$ (CI $[0.00289,0.00353]$),
-whereas FREQ+OVERLAP supplies the opposite caution: its overlap indicator does create a
-small positive covariance gain, but the accompanying negative prior term is larger, so
-the model ends up worse overall. Using image-derived information is thus never treated
-as an improvement in itself; both channels are reported, signs included.
-
-\paragraph{Reading the magnitudes.} Quadratic-score units are not ones most readers
-calibrate by eye, so it is worth anchoring them in the rank-based metrics this
-literature reports. Where both channels point the same way the correspondence is
-straightforward: MLP-SPATIAL-S's $\widehat{\Delta R}=+0.01023$ over MLP-CLASS-S
-accompanies $+0.51$ points of top-1 predicate accuracy, $+0.60$ of mean reciprocal rank
-and $+0.86$ of recall@5, so in these data a hundredth of quadratic-score gain is worth
-roughly half an accuracy point. The covariance channel is not, however, a re-description
-of any rank metric, and the real-pixel comparison of Section~\ref{app:vgvisual} is
-where that becomes visible: there $\widehat{\Delta R}=+0.00641$ while top-1 accuracy
-falls by $3.07$ points and recall@5 by $2.21$. Prior-matching both models before scoring
-narrows the accuracy gap to $2.17$ points without closing it. The rank metrics aggregate
-the two channels into one number; when the channels carry opposite signs, as they do
-here, no single such number can represent both, which is precisely the situation the
-decomposition exists to report.
-
-\begin{table*}[t]
-\centering
-\caption{WAGER decomposition on 227,337 identified VG150 PredCls relations. Gains use
-the quadratic score. CI is image-cluster robust; $p$ is the 499-shift relation-level
-randomization diagnostic (granularity floor $.002$). ``--'' denotes an undefined share
-because total gain is negative. The MLP-CLASS row's zero-width interval is exact by
-construction, not a sampling statement: a gain vector constant within every cell makes
-the antisymmetric kernel identically zero (Theorem~\ref{thm:population}), so no
-variability exists for the interval to measure.}
-\label{tab:wager-results}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}llrrrrr@{}}
-\toprule
-New model & Old model & $\widehat{\Delta T}$ & $\widehat{\Delta P}$ &
-$\widehat{\Delta R}$ (95\% CI) & $\widehat\rho$ & $p$ \\
-\midrule
-FREQ+OVERLAP & FREQ & $-0.01229$ & $-0.01430$ & $0.00202\,[0.00168,0.00235]$ & -- & .002 \\
-MLP-CLASS & FREQ & $0.03386$ & $0.03386$ & $0.00000\,[0.00000,0.00000]$ & 0.00 & .724 \\
-MLP-SPATIAL & FREQ & $0.04270$ & $0.02832$ & $0.01439\,[0.01373,0.01504]$ & 0.34 & .002 \\
-MLP-SPATIAL+ & FREQ & $0.04644$ & $0.02885$ & $0.01760\,[0.01686,0.01834]$ & 0.38 & .002 \\
-MLP-SPATIAL & MLP-CLASS & $0.00885$ & $-0.00554$ & $0.01439\,[0.01373,0.01504]$ & 1.63 & .002 \\
-MLP-SPATIAL+ & MLP-SPATIAL & $0.00374$ & $0.00053$ & $0.00321\,[0.00289,0.00353]$ & 0.86 & .002 \\
-\bottomrule
-\end{tabular}
-}
-\end{table*}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/fig4_new_results.png}
-\caption{\textbf{Direct model-pair attribution.} Left: exact decomposition of each
-positive gain into transported and within-group covariance components (the negative
-prior term for SPATIAL--CLASS extends left of zero). Right: primary covariance estimates
-with image-cluster-robust intervals.}
-\label{fig:results}
-\end{figure*}
-
-\paragraph{Reading $\widehat{\Delta T}$ as a comparative forecast test.} Corollary
-\ref{cor:dm} identifies $\widehat{\Delta T}$ and its image-clustered interval in Table
-\ref{tab:wager-results} as a grouped Diebold--Mariano statistic and interval, on the identified subsample, for
-each pair's paired score differential, so every row already reports what that classical
-test would report. What it does not report is the next two columns: whether MOTIFS-TDE
-(Section~\ref{sec:sggaudit}) or MLP-SPATIAL beat their baseline for a reason a
-frequency-only remodeling of the same benchmark could not reproduce, which is the
-question $\widehat{\Delta P}$ and $\widehat{\Delta R}$ answer and DM/GW do not ask.
+Two readings matter here. MLP-CLASS improves on FREQ by $0.03386$ of quadratic score and
+the decomposition assigns \emph{all} of it to the transported channel: the covariance gain
+is $0.00000$ with a zero-width interval and randomization $p=.724$. That zero is not an
+empirical finding but an algebraic one --- both models are functions of $\phi$ alone, so
+their gain vector is constant within each cell and Theorem~\ref{thm:population} forces the
+remainder to vanish --- and it is the sharpest available check that the estimator credits
+nothing to case-level evidence when none exists. Adding box geometry then produces a
+covariance gain of $0.01439$ (CI $[0.01373,0.01504]$, $p=.002$) that no aggregate score
+separates out, and against MLP-CLASS the total gain of $0.00885$ actually understates it,
+because the transported channel deteriorates by $0.00554$ --- the same structure as model B
+of Section~\ref{sec:worked}, now on real predictors.
 
 \subsection{Real pixels against a geometric proxy}\label{app:vgvisual}\label{sec:vgvisual}
 
-None of the models in Sections~\ref{app:vgmain}--\ref{sec:ablations} ever sees an image.
-They are functions of the declared class pair and, in the case of MLP-SPATIAL(+), of box
-coordinates recorded in the annotation. Since box geometry serves only as a proxy for
-what an image contains, a sceptical reader is entitled to ask whether the covariance
-channel is responding to genuine pixel evidence or merely to that proxy.
-Figure~\ref{fig:samples} sharpens the question: the cell
-$\phi=(\text{man},\text{surfboard})$ holds both ``riding'' and ``carrying'', and although
-their box configurations certainly differ, what actually distinguishes the two relations
-is what the photograph shows.
+None of the predictors above ever sees an image: they are functions of the class pair and,
+for MLP-SPATIAL(+), of box coordinates recorded in the annotation. Since box geometry is
+only a proxy for image content, a sceptical reader may ask whether the covariance channel
+responds to pixel evidence or merely to that proxy. Figure~\ref{fig:samples} sharpens the
+question --- the cell $\phi=(\text{man},\text{surfboard})$ holds both ``riding'' and
+``carrying'', and what distinguishes them is what the photograph shows.
 
-MLP-VISUAL is introduced to answer it. Subject and object regions are cropped from the
-original Visual Genome image and each is encoded by a frozen CLIP ViT-B/32 image encoder
-\citep{radford2021learning}, after which the two $512$-dimensional embeddings are
-concatenated with the class embeddings that MLP-CLASS already uses and passed to a small
-trained head of 256 and 128 units. Because CLIP itself is never fine-tuned, whatever
-covariance the model gains reflects information its pretraining had already recovered
-from pixels and the head has merely matched to an SGG label, rather than representation
-learning performed on Visual Genome.
+MLP-VISUAL answers it. Subject and object regions are cropped from the original image and
+each encoded by a frozen CLIP ViT-B/32 encoder \citep{radford2021learning}; the two
+$512$-dimensional embeddings are concatenated with the class embeddings MLP-CLASS already
+uses and passed to a small trained head. Because CLIP is never fine-tuned, whatever
+covariance the model gains reflects information its pretraining already recovered from
+pixels rather than representation learning on Visual Genome.
 
-\paragraph{Matched training data.} We report this comparison apart from
-Table~\ref{tab:wager-results} rather than as an additional row, for a reason that is
-itself an instance of the paper's argument. Encoding every training relation with CLIP is
-expensive enough that MLP-VISUAL must be trained on a subsample, and setting a subsampled
-model against the full-data MLP-SPATIAL would confound feature content with training-set
-size so thoroughly that a disappointing result could not honestly be attributed to the
-pixels. All three compared predictors are therefore retrained on a single fixed, seeded
-subsample of $100{,}000$ of the $532{,}987$ training relations, and are written
-MLP-CLASS-S, MLP-SPATIAL-S and MLP-VISUAL-S to mark the fact. Differing only in their
-feature sets, any gap between them isolates the features. The audit continues to use the
-complete $229{,}605$-relation test split with the same class-pair $\phi$ and
-image-clustered intervals, so its numbers remain directly comparable with the main
-analysis. The sampling procedure, the crop-deduplication scheme and the count of images
-that could not be retrieved are given in Appendix~\ref{app:implementation}.
+Encoding every training relation with CLIP is expensive, so MLP-VISUAL must be trained on a
+subsample; setting a subsampled model against the full-data MLP-SPATIAL would confound
+feature content with training-set size. All three compared predictors are therefore
+retrained on one fixed, seeded subsample of $100{,}000$ of the $532{,}987$ training
+relations, written MLP-CLASS-S, MLP-SPATIAL-S and MLP-VISUAL-S, so any gap between them
+isolates the features. The audit still uses the full $229{,}605$-relation test split with
+the same class-pair $\phi$ and image-clustered intervals.
 
-\paragraph{Result.} Judged by any aggregate measure, the CLIP model is the worst of the
-three. Its top-1 accuracy is $0.6161$ against $0.6467$ for MLP-SPATIAL-S and $0.6416$ for
-MLP-CLASS-S, and its quadratic score is lower still, falling $0.04655$ below
-MLP-SPATIAL-S. An evaluator working from either number would conclude that replacing box
-geometry with pixel content had simply made the predictor worse, and would discard it.
+\paragraph{Result.} By any aggregate measure the CLIP model is the worst of the three: top-1
+accuracy $0.6161$ against $0.6467$ for MLP-SPATIAL-S and $0.6416$ for MLP-CLASS-S, and a
+quadratic score $0.04655$ below MLP-SPATIAL-S. An evaluator reading either number would
+discard it.
 
-The decomposition in Table~\ref{tab:vgvisual} and Figure~\ref{fig:vgvisual} contradicts
-that reading on the axis the paper cares about. Against MLP-SPATIAL-S the CLIP model
-loses $0.05296$ of transported gain while \emph{gaining} $0.00641$ of instance
-covariance (95\% CI $[0.00514,0.00769]$, randomization $p=.002$), so its entire deficit
-sits in the transported channel and its within-cell discrimination is significantly better,
-not worse. The comparison against the class-only baseline tells the same story more
-plainly: pixels buy $0.01665$ of covariance where box geometry buys $0.01023$, and the
-two intervals are far apart. Real image content therefore carries more instance-specific
-signal than the geometric proxy standing in for it, which is precisely what
-Section~\ref{app:vgvisual} set out to test.
+The decomposition contradicts that reading on the axis that matters. Against MLP-SPATIAL-S
+the CLIP model loses $0.05296$ of transported gain while \emph{gaining} $0.00641$ of
+covariance (95\% CI $[0.00514,0.00769]$, randomization $p=.002$): its entire deficit sits in
+the transported channel and its within-cell discrimination is significantly better, not
+worse. Against the class-only baseline the point is plainer still --- pixels buy $0.01665$
+of covariance where box geometry buys $0.01023$, with well-separated intervals. Real image
+content carries more case-specific signal than the geometric proxy standing in for it.
 
-Why the transported channel collapses has a plausible mechanism, though we state it as a
-hypothesis rather than a finding. The $1024$ CLIP dimensions dominate
-the $64$ dimensions of class embedding that the head also receives, so the model fits the
-class-pair frequency structure of VG150 markedly less well than a predictor built around
-that structure. A benchmark whose headline metric rewards transported gain will punish this
-model, and the aggregate numbers duly do. What WAGER adds is the observation that the
-punishment is not for failing to use the image; it is for failing to reproduce the
-annotation prior, while using the image better than either competitor.
+A plausible mechanism, stated as hypothesis rather than finding: the $1024$ CLIP dimensions
+dominate the $64$ dimensions of class embedding the head also receives, so the model fits
+VG150's class-pair frequency structure markedly less well than a predictor built around it.
+A benchmark whose headline metric rewards transported gain will punish this model, and the
+aggregate numbers duly do. What the decomposition adds is that the punishment is not for
+failing to use the image.
 
-\paragraph{The deficit and the advantage respond to different interventions.} If the
-two channels measure what they claim, they should respond asymmetrically to a post-hoc
-correction that supplies prior information but no instance information. We test this by
-prior matching: within each class-pair cell, a model's predictions are reweighted so
-that their cell mean matches the training-count histogram, a label-shift-style
-correction that uses no test labels. The correction registers, as it must, almost
-entirely in the transported channel ($\Delta P=+0.02401$ against $\Delta R=+0.00111$ for the
-CLIP model relative to its uncorrected self), and it cuts the CLIP model's aggregate
-deficit roughly in half ($-0.04655$ to $-0.02143$) while leaving the covariance advantage
-intact ($+0.00752$, or $+0.00663$ with both models corrected). A calibration-matched
-audit -- temperatures fitted on a held-out image split, $T^*=1.18$ against $1.00$, so
-these heads are nearly calibrated to begin with -- likewise leaves the advantage
-significant at $+0.00467$ $[+0.00314,+0.00621]$. The covariance channel is therefore
-neither manufacturable by prior correction nor an artifact of confidence scaling.
-Conversely, the part of the deficit that prior matching removes is exactly the part a
-deployment could restore by re-weighting; the remainder reflects differences in
-within-cell prediction dispersion rather than in the fitted cell histogram.
-
-This is the paper's argument running in the opposite direction from
-Section~\ref{app:lt}. There a near-zero total gain concealed a large covariance-gain
-\emph{loss}; here a clearly negative total gain conceals a real covariance \emph{gain}. In
-both cases the aggregate score is not merely imprecise but actively misleading about the
-thing a vision benchmark is meant to measure, and in both cases the two channels recover
-what it hides.
+Two falsification checks follow, both reported in full in
+Appendix~\ref{app:implementation}. Correcting a model's within-cell prior towards the
+training histogram registers as almost pure transported movement ($+0.02401$ against
+$+0.00111$ of covariance), as a correction carrying no case-level information must; applied
+to the CLIP model it halves the aggregate deficit ($-0.04655$ to $-0.02143$) while the
+covariance advantage persists ($+0.00752$, and $+0.00663$ when both models are corrected),
+and it also survives confidence matching ($+0.00467$, CI $[+0.00314,+0.00621]$). Together with the long-tailed study of
+Appendix~\ref{app:lt} this brackets the failure mode from both sides: there a near-zero
+total gain concealed a large covariance loss, here a clearly negative total conceals a real
+covariance gain.
 
 \begin{table}[t]
 \centering
@@ -506,7 +327,6 @@ geometry with real image content raises within-group covariance from $0.01023$ t
 over the same class-only baseline.}
 \label{fig:vgvisual}
 \end{figure*}
-
 
 \subsection{Other modalities, and sensitivity}\label{sec:further}
 
