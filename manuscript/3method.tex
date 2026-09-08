@@ -148,7 +148,11 @@ gradient coordinate of $\psi$. Two named cases follow. For $\psi(q)=\lVert q\rVe
 $2\Delta q_y(x)$ and the identity is Eq.~\eqref{eq:cov-id}; for the negative entropy it is
 the log-likelihood-ratio contrast $\log q_1(y\mid x)-\log q_0(y\mid x)$, so the log-score
 check of Section~\ref{sec:sggaudit} carries the same exact covariance meaning rather than
-being merely a sensitivity analysis. The implemented log score floors each probability at
+being merely a sensitivity analysis. Any other Bregman score --- the spherical or
+power-family scores catalogued by \citet{gneiting2007proper}, for instance --- inherits an
+identity of the same form through its own $\psi$, so Theorem~\ref{thm:bregman} fixes the
+scope of the estimator's scoring-rule dependence once rather than leaving each alternative
+score to be checked separately. The implemented log score floors each probability at
 $\epsilon=10^{-6}$ to avoid $-\infty$ on an unseen label; the identity is exact for the
 unfloored score and the floored version is a check on it, negligibly different whenever no
 relevant probability is within $\epsilon$ of zero.
@@ -353,7 +357,13 @@ the exact identity and delta method.
 
 As a complementary finite-group diagnostic we apply an independently sampled cyclic shift to
 the labels inside every cell, preserving cell size and label histogram, and recompute
-$\widehat{\Delta R}$ under $B$ shifts to obtain a one-sided $p$-value; Appendix~\ref{app:random} gives the algorithm. It is exact under the sharp null that labels are exchangeable
+$\widehat{\Delta R}$ under $B$ shifts to obtain a one-sided $p$-value
+\begin{equation}
+p=\frac{1+\sum_{b=1}^B\ind\{\widehat{\Delta R}^{(b)}\ge\widehat{\Delta R}\}}{B+1},
+\label{eq:randp}
+\end{equation}
+whose plus-one correction counts the observed assignment and so cannot return zero;
+Appendix~\ref{app:random} gives the algorithm. It is exact under the sharp null that labels are exchangeable
 relative to the frozen model outputs within each cell. Because relations share images, our
 primary real-data uncertainty statement is the image-cluster-robust interval and the
 randomization test is a secondary relation-level diagnostic.

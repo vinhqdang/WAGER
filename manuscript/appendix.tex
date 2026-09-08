@@ -129,29 +129,6 @@ randomization $p$-values, and controls type-I error in 200 null runs.}
 \label{fig:simulation}
 \end{figure*}
 
-\section{Bregman-score identity}\label{app:bregman}
-
-
-
-Eq.~\eqref{eq:log-cov-id} gives the log-score check of Section~\ref{sec:sggaudit} the same exact covariance meaning that Eq.~\eqref{eq:cov-id} gives the quadratic score: within-group covariance under the log score is the within-cell covariance between the log-likelihood-ratio contrast of the two models and the observed label indicator, not merely "a sensitivity analysis." Any other Bregman score -- the spherical or power-family scores catalogued by \citet{gneiting2007proper}, for instance -- inherits an identity of the same form through its own $\psi$, so Theorem~\ref{thm:bregman} fixes the scope of the estimator's scoring-rule dependence once, rather than leaving each alternative score to be checked separately. The implemented log score floors each probability at $\epsilon=10^{-6}$ to avoid $-\infty$ on an unseen label; Eq.~\eqref{eq:log-cov-id} is exact for the unfloored $\log q_y$, and the floored version used throughout is a sensitivity check on that exact identity rather than a literal instance of it, negligibly different whenever no relevant probability is within $\epsilon$ of zero.
-
-\section{Finite-sample identity}\label{app:finite}
-
-
-\section{Randomization test}\label{app:randtest}
-
-As a complementary finite-group diagnostic, WAGER applies an independently sampled
-cyclic shift to labels inside every cell. Each shift preserves cell size and label
-histogram. Recomputing $\widehat{\Delta R}$ under $B$ shifts gives
-\begin{equation}
-p=\frac{1+\sum_{b=1}^B\ind \{\widehat{\Delta R}^{(b)}\ge
-\widehat{\Delta R}\}}{B+1}.
-\end{equation}
-This is exact under the sharp null that labels are exchangeable relative to the frozen
-model outputs within each cell. Because SGG relations share images, our primary
-real-data uncertainty statement is the image-cluster-robust interval; the randomization
-test is reported as a secondary relation-level diagnostic.
-
 \section{Coarsening and unrecorded covariates}\label{app:coarsen}
 
 Appendix~\ref{sec:ablations} reports that replacing the class-pair cell with a coarser
@@ -863,15 +840,10 @@ both models rescaled to comparable confidence before the audit \\
 \end{tabular}
 \end{table}
 
-\section{Composition of the transported gain}\label{app:transported}
+\section{Why the transported gain is not prior fit}\label{app:transported}
 
-The component that survives transport is easy to misname. It is tempting to call
-$\Delta P$ a prior-fit gain, since transport replaces a case's label by an independent
-draw from its cell; several earlier drafts of this paper did exactly that. The following
-identity shows the name is wrong, and says what the quantity is instead.
-
-
-Only the first bracket is prior fit: it is positive exactly when the new model's average
+Proposition~\ref{prop:transported} splits $\Delta P_c$ into two brackets, and only the
+first is prior fit: it is positive exactly when the new model's average
 within-cell forecast sits closer to the cell's label frequencies. The second has nothing to
 do with the prior. It rewards the new model for making \emph{less} dispersed predictions
 inside the cell, at a fixed mean forecast, so $\Delta P$ can be large and positive when
