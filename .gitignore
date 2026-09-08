@@ -261,3 +261,6 @@ reviews/*/_manuscript_text.txt
 # Generated flat submission bundle (rebuild: python experiments/build_flat_submission.py --zip)
 submission/
 submission.zip
+
+# Generated code-only archive (rebuild: python experiments/build_code_archive.py)
+code.zip
