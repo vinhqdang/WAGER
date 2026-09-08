@@ -3,16 +3,16 @@ benchmarks whose labels are partly determined by a feature both compared models 
 the object-class pair in relation prediction, the class frequency in long-tailed recognition
 --- such a gain mixes two improvements: the new model may fit the label frequencies
 \emph{within} groups of that feature more closely, which a frequency table also achieves, or
-it may match its predictions to the individual cases they were made for. Mean recall, zero-shot
-recall and significance tests leave the two mixed. We decompose the gain exactly. Score each model's prediction
+match its predictions to the individual cases they were made for. Mean recall,
+zero-shot recall and significance tests leave the two mixed.
+We decompose the gain exactly: score each model's prediction
 for one test case against the label of a \emph{different} case in the same group: averaging
-over such relabellings gives the \emph{transported gain}, and what remains is a
-\emph{within-group covariance gain}. The identity is exact in finite samples, needs no fitted
-baseline, no held-out fold and no tuning parameter, and costs $O(NK)$, so any frozen pair can be
-audited from cached predictions. The remainder is an order-two U-statistic,
-holds for every Bregman score, and admits cluster-robust intervals. On two released MOTIFS
-checkpoints evaluated with the original authors' code, a ten-point mean-recall improvement
-corresponds to a proper-score difference that is overwhelmingly transported. The unmodified
-estimator transfers to a frozen-CLIP variant and to long-tailed image and text
-classification, exposing compositions aggregate scores hide, including a model that loses on
-every aggregate measure while discriminating individual cases significantly better.
+over relabellings gives the \emph{transported gain}, and what remains is a
+\emph{within-group covariance gain}. The identity is exact in finite samples, needs no fitted baseline,
+held-out fold or tuning parameter, and costs $O(NK)$ on cached predictions. The remainder is an order-two U-statistic, holds for every Bregman score,
+and admits cluster-robust intervals. On two released MOTIFS
+checkpoints evaluated with their authors' code, a ten-point mean-recall improvement
+corresponds to a proper-score difference that is overwhelmingly transported. The unmodified estimator transfers to a frozen-CLIP variant and to
+long-tailed image and text classification, exposing compositions aggregate scores hide ---
+including a model that loses on every such measure yet discriminates individual cases
+significantly better.
