@@ -25,7 +25,15 @@ OUT = ROOT / "submission"
 
 
 def inline_inputs(text: str) -> str:
-    """Replace every \\input{f} with the contents of manuscript/f, marked."""
+    """Replace every \\input{f} with the contents of manuscript/f, marked.
+
+    The generated cross-reference tables are loaded behind \\IfFileExists so that each
+    document still compiles when the other has not been built.  In a flat bundle that
+    guard would fail and every cross-document number would print as ??, so the guard is
+    dropped here and the current numbers are frozen into the file.
+    """
+    text = re.sub(r"\\IfFileExists\{([^}]+)\}\{\\input\{\1\}\}\{\}",
+                  r"\\input{\1}", text)
 
     def sub(match: re.Match) -> str:
         name = match.group(1)

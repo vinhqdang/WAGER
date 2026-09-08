@@ -18,16 +18,13 @@ is the sum of the two, and the field's own metrics cannot separate them --- not 
 not zero-shot recall, and not a significance test on the difference, because both components
 sit inside the same number.
 
-The problem is general and the community knows it. Frequency baselines are competitive on
-Visual Genome \citep{zellers2018neural}; VQA systems collapse under changed answer priors
-\citep{agrawal2018dont}; standard metrics obscure tail behaviour
-\citep{li2022rethinking}; and benchmark audits keep finding multimodal models exploiting
-non-visual shortcuts that inflate exactly this kind of aggregate score
-\citep{zhou2025shortcut}. Reporting standards have responded --- mean
-recall broken down by predicate frequency \citep{li2022rethinking},
-zero-shot recall on unseen triplets \citep{lu2016visual}, GQA-OOD stratified by answer rarity
-\citep{kervadec2021roses} --- and every one is a prior-aware slicing of a \emph{single}
-model's performance. None attributes the gain between two submitted systems.
+The problem is general and the community knows it: VQA systems collapse under changed
+answer priors \citep{agrawal2018dont}, and benchmark audits keep finding multimodal models
+exploiting non-visual shortcuts that inflate exactly this kind of aggregate score
+\citep{zhou2025shortcut}. Reporting standards have responded with prior-aware slicings ---
+frequency-stratified recall, zero-shot recall, rarity-stratified accuracy
+(Section~\ref{sec:related-applied}) --- but every one of them describes a \emph{single}
+model. None attributes the gain between two submitted systems.
 
 The customary audit builds a prior-only reference: fit $\widehat\Pr(Y\mid\phi)$ from training
 data, score it, and see how far the full models beat it \citep{zellers2018neural}. As a
@@ -54,7 +51,7 @@ this into an identity,
 exact in the observed sample, for any proper score, with no approximation, no held-out fold
 and no tuning parameter, at a cost of $O(NK)$ for $N$ cases and $K$ labels.
 Figure~\ref{fig:concept} shows the relabelling on two real Visual Genome cases.
-Supplementary Section~S1 works the whole construction through on four data points, in
+Supplementary Section~\suppref{app:worked} works the whole construction through on four data points, in
 arithmetic a reader can check by hand, and uses the same four points to exhibit a
 model-selection decision the split gets right and the aggregate score gets wrong: a
 candidate whose entire gain survives relabelling becomes \emph{worse} than the model it
@@ -135,7 +132,7 @@ limit, so declaring $\phi$ is a modelling decision.
 
 \subsection{Terminology}\label{sec:terminology}
 
-Supplementary Table~S2 in Supplementary Section~S8 fixes the paper's vocabulary against
+Supplementary Table~\suppref{tab:terms} in Supplementary Section~\suppref{app:terms} fixes the paper's vocabulary against
 standard counterparts. Two entries carry a caveat rather than a synonym, because no standard
 term matches exactly: $\Delta P$ is named for the operation that produces it, and $\Delta R$
 is a covariance rearrangement's term rather than the classical resolution it is often
@@ -145,34 +142,34 @@ mistaken for. We use ``group'' and ``cell'' interchangeably.
 
 The \emph{identity} needs four aligned arrays: two $N\times K$ probability matrices, the
 labels, and the cell identifiers. Any closed-set probabilistic prediction task supplies
-them; free-form or generative evaluation, where no $K$-way vector exists, does not, and we
-claim nothing there. The \emph{procedure} we recommend needs more --- cluster identifiers
-for the intervals, and, whenever the models differ visibly in confidence, a random split of
-the clusters and a temperature fitted per model on the held-out half
-(Section~\ref{sec:simulation}).
+them; free-form or generative evaluation, where no $K$-way vector exists, does not. The
+\emph{procedure} we recommend needs cluster identifiers for the intervals and, whenever
+the models differ visibly in confidence, a temperature fitted per model on held-out
+clusters (Section~\ref{sec:simulation}).
 
-Four limits are worth stating before any result. Everything is conditional on the declared
-$\phi$: a positive $\Delta R$ says the new model predicts individual cases better
-\emph{among cases sharing that feature}, and nothing about causality or robustness. Second,
-$\Delta R$ credits any signal varying within a cell, including a shortcut the analyst did
-not record, and Supplementary Proposition~S1 bounds that exposure rather than removing
-it --- for the Visual Genome pair of Supplementary Section~S10.2 an unrecorded covariate
-correlated at $0.061$ would account for the entire reported gain. Third, and this is the
-limitation we would most want carried away, $\Delta R$ is \emph{not invariant to
+Four limits are worth stating before any result, and Section~\ref{sec:discussion} returns
+to each. Everything is conditional on the declared $\phi$: a positive $\Delta R$ says the
+new model predicts individual cases better \emph{among cases sharing that feature}, and
+nothing about causality or robustness. Second, $\Delta R$ credits any signal varying
+within a cell, including an unrecorded shortcut; Supplementary
+Proposition~\suppref{prop:sensitivity} bounds that exposure rather than removing it, and
+for our own Visual Genome pair a covariate correlated at $0.061$ would account for the
+entire reported gain (Supplementary Section~\suppref{app:sensitivity}). Third, and this is
+the limitation we would most want carried away, $\Delta R$ is \emph{not invariant to
 recalibration}: rescaling a fixed model's confidence changes it while changing no ranking,
 no top-1 decision and no information, and in simulation a pure recalibration moves it by
 $-0.488$, tens of times any real gain reported here. Every result below is for
 confidence-matched pairs. Fourth, a transported gain is not illegitimate --- fitting the
 deployment label distribution better is real skill when that distribution is the one that
 matters --- and it is also not purely prior fit
-(Supplementary Proposition~S2).
+(Supplementary Proposition~\suppref{prop:transported}).
 
 \paragraph{Organization.}
-Supplementary Section~S1 works a four-point example and, in
-Supplementary Section~S1, uses it to exhibit a decision the split changes. Section~\ref{sec:related} places the
+Supplementary Section~\suppref{app:worked} works a four-point example and uses it to
+exhibit a decision the split changes. Section~\ref{sec:related} places the
 construction in the literature on proper-score decomposition and forecast comparison.
 Section~\ref{sec:method} develops the estimator and its theory.
 Section~\ref{sec:exp} validates it and audits two released checkpoints.
 Sections~\ref{sec:discussion} and~\ref{sec:conclusion} discuss limits and conclude.
-Proofs are in Supplementary Section~S1; three further empirical studies are in
-Section~\ref{sec:exp}.
+Proofs are in Supplementary Section~\suppref{app:proofs}; three further empirical
+studies are in Supplementary Section~\suppref{app:studies}.

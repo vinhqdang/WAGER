@@ -40,6 +40,21 @@
 \newtheorem{definition}{Definition}
 
 
+
+% Cross-document references.  The manuscript and the supplementary are separate
+% documents, so LaTeX cannot resolve a reference from one into the other.  The numbers
+% below are looked up in supp-refs.tex, which experiments/gen_cross_refs.py regenerates from
+% supplementary.aux on every build; nothing is hard-coded in the prose, so the references cannot
+% drift as either document is reordered.  Without the file the document still compiles
+% and prints a bold ?? that build.sh greps for.
+\makeatletter
+\newcommand{\suppref}[1]{%
+  \@ifundefined{suppref@#1}%
+    {\textbf{??}\@latex@warning{Cross-document reference `#1' undefined}}%
+    {\csname suppref@#1\endcsname}}
+\makeatother
+\IfFileExists{supp-refs.tex}{\input{supp-refs.tex}}{}
+
 \journal{Pattern Recognition}
 
 \begin{document}
@@ -80,19 +95,17 @@ U-statistics
 
 \section*{Supplementary material}
 Proofs of all numbered results, the influence-function derivation, implementation and
-reproducibility details, and two further empirical studies (long-tailed image classification
-on CIFAR-100-LT and long-tailed text classification on 20-Newsgroups-LT), together with the
-granularity, score and minimum-cell-size sensitivity analyses, are provided as supplementary
-material. Sections, tables and figures there are numbered with an \textsf{S} prefix and are
-cited in that form throughout this paper.
+reproducibility details, two further empirical studies (long-tailed image and text
+classification) and the granularity, score and minimum-cell-size sensitivity analyses are
+provided as supplementary material, whose sections, tables and figures carry an
+\textsf{S} prefix and are cited in that form throughout.
 
 \section*{Data and code availability}
 All code, cached model outputs and scripts needed to reproduce every number, table and
-figure in this paper are publicly available at
-\url{https://github.com/vinhqdang/WAGER}. The repository contains the estimator, its
-unit tests, every experiment driver, and the cached results files that each reported
-value is checked against by an included verification script. The two audited scene-graph
-checkpoints are the public release of \citet{tang2020unbiased}; Visual Genome
+figure are publicly available at \url{https://github.com/vinhqdang/WAGER}: the estimator,
+its unit tests, every experiment driver, and the cached results each reported value is
+checked against by an included verification script. The two audited scene-graph checkpoints
+are the public release of \citet{tang2020unbiased}; Visual Genome
 \citep{krishna2017visual} and CIFAR-100 are public benchmarks.
 
 \section*{CRediT authorship contribution statement}

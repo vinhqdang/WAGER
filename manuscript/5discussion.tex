@@ -14,53 +14,52 @@ Everything is conditional on the declared $\phi$. A positive $\Delta R$ means th
 matches its probability changes to the correct case better than the old one \emph{among
 cases sharing $\phi$}; it proves nothing about causal inference, compositional
 understanding, or robustness. If an unrecorded shortcut varies inside a cell, its predictive
-use is counted in $\Delta R$, and Supplementary Proposition~S1 bounds that exposure
+use is counted in $\Delta R$, and Supplementary Proposition~\suppref{prop:sensitivity} bounds that exposure
 rather than removing it --- at a level that, for our own Visual Genome estimates, is not
-comfortable (Supplementary Section~S5). Applications should declare $\phi$ before
+comfortable (Supplementary Section~\suppref{app:sensitivity}). Applications should declare $\phi$ before
 seeing results, justify it from how the benchmark was built, and report finer and coarser
 alternatives, because coarsening adds a between-cell covariance term of either sign
-(Supplementary Proposition~S1) and only the finest identified partition nets out every
+(Supplementary Proposition~\suppref{prop:coarsen}) and only the finest identified partition nets out every
 regularity expressible in $\phi$. Even that rule is weaker than it looks:
-Supplementary Section~S7 shows two equally fine, fully identified partitions of the same
+Supplementary Section~\suppref{app:partition} shows two equally fine, fully identified partitions of the same
 four cases that disagree completely about whether an improvement is case-level or
 transported, so the choice of $\phi$ is a modelling decision and not a formality.
 
 Two limits deserve stating flatly. First, $\Delta R$ is not invariant to monotone
 recalibration: it is a covariance between probability movements and labels, so sharpening or
-softening a fixed model shifts score between the channels while adding no information about
-any case, changing no ranking and no top-1 decision. Section~\ref{sec:simulation} measures
-the effect at $-0.488$ in a design where both models carry identical case-level
-information --- tens of times any real gain reported here --- which is why we audit
+softening a fixed model shifts score between the channels while changing no ranking, no
+top-1 decision and no information about any case. Section~\ref{sec:simulation} measures the
+effect at $-0.488$, tens of times any real gain reported here, which is why we audit
 confidence-matched pairs and why released checkpoints, which routinely differ sharply in
 calibration, cannot be compared on their raw outputs. A rank-based within-cell contrast
 would be invariant to this, at the cost of the exact additivity that is the point of the
-construction; Supplementary Section~S7 says what that trade would involve. Second, a
+construction; Supplementary Section~\suppref{app:partition} says what that trade would involve. Second, a
 transported gain is not evidence of anything illegitimate. Fitting the deployment label
 distribution better is real skill whenever that distribution is the one that matters; it is
 fragile precisely under label shift, where it can be added or removed post hoc by
 re-weighting \citep{saerens2002adjusting,lipton2018detecting}, as
-Section~\ref{sec:vgvisual} demonstrates and Supplementary Section~S1 exploits. Nor is it
-purely a matter of prior fit (Supplementary Proposition~S2). The decomposition reports
+Section~\ref{sec:vgvisual} demonstrates and Supplementary Section~\suppref{sec:decision}
+exploits. Nor is it purely a matter of prior fit
+(Supplementary Proposition~\suppref{prop:transported}). The decomposition reports
 where a gain lives, not whether it is worth having.
 
 \subsection{Choosing the grouping variable, and what the estimator cannot do}
 
-``Declare $\phi$ before looking'' is advice, not a mechanism. We recommend that the
-\emph{benchmark}, not the submitting author, fix it: the annotation prior is a property of
-the dataset, and a maintainer-declared $\phi$ removes the incentive to report only the most
-favourable candidate. That only moves the discretion, since maintainers are often authors of
-methods evaluated on their own benchmark. What we would defend is the weaker claim that
+``Declare $\phi$ before looking'' is advice, not a mechanism. The annotation prior is a
+property of the dataset, so we recommend that the \emph{benchmark}, not the submitting
+author, fix it, which removes the incentive to report only the most favourable candidate;
+that only moves the discretion, since maintainers often author methods evaluated on their
+own benchmark. What we would defend is the weaker claim that
 $\phi$ be fixed and public \emph{before} a leaderboard opens, by whoever does it, with every
-pre-declared candidate reported as our sensitivity rows are. Guarantees holding uniformly
-over a class of groupings are the subject of multicalibration
+pre-declared candidate reported as our sensitivity rows are. Guarantees holding uniformly over a class of groupings are the subject of multicalibration
 \citep{hebert2018multicalibration}, and porting that to pairwise attribution is a natural
-extension. For comparability we suggest a fixed block per audited pair: the declared $\phi$
-and its rationale, the identified coverage, both components signed with the covariance
-interval, the confidence-matched row, and the granularity rows.
+extension. For comparability we suggest a fixed block per audited pair: $\phi$ and its
+rationale, the identified coverage, both signed components with the covariance interval, and
+the confidence-matched and granularity rows.
 
 Exact transport needs at least two cases per cell, so a very fine $\phi$ buys confound
 control at the cost of coverage; we report the identified fraction and claim nothing for
-singletons. The image-clustered interval is asymptotic, and Supplementary Section~S7
+singletons. The image-clustered interval is asymptotic, and Supplementary Section~\suppref{app:clt}
 justifies it in a regime no heavy-tailed benchmark attains in sample: of $6{,}346$ eligible
 class-pair cells, $2{,}286$ hold fewer than five cases, though those carry only $2.7\%$ of
 identified relations. The reported $94.0\%$ empirical coverage against a nominal $95\%$
@@ -68,15 +67,14 @@ therefore remains the operative evidence for the interval. The randomization tes
 finite-group exact only under a sharper within-cell exchangeability null and treats relations
 rather than images as the randomized units, so it stays a secondary diagnostic.
 
-Finally, the estimator reads probability vectors, not top-1 decisions. That is a feature ---
-it detects useful redistribution below the argmax --- but it needs released logits or
-probabilities, and that is the real obstacle to routine use. The audit of
-Section~\ref{sec:sggaudit} needed nothing but two checkpoints evaluated with their authors'
-code, and nothing in that workflow is specific to scene graph generation. What blocks it
-elsewhere is disclosure, not compute: benchmarks overwhelmingly archive ranked predictions.
-
-Nothing in Sections~\ref{sec:setup}--\ref{sec:inference} is specific to relation prediction,
-and the long-tailed studies test that in two other modalities. The constraint on $\phi$ shows
-its teeth there: the fine class label cannot serve as a cell, since it would leave every cell
-label-homogeneous and drive $\Delta R$ to zero by construction, producing an artefact that
-reads exactly like a null result.
+Finally, the estimator reads probability vectors, not top-1 decisions. That is a feature
+--- it detects useful redistribution below the argmax --- but it needs released logits or
+probabilities, and that is the real obstacle to routine use: the audit of
+Section~\ref{sec:sggaudit} needed nothing but two checkpoints evaluated with their
+authors' code, and what blocks the same workflow elsewhere is disclosure, not compute,
+since benchmarks overwhelmingly archive ranked predictions. Nothing in
+Sections~\ref{sec:setup}--\ref{sec:inference} is specific to relation prediction, and the
+long-tailed studies test that in two other modalities. The constraint on $\phi$ shows its
+teeth there: the fine class label cannot serve as a cell, since it would leave every cell
+label-homogeneous and drive $\Delta R$ to zero by construction, an artefact that reads
+exactly like a null result.

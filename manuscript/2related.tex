@@ -30,17 +30,16 @@ therefore name $\Delta R$ for the covariance it is, and adopt confidence matchin
 procedure rather than caveat.
 
 What the classical decomposition does not supply is inference for a pairwise contrast. The
-point estimates do combine: both models share the $\phi$-partition and hence the same
-per-cell $n_c$, so the same $(n_c-1)/n_c$ attenuation applies to each model's separately
-estimated in-sample resolution, and subtracting two naive plug-ins recovers exactly the
-biased estimate of the contrast. Inference does not transfer. Variance estimators for the
+point estimates do combine --- both models share the $\phi$-partition, so the same
+$(n_c-1)/n_c$ attenuation applies to each, and subtracting two naive plug-ins recovers
+exactly the biased contrast --- but inference does not. Variance estimators for the
 single-model decomposition \citep{siegert2014variance} target one resolution term in
 isolation and supply no covariance between it and a second model's estimate from the same
-data. Rebuilding that from the joint law is routine rather than open, and the field is not
-silent about it \citep{ferro2007comparing,delong1988comparing}. What is
-new is not that a contrast can be given a variance, but that it admits an \emph{exact
-finite-sample decomposition} whose remainder is an antisymmetric U-statistic with a one-pass
-influence function, so the split and its uncertainty come from one construction.
+data. Rebuilding that from the joint law is routine rather than open
+\citep{ferro2007comparing,delong1988comparing}. What is new is not that a contrast can be
+given a variance, but that it admits an \emph{exact finite-sample decomposition} whose
+remainder is an antisymmetric U-statistic with a one-pass influence function, so the split
+and its uncertainty come from one construction.
 
 \subsection{Comparing two forecasters}\label{sec:related-dm}
 
@@ -52,22 +51,15 @@ of a gain evaluated conditional on $\phi$, and
 Corollary~\ref{cor:dm} makes the relation exact: at the trivial one-cell partition our
 total-gain statistic and its interval \emph{are} a clustered Diebold--Mariano test,
 corrected for cluster rather than serial dependence. The decomposition is therefore best
-read as everything those tests already deliver plus a split that neither provides. A
-structurally close precedent for comparing two correlated models through a paired
-U-statistic exists outside forecast evaluation as well: \citet{delong1988comparing}
-compare two correlated ROC curves' areas via a generalized U-statistic covariance
-estimator, the same construction applied to an unconditional ranking statistic rather than
-a declared-cell gain.
+read as everything those tests already deliver plus a split that neither provides. A structurally close precedent lies outside forecast evaluation:
+\citet{delong1988comparing} compare two correlated ROC curves' areas through a generalized
+U-statistic covariance estimator --- the same construction applied to an unconditional
+ranking statistic rather than a declared-cell gain.
 
-Two further literatures locate the same object from other directions. The transported
-component is precisely what label-shift procedures manipulate post hoc: re-weighting a
-classifier's outputs towards a new label distribution
-\citep{saerens2002adjusting,lipton2018detecting} can add or remove transported gain without
-touching case-level evidence, which Section~\ref{sec:vgvisual} exploits as a
-falsification test. And evaluating calibration within cells of a declared grouping,
-uniformly over many candidate groupings, is the subject of multicalibration
-\citep{hebert2018multicalibration}, which is the formal treatment of the multiplicity
-question raised by the choice of $\phi$ (Section~\ref{sec:discussion}).
+Evaluating calibration within cells of a declared grouping, uniformly over many candidate
+groupings, is the subject of multicalibration \citep{hebert2018multicalibration}, the formal
+treatment of the multiplicity question the choice of $\phi$ raises
+(Section~\ref{sec:discussion}).
 
 \subsection{Transport, permutation, and U-statistics}\label{sec:related-perm}
 
@@ -87,10 +79,10 @@ Two further connections are worth naming. The transported component is what labe
 procedures manipulate post hoc: re-weighting a classifier's outputs towards a new label
 distribution \citep{saerens2002adjusting,lipton2018detecting} can add or remove transported
 gain without touching case-level evidence, which Section~\ref{sec:vgvisual} exploits as a
-falsification test, and which is why Supplementary Section~S1's model-selection reversal
+falsification test, and which is why Supplementary Section~\suppref{sec:decision}'s model-selection reversal
 is a label-shift argument. And what an unrecorded grouping variable can hide is the subject
 of omitted-variable sensitivity analysis \citep{rosenbaum2002observational};
-Supplementary Proposition~S1 adapts that style of argument to bound how far an
+Supplementary Proposition~\suppref{prop:sensitivity} adapts that style of argument to bound how far an
 unrecorded covariate could move $\Delta R$.
 
 Usable-information analyses measure information accessible to a chosen predictor family;
@@ -101,7 +93,9 @@ $\Delta R$ establishes nothing about causal or compositional structure.
 \subsection{Prior-aware evaluation in vision}\label{sec:related-applied}
 
 Dataset bias has long complicated comparisons between recognition systems
-\citep{geirhos2020shortcut}. In scene graph generation a frequency
+\citep{geirhos2020shortcut}. Scene graph generation was posed as structured prediction over
+a whole image and solved by iterative message passing between object and relation nodes
+\citep{xu2017scene}; against that formulation a frequency
 predictor of $p(\text{predicate}\mid\text{subject},\text{object})$ is surprisingly
 competitive \citep{zellers2018neural}; mean recall and causal interventions were proposed to
 reduce that dependence \citep{tang2020unbiased}, though

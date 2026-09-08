@@ -7,16 +7,15 @@ and the individual cases they were made for --- different achievements with diff
 consequences, since the first is skill a frequency table also supplies and that a shift in
 label frequencies removes, and the second is not.
 
-This paper separates them exactly. Scoring each model's prediction for one test case against
-the label of a different case in the same group leaves the group and its label frequencies
-intact while breaking the correspondence between prediction and case, so the gain surviving
-that relabelling is the transported component and the remainder is a within-group covariance
-gain. The identity holds in the observed sample for any proper score, with no fitted
-reference model, no held-out fold and no tuning parameter, at $O(NK)$ on cached predictions.
-The remainder is an order-two U-statistic equal, for every Bregman score, to a within-group
-covariance between the models' probability change and the label indicator, and it comes with
-a one-pass influence function, cluster-robust intervals, a randomization test and a limit
-theorem.
+This paper separates them exactly. Scoring each prediction against the label of a
+different case in the same group leaves the group's label frequencies intact while breaking
+the correspondence between prediction and case, so the gain surviving that relabelling is
+the transported component and the remainder is a within-group covariance gain. The identity
+holds in the observed sample for any proper score, with no fitted reference model, no
+held-out fold and no tuning parameter, at $O(NK)$ on cached predictions. The remainder is an
+order-two U-statistic equal, for every Bregman score, to a within-group covariance between
+the models' probability change and the label indicator, and it carries cluster-robust
+intervals, a randomization test and a limit theorem.
 
 \paragraph{What it buys} Pointed at two released MOTIFS checkpoints with their authors' own
 code, the decomposition shows a ten-point mean-recall improvement corresponding to a
