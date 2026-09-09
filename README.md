@@ -8,12 +8,15 @@ positioning claim wrong, and this revision corrects it (see
 [`report/REPORT.md`](report/REPORT.md)). Previously desk-rejected at *Computational
 Statistics and Data Analysis* and *Computer Vision and Image Understanding*.
 
-**Status (2026-09-08): reframed for *Pattern Recognition*.** The Econometrics and Statistics
-submission was sent back on a procedural point and withdrawn rather than resubmitted; the
-paper is now aimed at computer vision, where its evidence base actually sits. Manuscript is
-35 pages including references, with a separate 46-page supplementary document. See
-[`report/REPORT.md`](report/REPORT.md) for the reframing, the page-limit reading that had to
-be corrected, and what moved where.
+**Status (2026-09-09): under review at TMLR.** The Econometrics and Statistics submission
+has been withdrawn, and this paper was submitted to *Transactions on Machine Learning
+Research*. The Pattern Recognition version it was reformatted from was never submitted --
+the author had another manuscript with that editor. One document of 42 pages: 17 of body
+and references, 25 of appendices, anonymized for double-blind review, with the code
+attached as anonymized supplementary material. See
+[`submission_notes/tmlr_submission.md`](submission_notes/tmlr_submission.md) for what was
+removed for anonymity and how to restore it on acceptance, and
+[`report/REPORT.md`](report/REPORT.md) for the venue history.
 
 When two models are compared on a benchmark whose labels are partly determined by a
 feature both of them observe, the score difference sums two different improvements. WAGER

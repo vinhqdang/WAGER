@@ -1112,3 +1112,29 @@ files, no undefined reference and no overfull box, the flat bundle renders ident
 the modular build, and the anonymized `code.zip` passes its own test suite with no
 identifying string in it. `submission_notes/tmlr_submission.md` carries the OpenReview
 checklist and the camera-ready restore steps.
+
+## Submitted to TMLR (2026-09-09)
+
+The Econometrics and Statistics submission was withdrawn, and the paper went to
+*Transactions on Machine Learning Research*. Every earlier venue is now closed --- CVIU,
+CSDA and JSPI declined, EcoSta withdrawn --- so the "not under consideration elsewhere"
+answer was truthful when given, which is the reason the withdrawal came first rather than
+alongside.
+
+Submitted: the anonymized 42-page PDF (17 pages of body and references, 25 of appendices)
+and `code.zip` as anonymized supplementary material. The Pattern Recognition deliverables
+built the day before --- cover letter, highlights, title page, `declarations.docx` --- are
+not used by TMLR and stay in the repository unchanged, as does
+`submission_notes/pattern_recognition_questionnaire.md`, whose measured values are
+superseded by the reformat (the abstract, for instance, is 229 words now rather than 241).
+
+`submission_notes/tmlr_submission.md` carries the camera-ready restore list: the
+`accepted` class option, the CRediT, competing-interests and funding statements the TMLR
+template holds back until deanonymization, the repository URL in place of the pointer to
+the anonymized archive, and `build_code_archive.py --identified` for the archive itself.
+
+Nothing further is planned until the decision. Five venues in, and the substance the
+2026-09-07 panel corrected --- the remainder is a Yates-type covariance and not the
+classical resolution term, the transported gain is not prior fit, the sensitivity bound is
+reported against the paper's own estimates --- has survived every reframing intact, which
+is the part worth protecting if there is a next one.

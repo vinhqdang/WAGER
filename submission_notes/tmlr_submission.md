@@ -1,5 +1,9 @@
 # TMLR submission checklist
 
+**Submitted 2026-09-09.** The Econometrics and Statistics submission was withdrawn
+first, so no other venue held the paper. What follows is the record of what went in and
+what has to change on acceptance.
+
 Submission goes through OpenReview. TMLR has no cover letter, no highlights, no title
 page and no author-declaration uploads, so most of the Pattern Recognition deliverable
 set is not used; those files stay in the repository unchanged in case the paper moves
@@ -27,9 +31,8 @@ again.
   and substantially different versions were declined by Computer Vision and Image
   Understanding, Computational Statistics and Data Analysis and the Journal of
   Statistical Planning and Inference; an Econometrics and Statistics submission was sent
-  back before review. **Confirm every one of those is closed before answering** — in
-  particular withdraw the Econometrics and Statistics submission explicitly if it is
-  still open in that system.
+  back before review and has since been withdrawn. All four are closed, which is what
+  made the No answer here truthful.
 - **Code and data.** Both are in the supplementary archive. The public repository is
   deliberately not named anywhere in the PDF or the archive; add it for the camera-ready.
 
