@@ -1,0 +1,20 @@
+TITLE
+-----
+WAGER: An Exact Decomposition of Model-Pair Score Gains on Benchmarks with Strong Label Priors
+
+
+ABSTRACT
+--------
+A scene graph generation method reports a ten-point gain in mean recall. What did it buy? On benchmarks whose labels are partly determined by a feature both compared models observe — the object-class pair in relation prediction, the class frequency in long-tailed recognition — such a gain mixes two improvements: the new model may fit the label frequencies within groups of that feature more closely, which a frequency table also achieves, or match its predictions to the individual cases they were made for. Mean recall, zero-shot recall and significance tests leave the two mixed. We decompose the gain exactly. Score each model’s prediction for one test case against the label of a different case in the same group: averaging over relabellings gives the transported gain, and what remains is a within-group covariance gain. The identity is exact in finite samples, needs no fitted baseline, held-out fold or tuning parameter, and costs O(NK) on cached predictions. The remainder is an order-two U-statistic, holds for every Bregman score, and admits cluster-robust intervals. On two released MOTIFS checkpoints evaluated with their authors’ code, a ten-point mean-recall improvement corresponds to a proper-score difference that is overwhelmingly transported. The unmodified estimator transfers to a frozen-CLIP variant and to long-tailed image and text classification, exposing compositions aggregate scores hide — including a model that loses on every such measure yet discriminates individual cases significantly better.
+
+
+KEYWORDS
+--------
+model evaluation, benchmark auditing, dataset bias, scene graph generation, long-tailed recognition, proper scoring rules, U-statistics
+
+
+TL;DR (OpenReview's optional one-sentence field)
+------------------------------------------------
+An exact, assumption-free split of the score gain between two models into the part that
+only fits within-group label frequencies and the part that tells individual cases apart,
+applied to two released scene graph generation checkpoints.

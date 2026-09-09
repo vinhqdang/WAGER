@@ -5,7 +5,7 @@ the object-class pair in relation prediction, the class frequency in long-tailed
 \emph{within} groups of that feature more closely, which a frequency table also achieves, or
 match its predictions to the individual cases they were made for. Mean recall,
 zero-shot recall and significance tests leave the two mixed.
-We decompose the gain exactly: score each model's prediction
+We decompose the gain exactly. Score each model's prediction
 for one test case against the label of a \emph{different} case in the same group: averaging
 over relabellings gives the \emph{transported gain}, and what remains is a
 \emph{within-group covariance gain}. The identity is exact in finite samples, needs no fitted baseline,
