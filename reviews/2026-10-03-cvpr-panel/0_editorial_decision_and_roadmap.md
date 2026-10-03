@@ -189,3 +189,14 @@ A six-week plan consistent with the seats' estimates: week 1, REV-4 text fixes a
 the pipeline on TDE; week 2, REV-1, REV-3, REV-5 on TDE (this alone answers DA C1); weeks 2–4,
 REV-2 runs in the background; week 5, REV-6 to REV-9 and the rewrite; week 6, verification and
 a re-review.
+
+## Status (2026-10-03, end of day)
+
+| Item | State | Where |
+|---|---|---|
+| Critical path | **Done.** One TDE PredCls pass of the released checkpoint on a Colab T4 with every branch's logits dumped (TE = TDE and NIE = 0 in PredCls, so one pass covers all four); offline replay of the official evaluator; per-relation outputs archived in the repository (`data/vg_motifs/wager_sgg/`). Re-scored baseline and TDE reproduce the official R@K, mR@K, ng-mR@K exactly; the proper-score audit regenerated from the rerun matches every archived number to 1e-9. | `experiments/colab_sgg_stage2.py`, `colab_sgg_rank.py`, `tests/test_sgg_rank.py` |
+| REV-1 | **Done.** mR@50 (micro, identified relations) +0.0972 = group +0.0841 + case +0.0130 [+0.0093, +0.0168]; body +0.1224, head −0.0255, tail +0.0003 (baseline recalls none of the 15 tail predicates, TDE one). Per-predicate figure. | Sec. 5, Fig. 3, Table 1; App. on the split |
+| REV-2 | **Partly.** Zero-training post-hoc logit adjustment (τ = 0.5, 1) on the same checkpoint added and turned into the paper's operating-point control: LA₁ recovers +0.0941 with the same split; TDE vs LA₁ case −0.0008 [−0.0050, +0.0033]. Other released checkpoints (BGNN, IETrans; VCTree/VTransE causal are not released by Tang et al.) still to do. | Sec. 5 |
+| REV-3 | **Partly.** Within-cell AUC (temperature- and prior-shift-invariant, tested) for every row: TDE +0.0026 [−0.0028, +0.0086]. Still open: validation-split temperatures and repeated splits. | Sec. 3, 5; `wager/rank.py` |
+| REV-5 | **Partly.** Branch variants computed (ctx alone, vis+ctx, TDE vs ctx; supplementary tables); not yet written into the main text. | App. on the split |
+| New finding | A ranking-preserving change (logit adjustment, dropping the frequency branch) yields a significant case-level part of a thresholded metric; the paper now reads hit-rate splits against an operating-point control and the AUC. | Sec. 3 "Splitting mean recall" |
