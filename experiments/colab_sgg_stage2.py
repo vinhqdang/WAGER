@@ -1,10 +1,18 @@
-"""SGG audit stage 2 (Colab): run PredCls evaluation for MOTIFS-SUM baseline
-(CAUSAL.EFFECT_TYPE none) and MOTIFS-TDE from the single causal checkpoint,
-then convert each eval_results.pytorch into a compact npz of per-relation
-51-way softmax vectors with alignment identifiers.
+"""SGG audit stage 2 (Colab): one PredCls evaluation of the released causal
+MOTIFS-SUM checkpoint with CAUSAL.EFFECT_TYPE TDE, dumping every branch logit.
 
-Sanity targets from the paper (Tang et al. 2020): baseline R@50 ~ 65,
-TDE mR@50 ~ 25-26. Prints R@K lines from the eval log.
+In PredCls the predictor's logits are, for every ordered object pair,
+    baseline  = (vis + ctx(post)) + frq
+    TDE       = baseline - ((vis + ctx(avg)) + frq)
+and, because object probabilities are exact one-hots, TE equals TDE and NIE is
+identically zero. A patched predictor therefore writes vis, ctx(post), ctx(avg),
+frq and the returned logits for all pairs of all test images (WAGER_DUMP), so
+the baseline, TDE and any branch combination can be scored offline by
+colab_sgg_rank.py without further GPU passes. The official evaluator still runs
+on TDE, which checks the offline re-scoring.
+
+Archived official values (results/sgg_audit_motifs.json): baseline R@50 0.6612,
+mR@50 0.1459; TDE R@50 0.4588, mR@50 0.2476.
 """
 import glob
 import os
@@ -89,6 +97,94 @@ if _probe.returncode != 0:
     raise SystemExit("entry point still does not import -- fix before evaluating")
 
 
+# ---- branch-logit dump (idempotent) ------------------------------------------
+_pp = f"{SGG}/maskrcnn_benchmark/modeling/roi_heads/relation_head/roi_relation_predictors.py"
+_s = open(_pp).read()
+if "# WAGER-DUMP" not in _s:
+    _ret = "        return obj_dist_list, rel_dist_list, add_losses\n"
+    _i = _s.index(_ret, _s.index("class CausalAnalysisPredictor"))
+    _call = ("        # WAGER-DUMP\n"
+             "        if WAGER_DUMP and (not self.training):\n"
+             "            _wager_record(self, union_features, post_ctx_rep, avg_ctx_rep,\n"
+             "                          pair_pred, pair_obj_probs, rel_dists, rel_pair_idxs, num_rels)\n")
+    _s = _s[:_i] + _call + _s[_i:]
+    _s += '''
+
+# WAGER-DUMP helpers: per-pair branch logits for offline re-scoring.
+import os as _wos
+import atexit as _watexit
+import numpy as _wnp
+WAGER_DUMP = _wos.environ.get("WAGER_DUMP", "")
+WAGER_IMAGE_IDS = None
+_WKEYS = ("pairs", "vis", "ctxp", "ctxa", "frq", "out")
+_WBUF = {"ids": [], "n_pairs": [], "chunk": 0, "frq_gap": 0.0,
+         **{k: [] for k in _WKEYS}}
+
+
+def _wager_flush():
+    b = _WBUF
+    if not b["ids"]:
+        return
+    _wos.makedirs(WAGER_DUMP, exist_ok=True)
+    tmp = f"{WAGER_DUMP}/chunk_{b['chunk']:04d}.tmp.npz"
+    _wnp.savez(tmp, image_ids=_wnp.asarray(b["ids"], dtype=_wnp.int64),
+               n_pairs=_wnp.asarray(b["n_pairs"], dtype=_wnp.int64),
+               frq_gap=_wnp.float64(b["frq_gap"]),
+               **{k: _wnp.concatenate(b[k]) for k in _WKEYS})
+    _wos.replace(tmp, f"{WAGER_DUMP}/chunk_{b['chunk']:04d}.npz")
+    b["chunk"] += 1
+    b["ids"], b["n_pairs"] = [], []
+    for k in _WKEYS:
+        b[k] = []
+
+
+_watexit.register(_wager_flush)
+
+
+def _wager_record(pred, union_features, post_ctx_rep, avg_ctx_rep, pair_pred,
+                  pair_obj_probs, rel_dists, rel_pair_idxs, num_rels):
+    ids = WAGER_IMAGE_IDS
+    assert ids is not None and len(ids) == len(num_rels), "image ids not set"
+    with torch.no_grad():
+        vis = pred.vis_compress(union_features)
+        ctxp = pred.ctx_compress(post_ctx_rep)
+        ctxa = pred.ctx_compress(avg_ctx_rep)
+        frq = pred.freq_bias.index_with_labels(pair_pred.long())
+        frqp = pred.freq_bias.index_with_probability(pair_obj_probs)
+        _WBUF["frq_gap"] = max(_WBUF["frq_gap"], float((frq - frqp).abs().max()))
+        parts = {"vis": vis, "ctxp": ctxp, "ctxa": ctxa, "frq": frq,
+                 "out": rel_dists}
+        parts = {k: v.float().cpu().numpy().astype(_wnp.float32)
+                 for k, v in parts.items()}
+    off = 0
+    for img_id, n, pidx in zip(ids, num_rels, rel_pair_idxs):
+        _WBUF["ids"].append(int(img_id))
+        _WBUF["n_pairs"].append(int(n))
+        _WBUF["pairs"].append(pidx.cpu().numpy().astype(_wnp.int16))
+        for k, v in parts.items():
+            _WBUF[k].append(v[off:off + n])
+        off += n
+    if len(_WBUF["ids"]) >= 1000:
+        _wager_flush()
+'''
+    open(_pp, "w").write(_s)
+    log("predictor patched for branch dump")
+_ip = f"{SGG}/maskrcnn_benchmark/engine/inference.py"
+_s = open(_ip).read()
+if "WAGER_IMAGE_IDS" not in _s:
+    _a = "            images, targets, image_ids = batch\n"
+    _s = _s.replace(_a, _a + "            import maskrcnn_benchmark.modeling.roi_heads.relation_head."
+                    "roi_relation_predictors as _wp\n"
+                    "            _wp.WAGER_IMAGE_IDS = list(image_ids)\n", 1)
+    _e = "    torch.cuda.empty_cache()\n    return results_dict\n"
+    assert _s.count(_e) == 1
+    _s = _s.replace(_e, "    import maskrcnn_benchmark.modeling.roi_heads.relation_head."
+                    "roi_relation_predictors as _wp\n    _wp._wager_flush()\n" + _e)
+    assert "WAGER_IMAGE_IDS" in _s
+    open(_ip, "w").write(_s)
+    log("inference loop patched to expose image ids")
+
+
 # ---- locate checkpoint ----
 pths = sorted(glob.glob(f"{ROOT}/ckpt/**/*.pth", recursive=True))
 if not pths:
@@ -99,7 +195,8 @@ ckpt_dir = os.path.dirname(model_pth)
 cfg_candidates = glob.glob(f"{ckpt_dir}/*.yml") + glob.glob(f"{ckpt_dir}/*.yaml")
 log(f"ckpt dir files: {os.listdir(ckpt_dir)}")
 
-VARIANTS = {"none": f"{ROOT}/out_none", "TDE": f"{ROOT}/out_tde"}
+VARIANTS = {"TDE": f"{ROOT}/out_tde"}
+DUMP = f"{ROOT}/branch_dump"
 
 for effect, outdir in VARIANTS.items():
     if os.path.exists(f"{outdir}/eval_results.pytorch"):
@@ -124,7 +221,7 @@ for effect, outdir in VARIANTS.items():
         "OUTPUT_DIR", outdir,
     ]
     log(f"=== evaluating EFFECT_TYPE={effect} ===")
-    env = dict(os.environ, PYTHONPATH=f"{ROOT}/pylib:{SGG}")
+    env = dict(os.environ, PYTHONPATH=f"{ROOT}/pylib:{SGG}", WAGER_DUMP=DUMP)
     p = subprocess.Popen(cmd, cwd=SGG, env=env, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT, text=True)
     tail = []
@@ -144,70 +241,8 @@ for effect, outdir in VARIANTS.items():
         raise SystemExit(f"eval {effect} failed rc={p.returncode}")
     log(f"eval {effect} done")
 
-# ---- convert dumps to compact npz ----
-for effect, outdir in VARIANTS.items():
-    dst = f"{ROOT}/motifs_{effect}_predcls.npz"
-    if os.path.exists(dst):
-        continue
-    log(f"converting {outdir}/eval_results.pytorch")
-    d = torch.load(f"{outdir}/eval_results.pytorch", map_location="cpu",
-                   weights_only=False)  # dump holds BoxList objects
-    gts, preds = d["groundtruths"], d["predictions"]
-    log(f"{len(gts)} images; gt fields: {gts[0].fields()}; "
-        f"pred fields: {preds[0].fields()}; gt size {gts[0].size}, "
-        f"pred size {preds[0].size}")
-    rows_img, rows_sb, rows_ob, rows_sc, rows_oc, rows_y, rows_q = \
-        [], [], [], [], [], [], []
-    rows_wh = []
-    n_miss = 0
-    for i, (gt, pr) in enumerate(zip(gts, preds)):
-        rel = gt.get_field("relation_tuple").numpy()      # (m, 3) sub, ob, pred
-        labels = gt.get_field("labels").numpy()
-        boxes = gt.bbox.numpy()
-        w, h = gt.size
-        pair_idx = pr.get_field("rel_pair_idxs").numpy()  # (M, 2)
-        scores = pr.get_field("pred_rel_scores").numpy()  # (M, 51)
-        lut = {(int(a), int(b)): k for k, (a, b) in enumerate(pair_idx)}
-        for s, o, y in rel:
-            k = lut.get((int(s), int(o)))
-            if k is None:
-                n_miss += 1
-                continue
-            rows_img.append(i)
-            rows_sb.append(boxes[int(s)])
-            rows_ob.append(boxes[int(o)])
-            rows_sc.append(labels[int(s)])
-            rows_oc.append(labels[int(o)])
-            rows_y.append(int(y))
-            rows_q.append(scores[k])
-            rows_wh.append((w, h))
-        if i % 5000 == 0:
-            log(f"  {i} images converted")
-    np.savez_compressed(
-        dst,
-        img_wh=np.asarray(rows_wh, dtype=np.float32),
-        image_index=np.asarray(rows_img, dtype=np.int32),
-        sbox=np.asarray(rows_sb, dtype=np.float32),
-        obox=np.asarray(rows_ob, dtype=np.float32),
-        subj=np.asarray(rows_sc, dtype=np.int32),
-        obj=np.asarray(rows_oc, dtype=np.int32),
-        pred=np.asarray(rows_y, dtype=np.int32),
-        probs=np.asarray(rows_q, dtype=np.float32),
-        n_missing_pairs=n_miss,
-    )
-    log(f"wrote {dst}: {len(rows_y)} relations, {n_miss} unmatched")
-    rd_path = f"{outdir}/result_dict.pytorch"
-    if os.path.exists(rd_path):
-        rd = torch.load(rd_path, map_location="cpu", weights_only=False)
-        summary = {}
-        for k, v in rd.items():
-            try:
-                summary[k] = {kk: float(np.mean(vv)) for kk, vv in v.items()}
-            except Exception:
-                pass
-        import json
-        with open(f"{ROOT}/motifs_{effect}_recalls.json", "w") as f:
-            json.dump(summary, f, indent=2)
-        log(f"recall summary keys: {list(summary.keys())[:8]}")
-
+n_chunks = len(glob.glob(f"{DUMP}/chunk_*.npz"))
+log(f"branch dump: {n_chunks} chunk files in {DUMP}")
+if n_chunks == 0:
+    raise SystemExit("no branch dump written")
 log("STAGE 2 COMPLETE")

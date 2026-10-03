@@ -7,6 +7,7 @@ import pytest
 from wager.antisymmetric import (
     cyclic_randomization_test,
     decompose_gain,
+    decompose_gain_matrix,
     gain_matrix,
     score_matrix,
 )
@@ -470,3 +471,28 @@ def test_case_level_part_never_reverses_under_a_label_shift_with_two_labels():
         a = _pure_label_shift_cell(qn, (40, 40)).reasoning_gain
         b = _pure_label_shift_cell(qn, (5, 75)).reasoning_gain
         assert a * b >= -1e-15
+
+
+def test_matrix_form_matches_score_form_and_splits_mean_recall_exactly():
+    rng = np.random.default_rng(11)
+    n, k = 600, 6
+    qa = rng.dirichlet(np.ones(k), size=n)
+    qb = rng.dirichlet(np.ones(k), size=n)
+    y = rng.integers(0, k, size=n)
+    phi = rng.integers(0, 25, size=n)
+    g1 = decompose_gain(qa, qb, y, phi)
+    g2 = decompose_gain_matrix(gain_matrix(qa, qb), y, phi)
+    assert g1.prior_gain == pytest.approx(g2.prior_gain, abs=1e-12)
+    assert g1.alignment_ci == pytest.approx(g2.alignment_ci, abs=1e-12)
+
+    # mean recall as a label-weighted hit rate: the split's total is the
+    # change in predicate-averaged recall, and label weights pass through
+    hit_a = rng.random((n, k)) < 0.4
+    hit_b = rng.random((n, k)) < 0.3
+    n_y = np.bincount(y, minlength=k)
+    w = 1.0 / (k * n_y)
+    g = decompose_gain_matrix(n * w[None, :] * (hit_a.astype(float) - hit_b),
+                              y, phi)
+    mr = lambda hit: np.mean([hit[y == c, c].mean() for c in range(k)])
+    assert g.total_gain == pytest.approx(mr(hit_a) - mr(hit_b), abs=1e-12)
+    assert g.total_gain == pytest.approx(g.prior_gain + g.alignment_gain, abs=1e-12)

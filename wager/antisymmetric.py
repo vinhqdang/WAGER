@@ -190,9 +190,32 @@ def decompose_gain(
     function of the U-statistic; when ``groups`` is supplied (e.g. image ids),
     influence contributions are aggregated for cluster-robust inference.
     """
+    h = gain_matrix(q_new, q_old, score=score, eps=eps)
+    return decompose_gain_matrix(h, y, phi, groups=groups, alpha=alpha, score=score)
+
+
+def decompose_gain_matrix(
+    h: np.ndarray,
+    y: np.ndarray,
+    phi: np.ndarray,
+    *,
+    groups: np.ndarray | None = None,
+    alpha: float = 0.05,
+    score: str = "custom",
+) -> GainDecomposition:
+    """The same split for any per-example, per-label contrast matrix ``h``.
+
+    ``h[i, y]`` is what example ``i`` would contribute to the metric change if
+    its label were ``y``.  For a proper score it is the score contrast; for a
+    label-weighted hit rate such as mean recall it is the hit contrast times the
+    label's weight.  The identity and the influence functions only use the
+    antisymmetric pair structure, not properness, so they hold for any ``h``.
+    """
     if not 0 < alpha < 1:
         raise ValueError("alpha must be in (0,1)")
-    h = gain_matrix(q_new, q_old, score=score, eps=eps)
+    h = np.asarray(h, dtype=np.float64)
+    if h.ndim != 2 or not np.all(np.isfinite(h)):
+        raise ValueError("h must be a finite 2-D matrix")
     n, k = h.shape
     y = np.asarray(y, dtype=np.int64)
     phi = np.asarray(phi)
