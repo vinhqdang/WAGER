@@ -31,7 +31,9 @@ import numpy as np
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "experiments"))
 from wager.antisymmetric import decompose_gain_matrix  # noqa: E402
+from sgg_variants import load_variant  # noqa: E402
 
 DDIR = ROOT / "data/vg_motifs/wager_sgg"
 RESULTS = ROOT / "results"
@@ -44,7 +46,7 @@ HEAD_MIN, TAIL_MAX = 10_000, 500
 
 
 def load(variant):
-    z = np.load(DDIR / f"variant_{variant}.npz")
+    z = load_variant(variant)
     return {"gc": z["gc_rank"], "ng": z["ng_rank"], "probs": z["probs"]}
 
 

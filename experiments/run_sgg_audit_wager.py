@@ -36,8 +36,10 @@ ALPHA = 0.05
 
 def _rerun(effect: str):
     """Same fields from the branch-dump rerun (colab_sgg_rank.py output)."""
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+    from sgg_variants import load_variant  # resolves the run holding this model
     meta = np.load(MDIR / "wager_sgg/meta.npz")
-    v = np.load(MDIR / f"wager_sgg/variant_{effect}.npz")
+    v = load_variant(effect)
     drop = json.loads((MDIR / "wager_sgg/missing_pairs.json").read_text())["rows"]
     keep = np.ones(len(meta["pred"]), dtype=bool)
     keep[drop] = False                 # relations whose pair was never scored

@@ -3,7 +3,8 @@
 Input (on the Colab VM, written by colab_sgg_stage2.py):
   /content/branch_dump/chunk_*.npz     per-pair vis, ctx(post), ctx(avg), frq and
                                        the returned (TDE) logits, all test images
-  /content/out_tde/inference/<test>/eval_results.pytorch   official TDE dump
+  <out dir>/inference/<test>/eval_results.pytorch   official evaluation of the run
+(WAGER_RANK_MODE=tde: TDE pass of the causal MOTIFS checkpoint; =ietrans: IETrans)
 
 For every variant (baseline, TDE, single branches, branch pairs) and every
 ground-truth relation r = (s, o, y) this records, for each of the 50 predicates
@@ -35,34 +36,64 @@ import time
 import numpy as np
 
 ROOT = "/content"
-SGG = f"{ROOT}/sgg"
+MODE = os.environ.get("WAGER_RANK_MODE", "tde")
+MODES = {
+    # released causal MOTIFS checkpoint, one TDE pass (colab_sgg_stage2.py)
+    "tde": {
+        "code": f"{ROOT}/sgg",
+        "eval": f"{ROOT}/out_tde/inference/VG_stanford_filtered_with_attribute_test",
+        "dump": f"{ROOT}/branch_dump", "out": f"{ROOT}/wager_sgg",
+        "keys": ("pairs", "vis", "ctxp", "ctxa", "frq", "out"),
+        "official": "TDE",
+        # the returned logits must equal this (the TDE cancellation)
+        "identity": lambda b: ((b["vis"] + b["ctxp"]) + b["frq"])
+        - ((b["vis"] + b["ctxa"]) + b["frq"]),
+        "la_base": lambda b: (b["vis"] + b["ctxp"]) + b["frq"],
+        "h5": "datasets/vg/VG-SGG-with-attri.h5",
+        "variants": {
+            "none": lambda b: (b["vis"] + b["ctxp"]) + b["frq"],
+            "TDE": lambda b: b["out"],
+            "vis": lambda b: b["vis"],
+            "ctx": lambda b: b["ctxp"],
+            "frq": lambda b: b["frq"],
+            "vis_ctx": lambda b: b["vis"] + b["ctxp"],
+            "ctx_frq": lambda b: b["ctxp"] + b["frq"],
+            "vis_frq": lambda b: b["vis"] + b["frq"],
+        },
+    },
+    # released IETrans Neural-Motifs PredCls checkpoint (colab_ietrans_stage2.py)
+    "ietrans": {
+        "code": f"{ROOT}/iet",
+        "eval": f"{ROOT}/out_ietrans/inference/50VG_stanford_filtered_with_attribute_test",
+        "dump": f"{ROOT}/branch_dump_ietrans", "out": f"{ROOT}/wager_ietrans",
+        "keys": ("pairs", "ctx", "frq", "out"),
+        "official": "ietrans",
+        "identity": lambda b: b["ctx"] + b["frq"],
+        "la_base": None,
+        "h5": "datasets/vg/50/VG-SGG-with-attri.h5",
+        "variants": {
+            "ietrans": lambda b: b["out"],
+            "ietrans_ctx": lambda b: b["ctx"],
+        },
+    },
+}
+CFG = MODES[MODE]
+SGG = CFG["code"]
 sys.path.insert(0, f"{ROOT}/pylib")
 sys.path.insert(0, SGG)
 
-DATASET = "VG_stanford_filtered_with_attribute_test"
-EVAL = f"{ROOT}/out_tde/inference/{DATASET}"
-DUMP = f"{ROOT}/branch_dump"
-OUT = f"{ROOT}/wager_sgg"
+EVAL, DUMP, OUT = CFG["eval"], CFG["dump"], CFG["out"]
+OFFICIAL = CFG["official"]
 KS = (20, 50, 100)
 BIG = 255
 T0 = time.time()
-
-VARIANTS = {
-    "none": lambda b: (b["vis"] + b["ctxp"]) + b["frq"],
-    "TDE": lambda b: b["out"],
-    "vis": lambda b: b["vis"],
-    "ctx": lambda b: b["ctxp"],
-    "frq": lambda b: b["frq"],
-    "vis_ctx": lambda b: b["vis"] + b["ctxp"],
-    "ctx_frq": lambda b: b["ctxp"] + b["frq"],
-    "vis_frq": lambda b: b["vis"] + b["frq"],
-}
+VARIANTS = dict(CFG["variants"])
 
 
 def train_predicate_counts():
     """Training-split predicate counts (index 0 is background, always 0)."""
     import h5py
-    with h5py.File(f"{SGG}/datasets/vg/VG-SGG-with-attri.h5", "r") as f5:
+    with h5py.File(f"{SGG}/{CFG['h5']}", "r") as f5:
         split = f5["split"][:]
         first, last = f5["img_to_first_rel"][:], f5["img_to_last_rel"][:]
         preds_all = f5["predicates"][:, 0]
@@ -74,11 +105,12 @@ def train_predicate_counts():
 
 def add_logit_adjusted(cnt, taus=(0.5, 1.0)):
     """Post-hoc logit adjustment of the baseline by the training predicate prior."""
+    if CFG["la_base"] is None:
+        return
     lp = np.zeros(51, dtype=np.float32)
     lp[1:] = np.log(cnt[1:] / cnt[1:].sum()).astype(np.float32)
     for t in taus:
-        VARIANTS[f"la{t:g}"] = (lambda b, t=t:
-                                ((b["vis"] + b["ctxp"]) + b["frq"]) - np.float32(t) * lp)
+        VARIANTS[f"la{t:g}"] = (lambda b, t=t: CFG["la_base"](b) - np.float32(t) * lp)
 
 
 def log(m):
@@ -152,8 +184,8 @@ def main():
     probs = {v: [] for v in VARIANTS}
     gc = {v: [] for v in VARIANTS}
     ng = {v: [] for v in VARIANTS}
-    chk = {"pairset_mismatch": 0, "tde_score_maxdiff": 0.0,
-           "tde_identity_maxdiff": 0.0, "no_match": 0, "images_seen": 0,
+    chk = {"pairset_mismatch": 0, "official_score_maxdiff": 0.0,
+           "identity_maxdiff": 0.0, "no_match": 0, "images_seen": 0,
            "rel_without_gt_pair": 0, "top100_ties": {v: 0 for v in VARIANTS},
            "order_mismatch_TDE": 0}
     seen = set()
@@ -163,8 +195,9 @@ def main():
             continue
         c = np.load(cf)
         offs = np.concatenate([[0], np.cumsum(c["n_pairs"])])
-        chk["frq_gap"] = max(chk.get("frq_gap", 0.0), float(c["frq_gap"]))
-        arrs = {k: c[k] for k in ("pairs", "vis", "ctxp", "ctxa", "frq", "out")}
+        if "frq_gap" in c.files:
+            chk["frq_gap"] = max(chk.get("frq_gap", 0.0), float(c["frq_gap"]))
+        arrs = {k: c[k] for k in CFG["keys"]}
         for j, img in enumerate(c["image_ids"]):
             img = int(img)
             if img in seen:
@@ -193,12 +226,12 @@ def main():
             pos_of = {int(k): i for i, k in enumerate(key)}
             off_order = np.asarray([pos_of[int(k)] for k in okey])
             p_tde = softmax(b["out"])
-            chk["tde_score_maxdiff"] = max(
-                chk["tde_score_maxdiff"],
+            chk["official_score_maxdiff"] = max(
+                chk["official_score_maxdiff"],
                 float(np.abs(p_tde[off_order] - off_scores).max()))
-            recon = ((b["vis"] + b["ctxp"]) + b["frq"]) - ((b["vis"] + b["ctxa"]) + b["frq"])
-            chk["tde_identity_maxdiff"] = max(
-                chk["tde_identity_maxdiff"], float(np.abs(recon - b["out"]).max()))
+            recon = CFG["identity"](b)
+            chk["identity_maxdiff"] = max(
+                chk["identity_maxdiff"], float(np.abs(recon - b["out"]).max()))
 
             # --- official matching structure (PredCls: predicted boxes and
             # classes are the ground-truth ones)
@@ -208,7 +241,7 @@ def main():
             p_off[off_order] = off_scores          # the evaluated TDE scores
 
             for v, f in VARIANTS.items():
-                if v == "TDE":
+                if v == OFFICIAL:
                     p, order = p_off, off_order     # the evaluated order
                 else:
                     p = softmax(f(b))
@@ -279,7 +312,7 @@ def main():
     rd = f"{EVAL}/result_dict.pytorch"
     if os.path.exists(rd):
         r = torch.load(rd, map_location="cpu", weights_only=False)
-        summary["official_TDE_this_run"] = {
+        summary[f"official_{OFFICIAL}_this_run"] = {
             f"{k}@{kk}": float(np.mean(vv)) for k, v in r.items()
             if isinstance(v, dict) and "recall" in k and "list" not in k
             and "collect" not in k

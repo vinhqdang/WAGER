@@ -19,7 +19,9 @@ import numpy as np
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "experiments"))
 from wager.rank import within_cell_auc_contrast  # noqa: E402
+from sgg_variants import load_variant  # noqa: E402
 
 DDIR = ROOT / "data/vg_motifs/wager_sgg"
 OUT = ROOT / "results/sgg_rank_contrast.json"
@@ -43,7 +45,7 @@ def main():
 
     def q(v):
         if v not in cache:
-            cache[v] = np.load(DDIR / f"variant_{v}.npz")["probs"][keep].astype(np.float64)
+            cache[v] = load_variant(v)["probs"][keep].astype(np.float64)
         return cache[v]
 
     rows = []
