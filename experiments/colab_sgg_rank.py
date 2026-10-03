@@ -59,6 +59,28 @@ VARIANTS = {
 }
 
 
+def train_predicate_counts():
+    """Training-split predicate counts (index 0 is background, always 0)."""
+    import h5py
+    with h5py.File(f"{SGG}/datasets/vg/VG-SGG-with-attri.h5", "r") as f5:
+        split = f5["split"][:]
+        first, last = f5["img_to_first_rel"][:], f5["img_to_last_rel"][:]
+        preds_all = f5["predicates"][:, 0]
+    cnt = np.zeros(51, dtype=np.int64)
+    for i in np.flatnonzero((split == 0) & (first >= 0)):
+        np.add.at(cnt, preds_all[first[i]:last[i] + 1], 1)
+    return cnt
+
+
+def add_logit_adjusted(cnt, taus=(0.5, 1.0)):
+    """Post-hoc logit adjustment of the baseline by the training predicate prior."""
+    lp = np.zeros(51, dtype=np.float32)
+    lp[1:] = np.log(cnt[1:] / cnt[1:].sum()).astype(np.float32)
+    for t in taus:
+        VARIANTS[f"la{t:g}"] = (lambda b, t=t:
+                                ((b["vis"] + b["ctxp"]) + b["frq"]) - np.float32(t) * lp)
+
+
 def log(m):
     print(f"[rank +{time.time()-T0:.0f}s] {m}", flush=True)
 
@@ -115,6 +137,9 @@ def main():
     import torch
     from maskrcnn_benchmark.utils.miscellaneous import bbox_overlaps
     os.makedirs(OUT, exist_ok=True)
+    cnt = train_predicate_counts()
+    add_logit_adjusted(cnt)
+    log(f"train predicate counts: {int(cnt.sum())} relations; variants {list(VARIANTS)}")
     log(f"loading {EVAL}/eval_results.pytorch")
     d = torch.load(f"{EVAL}/eval_results.pytorch", map_location="cpu",
                    weights_only=False)  # our own dump; holds BoxList objects
@@ -224,7 +249,7 @@ def main():
 
     # --- official-style recall from the ranks (per-image, then averaged)
     img, y = meta["image_index"], meta["pred"]
-    summary = {"checks": chk, "n_relations": int(len(y)),
+    summary = {"train_predicate_counts": cnt.tolist(), "checks": chk, "n_relations": int(len(y)),
                "n_images_with_relations": int(len(np.unique(img))),
                "recalls": {}}
     _, inv = np.unique(img, return_inverse=True)
@@ -259,16 +284,6 @@ def main():
             if isinstance(v, dict) and "recall" in k and "list" not in k
             and "collect" not in k
             for kk, vv in v.items() if not isinstance(vv, (dict, list)) or len(vv)}
-    # training-split predicate counts, for head/body/tail tiers
-    import h5py
-    with h5py.File(f"{SGG}/datasets/vg/VG-SGG-with-attri.h5", "r") as f5:
-        split = f5["split"][:]
-        first, last = f5["img_to_first_rel"][:], f5["img_to_last_rel"][:]
-        preds_all = f5["predicates"][:, 0]
-    cnt = np.zeros(51, dtype=np.int64)
-    for i in np.flatnonzero((split == 0) & (first >= 0)):
-        np.add.at(cnt, preds_all[first[i]:last[i] + 1], 1)
-    summary["train_predicate_counts"] = cnt.tolist()
     with open(f"{OUT}/summary.json", "w") as fh:
         json.dump(summary, fh, indent=2)
     log("RANK COMPLETE")
