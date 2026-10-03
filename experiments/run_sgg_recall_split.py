@@ -34,7 +34,7 @@ sys.path.insert(0, str(ROOT))
 from wager.antisymmetric import decompose_gain_matrix  # noqa: E402
 
 DDIR = ROOT / "data/vg_motifs/wager_sgg"
-OUT = ROOT / "results/sgg_recall_split.json"
+RESULTS = ROOT / "results"
 N_PRED = 50
 N_OBJ = 151
 KS = (20, 50, 100)
@@ -148,8 +148,10 @@ def main(new="TDE", old="none"):
                 print(f"    {t:4s}: {mt['total']:+.4f} = group {mt['group']:+.4f} "
                       f"+ case {mt['case']:+.4f} [{mt['case_ci'][0]:+.4f}, "
                       f"{mt['case_ci'][1]:+.4f}]")
-    OUT.write_text(json.dumps(out, indent=1))
-    print(f"wrote {OUT.relative_to(ROOT)}")
+    dest = RESULTS / ("sgg_recall_split.json" if (new, old) == ("TDE", "none")
+                      else f"sgg_recall_split_{new}_vs_{old}.json")
+    dest.write_text(json.dumps(out, indent=1))
+    print(f"wrote {dest.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

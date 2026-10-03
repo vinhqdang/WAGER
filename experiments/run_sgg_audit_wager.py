@@ -38,8 +38,11 @@ def _rerun(effect: str):
     """Same fields from the branch-dump rerun (colab_sgg_rank.py output)."""
     meta = np.load(MDIR / "wager_sgg/meta.npz")
     v = np.load(MDIR / f"wager_sgg/variant_{effect}.npz")
-    return {"probs": v["probs"], **{k: meta[k] for k in
-                                    ("pred", "subj", "obj", "image_index")}}
+    drop = json.loads((MDIR / "wager_sgg/missing_pairs.json").read_text())["rows"]
+    keep = np.ones(len(meta["pred"]), dtype=bool)
+    keep[drop] = False                 # relations whose pair was never scored
+    return {"probs": v["probs"][keep], **{k: meta[k][keep] for k in
+                                          ("pred", "subj", "obj", "image_index")}}
 
 
 def load(effect: str):
@@ -166,6 +169,26 @@ def main():
             seed=1)
         print(f"  (cal-matched randomization p={p_cal:.4g})")
         rows[-2]["randomization_p"] = p_cal
+
+        # operating-point control: post-hoc logit adjustment of the baseline by the
+        # training predicate prior changes no within-cell ranking, so whatever
+        # case-level part it shows is not new discrimination (rerun data only)
+        if (MDIR / "wager_sgg/variant_la1.npz").exists():
+            for v in ("la1", "la0.5"):
+                m = load(v)
+                t_v = fit_temperature(m["q"][cal], y[cal])
+                acc[f"MOTIFS logit-adjusted tau={v[2:]}"] = float((m["q"].argmax(1) == y).mean())
+                for sc in ("brier", "log"):
+                    g = decompose_gain(temp_scale(m["q"], t_v)[aud],
+                                       temp_scale(base["q"], t_base)[aud],
+                                       y[aud], phi[aud], groups=image[aud], score=sc)
+                    print(f"  ({v} vs MOTIFS, cal-matched, {sc}) dT={g.total_gain:+.5f} "
+                          f"dP={g.prior_gain:+.5f} dR={g.alignment_gain:+.5f} "
+                          f"CI=[{g.alignment_ci[0]:+.5f},{g.alignment_ci[1]:+.5f}]")
+                    rows.append({"comparison": f"MOTIFS logit-adjusted tau={v[2:]} vs MOTIFS",
+                                 "score": sc, "regime": "calibration-matched",
+                                 "T_old": t_base, "T_new": t_v, **g.as_row(),
+                                 "randomization_p": None})
 
     out = {
         "dataset": "VG150 PredCls (canonical split, Tang et al. released checkpoints)",
