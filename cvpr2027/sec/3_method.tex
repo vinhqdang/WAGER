@@ -56,9 +56,13 @@ quadratic score A gains $+\tfrac18$, all of it group-level, and B gains $+\tfrac
 case-level part of $+\tfrac12$. Now let deployment see this cell's labels in proportions
 $(\tfrac14,\tfrac34)$ instead, a label shift. Reweighting each case by $p'(y)/p(y)$ sends A
 to $-\tfrac38$ --- worse than the model it replaced, with not one prediction changed --- and
-leaves B at $+\tfrac38$. The split said in advance which gain was exposed: a group-level gain
-is contingent on the evaluation set's label frequencies matching deployment, and a case-level
-gain is not. That is the operational reason to want them apart. (\Cref{app:worked} works the
+leaves B at $+\tfrac38$. The split said in advance which gain was exposed. With $m_y(z)=\mathbb E[H_X(z)\mid Y=y,C=c]$,
+the case-level part is a sum over label pairs,
+$\dR_c=\sum_{y<z}p(y)p(z)\,D(y,z)$ with $D(y,z)=m_y(y)-m_y(z)+m_z(z)-m_z(y)$, and a label
+shift leaves every $D$ fixed and changes only the weights. With two labels, as here, a shift
+can rescale the case-level part but never reverse it; with three or more it can
+(\cref{app:worked}). A case-level gain is therefore less exposed to a shift than a group-level
+one, not immune to it. That is the operational reason to want them apart. (\Cref{app:worked} works the
 example through.)
 
 \paragraph{Estimator.} In a cell with $n_c\ge2$ cases, write $H_i(y)=H_{x_i}(y)$ and estimate

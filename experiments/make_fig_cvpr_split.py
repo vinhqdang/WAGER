@@ -48,6 +48,15 @@ def sgg_matched_quadratic(sgg):
                 and "prior_feature" not in r)
 
 
+def clip_matched(cons):
+    """The CLIP-vs-geometry pair with both models' confidence matched on held-out images --
+    the comparison the paper reads, since the two differ visibly in confidence. Re-keyed to
+    the field names the other rows use."""
+    r = next(r for r in cons["rows"] if r["name"] == "VISUAL vs SPATIAL cal-both (audit half)")
+    return {"total_gain": r["total"], "prior_gain": r["prior"],
+            "reasoning_gain": r["reasoning"], "reasoning_ci": r["reasoning_ci"]}
+
+
 def main() -> None:
     vg = load("antisymmetric_results.json")["comparisons"]
     vgv = load("vg_visual_results.json")["comparisons"]
@@ -56,7 +65,7 @@ def main() -> None:
     rows = [
         ("MLP-CLASS vs FREQ\n(class pair only)", pick(vg, "MLP-CLASS", "FREQ")),
         ("+box geometry vs MLP-CLASS", pick(vg, "MLP-SPATIAL", "MLP-CLASS")),
-        ("CLIP crops vs geometry", pick(vgv, "MLP-VISUAL-S", "MLP-SPATIAL-S")),
+        ("CLIP crops vs geometry\n(matched)", clip_matched(load("vg_prior_consequence.json"))),
         ("TDE vs MOTIFS\n(released, matched)", sgg_matched_quadratic(sgg)),
     ]
     labels = [r[0] for r in rows]

@@ -2,6 +2,7 @@
 from statistics import NormalDist
 
 import numpy as np
+import pytest
 
 from wager.antisymmetric import (
     cyclic_randomization_test,
@@ -437,3 +438,35 @@ def test_only_the_covariance_channel_survives_a_label_shift():
     assert np.isclose(rb.total_gain, 3 / 8) and np.isclose(shifted["B"], 3 / 8)
     # A improved on the benchmark and is worse than q_old after the shift.
     assert ra.total_gain > 0 > shifted["A"]
+
+
+def _pure_label_shift_cell(qn, counts):
+    """One cell whose cases come in types that always carry their own label, so p(x|y) is
+    fixed and changing the counts is a pure label shift. The old model is uniform."""
+    k = len(qn)
+    y = np.concatenate([[t] * c for t, c in enumerate(counts)])
+    q_new = np.stack([qn[t] for t in y])
+    q_old = np.full((len(y), k), 1.0 / k)
+    return decompose_gain(q_new, q_old, y, np.zeros(len(y), dtype=int))
+
+
+def test_case_level_part_can_reverse_under_a_label_shift_with_three_labels():
+    # The case-level part is sum_{y<z} p(y)p(z) D(y,z) with D fixed under a label shift. Here
+    # the pairwise contrasts are D = -0.6, +1.1, -1.7: making label 1 rare removes weight from
+    # the two negative ones and the sign flips. This is the supplementary's counterexample.
+    qn = [np.array([.65, .35, .00]), np.array([.65, .05, .30]), np.array([.20, .70, .10])]
+    balanced = _pure_label_shift_cell(qn, (40, 40, 40)).reasoning_gain
+    shifted = _pure_label_shift_cell(qn, (40, 2, 78)).reasoning_gain
+    assert balanced == pytest.approx(-0.13445, abs=5e-6)
+    assert shifted == pytest.approx(+0.21840, abs=5e-6)
+
+
+def test_case_level_part_never_reverses_under_a_label_shift_with_two_labels():
+    # With two labels there is a single pairwise contrast, so a shift rescales the case-level
+    # part by p(1)p(2) and cannot change its sign.
+    rng = np.random.default_rng(7)
+    for _ in range(300):
+        qn = [rng.dirichlet(np.ones(2)), rng.dirichlet(np.ones(2))]
+        a = _pure_label_shift_cell(qn, (40, 40)).reasoning_gain
+        b = _pure_label_shift_cell(qn, (5, 75)).reasoning_gain
+        assert a * b >= -1e-15

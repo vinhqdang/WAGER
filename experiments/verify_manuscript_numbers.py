@@ -288,11 +288,32 @@ CHECKS += [
      load("sensitivity_bound.json")["robustness_value_rho_dagger"], 5e-4),
 ]
 
-# A claim no single literal carries: "the case-level part is at most a twelfth of the
-# total under either proper score" (abstract, Secs. 1 and 5). Asserted directly.
-twelfth = max(abs(r["reasoning_gain"]) / abs(r["total_gain"]) for r in (sgg_matched_q, sgg_matched_l))
-if twelfth > 1 / 12:
-    print(f"FAIL 'at most a twelfth': worst matched |dR|/|dT| is {twelfth:.4f} > {1/12:.4f}")
+bridge_vs = bridge["MLP-VISUAL-S vs MLP-SPATIAL-S"]
+CHECKS += [
+    # Added with the 2026-10-03 panel corrections.
+    ("cvpr TDE R@50", "5_audit.tex", "0.4588",
+     sgg["recalls"]["MOTIFS-TDE"]["predcls_recall@50"], 5e-5),
+    ("cvpr base ng-mR@50", "5_audit.tex", "0.3260",
+     sgg["recalls"]["MOTIFS"]["predcls_ng_mean_recall@50"], 5e-5),
+    ("cvpr TDE ng-mR@50", "5_audit.tex", "0.2981",
+     sgg["recalls"]["MOTIFS-TDE"]["predcls_ng_mean_recall@50"], 5e-5),
+    ("cvpr CLIP matched dP", "6_pixels.tex", "0.04727",
+     cons_rows["VISUAL vs SPATIAL cal-both (audit half)"]["prior"], 1e-5),
+    ("cvpr CLIP prior-matched acc gap, points", "6_pixels.tex", "2.17",
+     bridge_vs["d_acc_pm"] * 100, 5e-3),
+    ("cvpr CLIP prior-matched MRR gap, points", "6_pixels.tex", "1.68",
+     bridge_vs["d_mrr_pm"] * 100, 5e-3),
+    ("cvpr CLIP prior-matched R@5 gap, points", "6_pixels.tex", "1.05",
+     bridge_vs["d_r5_pm"] * 100, 5e-3),
+]
+
+# A claim no single literal carries: "under a tenth of [the total] even at the upper end of
+# the log-score interval" (abstract, Secs. 1 and 5). The earlier "at most a twelfth" held for
+# the point estimate only and failed at the interval bound; this asserts the bound itself.
+worst = max(max(abs(x) for x in r["reasoning_ci"]) / abs(r["total_gain"])
+            for r in (sgg_matched_q, sgg_matched_l))
+if worst >= 0.1:
+    print(f"FAIL 'under a tenth': worst matched interval bound |dR|/|dT| is {worst:.4f}")
     sys.exit(1)
 
 # confounding-sensitivity bound (Corollary: worst-case)

@@ -6,7 +6,7 @@ from something every model sees. Given the ordered object pair (\textsf{man},
 \textsf{riding}, and a lookup table of training frequencies is famously
 competitive~\cite{zellers2018neural}. Recall@$K$ rewards models that echo this prior, so the
 field now leads with mean recall, which averages recall over predicates and so rewards getting
-the rare ones~\cite{tang2020unbiased}. Debiasing methods are now judged by how far they raise it.
+the rare ones~\cite{chen2019kern,tang2019vctree}. Debiasing methods are now judged by how far they raise it.
 Total Direct Effect (TDE)~\cite{tang2020unbiased}, among the most cited of them, raises
 mean recall@50 of a MOTIFS model from $14.6$ to $24.8$ on the canonical VG150 split, in our
 evaluation of the released checkpoint with the authors' own code.
@@ -18,7 +18,8 @@ each subject--object pair} --- say \textsf{carrying} more often for (\textsf{man
 man carrying rather than riding. Or it can learn to make that decision: put more probability
 on the correct predicate for the individual image, beyond what the object pair implies. The
 first is a change in the model's group-level predictions; only the second is better
-recognition. Every existing remedy --- frequency-stratified recall~\cite{li2022rethinking},
+recognition. Every existing remedy --- head/body/tail-stratified recall~\cite{li2021bgnn}, independent
+mean recall~\cite{li2022rethinking},
 zero-shot recall~\cite{lu2016visual}, rarity-stratified accuracy~\cite{kervadec2021roses}
 --- slices one model's performance differently. None attributes the gain \emph{between} two
 models to one route or the other.
@@ -38,25 +39,27 @@ parameter, costs $O(NK)$ on cached predictions, and comes with image-clustered i
 
 \paragraph{What it finds.} On the two models of TDE's own released checkpoint, evaluated
 with the authors' code, and with each model's confidence matched on held-out images, the
-proper-score change is almost entirely group-level: the case-level part is at most a twelfth
+proper-score change is almost entirely group-level: the case-level part is under a tenth
 of it under either the quadratic or the log score, and under the quadratic score it is
-$-0.00006$ with an interval straddling zero (\cref{sec:sggaudit}). So the ten points are not
-evidence that the debiased model recognises individual relations better: the proper-score
-change behind them is a redistribution of probability across predicates within each pair. This
-describes what TDE does rather than indicting it --- subtracting a context-only prediction
-is a group-level intervention by design --- but it is not what a ten-point gain is usually
-read as meaning. The converse happens too. A model reading image crops through a frozen
+$-0.00006$ with an interval straddling zero (\cref{sec:sggaudit}). The proper-score change behind the ten points is a change in which predicates the model
+favours within each pair, far more than in how well it tells that pair's relations apart. Nor
+is that implied by how TDE is built: in the released model its counterfactual subtraction
+cancels the image-specific visual logits as well as the frequency prior (\cref{sec:sggaudit}),
+so it discards case-level evidence along with the group-level prior. The converse appears too. A model reading image crops through a frozen
 CLIP encoder~\cite{radford2021learning}, which every aggregate measure ranks last, gains
-$+0.00641$ of case-level covariance over the geometry-based model ranked above it, with an
-interval excluding zero (\cref{sec:vgvisual}): its deficit is entirely group-level, and it
-is the better recogniser.
+$+0.00467$ of case-level covariance over the geometry-based model ranked above it, with
+calibration matched and an interval excluding zero (\cref{sec:vgvisual}): its deficit is
+entirely group-level. That gain does not make it the better ranker, though, and the two
+measures' disagreement is itself part of what \cref{sec:vgvisual} reports.
 
 \paragraph{Contributions.}
 \begin{itemize}
 \setlength\itemsep{1pt}
-\item An audit of a published debiasing method's released checkpoints showing that its
-  ten-point mean-recall gain carries no detectable case-level improvement under the
-  quadratic score, and at most a twelfth of the change under the log score, and a reversal in which the model ranked last is the best case-level discriminator.
+\item An audit of a published debiasing method's released checkpoints, finding its ten-point
+  mean-recall gain backed by a proper-score change that is almost entirely group-level --- a
+  case-level part indistinguishable from zero under the quadratic score and under a tenth of
+  the total under the log score --- and a reversal in which the model ranked last is the best
+  discriminator among relations sharing an object pair.
 \item An exact, model-free decomposition of the score gain between two frozen models into
   group-level and case-level parts, valid for every Bregman score, computed in one pass over
   cached predictions, with cluster-robust inference.
@@ -69,7 +72,10 @@ is the better recogniser.
 measures case-level discrimination \emph{among relations sharing an object pair}, and
 credits any signal varying inside a pair, including a shortcut nobody recorded. It is not
 invariant to recalibration --- rescaling a model's confidence moves score between the two
-parts while changing no ranking --- which is why every comparison here is confidence-matched.
-And the audit's headline holds at the configuration we argue for, not at every
-configuration; \cref{tab:sggaudit} reports all five. These limits are taken up
+parts while changing no ranking --- which is why the comparisons whose models differ visibly in
+confidence, TDE's and the CLIP model's, are read confidence-matched.
+The split is of a proper score that weights every relation equally, whereas mean recall
+weights every predicate equally, so the audit speaks to the relation-weighted change; a
+case-level gain confined to rare predicates could be hidden by losses on common ones. And the
+audit's headline holds at the configuration we argue for, not at every configuration; \cref{tab:sggaudit} reports all five. These limits are taken up
 in \cref{sec:discussion}.

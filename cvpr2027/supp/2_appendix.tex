@@ -114,10 +114,30 @@ and rescoring sends A from $+\tfrac18$ to $-\tfrac38$ while leaving B at $+\tfra
 becomes \emph{worse} than the model it was meant to replace, on a change that leaves every
 prediction exactly as it was. The decomposition says in advance which is exposed and the
 aggregate score does not, because A's whole gain sits in the transported channel --- the one
-a change in label frequencies acts on --- and B's in the covariance channel, which such a
-change leaves alone. That is the operational content of the split: $\widehat{\Delta P}$ is
-the part of a reported improvement contingent on the evaluation set's label frequencies
-matching deployment, and $\widehat{\Delta R}$ is the part that is not.
+a change in label frequencies acts on directly --- and B's in the covariance channel.
+
+The covariance channel is not immune to a shift, only less exposed, and the reason is exact.
+Write $m_y(z)=\mathbb E[H_X(z)\mid Y=y,C=c]$, the expected gain at label $z$ among cases
+whose true label is $y$. Expanding $\Delta R_c=\Delta T_c-\Delta P_c$ over label pairs gives
+\begin{equation}
+\Delta R_c=\sum_{y<z}p(y)\,p(z)\,D(y,z),\qquad D(y,z)=m_y(y)-m_y(z)+m_z(z)-m_z(y).
+\label{eq:pairwise}
+\end{equation}
+A label shift changes $p(y)$ and leaves $p(x\mid y)$, hence every $m_y(z)$ and every $D$,
+fixed. With two labels the sum has one term, so a shift rescales $\Delta R_c$ by
+$p(1)p(2)$ and cannot change its sign; in the example above $p(1)p(2)=\tfrac3{16}$ both before
+and after, which is why B's covariance gain is untouched. With three or more labels the
+pairwise contrasts can differ in sign, and then a shift can reverse the covariance gain.
+Concretely: three case types, each always carrying its own label, the old model uniform, and
+the new model predicting $(0.65,0.35,0)$, $(0.65,0.05,0.30)$ and $(0.20,0.70,0.10)$ for the
+three types gives $D=-0.6$, $+1.1$ and $-1.7$. With the labels balanced, 40 cases each, the
+estimated covariance gain is $-0.13445$; shifting the counts to $(40,2,78)$, which starves the
+two negative contrasts of weight, makes it $+0.21840$.
+\texttt{tests/test\_antisymmetric.py} asserts both values, and asserts that no two-label cell
+reverses sign. The operational content of the split is therefore this: $\widehat{\Delta P}$
+is the part of a reported improvement that a change in label frequencies acts on directly,
+and $\widehat{\Delta R}$ is a frequency-weighted sum of fixed pairwise contrasts, which a
+shift re-weights but, in a two-label cell, cannot reverse.
 Section~\ref{sec:vgvisual} exhibits the same structure on real models.
 
 \begin{figure*}[t]

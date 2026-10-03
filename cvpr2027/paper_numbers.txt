@@ -3,6 +3,7 @@
 # --freeze-paper-scope from a state in which every check passed.
 CLIP alignment gain
 CLIP total gain
+bridge clip pm acc drop
 bridge spatial dR
 consequence VISUAL' dP
 consequence VISUAL' dR
@@ -16,7 +17,11 @@ cvpr CLASS-FREQ p
 cvpr CLIP accuracy
 cvpr CLIP matched ci hi
 cvpr CLIP matched ci lo
+cvpr CLIP matched dP
 cvpr CLIP matched dR
+cvpr CLIP prior-matched MRR gap, points
+cvpr CLIP prior-matched R@5 gap, points
+cvpr CLIP prior-matched acc gap, points
 cvpr CLIP-class dR
 cvpr CLIP-geometry dP
 cvpr CLIP-geometry dR ci hi
@@ -28,8 +33,11 @@ cvpr SPATIAL-CLASS dR ci lo
 cvpr SPATIAL-CLASS dT
 cvpr T* TDE
 cvpr T* baseline
+cvpr TDE R@50
+cvpr TDE ng-mR@50
 cvpr VG coverage
 cvpr VG identified cells
+cvpr base ng-mR@50
 cvpr both corrected dR
 cvpr corrected dR
 cvpr corrected deficit

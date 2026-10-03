@@ -10,18 +10,27 @@ alone with its image-clustered 95\% interval. Two models built from the class pa
 differ by a purely group-level gain, as \cref{thm:population} forces. Box geometry and CLIP
 crops each buy a significant case-level gain, the CLIP model despite losing on the total.
 TDE's large proper-score change is group-level, with a case-level part whose interval
-straddles zero.}
+straddles zero. The CLIP and TDE rows, whose models differ visibly in confidence, are
+confidence-matched on held-out images.}
 \label{fig:where}
 \end{figure*}
 
 Tang \etal~\cite{tang2020unbiased} release a causal MOTIFS PredCls checkpoint that yields two
 models from one set of weights: the baseline (MOTIFS-SUM) and its Total Direct Effect
-counterpart (MOTIFS-TDE), which subtracts a context-only counterfactual prediction at
-inference. We evaluate both with the authors' own code on the canonical VG150 test split, so
+counterpart (MOTIFS-TDE). The baseline's predicate logit is a sum of three terms: a visual
+term from the union region, a context term, and a frequency prior indexed by the object pair,
+which in PredCls is fixed by the subject--object cell. TDE subtracts the same sum evaluated
+with an averaged context. In the released code the visual and frequency terms enter both
+halves of that subtraction unchanged, so they cancel, and TDE's output is the context term
+minus its averaged counterpart. TDE therefore removes the frequency prior, which is constant
+within a cell, and also the image-specific visual term, which is not. We evaluate both with the authors' own code on the canonical VG150 test split, so
 the two prediction sets are aligned relation for relation. The reproduction matches the
 published behaviour: the baseline reaches $R@50=0.6612$ with $mR@50=0.1459$, and TDE trades
 the former for the latter, reaching $mR@50=0.2476$ and raising zero-shot recall to
-$zR@50=0.1432$, while top-1 predicate accuracy falls from $0.6981$ to $0.5577$. The audit
+$zR@50=0.1432$, while $R@50$ falls to $0.4588$ and top-1 predicate accuracy from $0.6981$ to
+$0.5577$. Without the graph constraint the mean-recall gain reverses: no-graph-constraint
+$mR@50$ falls from $0.3260$ to $0.2981$. The ten points exist only under the
+graph-constrained protocol. The audit
 covers $183{,}639$ relations over $26{,}446$ images in $7{,}127$ subject--object cells;
 $98.9\%$ of the relations fall in the $5{,}044$ cells holding at least two, and so are
 identified.
@@ -66,7 +75,8 @@ is $\hdR=-0.00006$, interval $[-0.00120,+0.00109]$, randomization $p=.555$: indi
 from zero (\cref{fig:where}). Under the log score the case-level part is small and positive, $+0.04396$ with an
 interval excluding zero, against a group-level change of $-0.59157$. The two proper scores
 thus disagree on whether any case-level change survives matching, and agree that whichever
-is right it is at most a twelfth the size of the total. Both are well-posed: each Bregman
+is right it is small against the total: under a tenth of it even at the upper end of the
+log-score interval. Both are well-posed: each Bregman
 score defines its own exact estimand (\cref{thm:bregman}), so choosing between them is a
 declaration and not an error to argue away. What both support is that TDE's change to the
 predictive distribution is overwhelmingly group-level.
@@ -77,11 +87,13 @@ them: it would be wrong to say ten points bought $0.00006$ of evidence, and equa
 say the mean-recall gain \emph{is} group-level, since the group-level part of the proper score
 fell. What the audit supports is a conjunction. The headline metric moved ten points, and
 the proper-score difference behind it lives almost entirely in how the model distributes
-probability across predicates within each object pair. A reader may conclude that the
-ten points are not evidence of better recognition of individual relations. This
-characterises TDE rather than indicting it: subtracting a context-only prediction is a
-group-level intervention by construction, and the split confirms that it acts as designed.
-What it questions is the habit of reading a mean-recall gain as better recognition.
+probability across predicates within each object pair. Two cautions bound it. First, the proper score weights every relation equally and mean
+recall weights every predicate equally, so a case-level gain confined to rare predicates could
+be offset by a loss on common ones and vanish from the pooled split. Second, the result is not
+built into TDE. Its subtraction removes the frequency prior, a group-level term, but also the
+image-specific visual term, which carries case-level evidence; a case-level part near zero
+means whatever TDE lost there it recovered elsewhere, or neither moved, and the split as run
+here cannot say which.
 
 \paragraph{The answer depends on the configuration.} The five rows give case-level gains of
 $-0.21711$, $-0.12619$, $-0.01355$, $-0.00006$ and $+0.04396$. At two of the five,
