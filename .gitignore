@@ -264,3 +264,4 @@ submission.zip
 
 # Generated code-only archive (rebuild: python experiments/build_code_archive.py)
 code.zip
+reviews/*/_supp_text.txt
