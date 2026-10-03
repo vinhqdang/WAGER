@@ -3,6 +3,11 @@
 # --freeze-paper-scope from a state in which every check passed.
 CLIP alignment gain
 CLIP total gain
+auc LA-base
+auc TDE-LA lo
+auc TDE-base
+auc TDE-base hi
+auc TDE-base lo
 bridge clip pm acc drop
 bridge spatial dR
 consequence VISUAL' dP
@@ -48,52 +53,68 @@ cvpr identified share of relations
 cvpr mR TDE, points
 cvpr mR base, points
 cvpr matched log dP
-cvpr matched log dT
 cvpr matched quad dR ci hi
 cvpr matched quad dR ci lo
 cvpr matched quad dT
-cvpr matched quad p
 cvpr prior correction dP
 cvpr prior correction dR
-cvpr raw log dP
-cvpr raw log dR
-cvpr raw log dT
-cvpr raw log |dP| rounded
-cvpr raw log |dR| rounded
-cvpr raw quad dR ci hi
-cvpr raw quad dR ci lo
 cvpr robustness value
 cvpr sim calib matched sd
 cvpr sim null mean x1e5
 cvpr sim prior-only sd
 cvpr sim shortcut sd
 cvpr sim type-I
-cvpr subject dP
-cvpr subject dP rounded
-cvpr subject dR rounded
-cvpr subject dT
 cvpr train subsample
+ps LA log case
+ps LA quad case
+ps TDE-LA log case
+ps TDE-LA quad case
+ps matched quad dP
+rec LA R@50
+rec LA case
+rec LA dmR
+rec LA group
+rec LA mR@50
+rec R cost LA
+rec R cost TDE
+rec TDE case
+rec TDE case hi
+rec TDE case lo
+rec TDE dmR
+rec TDE dmR official
+rec TDE group
+rec TDE group share, %
+rec TDE-LA case
+rec TDE-LA case hi
+rec TDE-LA case lo
+rec body group
+rec body total
+rec head loss
+rec n body
+rec n head
+rec n relations
+rec n tail
+rec on loss
+rec parked on after
+rec parked on before
+rec table LA case hi
+rec table LA case lo
+rec table TDE-LA group
+rec table TDE-LA total
+rec tail 'to' recall
+rec tail baseline recalls none
+rec tail gain
+rec tail predicates TDE recalls
+rec tail test relations
 sens class-pair dR
 sgg base R@50
-sgg base acc
 sgg base mR@50
 sgg cal dP
 sgg cal dR
 sgg cal log dR
-sgg cal log dR ci hi
-sgg cal log dR ci lo
 sgg n cells
 sgg n images
-sgg n relations
-sgg raw dP
-sgg raw dR
-sgg raw dT
-sgg raw log dR ci hi
-sgg raw log dR ci lo
-sgg subject dR
-sgg tde acc
 sgg tde mR@50
-sgg tde zR@50
 sim calib matched dR
 sim calib raw dR
 sim coverage clustered

@@ -19,6 +19,8 @@ import pathlib
 import re
 import sys
 
+import numpy as np
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 MS = ROOT / "manuscript"
 RES = ROOT / "results"
@@ -219,12 +221,8 @@ CHECKS += [
     ("cvpr raw log dT", "5_audit.tex", "+0.03277", sgg_raw_l["total_gain"], 1e-5),
     ("cvpr raw log dP", "5_audit.tex", "+0.15897", sgg_raw_l["prior_gain"], 1e-5),
     ("cvpr raw log dR", "5_audit.tex", "-0.12619", sgg_raw_l["reasoning_gain"], 1e-5),
-    ("cvpr raw log |dR| rounded", "5_audit.tex", "0.126", abs(sgg_raw_l["reasoning_gain"]), 5e-4),
-    ("cvpr raw log |dP| rounded", "5_audit.tex", "0.159", abs(sgg_raw_l["prior_gain"]), 5e-4),
     ("cvpr subject dT", "5_audit.tex", "-0.11536", sgg_subj["total_gain"], 1e-5),
     ("cvpr subject dP", "5_audit.tex", "+0.10175", sgg_subj["prior_gain"], 1e-5),
-    ("cvpr subject dP rounded", "5_audit.tex", "+0.102", sgg_subj["prior_gain"], 5e-4),
-    ("cvpr subject dR rounded", "5_audit.tex", "-0.217", sgg_subj["reasoning_gain"], 5e-4),
     ("cvpr matched quad dT", "5_audit.tex", "-0.18264", sgg_matched_q["total_gain"], 1e-5),
     ("cvpr matched quad dR ci lo", "5_audit.tex", "-0.00120",
      sgg_matched_q["reasoning_ci"][0], 1e-5),
@@ -307,13 +305,115 @@ CHECKS += [
      bridge_vs["d_r5_pm"] * 100, 5e-3),
 ]
 
-# A claim no single literal carries: "under a tenth of [the total] even at the upper end of
-# the log-score interval" (abstract, Secs. 1 and 5). The earlier "at most a twelfth" held for
-# the point estimate only and failed at the interval bound; this asserts the bound itself.
-worst = max(max(abs(x) for x in r["reasoning_ci"]) / abs(r["total_gain"])
-            for r in (sgg_matched_q, sgg_matched_l))
-if worst >= 0.1:
-    print(f"FAIL 'under a tenth': worst matched interval bound |dR|/|dT| is {worst:.4f}")
+# --- the mean-recall split of the rerun (REV-1, REV-3; Sec. 5, App. on the split) ----------
+def _split(name):
+    return load(name)["results"]
+
+
+_DD = ROOT / "data/vg_motifs/wager_sgg"
+_names = json.loads((_DD / "predicate_names.json").read_text())["names"]
+_rer = json.loads((_DD / "summary.json").read_text())["recalls"]
+sp, sp_la = _split("sgg_recall_split.json"), _split("sgg_recall_split_la1_vs_none.json")
+sp_tla = _split("sgg_recall_split_TDE_vs_la1.json")
+sp_la5 = _split("sgg_recall_split_la0.5_vs_none.json")
+sp_vc = _split("sgg_recall_split_vis_ctx_vs_none.json")
+m50, la50, tla50 = sp["gc@50"]["mean_recall"], sp_la["gc@50"]["mean_recall"], sp_tla["gc@50"]["mean_recall"]
+auc = {(r["new"], r["old"]): r for r in load("sgg_rank_contrast.json")["rows"]}
+pp = sp["gc@50"]["per_predicate"]
+
+
+def _cmp(name, score):
+    return next(r for r in sgg["comparisons"]
+                if r["comparison"] == name and r["score"] == score
+                and r.get("regime") == "calibration-matched")
+
+
+la_q = _cmp("MOTIFS logit-adjusted tau=1 vs MOTIFS", "brier")
+la_l = _cmp("MOTIFS logit-adjusted tau=1 vs MOTIFS", "log")
+tla_q = _cmp("MOTIFS-TDE vs MOTIFS logit-adjusted tau=1", "brier")
+tla_l = _cmp("MOTIFS-TDE vs MOTIFS logit-adjusted tau=1", "log")
+tiers = load("sgg_recall_split.json")["tiers"]
+tail_rec = [sp["gc@50"]["official_per_predicate_TDE"][q - 1] for q in tiers["tail"]]
+tail_base = [sp["gc@50"]["official_per_predicate_none"][q - 1] for q in tiers["tail"]]
+meta_n = int(np.load(_DD / "meta.npz")["pred"].shape[0])
+tail_n = int(sum((np.load(_DD / "meta.npz")["pred"] == q).sum() for q in tiers["tail"]))
+r_cost_tde = _rer["none"]["R@50"] - _rer["TDE"]["R@50"]
+r_cost_la = _rer["none"]["R@50"] - _rer["la1"]["R@50"]
+P = lambda name: pp[_names.index(name) - 1]   # noqa: E731
+CHECKS += [
+    ("rec n relations", "5_audit.tex", "183{,}642", meta_n, 0),
+    ("rec LA mR@50", "5_audit.tex", "0.2343", _rer["la1"]["mR@50"], 5e-5),
+    ("rec LA R@50", "5_audit.tex", "0.6437", _rer["la1"]["R@50"], 5e-5),
+    ("rec TDE dmR", "5_audit.tex", "0.0972", m50["total"], 5e-5),
+    ("rec TDE dmR official", "5_audit.tex", "0.1017",
+     sp["gc@50"]["official_mR_TDE"] - sp["gc@50"]["official_mR_none"], 5e-5),
+    ("rec TDE group", "5_audit.tex", "+0.0841", m50["group"], 5e-5),
+    ("rec TDE case", "5_audit.tex", "+0.0130", m50["case"], 5e-5),
+    ("rec TDE case lo", "5_audit.tex", "+0.0093", m50["case_ci"][0], 5e-5),
+    ("rec TDE case hi", "5_audit.tex", "+0.0168", m50["case_ci"][1], 5e-5),
+    ("rec TDE group share, %", "5_audit.tex", "87", 100 * m50["group"] / m50["total"], 0.5),
+    ("rec n head", "5_audit.tex", "head above", "counted below", 0),
+    ("rec n body", "5_audit.tex", "26 body", "counted below", 0),
+    ("rec n tail", "5_audit.tex", "15 tail", "counted below", 0),
+    ("rec body total", "5_audit.tex", "+0.1224", sp["gc@50"]["mean_recall_body"]["total"], 5e-5),
+    ("rec body group", "5_audit.tex", "+0.1082", sp["gc@50"]["mean_recall_body"]["group"], 5e-5),
+    ("rec head loss", "5_audit.tex", "0.0255", -sp["gc@50"]["mean_recall_head"]["total"], 5e-5),
+    ("rec tail gain", "5_audit.tex", "0.0003", sp["gc@50"]["mean_recall_tail"]["total"], 5e-5),
+    ("rec tail test relations", "5_audit.tex", "1{,}480", tail_n, 0),
+    ("rec tail predicates TDE recalls", "5_audit.tex", "TDE recalls one", "counted below", 0),
+    ("rec tail baseline recalls none", "5_audit.tex", "baseline recalls none", "counted below", 0),
+    ("rec tail 'to' recall", "5_audit.tex", "0.016",
+     sp["gc@50"]["official_per_predicate_TDE"][_names.index("to") - 1], 5e-4),
+    ("rec parked on after", "5_audit.tex", "0.886",
+     sp["gc@50"]["per_predicate_recall_TDE"][_names.index("parked on") - 1], 5e-4),
+    ("rec parked on before", "5_audit.tex", "0.000",
+     sp["gc@50"]["per_predicate_recall_none"][_names.index("parked on") - 1], 5e-4),
+    ("rec on loss", "5_audit.tex", "0.558", -P("on")["total"], 5e-4),
+    ("rec LA dmR", "5_audit.tex", "+0.0941", la50["total"], 5e-5),
+    ("rec LA group", "5_audit.tex", "+0.0802", la50["group"], 5e-5),
+    ("rec LA case", "5_audit.tex", "+0.0139", la50["case"], 5e-5),
+    ("rec TDE-LA case", "5_audit.tex", "-0.0008", tla50["case"], 5e-5),
+    ("rec TDE-LA case lo", "5_audit.tex", "-0.0050", tla50["case_ci"][0], 5e-5),
+    ("rec TDE-LA case hi", "5_audit.tex", "+0.0033", tla50["case_ci"][1], 5e-5),
+    ("rec table TDE-LA total", "5_audit.tex", "+.0031", tla50["total"], 5e-5),
+    ("rec table TDE-LA group", "5_audit.tex", "+.0039", tla50["group"], 5e-5),
+    ("rec table LA case lo", "5_audit.tex", "+.0101", la50["case_ci"][0], 5e-5),
+    ("rec table LA case hi", "5_audit.tex", "+.0176", la50["case_ci"][1], 5e-5),
+    ("auc TDE-base", "5_audit.tex", "+0.0026", auc[("TDE", "none")]["difference"], 5e-5),
+    ("auc TDE-base lo", "5_audit.tex", "-0.0028", auc[("TDE", "none")]["ci"][0], 5e-5),
+    ("auc TDE-base hi", "5_audit.tex", "+0.0086", auc[("TDE", "none")]["ci"][1], 5e-5),
+    ("auc TDE-LA lo", "5_audit.tex", "-.0029", auc[("TDE", "la1")]["ci"][0], 5e-5),
+    ("auc LA-base", "5_audit.tex", "+.0001", auc[("la1", "none")]["difference"], 5e-5),
+    ("ps TDE-LA quad case", "5_audit.tex", "-0.0040", tla_q["reasoning_gain"], 5e-5),
+    ("ps TDE-LA log case", "5_audit.tex", "+0.0154", tla_l["reasoning_gain"], 5e-5),
+    ("ps LA quad case", "5_audit.tex", "+0.0039", la_q["reasoning_gain"], 5e-5),
+    ("ps LA log case", "5_audit.tex", "+0.0285", la_l["reasoning_gain"], 5e-5),
+    ("ps matched quad dP", "5_audit.tex", "-0.18258", sgg_matched_q["prior_gain"], 1e-5),
+    ("rec R cost TDE", "5_audit.tex", "0.2023", r_cost_tde, 5e-5),
+    ("rec R cost LA", "5_audit.tex", "0.0175", r_cost_la, 5e-5),
+    ("rec LA.5 case", "3_recall.tex", "+0.0064", sp_la5["gc@50"]["mean_recall"]["case"], 5e-5),
+    ("rec drop-frq case", "3_recall.tex", "+0.0053", sp_vc["gc@50"]["mean_recall"]["case"], 5e-5),
+    ("rec ng TDE-LA case", "3_recall.tex", "+0.0072", sp_tla["ng@50"]["mean_recall"]["case"], 5e-5),
+    ("rec ng TDE-LA case lo", "3_recall.tex", "-0.0001", sp_tla["ng@50"]["mean_recall"]["case_ci"][0], 5e-5),
+    ("rec ng TDE-LA case hi", "3_recall.tex", "+0.0145", sp_tla["ng@50"]["mean_recall"]["case_ci"][1], 5e-5),
+    ("rec train relations", "3_recall.tex", "439{,}063",
+     sum(json.loads((_DD / "summary.json").read_text())["train_predicate_counts"]), 0),
+    ("acc LA", "3_recall.tex", "0.6820", sgg["accuracy"]["MOTIFS logit-adjusted tau=1"], 5e-5),
+]
+
+# Claims no single literal carries.
+assert m50["total"] - m50["group"] - m50["case"] < 1e-12
+if not r_cost_la < 0.1 * r_cost_tde:
+    print("FAIL 'under a tenth of TDE's cost in R@50'")
+    sys.exit(1)
+if [len(tiers[t]) for t in ("head", "body", "tail")] != [9, 26, 15]:
+    print("FAIL tier sizes 9 / 26 / 15")
+    sys.exit(1)
+if sum(x > 0 for x in tail_rec) != 1 or sum(x > 0 for x in tail_base) != 0:
+    print("FAIL 'baseline recalls none [of the tail], TDE recalls one'")
+    sys.exit(1)
+if not (round(100 * la50["total"]) == 9 and round(100 * m50["total"]) == 10):
+    print("FAIL 'nine of the ten points'")
     sys.exit(1)
 
 # confounding-sensitivity bound (Corollary: worst-case)
@@ -414,7 +514,7 @@ def inputted_files(driver: pathlib.Path) -> list[str]:
 driver_arg = sys.argv[sys.argv.index("--driver") + 1] if "--driver" in sys.argv else None
 
 if driver_arg is None:
-    CHECKS = [c for c in CHECKS if not c[0].startswith("cvpr ")]
+    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc "))]
     LIVE = set(inputted_files(MS / "main.tex"))
     orphans = sorted({f for _, f, *_ in CHECKS} - LIVE)
     if orphans:

@@ -1,17 +1,19 @@
 \begin{abstract}
 Debiasing methods for scene graph generation are judged by mean recall, and one of the best
 known, Total Direct Effect (TDE), raises it on Visual Genome from 14.6 to 24.8. What did
-those ten points buy? Mean recall cannot say. A model raises it either by predicting rare
-predicates more often within each subject--object pair, or by recognising which individual
-images actually show them, and the metric credits both alike. We give an exact way to tell
-them apart. Scoring each prediction against the label of a different relation from the same
+those ten points buy? A model raises mean recall either by predicting rare predicates more
+often within each subject--object pair, or by recognising which individual images actually
+show them, and the metric credits both alike. We give an exact way to tell them apart.
+Scoring each prediction against the label of a different relation from the same
 subject--object group keeps the group's predicate frequencies but breaks the link between
-each relation and its own label; this splits any proper-score difference between two frozen models into a
-group-level part and a case-level covariance, with no fitted baseline or tuning parameter,
-in $O(NK)$ time, with image-clustered confidence intervals. On TDE's released checkpoints
-with calibration matched, the proper-score change is almost entirely group-level: under the
-quadratic score the case-level part is indistinguishable from zero, and under the log score
-it is small and positive, under a tenth of the total. The converse also occurs: a CLIP model
-reading image crops, ranked last on accuracy and on the proper score, discriminates better
-among relations sharing an object pair than the geometry model ranked above it.
+each relation and its own label; this splits the difference between two frozen models, in
+a proper score or in mean recall itself, into a group-level part and a case-level
+covariance, with no fitted baseline, in $O(NK)$ time, with image-clustered intervals. On
+TDE's released checkpoint, 87\% of the mean-recall gain is group-level and almost none of it
+comes from the fifteen rarest predicates. A one-line logit adjustment of the baseline, which
+leaves the ranking of relations within every group unchanged, recovers nine of the ten points
+with the same split, at under a tenth of TDE's cost in recall, and a threshold-free
+within-group AUC finds no discrimination that TDE gained. The converse also occurs: a CLIP
+model reading image crops, ranked last on accuracy and on the proper score, discriminates
+better among relations sharing an object pair than the geometry model ranked above it.
 \end{abstract}

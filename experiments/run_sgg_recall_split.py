@@ -75,7 +75,7 @@ def official_mean_recall(hit_own, y, image):
     for q in range(1, N_PRED + 1):
         m = cn[:, q] > 0
         per.append(float((ch[m, q] / cn[m, q]).mean()) if m.any() else 0.0)
-    return float(np.mean(per))
+    return float(np.mean(per)), per
 
 
 def split(hit_new, hit_old, y, phi, image, eligible, col_weight):
@@ -113,7 +113,8 @@ def main(new="TDE", old="none"):
             res = {}
             for name, hh in ((new, hn), (old, ho)):
                 own = hh[ix, y]
-                res[f"official_mR_{name}"] = official_mean_recall(own, y, image)
+                res[f"official_mR_{name}"], res[f"official_per_predicate_{name}"] = \
+                    official_mean_recall(own, y, image)
                 res[f"micro_mR_{name}"] = micro_mean_recall(own, y, np.ones_like(eligible))[0]
                 res[f"micro_mR_eligible_{name}"], per = micro_mean_recall(own, y, eligible)
                 res[f"per_predicate_recall_{name}"] = per.tolist()

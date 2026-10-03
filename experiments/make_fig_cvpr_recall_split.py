@@ -31,7 +31,7 @@ CASE = "#eb6834"
 INK = "#0b0b0b"
 MUTED = "#52514e"
 GRID = "#e4e3df"
-MIN_ABS = 0.09      # predicates whose recall@50 moved by at least this much
+MIN_ABS = 0.12      # predicates whose recall@50 moved by at least this much
 
 
 def main() -> None:

@@ -112,6 +112,25 @@ visibly in confidence we split the images at random, fit each model a single tem
 maximum likelihood on one half, and run the split on the other half with each model's own
 temperature applied. The protocol uses no label from the audited half.
 
+\paragraph{Splitting mean recall.}\label{sec:hitrate} Nothing in \cref{thm:population} or
+the estimator uses properness: both hold for any contrast $H_x(y)$ that can be evaluated at
+a counterfactual label. Mean recall@$k$ is one. Let $h^{(m)}_x(y)\in\{0,1\}$ say whether
+model $m$ would recall relation $x$ among its top $k$ if its label were $y$; replaying the
+benchmark's matching rules on cached scores gives it for every $y$ (\cref{app:recall}).
+Pooling relations, mean recall is $\sum_iw(y_i)h_{x_i}(y_i)$ with $w(y)=1/(Kn_y)$, so
+$H_x(y)=N w(y)[h^{(1)}_x(y)-h^{(0)}_x(y)]$ makes $\hdT$ its change; transport preserves every
+$n_y$, and restricting $w$ to one tier or predicate splits that share exactly. One
+difference matters for reading the result. A hit is a thresholded decision, so moving a
+model's operating point --- subtracting a log-prior from its logits, say --- flips first the
+cases it already scored as most like the favoured label, and those carry that label more
+often: a case-level part with no new discrimination. We therefore read the split against
+an \emph{operating-point control}, the old model's logits shifted by the training
+log-prior~\cite{menon2021long}, and pair it with a threshold-free test, the
+\emph{within-cell AUC}: the probability that a case labelled $y$ has larger log-odds
+$\log q(y)-\log q(z)$ than one labelled $z$ in the same cell, averaged with weight
+$n_c(y)n_c(z)$ as in the pairwise form above. A temperature, and any change constant within a
+cell, leaves it unchanged.
+
 \paragraph{Choosing the grouping.}\label{sec:coarsening} The split is conditional on $\phi$.
 Merging cells changes it by an explicit between-cell covariance term of either sign
 (\cref{prop:coarsen}), so the finest grouping that the benchmark's construction defends is

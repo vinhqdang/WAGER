@@ -34,18 +34,23 @@ image and its own label, so any part earned by getting individual cases right do
 observed gain therefore splits exactly into a \emph{group-level} part $\hdP$ and a
 \emph{case-level} remainder $\hdR$, which is a within-group covariance between the change in
 the models' predictions and the label (\cref{thm:population}). The split holds in the observed
-sample for any proper score, needs no fitted reference model, held-out fold or tuning
+sample for any proper score and for mean recall itself, needs no fitted reference model, held-out fold or tuning
 parameter, costs $O(NK)$ on cached predictions, and comes with image-clustered intervals.
 
-\paragraph{What it finds.} On the two models of TDE's own released checkpoint, evaluated
-with the authors' code, and with each model's confidence matched on held-out images, the
-proper-score change is almost entirely group-level: the case-level part is under a tenth
-of it under either the quadratic or the log score, and under the quadratic score it is
-$-0.00006$ with an interval straddling zero (\cref{sec:sggaudit}). The proper-score change behind the ten points is a change in which predicates the model
-favours within each pair, far more than in how well it tells that pair's relations apart. Nor
-is that implied by how TDE is built: in the released model its counterfactual subtraction
-cancels the image-specific visual logits as well as the frequency prior (\cref{sec:sggaudit}),
-so it discards case-level evidence along with the group-level prior. The converse appears too. A model reading image crops through a frozen
+\paragraph{What it finds.} We re-ran TDE's own released checkpoint with the authors'
+code and replayed the official evaluator exactly, so that recall can be computed under any
+labelling, and split mean recall itself (\cref{sec:sggaudit}). Of the ten points, $87\%$ is
+group-level, the body of the predicate distribution gains, the head loses, and the fifteen
+rarest predicates contribute almost nothing: TDE recalls one of them, at $0.016$. Recall of
+\textsf{parked on} rises from $0$ to $0.886$ because TDE now says \textsf{parked on} for
+(\textsf{car}, \textsf{street}). The case-level remainder needs care, and handling it is part
+of the method: a thresholded metric earns case-level credit whenever its operating point
+moves. Subtracting the training predicate prior from the baseline's
+logits~\cite{menon2021long}, which leaves every within-group ranking exactly as it was,
+recovers nine of the ten points with the same split, at under a tenth of TDE's cost in
+$R@50$; against it, TDE's case-level part is $-0.0008$ with an interval straddling zero,
+and a threshold-free within-group AUC finds no discrimination TDE gained. The converse
+appears too. A model reading image crops through a frozen
 CLIP encoder~\cite{radford2021learning}, which every aggregate measure ranks last, gains
 $+0.00467$ of case-level covariance over the geometry-based model ranked above it, with
 calibration matched and an interval excluding zero (\cref{sec:vgvisual}): its deficit is
@@ -55,14 +60,15 @@ measures' disagreement is itself part of what \cref{sec:vgvisual} reports.
 \paragraph{Contributions.}
 \begin{itemize}
 \setlength\itemsep{1pt}
-\item An audit of a published debiasing method's released checkpoints, finding its ten-point
-  mean-recall gain backed by a proper-score change that is almost entirely group-level --- a
-  case-level part indistinguishable from zero under the quadratic score and under a tenth of
-  the total under the log score --- and a reversal in which the model ranked last is the best
-  discriminator among relations sharing an object pair.
-\item An exact, model-free decomposition of the score gain between two frozen models into
-  group-level and case-level parts, valid for every Bregman score, computed in one pass over
-  cached predictions, with cluster-robust inference.
+\item An audit of a published debiasing method's released checkpoint that splits its
+  ten-point mean-recall gain exactly: $87\%$ group-level, a case-level part no larger than a
+  ranking-preserving logit adjustment's, and no gain in within-group discrimination
+  --- with a reversal in which the model ranked last is the best discriminator among
+  relations sharing an object pair.
+\item An exact, model-free decomposition of the difference between two frozen models into
+  group-level and case-level parts, for every Bregman score and for label-weighted hit rates
+  such as mean recall, computed in one pass over cached predictions, with cluster-robust
+  inference, and paired with an operating-point control and a threshold-free AUC.
 \item Validation that the case-level part is exactly zero when it should be, covers at the
   nominal rate under image clustering, and separates calibration, prior and shortcut
   effects --- together with a protocol for the one confound it does not separate.
@@ -74,8 +80,8 @@ credits any signal varying inside a pair, including a shortcut nobody recorded. 
 invariant to recalibration --- rescaling a model's confidence moves score between the two
 parts while changing no ranking --- which is why the comparisons whose models differ visibly in
 confidence, TDE's and the CLIP model's, are read confidence-matched.
-The split is of a proper score that weights every relation equally, whereas mean recall
-weights every predicate equally, so the audit speaks to the relation-weighted change; a
-case-level gain confined to rare predicates could be hidden by losses on common ones. And the
-audit's headline holds at the configuration we argue for, not at every configuration; \cref{tab:sggaudit} reports all five. These limits are taken up
+For mean recall the split is of the micro-averaged version, which pools relations
+across images; it tracks the official per-image average but is not it. And the
+proper-score split's headline holds at the configuration we argue for, not at every
+configuration; \cref{app:recall} reports all of them. These limits are taken up
 in \cref{sec:discussion}.

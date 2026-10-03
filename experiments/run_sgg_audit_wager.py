@@ -189,6 +189,18 @@ def main():
                                  "score": sc, "regime": "calibration-matched",
                                  "T_old": t_base, "T_new": t_v, **g.as_row(),
                                  "randomization_p": None})
+                if v == "la1":         # TDE against the control itself
+                    for sc in ("brier", "log"):
+                        g = decompose_gain(temp_scale(tde["q"], t_tde)[aud],
+                                           temp_scale(m["q"], t_v)[aud],
+                                           y[aud], phi[aud], groups=image[aud], score=sc)
+                        print(f"  (TDE vs la1, cal-matched, {sc}) dT={g.total_gain:+.5f} "
+                              f"dP={g.prior_gain:+.5f} dR={g.alignment_gain:+.5f} "
+                              f"CI=[{g.alignment_ci[0]:+.5f},{g.alignment_ci[1]:+.5f}]")
+                        rows.append({"comparison": "MOTIFS-TDE vs MOTIFS logit-adjusted tau=1",
+                                     "score": sc, "regime": "calibration-matched",
+                                     "T_old": t_v, "T_new": t_tde, **g.as_row(),
+                                     "randomization_p": None})
 
     out = {
         "dataset": "VG150 PredCls (canonical split, Tang et al. released checkpoints)",

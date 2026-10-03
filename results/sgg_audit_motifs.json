@@ -5,7 +5,9 @@
   "n_cells": 7127,
   "accuracy": {
     "MOTIFS": 0.6980978985945251,
-    "MOTIFS-TDE": 0.5577410027281786
+    "MOTIFS-TDE": 0.5577410027281786,
+    "MOTIFS logit-adjusted tau=1": 0.6819520907868154,
+    "MOTIFS logit-adjusted tau=0.5": 0.6965078224124505
   },
   "recalls": {
     "MOTIFS": {
@@ -259,6 +261,210 @@
         NaN
       ],
       "standard_error": 0.0016192132438448096,
+      "n_total": 92027,
+      "n_identified": 90310,
+      "coverage": 0.9813424321123149,
+      "n_cells": 3708,
+      "n_singletons": 1717,
+      "randomization_p": null
+    },
+    {
+      "comparison": "MOTIFS logit-adjusted tau=1 vs MOTIFS",
+      "score": "brier",
+      "regime": "calibration-matched",
+      "T_old": 2.4968113558436302,
+      "T_new": 1.9925086167342425,
+      "total_gain": -0.025033654100016317,
+      "prior_gain": -0.02895119980882553,
+      "reasoning_gain": 0.003917545708809212,
+      "reasoning_share": NaN,
+      "reasoning_ci": [
+        0.0033398336465850697,
+        0.004495257771033355
+      ],
+      "prior_ci": [
+        -0.031354441215303425,
+        -0.02654795840234764
+      ],
+      "total_ci": [
+        -0.027526108535853685,
+        -0.02254119966417895
+      ],
+      "share_ci": [
+        NaN,
+        NaN
+      ],
+      "standard_error": 0.00029475646837445074,
+      "n_total": 92027,
+      "n_identified": 90310,
+      "coverage": 0.9813424321123149,
+      "n_cells": 3708,
+      "n_singletons": 1717,
+      "randomization_p": null
+    },
+    {
+      "comparison": "MOTIFS logit-adjusted tau=1 vs MOTIFS",
+      "score": "log",
+      "regime": "calibration-matched",
+      "T_old": 2.4968113558436302,
+      "T_new": 1.9925086167342425,
+      "total_gain": -0.0509531082665353,
+      "prior_gain": -0.07947283862881939,
+      "reasoning_gain": 0.028519730362284085,
+      "reasoning_share": NaN,
+      "reasoning_ci": [
+        0.02719217034775915,
+        0.02984729037680902
+      ],
+      "prior_ci": [
+        -0.08469109804163782,
+        -0.07425457921600095
+      ],
+      "total_ci": [
+        -0.05608514286442722,
+        -0.045821073668643374
+      ],
+      "share_ci": [
+        NaN,
+        NaN
+      ],
+      "standard_error": 0.0006773389842857111,
+      "n_total": 92027,
+      "n_identified": 90310,
+      "coverage": 0.9813424321123149,
+      "n_cells": 3708,
+      "n_singletons": 1717,
+      "randomization_p": null
+    },
+    {
+      "comparison": "MOTIFS-TDE vs MOTIFS logit-adjusted tau=1",
+      "score": "brier",
+      "regime": "calibration-matched",
+      "T_old": 1.9925086167342425,
+      "T_new": 0.9159979863534178,
+      "total_gain": -0.15760615051753146,
+      "prior_gain": -0.1536309506928181,
+      "reasoning_gain": -0.003975199824713337,
+      "reasoning_share": NaN,
+      "reasoning_ci": [
+        -0.00510218807001925,
+        -0.002848211579407424
+      ],
+      "prior_ci": [
+        -0.1578169357399374,
+        -0.14944496564569879
+      ],
+      "total_ci": [
+        -0.16194426921038366,
+        -0.15326803182467927
+      ],
+      "share_ci": [
+        NaN,
+        NaN
+      ],
+      "standard_error": 0.0005750045685509799,
+      "n_total": 92027,
+      "n_identified": 90310,
+      "coverage": 0.9813424321123149,
+      "n_cells": 3708,
+      "n_singletons": 1717,
+      "randomization_p": null
+    },
+    {
+      "comparison": "MOTIFS-TDE vs MOTIFS logit-adjusted tau=1",
+      "score": "log",
+      "regime": "calibration-matched",
+      "T_old": 1.9925086167342425,
+      "T_new": 0.9159979863534178,
+      "total_gain": -0.49665139958416693,
+      "prior_gain": -0.5120947907737563,
+      "reasoning_gain": 0.015443391189589336,
+      "reasoning_share": NaN,
+      "reasoning_ci": [
+        0.01282321588123185,
+        0.018063566497946822
+      ],
+      "prior_ci": [
+        -0.5233415794931995,
+        -0.5008480020543131
+      ],
+      "total_ci": [
+        -0.5079134455176846,
+        -0.4853893536506493
+      ],
+      "share_ci": [
+        NaN,
+        NaN
+      ],
+      "standard_error": 0.0013368487018256946,
+      "n_total": 92027,
+      "n_identified": 90310,
+      "coverage": 0.9813424321123149,
+      "n_cells": 3708,
+      "n_singletons": 1717,
+      "randomization_p": null
+    },
+    {
+      "comparison": "MOTIFS logit-adjusted tau=0.5 vs MOTIFS",
+      "score": "brier",
+      "regime": "calibration-matched",
+      "T_old": 2.4968113558436302,
+      "T_new": 2.2585858850182197,
+      "total_gain": -0.0035776367824404136,
+      "prior_gain": -0.005729511820262955,
+      "reasoning_gain": 0.002151875037822542,
+      "reasoning_share": NaN,
+      "reasoning_ci": [
+        0.0018817185777559738,
+        0.0024220314978891104
+      ],
+      "prior_ci": [
+        -0.006802945389626471,
+        -0.004656078250899439
+      ],
+      "total_ci": [
+        -0.004694657462469879,
+        -0.0024606161024109483
+      ],
+      "share_ci": [
+        NaN,
+        NaN
+      ],
+      "standard_error": 0.00013783746140109103,
+      "n_total": 92027,
+      "n_identified": 90310,
+      "coverage": 0.9813424321123149,
+      "n_cells": 3708,
+      "n_singletons": 1717,
+      "randomization_p": null
+    },
+    {
+      "comparison": "MOTIFS logit-adjusted tau=0.5 vs MOTIFS",
+      "score": "log",
+      "regime": "calibration-matched",
+      "T_old": 2.4968113558436302,
+      "T_new": 2.2585858850182197,
+      "total_gain": -0.002088702869074229,
+      "prior_gain": -0.013975367551729206,
+      "reasoning_gain": 0.011886664682654978,
+      "reasoning_share": NaN,
+      "reasoning_ci": [
+        0.01133340580245237,
+        0.012439923562857585
+      ],
+      "prior_ci": [
+        -0.016254001957601023,
+        -0.01169673314585739
+      ],
+      "total_ci": [
+        -0.004345407738132674,
+        0.0001680019999842166
+      ],
+      "share_ci": [
+        NaN,
+        NaN
+      ],
+      "standard_error": 0.0002822801258424353,
       "n_total": 92027,
       "n_identified": 90310,
       "coverage": 0.9813424321123149,

@@ -1,0 +1,124 @@
+\section{Splitting mean recall on the released checkpoint, in full}\label{app:recall}
+
+\paragraph{One pass, every model.} In PredCls the predictor's object probabilities are exact
+one-hot vectors, so the codebase's other two counterfactual effects are not new models:
+the Total Effect equals TDE, and the Natural Indirect Effect is identically zero. We therefore
+ran the released causal MOTIFS checkpoint once, with \texttt{EFFECT\_TYPE TDE}, and patched
+the predictor to write, for every ordered object pair of every test image, the visual
+logits, the context logits, the context logits under the averaged context, the frequency
+logits, and the logits it returned. The returned logits equal
+$(\mathrm{vis}+\mathrm{ctx})+\mathrm{frq}-[(\mathrm{vis}+\mathrm{ctx}_{\mathrm{avg}})+\mathrm{frq}]$
+with a largest absolute difference of exactly $0$ over all pairs, which is the cancellation
+described in \cref{sec:sggaudit}. The baseline is $(\mathrm{vis}+\mathrm{ctx})+\mathrm{frq}$;
+single branches and branch pairs are their own sums; the logit-adjusted baseline (LA$_\tau$)
+subtracts $\tau\log\pi(y)$, with $\pi$ the predicate frequencies of the training split
+($439{,}063$ relations).
+
+\paragraph{Replaying the evaluator.} For model $m$, relation $i=(s,o,y_i)$ and any predicate
+$y$, let $r^{(m)}_i(y)$ be the position at which the official evaluator would first match the
+triplet $(s,o,y)$. Under the graph constraint each pair contributes its top non-background
+predicate, pairs are ordered by that predicate's probability, and a predicted pair matches
+$(s,o)$ when both objects carry the same classes and both boxes overlap with IoU at least
+$0.5$; so $r^{(m)}_i(y)$ is the best rank among matching pairs whose top predicate is $y$.
+Without the graph constraint every (pair, predicate) is ranked by its probability and
+$r^{(m)}_i(y)$ is the best position of $(p,y)$ over matching pairs $p$. Relation $i$ is a
+recall@$k$ hit under label $y$ iff $r^{(m)}_i(y)<k$, which makes recall an exact function of
+the labelling. Matching through duplicate objects matters: a relation can be recalled by a
+different pair of near-identical boxes, as the evaluator allows. A unit test checks the ranks
+against the evaluator's own matching code on random images with duplicated objects,
+repeated pairs and relabelled ground truth, for $k\in\{1,5,20,50,100\}$, and fails on each of
+three deliberate faults. On the real run the re-scored metrics reproduce the official ones
+(\cref{tab:recall-validation}). Three relations, all in one image with 35 objects, belong to
+pairs the model never scored; they keep their exact ranks (they can only be matched through
+duplicates) and are dropped from the probability-based analyses.
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Official evaluator against the offline replay. The official TDE row is this run's
+evaluation; the official baseline row is the archived evaluation of the same checkpoint.}
+\label{tab:recall-validation}
+\input{supp/tab_recall_validation}
+\end{table}
+
+\paragraph{Micro-averaged mean recall.} The official metric averages each predicate's recall
+over the images containing it, then over predicates, counting a predicate absent from the
+test set as zero. Pooling relations instead gives
+$mR=\sum_iw(y_i)\,h_i(y_i)$ with $w(y)=1/(K n_y)$, $h_i(y)=\ind\{r_i(y)<k\}$ and $n_y$ the
+number of relations labelled $y$. With
+$H_i(y)=N\,w(y)\,[h^{(1)}_i(y)-h^{(0)}_i(y)]$ the estimator of \cref{sec:method} applies
+unchanged: \cref{thm:population,thm:sample} and the influence function use only the
+antisymmetric pair structure, never properness, and because transport preserves each cell's
+label counts it preserves every $n_y$. We restrict the pooling to identified relations, so
+that $\hdT$ is exactly the change in micro-averaged mean recall over the relations the split
+covers. It tracks the official change ($+0.0972$ against $+0.1017$ at $k=50$). Restricting
+$w$ to one tier, or one predicate, splits that tier's or predicate's share; the parts add up
+across tiers and predicates exactly.
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Mean-recall split for every protocol and $k$. LA$_\tau$: logit-adjusted baseline;
+ctx, vis+ctx: the baseline's context branch alone and without the frequency branch.}
+\label{tab:recall-split}
+\input{supp/tab_recall_split}
+\end{table}
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{The $mR@50$ split by tier (training instances: head $>10{,}000$, tail $<500$).}
+\label{tab:recall-tiers}
+\input{supp/tab_recall_tiers}
+\end{table}
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Within-cell AUC (comparison-weighted), image bootstrap with 200 replicates.}
+\label{tab:recall-auc}
+\input{supp/tab_recall_auc}
+\end{table}
+
+\paragraph{Reading the case-level part of a thresholded metric.} Every change that adds a
+constant to all log-odds within a cell --- logit adjustment at any $\tau$, or dropping the
+frequency branch --- leaves the within-cell AUC where it was (\cref{tab:recall-auc}; the
+residue of $10^{-4}$ is float32 rounding of the stored probabilities) and still shows a
+significant case-level part of mean recall (\cref{tab:recall-split}): $+0.0064$ and $+0.0139$
+for LA$_{.5}$ and LA$_1$, $+0.0053$ for removing the frequency branch. The reason is the
+threshold. A relation is a hit when its own label wins a comparison, and moving the boundary
+of that comparison flips the relations closest to it; those are the relations the model
+already scored as most like the newly favoured label, and they carry it more often than the
+others in their cell. The case-level part of a hit rate thus contains existing
+discrimination spent at a new operating point. We read it against LA$_1$, whose group-level
+change matches TDE's, and use the within-cell AUC as the direct test of new discrimination.
+Without the graph constraint, where every (pair, predicate) competes for the top $k$
+directly, TDE's case-level part against LA$_1$ is $+0.0072$, interval $[-0.0001,+0.0145]$.
+
+\paragraph{The AUC.} For cell $c$ and labels $y\ne z$ present in it,
+$\mathrm{AUC}_c(y,z)$ is the probability that a relation labelled $y$ has larger
+$\log q(y)-\log q(z)$ than one labelled $z$, ties counting one half; the reported AUC
+averages these with weight $n_c(y)n_c(z)$, the number of comparisons, which is the
+$p(y)p(z)$ weighting of the pairwise form of $\dR_c$. A temperature divides every log-odds by
+the same constant, and any change of the predicted distribution that is constant within a
+cell adds the same constant to every log-odds in it; neither changes any within-cell order.
+The statistic is computed exactly with ties in $O(M\log M)$ for $M$ compared relations;
+bootstrap replicates re-weight images, so each costs one pass.
+
+\paragraph{The proper-score split in every configuration.} The proper-score analyses use
+the $183{,}639$ relations whose pair was scored. Top-1 predicate accuracy is $0.6981$ for
+the baseline, $0.5577$ for TDE and $0.6820$ for LA$_1$; TDE also raises zero-shot recall to
+$zR@50=0.1432$. \Cref{tab:proper-configs} lists the proper-score split of
+\cref{sec:sggaudit} in every configuration we ran; the matched quadratic case-level part
+of TDE against the baseline has a cyclic randomization $p=.555$. Raw outputs
+give a significant case-level \emph{loss}; \cref{sec:simulation} showed that a calibration
+difference alone manufactures one. Grouping by subject alone reverses the sign of the
+group-level part (\cref{prop:coarsen}). Matched, the quadratic and log scores disagree on
+TDE's case-level part against the baseline and against LA$_1$; LA$_1$, which moves no
+within-cell ranking, has a positive case-level part under both, so the proper-score split
+too responds to the operating point.
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Proper-score split of TDE and of the logit-adjusted baseline (LA), every
+configuration. Matched rows fit each model's temperature on a random half of the images and
+audit the other half.}
+\label{tab:proper-configs}
+\input{supp/tab_proper_configs}
+\end{table}
