@@ -5,6 +5,12 @@ literal string, expected value from a results file) so that a transcription
 slip or a stale figure after a rerun fails loudly.
 
 Run: conda run -n py313 python experiments/verify_manuscript_numbers.py
+     python experiments/verify_manuscript_numbers.py --driver cvpr2027/main.tex
+
+With --driver, the checks run against a different paper built from the same results --
+the CVPR rewrite, say -- whose file layout has nothing in common with the long-form
+manuscript's. There each literal must appear somewhere in the document that driver
+compiles, paper or supplementary, and the report says which of the two carries it.
 """
 from __future__ import annotations
 
@@ -187,6 +193,108 @@ CHECKS += [
      sgg["recalls"]["MOTIFS-TDE"]["predcls_zeroshot_recall@50"], 5e-5),
 ]
 
+
+# --- numbers the CVPR rewrite prints that the long-form checks above never covered ------
+# Every data number in cvpr2027/sec/ traces here or above. The file field names the
+# CVPR section; in --driver mode only presence in the compiled document is required.
+cons_rows = {r["name"]: r for r in cons["rows"]}
+sgg_matched_q = sgg_row("brier", "calibration-matched")
+sgg_matched_l = sgg_row("log", "calibration-matched")
+sgg_raw_q, sgg_raw_l = sgg_row("brier"), sgg_row("log")
+sgg_subj = sgg_row("brier", None, "subject class")
+vis_spa = vgv_rows["MLP-VISUAL-S|MLP-SPATIAL-S"]
+CHECKS += [
+    # TDE audit (Table 1 and Sec. 5)
+    ("cvpr mR base, points", "5_audit.tex", "14.6",
+     sgg["recalls"]["MOTIFS"]["predcls_mean_recall@50"] * 100, 0.05),
+    ("cvpr mR TDE, points", "5_audit.tex", "24.8",
+     sgg["recalls"]["MOTIFS-TDE"]["predcls_mean_recall@50"] * 100, 0.05),
+    ("cvpr identified cells", "5_audit.tex", "5{,}044", sgg_raw_q["n_cells"], 0),
+    ("cvpr identified share of relations", "5_audit.tex", "98.9",
+     sgg_raw_q["coverage"] * 100, 0.05),
+    ("cvpr T* baseline", "5_audit.tex", "2.50", sgg_matched_q["T_old"], 5e-3),
+    ("cvpr T* TDE", "5_audit.tex", "0.92", sgg_matched_q["T_new"], 5e-3),
+    ("cvpr raw quad dR ci lo", "5_audit.tex", "-0.01504", sgg_raw_q["reasoning_ci"][0], 1e-5),
+    ("cvpr raw quad dR ci hi", "5_audit.tex", "-0.01206", sgg_raw_q["reasoning_ci"][1], 1e-5),
+    ("cvpr raw log dT", "5_audit.tex", "+0.03277", sgg_raw_l["total_gain"], 1e-5),
+    ("cvpr raw log dP", "5_audit.tex", "+0.15897", sgg_raw_l["prior_gain"], 1e-5),
+    ("cvpr raw log dR", "5_audit.tex", "-0.12619", sgg_raw_l["reasoning_gain"], 1e-5),
+    ("cvpr raw log |dR| rounded", "5_audit.tex", "0.126", abs(sgg_raw_l["reasoning_gain"]), 5e-4),
+    ("cvpr raw log |dP| rounded", "5_audit.tex", "0.159", abs(sgg_raw_l["prior_gain"]), 5e-4),
+    ("cvpr subject dT", "5_audit.tex", "-0.11536", sgg_subj["total_gain"], 1e-5),
+    ("cvpr subject dP", "5_audit.tex", "+0.10175", sgg_subj["prior_gain"], 1e-5),
+    ("cvpr subject dP rounded", "5_audit.tex", "+0.102", sgg_subj["prior_gain"], 5e-4),
+    ("cvpr subject dR rounded", "5_audit.tex", "-0.217", sgg_subj["reasoning_gain"], 5e-4),
+    ("cvpr matched quad dT", "5_audit.tex", "-0.18264", sgg_matched_q["total_gain"], 1e-5),
+    ("cvpr matched quad dR ci lo", "5_audit.tex", "-0.00120",
+     sgg_matched_q["reasoning_ci"][0], 1e-5),
+    ("cvpr matched quad dR ci hi", "5_audit.tex", "+0.00109",
+     sgg_matched_q["reasoning_ci"][1], 1e-5),
+    ("cvpr matched quad p", "5_audit.tex", ".555", sgg_matched_q["randomization_p"], 5e-4),
+    ("cvpr matched log dT", "5_audit.tex", "-0.54760", sgg_matched_l["total_gain"], 1e-5),
+    ("cvpr matched log dP", "5_audit.tex", "-0.59157", sgg_matched_l["prior_gain"], 1e-5),
+    # Controlled predictors (Sec. 4)
+    ("cvpr CLASS-FREQ dT", "4_validation.tex", "0.03386",
+     vg_rows["MLP-CLASS|FREQ"]["total_gain"], 1e-5),
+    ("cvpr CLASS-FREQ dR", "4_validation.tex", "0.00000",
+     vg_rows["MLP-CLASS|FREQ"]["reasoning_gain"], 5e-6),
+    ("cvpr CLASS-FREQ p", "4_validation.tex", ".724", vg_rows["MLP-CLASS|FREQ"]["randomization_p"], 5e-4),
+    ("cvpr SPATIAL-CLASS dT", "4_validation.tex", "0.00885",
+     vg_rows["MLP-SPATIAL|MLP-CLASS"]["total_gain"], 1e-5),
+    ("cvpr SPATIAL-CLASS dP", "4_validation.tex", "0.00554",
+     vg_rows["MLP-SPATIAL|MLP-CLASS"]["prior_gain"], 1e-5),
+    ("cvpr SPATIAL-CLASS dR ci lo", "4_validation.tex", "0.01373",
+     vg_rows["MLP-SPATIAL|MLP-CLASS"]["reasoning_ci"][0], 1e-5),
+    ("cvpr SPATIAL-CLASS dR ci hi", "4_validation.tex", "0.01504",
+     vg_rows["MLP-SPATIAL|MLP-CLASS"]["reasoning_ci"][1], 1e-5),
+    ("cvpr VG identified cells", "4_validation.tex", "6{,}346",
+     vg_rows["MLP-SPATIAL|MLP-CLASS"]["n_cells"], 0),
+    ("cvpr VG coverage", "4_validation.tex", "99.0",
+     vg_rows["MLP-SPATIAL|MLP-CLASS"]["coverage"] * 100, 0.05),
+    # Simulation (Sec. 4)
+    ("cvpr sim type-I", "4_validation.tex", "0.030", sim["null_type1_alpha_005"], 5e-4),
+    ("cvpr sim null mean x1e5", "4_validation.tex", "-8.97", sim["null_reasoning_mean"] * 1e5, 5e-3),
+    ("cvpr sim prior-only sd", "4_validation.tex", "0.0035", sim["prior_only"]["reasoning_sd"], 5e-5),
+    ("cvpr sim shortcut sd", "4_validation.tex", "0.004", sim["hidden_shortcut"]["reasoning_sd"], 5e-4),
+    ("cvpr sim calib matched sd", "4_validation.tex", "0.0017",
+     sim["calibration_only"]["calibration_matched_reasoning_sd"], 5e-5),
+    # CLIP (Sec. 6)
+    ("cvpr CLIP accuracy", "6_pixels.tex", "0.6161", vgv["accuracy"]["MLP-VISUAL-S"], 5e-5),
+    ("cvpr geometry accuracy", "6_pixels.tex", "0.6467", vgv["accuracy"]["MLP-SPATIAL-S"], 5e-5),
+    ("cvpr CLIP-geometry dP", "6_pixels.tex", "0.05296", vis_spa["prior_gain"], 1e-5),
+    ("cvpr CLIP-geometry dR ci lo", "6_pixels.tex", "0.00514", vis_spa["reasoning_ci"][0], 1e-5),
+    ("cvpr CLIP-geometry dR ci hi", "6_pixels.tex", "0.00769", vis_spa["reasoning_ci"][1], 1e-5),
+    ("cvpr CLIP-geometry p", "6_pixels.tex", ".002", vis_spa["randomization_p"], 5e-4),
+    ("cvpr CLIP-class dR", "6_pixels.tex", "0.01665",
+     vgv_rows["MLP-VISUAL-S|MLP-CLASS-S"]["reasoning_gain"], 1e-5),
+    ("cvpr geometry-class dR", "6_pixels.tex", "0.01023",
+     vgv_rows["MLP-SPATIAL-S|MLP-CLASS-S"]["reasoning_gain"], 1e-5),
+    ("cvpr train subsample", "6_pixels.tex", "100{,}000", vgv["n_train_relations"], 0),
+    ("cvpr prior correction dP", "6_pixels.tex", "+0.02401", cons_rows["VISUAL' vs VISUAL"]["prior"], 1e-5),
+    ("cvpr prior correction dR", "6_pixels.tex", "+0.00111",
+     cons_rows["VISUAL' vs VISUAL"]["reasoning"], 1e-5),
+    ("cvpr corrected deficit", "6_pixels.tex", "-0.02143", cons_rows["VISUAL' vs SPATIAL"]["total"], 1e-5),
+    ("cvpr corrected dR", "6_pixels.tex", "+0.00752", cons_rows["VISUAL' vs SPATIAL"]["reasoning"], 1e-5),
+    ("cvpr both corrected dR", "6_pixels.tex", "+0.00663",
+     cons_rows["VISUAL' vs SPATIAL' (both corrected)"]["reasoning"], 1e-5),
+    ("cvpr CLIP matched dR", "6_pixels.tex", "+0.00467",
+     cons_rows["VISUAL vs SPATIAL cal-both (audit half)"]["reasoning"], 1e-5),
+    ("cvpr CLIP matched ci lo", "6_pixels.tex", "+0.00314",
+     cons_rows["VISUAL vs SPATIAL cal-both (audit half)"]["reasoning_ci"][0], 1e-5),
+    ("cvpr CLIP matched ci hi", "6_pixels.tex", "+0.00621",
+     cons_rows["VISUAL vs SPATIAL cal-both (audit half)"]["reasoning_ci"][1], 1e-5),
+    # Limitations (Sec. 7)
+    ("cvpr robustness value", "7_conclusion.tex", "0.061",
+     load("sensitivity_bound.json")["robustness_value_rho_dagger"], 5e-4),
+]
+
+# A claim no single literal carries: "the case-level part is at most a twelfth of the
+# total under either proper score" (abstract, Secs. 1 and 5). Asserted directly.
+twelfth = max(abs(r["reasoning_gain"]) / abs(r["total_gain"]) for r in (sgg_matched_q, sgg_matched_l))
+if twelfth > 1 / 12:
+    print(f"FAIL 'at most a twelfth': worst matched |dR|/|dT| is {twelfth:.4f} > {1/12:.4f}")
+    sys.exit(1)
+
 # confounding-sensitivity bound (Corollary: worst-case)
 sens = load("sensitivity_bound_check.json")
 CHECKS += [
@@ -268,27 +376,74 @@ CHECKS += [
 # restructure has left an old .tex on disk, unreferenced, with the checks still reading
 # it -- they pass while the live text says something else.  So resolve main.tex's
 # \input graph first and refuse to read anything outside it.
-def inputted_files(driver: pathlib.Path) -> set[str]:
-    seen, queue = set(), [driver.name]
+def inputted_files(driver: pathlib.Path) -> list[str]:
+    base, seen, order, queue = driver.parent, set(), [], [driver.name]
     while queue:
-        name = queue.pop()
+        name = queue.pop(0)
         if name in seen:
             continue
         seen.add(name)
-        for ref in re.findall(r"\\input\{([^}]+)\}", (MS / name).read_text()):
+        order.append(name)
+        body = re.sub(r"(?m)(?<!\\)%.*$", "", (base / name).read_text())
+        for ref in re.findall(r"\\input\{([^}]+)\}", body):
             queue.append(ref if ref.endswith(".tex") else ref + ".tex")
-    return seen
+    return order
 
 
-LIVE = inputted_files(MS / "main.tex")
-orphans = sorted({f for _, f, *_ in CHECKS} - LIVE)
-if orphans:
-    print("these files are checked but not \\input by main.tex: " + ", ".join(orphans))
-    sys.exit(1)
+driver_arg = sys.argv[sys.argv.index("--driver") + 1] if "--driver" in sys.argv else None
+
+if driver_arg is None:
+    CHECKS = [c for c in CHECKS if not c[0].startswith("cvpr ")]
+    LIVE = set(inputted_files(MS / "main.tex"))
+    orphans = sorted({f for _, f, *_ in CHECKS} - LIVE)
+    if orphans:
+        print("these files are checked but not \\input by main.tex: " + ", ".join(orphans))
+        sys.exit(1)
+
+    def text_for(fname: str, label: str = "") -> str:
+        return (MS / fname).read_text()
+    where = None
+else:
+    driver = (ROOT / driver_arg).resolve()
+    files = inputted_files(driver)
+    whole = "\n".join((driver.parent / f).read_text() for f in files)
+    supp = "\n".join((driver.parent / f).read_text() for f in files if f.startswith("supp/"))
+    paper = "\n".join((driver.parent / f).read_text() for f in files if not f.startswith("supp/"))
+    print(f"checking against {driver_arg}: {len(files)} files in its \\input closure\n")
+
+    # Which numbers the paper itself must print is declared, not inferred. Inferring it
+    # from the current text is circular: a number mistyped in the paper vanishes from the
+    # paper, gets reclassified as supplementary-only, and passes on a correct copy there.
+    # A mutation test caught exactly that. So the scope lives in a committed manifest,
+    # frozen from a verified state with --freeze-paper-scope, and is enforced on every run.
+    manifest = driver.parent / "paper_numbers.txt"
+    labels = {c[0] for c in CHECKS}
+    if "--freeze-paper-scope" in sys.argv:
+        scoped = sorted(c[0] for c in CHECKS if c[2] in paper)
+        manifest.write_text("# Checks whose number the paper itself must print, not only the\n"
+                            "# supplementary. Written by verify_manuscript_numbers.py\n"
+                            "# --freeze-paper-scope from a state in which every check passed.\n"
+                            + "\n".join(scoped) + "\n")
+        print(f"froze {len(scoped)} paper-scoped checks to {manifest.relative_to(ROOT)}\n")
+    PAPER_SCOPED = set()
+    if manifest.exists():
+        PAPER_SCOPED = {l.strip() for l in manifest.read_text().splitlines()
+                        if l.strip() and not l.startswith("#")}
+        unknown = sorted(PAPER_SCOPED - labels)
+        if unknown:
+            print("paper_numbers.txt names checks that no longer exist: " + ", ".join(unknown))
+            sys.exit(1)
+
+    def text_for(fname: str, label: str = "") -> str:
+        return paper if label in PAPER_SCOPED else whole
+
+    def where(literal: str) -> str:
+        return "paper" if literal in paper else "supp " if literal in supp else "     "
 
 fails = []
+in_paper = 0
 for label, fname, literal, actual, tol in CHECKS:
-    text = (MS / fname).read_text()
+    text = text_for(fname, label)
     present = literal in text
     if isinstance(actual, str):
         ok_val = True
@@ -302,8 +457,11 @@ for label, fname, literal, actual, tol in CHECKS:
     status = "OK " if (present and ok_val) else "FAIL"
     if status == "FAIL":
         fails.append((label, fname, literal, actual, present, ok_val))
-    print(f"{status} {label:34s} '{literal}' vs {actual}"
-          + ("" if present else "   [NOT IN TEXT]")
+    loc = f"[{where(literal)}] " if where else ""
+    in_paper += bool(where) and where(literal) == "paper"
+    print(f"{status} {loc}{label:34s} '{literal}' vs {actual}"
+          + ("" if present else ("   [NOT IN THE PAPER]" if where and label in PAPER_SCOPED
+                                 else "   [NOT IN TEXT]"))
           + ("" if ok_val else "   [VALUE MISMATCH]"))
 
 print()
@@ -311,3 +469,5 @@ if fails:
     print(f"{len(fails)} CHECK(S) FAILED")
     sys.exit(1)
 print(f"all {len(CHECKS)} manuscript numbers trace to committed results")
+if where:
+    print(f"{in_paper} of them are printed in the paper itself, the rest in the supplementary")

@@ -1186,3 +1186,87 @@ refute it is whatever is on that OpenReview forum, and it has not been read yet.
 
 Nothing was changed in response to this rejection. A sixth venue with the same front page
 is the same bet placed a sixth time.
+
+## Addendum: rewritten for CVPR 2027 (2026-10-03)
+
+The author's call after the TMLR desk rejection: aim at CVPR 2027, deadline 16 November.
+That is not a sixth reformat. It is the restructure the previous addendum argued for ---
+a paper built around its finding, with the decomposition as the instrument that establishes
+it --- in eight two-column pages under a hard limit that rejects over-length papers without
+review. It lives in `cvpr2027/`; `manuscript/` is untouched as the long-form record and
+supplies the supplementary.
+
+### What the finding actually is
+
+Rewriting the abstract around the TDE audit meant reading the audit's numbers again rather
+than its prose, and the honest headline is sharper than anything the long-form abstract
+said. TDE's ten-point mean-recall gain comes with a proper-score *loss* ($-0.18264$ quadratic,
+matched), and that loss is almost entirely group-level: the case-level part is $-0.00006$
+with an interval straddling zero under the quadratic score, and at most a twelfth of the
+change under the log score. The long-form abstract called the difference "overwhelmingly
+transported", which is true and hides the point. The new title asks the paper's question
+directly: *What Did Ten Points of Mean Recall Buy?*
+
+The long-form paper's own caveats constrain how far that can be pushed, and three
+sentences in the first CVPR draft pushed past them and were pulled back before commit:
+"no detectable case-level improvement under a proper score" (false under the log score,
+where the case-level part is $+0.04396$ with an interval excluding zero); "they are what
+redistributing probability does to mean recall" (a causal claim about a metric the split
+does not decompose --- the long-form says in terms that no conversion rate is licensed);
+and crediting Tang et al. (2020) with introducing mean recall, which predates TDE.
+
+### Shape of the CVPR paper
+
+Teaser: the photographic relabelling figure. Then: the question; an exact split; what it
+finds (TDE, and the CLIP model ranked last that discriminates best); why it matters which
+part a gain is in (the four-point label-shift reversal, promoted from an appendix because it
+is the answer to "so what"); the method in a page and a half with one theorem stated;
+validation; the audit with all five configurations in Table 1 and a paragraph on the
+configuration dependence; the CLIP reversal; limitations. A new Figure 2 puts every
+comparison in the paper on one page: composition on one axis, the case-level part with its
+interval on a second, because the two differ in scale by an order of magnitude. The other
+ten formal results, the proofs and every long-form study are in a single-column
+supplementary.
+
+Seven pages of content, references from page seven, no overfull box anywhere in either
+document, no author-identifying string in either PDF or their metadata.
+
+### Three defects found on the way
+
+**A factual error, also in the TMLR submission.** The long-form paper said the TDE audit
+spans "7,127 class-pair cells, of which 98.9% are identified." Only 5,044 of the 7,127 cells
+are identified; 98.9% is the share of *relations* in identified cells. Corrected in both.
+
+**The verifier could not see a wrong number in the paper.** Generalising it to check the
+CVPR document, and adding 55 checks for numbers the rewrite prints that the curated list
+never covered (51 of the 90 data numbers in the eight pages had no check), produced a
+checker that passed. A mutation test --- typing 0.01675 for 0.01665 in the CLIP section ---
+also passed, because the correct value appears three times in the supplementary and the
+check only asked whether the document contained it. A wrong number in the pages reviewers
+read would have been masked by a correct copy in pages they may not. Inferring which
+numbers belong to the paper from the current text cannot fix this, since a mistyped number
+reclassifies itself as supplementary-only; so the scope is a committed manifest,
+`cvpr2027/paper_numbers.txt`, frozen from a verified state, and the paper must print every
+number it lists. The same mutation now fails with `[NOT IN THE PAPER]`, a mutated
+supplementary-only number fails too, and the restored state passes. 144 checks against the
+CVPR document, 91 of them scoped to the paper; the long-form still passes its 89. The claim
+"at most a twelfth", which no single printed number carries, is asserted directly.
+
+**Two scripts wrote the paper's teaser.** `make_fig1_concept.py` writes the photographic
+Figure 1 and `make_antisymmetric_figures.py` wrote an early schematic --- carrying the
+retired "Gain Evaluation of Reasoning" banner --- to the same filename. Whichever ran last
+won. Regenerating the supplementary figures overwrote the teaser in both directories; it
+was restored from git and the old script no longer writes that file.
+
+Those supplementary figures needed regenerating because four of them still labelled the
+two parts "prior-transported" and "instance alignment" --- names the 2026-09-07 panel
+established were wrong, and which the CVPR text now argues against in so many words. They
+now read "transported (group-level)" and "covariance (case-level)", bridging the
+long-form names the supplementary keeps and the ones the paper uses.
+
+### Before 16 November
+
+`submission_notes/cvpr2027_submission.md` has the list. The ones that need the author: the
+2027 author guidelines were not yet published (the rules applied are 2026's), the LLM
+policy is still to be announced and the CVPR paper carries no disclosure yet, the OpenReview
+profile must be current, and every author commits to review if invited.

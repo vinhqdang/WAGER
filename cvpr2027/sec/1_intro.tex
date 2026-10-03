@@ -1,0 +1,75 @@
+\section{Introduction}\label{sec:intro}
+
+Scene graph generation is evaluated on a benchmark whose labels are unusually predictable
+from something every model sees. Given the ordered object pair (\textsf{man},
+\textsf{surfboard}), the predicate on Visual Genome~\cite{krishna2017visual} is very often
+\textsf{riding}, and a lookup table of training frequencies is famously
+competitive~\cite{zellers2018neural}. Recall@$K$ rewards models that echo this prior, so the
+field now leads with mean recall, which averages recall over predicates and so rewards getting
+the rare ones~\cite{tang2020unbiased}. Debiasing methods are now judged by how far they raise it.
+Total Direct Effect (TDE)~\cite{tang2020unbiased}, among the most cited of them, raises
+mean recall@50 of a MOTIFS model from $14.6$ to $24.8$ on the canonical VG150 split, in our
+evaluation of the released checkpoint with the authors' own code.
+
+What did those ten points buy? There are two ways to raise mean recall, and the metric
+cannot tell them apart. A model can move probability towards rare predicates \emph{within
+each subject--object pair} --- say \textsf{carrying} more often for (\textsf{man},
+\textsf{surfboard}) --- without becoming any better at deciding \emph{which} images show a
+man carrying rather than riding. Or it can learn to make that decision: put more probability
+on the correct predicate for the individual image, beyond what the object pair implies. The
+first is a change in the model's group-level predictions; only the second is better
+recognition. Every existing remedy --- frequency-stratified recall~\cite{li2022rethinking},
+zero-shot recall~\cite{lu2016visual}, rarity-stratified accuracy~\cite{kervadec2021roses}
+--- slices one model's performance differently. None attributes the gain \emph{between} two
+models to one route or the other.
+
+\paragraph{An exact split.} We separate the two routes with one operation
+(\cref{fig:concept}). Take two frozen models and a test set grouped by a discrete feature
+both models observe, here the subject--object pair. Score each model's prediction for one
+relation against the label of a \emph{different} relation in the same group. This
+relabelling preserves each group's predicate frequencies exactly, so any part of the score
+gain earned at the level of the group survives it; it destroys the correspondence between an
+image and its own label, so any part earned by getting individual cases right does not. The
+observed gain therefore splits exactly into a \emph{group-level} part $\hdP$ and a
+\emph{case-level} remainder $\hdR$, which is a within-group covariance between the change in
+the models' predictions and the label (\cref{thm:population}). The split holds in the observed
+sample for any proper score, needs no fitted reference model, held-out fold or tuning
+parameter, costs $O(NK)$ on cached predictions, and comes with image-clustered intervals.
+
+\paragraph{What it finds.} On the two models of TDE's own released checkpoint, evaluated
+with the authors' code, and with each model's confidence matched on held-out images, the
+proper-score change is almost entirely group-level: the case-level part is at most a twelfth
+of it under either the quadratic or the log score, and under the quadratic score it is
+$-0.00006$ with an interval straddling zero (\cref{sec:sggaudit}). So the ten points are not
+evidence that the debiased model recognises individual relations better: the proper-score
+change behind them is a redistribution of probability across predicates within each pair. This
+describes what TDE does rather than indicting it --- subtracting a context-only prediction
+is a group-level intervention by design --- but it is not what a ten-point gain is usually
+read as meaning. The converse happens too. A model reading image crops through a frozen
+CLIP encoder~\cite{radford2021learning}, which every aggregate measure ranks last, gains
+$+0.00641$ of case-level covariance over the geometry-based model ranked above it, with an
+interval excluding zero (\cref{sec:vgvisual}): its deficit is entirely group-level, and it
+is the better recogniser.
+
+\paragraph{Contributions.}
+\begin{itemize}
+\setlength\itemsep{1pt}
+\item An audit of a published debiasing method's released checkpoints showing that its
+  ten-point mean-recall gain carries no detectable case-level improvement under the
+  quadratic score, and at most a twelfth of the change under the log score, and a reversal in which the model ranked last is the best case-level discriminator.
+\item An exact, model-free decomposition of the score gain between two frozen models into
+  group-level and case-level parts, valid for every Bregman score, computed in one pass over
+  cached predictions, with cluster-robust inference.
+\item Validation that the case-level part is exactly zero when it should be, covers at the
+  nominal rate under image clustering, and separates calibration, prior and shortcut
+  effects --- together with a protocol for the one confound it does not separate.
+\end{itemize}
+
+\paragraph{What is not claimed.} The split is conditional on the declared grouping: $\hdR$
+measures case-level discrimination \emph{among relations sharing an object pair}, and
+credits any signal varying inside a pair, including a shortcut nobody recorded. It is not
+invariant to recalibration --- rescaling a model's confidence moves score between the two
+parts while changing no ranking --- which is why every comparison here is confidence-matched.
+And the audit's headline holds at the configuration we argue for, not at every
+configuration; \cref{tab:sggaudit} reports all five. These limits are taken up
+in \cref{sec:discussion}.

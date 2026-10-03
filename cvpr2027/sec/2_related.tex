@@ -1,0 +1,36 @@
+\section{Related work}\label{sec:related}
+
+\paragraph{Bias and its evaluation in scene graph generation.}\label{sec:related-applied}
+Scene graph generation was posed as structured prediction over a whole image, solved by
+message passing between object and relation nodes~\cite{xu2017scene}; MOTIFS then showed a
+frequency predictor of the predicate given the object pair to be surprisingly
+competitive~\cite{zellers2018neural}. Mean recall became the headline metric, and the causal TDE
+intervention was introduced, to reduce that dependence~\cite{tang2020unbiased}; a long line of debiasing work
+has followed~\cite{kuang2024debiasing,luo2025rebalancing}, and the metrics themselves have
+been shown to reward pathologies~\cite{li2022rethinking}, a diagnosis that recurs in
+open-vocabulary settings~\cite{li2024pixels}. Benchmark audits outside scene graphs find the
+same pattern: VQA models collapse when answer priors change between train and
+test~\cite{agrawal2018dont}, GQA-OOD stratifies accuracy by answer rarity within question
+groups~\cite{kervadec2021roses}, and multimodal models exploit non-visual
+shortcuts~\cite{geirhos2020shortcut,zhou2025shortcut}. Long-tailed recognition faces the
+same question for re-weighting and logit adjustment~\cite{cao2019learning,menon2021long}.
+All of these characterise a \emph{single} model. We attribute the gain \emph{between} two.
+
+\paragraph{Proper-score decompositions.} Conditional on a grouping, a proper score splits
+into reliability and resolution terms~\cite{murphy1973vector,degroot1983comparison}, for
+general proper scores~\cite{brocker2009reliability}. Our case-level term is not that
+resolution term: it descends from the \emph{covariance} decomposition of the Brier score
+due to Yates~\cite{yates1982external}, which a monotone recalibration moves while the
+classical resolution is invariant to it. The two coincide only when both models are
+calibrated within every group. Variance estimators exist for single-model
+decompositions~\cite{siegert2014variance}, but not for a contrast between two models
+scored on the same data.
+
+\paragraph{Comparing two predictors.} Inference on a paired score difference is the
+Diebold--Mariano test~\cite{diebold1995comparing} and its conditional
+form~\cite{giacomini2006tests}; at a single group our total-gain interval is a clustered
+Diebold--Mariano test (\cref{cor:dm}), so the decomposition adds a split to what those tests
+already report. DeLong \etal~\cite{delong1988comparing} compare correlated ROC areas with a
+paired U-statistic, the same device we use for a group-conditional score gain. The
+case-level term is an order-two U-statistic~\cite{hoeffding1948class}, with a H\'ajek
+projection supplying its influence function~\cite{serfling1980approximation}.

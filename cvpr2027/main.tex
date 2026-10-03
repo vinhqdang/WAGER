@@ -1,0 +1,70 @@
+% CVPR 2027 submission. Built from the official author kit (cvpr-org/author-kit,
+% commit 2917585), which compiles the supplementary into the same document after the
+% bibliography so that each side can \ref the other; build.sh splits the PDF into the
+% 8-page paper and the supplementary file that are uploaded separately.
+%
+% This is a rewrite, not a reformat. Five journal attempts with a 17-to-61-page version
+% led with the estimator and reached the finding late; three were desk rejections. This
+% version leads with the finding -- what a published ten-point mean-recall gain bought --
+% and treats the decomposition as the instrument that establishes it. The long-form
+% paper is in ../manuscript/; everything it carries that eight pages cannot is in the
+% supplementary below.
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+\usepackage[review]{cvpr}      % review version: anonymous, line numbers
+% \usepackage{cvpr}            % camera-ready
+
+\input{preamble}
+
+\definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
+\usepackage[pagebackref,breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
+
+\def\paperID{*****}
+\def\confName{CVPR}
+\def\confYear{2027}
+
+\title{What Did Ten Points of Mean Recall Buy?\\
+Separating Group-Level from Case-Level Gains in Scene Graph Generation}
+
+% Hidden by the [review] option; restored for the camera-ready.
+\author{Quang-Vinh Dang\\
+British University Vietnam, Hung Yen, Vietnam\\
+{\tt\small vinh.dq4@buv.edu.vn}}
+
+\begin{document}
+\maketitle
+\input{sec/teaser}
+\input{sec/0_abstract}
+\input{sec/1_intro}
+\input{sec/2_related}
+\input{sec/3_method}
+\input{sec/4_validation}
+\input{sec/5_audit}
+\input{sec/6_pixels}
+\input{sec/7_conclusion}
+{
+    \small
+    \bibliographystyle{ieeenat_fullname}
+    \bibliography{ref}
+}
+
+% ---------------------------------------------------------------------------------------
+% Supplementary material. build.sh cuts the PDF here; the paper ends at the bibliography.
+% ---------------------------------------------------------------------------------------
+\clearpage
+\setcounter{page}{1}
+% Single-column, unlike the paper. The supplementary carries the long-form proofs, displays
+% and tables, written for a full-width page; in two columns 22 of them overran. CVPR sets
+% no layout rule for supplementary material beyond anonymity. The kit's
+% \maketitlesupplementary hard-codes \twocolumn, so its title block is reproduced here.
+\onecolumn
+\begin{center}
+{\Large\textbf{\thetitle}}\\[0.5em]
+{\Large Supplementary Material}\\[1.0em]
+\end{center}
+\appendix
+\input{supp/0_overview}
+\input{supp/1_formal}
+\input{supp/2_appendix}
+
+\end{document}

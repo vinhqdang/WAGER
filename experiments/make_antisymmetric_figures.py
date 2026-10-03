@@ -11,6 +11,7 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS = os.path.join(ROOT, "results")
 OUT = os.path.join(ROOT, "manuscript", "figures")
+CVPR_FIGURES = {"fig3_new_simulation.png", "fig4_new_results.png"}
 os.makedirs(OUT, exist_ok=True)
 
 BLUE = "#2563eb"
@@ -21,7 +22,11 @@ RED = "#dc2626"
 
 
 def _save(fig, name):
-    fig.savefig(os.path.join(OUT, name), dpi=400, bbox_inches="tight", facecolor="white")
+    outs = [OUT]
+    if name in CVPR_FIGURES:  # only what the CVPR supplementary actually includes
+        outs.append(os.path.join(ROOT, "cvpr2027", "figures"))
+    for out in outs:
+        fig.savefig(os.path.join(out, name), dpi=400, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
 
@@ -45,7 +50,7 @@ def concept():
     for x in [2.65, 5.6, 8.55]:
         ax.add_patch(FancyArrowPatch((x, 1.55), (x + 0.48, 1.55), arrowstyle="-|>",
                                      mutation_scale=16, linewidth=1.8, color="#64748b"))
-    ax.text(6, 2.95, "WAGER: Within-cell Antisymmetric Gain Evaluation of Reasoning",
+    ax.text(6, 2.95, "WAGER: within-group label transport",
             ha="center", va="center", fontsize=15, fontweight="bold")
     _save(fig, "fig1_new_concept.png")
 
@@ -123,8 +128,8 @@ def real_results():
     y = np.arange(len(use))
 
     fig, axes = plt.subplots(1, 2, figsize=(12.5, 4.5), gridspec_kw={"width_ratios": [1.2, 1]})
-    axes[0].barh(y, prior, color=SLATE, label="prior-transported")
-    axes[0].barh(y, reason, left=prior, color=BLUE, label="instance alignment")
+    axes[0].barh(y, prior, color=SLATE, label="transported (group-level)")
+    axes[0].barh(y, reason, left=prior, color=BLUE, label="covariance (case-level)")
     axes[0].axvline(0, color="black", linewidth=.8)
     axes[0].set_yticks(y, names); axes[0].invert_yaxis()
     axes[0].set_xlabel("quadratic-score gain")
@@ -135,7 +140,7 @@ def real_results():
                      ecolor=SLATE, capsize=3, markersize=6)
     axes[1].axvline(0, color=RED, linestyle="--", linewidth=1.2)
     axes[1].set_yticks(y, names); axes[1].invert_yaxis()
-    axes[1].set_xlabel("within-cell alignment gain $\\widehat{\\Delta R}$")
+    axes[1].set_xlabel("within-cell covariance gain $\\widehat{\\Delta R}$")
     axes[1].set_title("Image-cluster-robust 95% CI", fontweight="bold")
     for ax in axes:
         ax.spines[["top", "right"]].set_visible(False)
@@ -145,8 +150,12 @@ def real_results():
 
 
 def main():
-    concept(); pair_mechanism(); simulation(); real_results()
-    print("wrote fig1_new_concept.png through fig4_new_results.png")
+    # concept() is deliberately not called. It writes an early schematic to
+    # fig1_new_concept.png, the same file experiments/make_fig1_concept.py writes the
+    # photographic Figure 1 to, so running this script used to overwrite the paper's
+    # teaser with a figure no version of the paper uses. Kept for the record only.
+    pair_mechanism(); simulation(); real_results()
+    print("wrote fig2_pair_mechanism.png through fig4_new_results.png")
 
 
 if __name__ == "__main__":

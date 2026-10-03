@@ -8,12 +8,16 @@ positioning claim wrong, and this revision corrects it (see
 [`report/REPORT.md`](report/REPORT.md)). Previously desk-rejected at *Computational
 Statistics and Data Analysis* and *Computer Vision and Image Understanding*.
 
-**Status (2026-10-03): desk-rejected by TMLR, not currently under submission.** Rejected
-without review on volume grounds. That is the fourth rejection in five attempts and the
-third without a referee ever seeing the paper; the venue history and what the pattern
-suggests about the paper's front page are in
-[`report/REPORT.md`](report/REPORT.md). Nothing has been changed in response, and nothing
-should be sent anywhere until it has been.
+**Status (2026-10-03): rewritten for CVPR 2027, deadline 16 November 2026.** After the
+TMLR desk rejection --- the fourth rejection in five attempts, three of them before any
+referee read the paper --- the paper was rebuilt around its finding rather than its method:
+[`cvpr2027/`](cvpr2027/) holds an 8-page paper titled *What Did Ten Points of Mean Recall
+Buy?*, which leads with the audit of TDE's released checkpoints and a model that every
+aggregate metric ranks last but that discriminates cases best. The long-form version in
+[`manuscript/`](manuscript/) remains the complete record and is the basis of the CVPR
+supplementary. Submission steps and obligations are in
+[`submission_notes/cvpr2027_submission.md`](submission_notes/cvpr2027_submission.md); the
+venue history is in [`report/REPORT.md`](report/REPORT.md).
 
 When two models are compared on a benchmark whose labels are partly determined by a
 feature both of them observe, the score difference sums two different improvements. WAGER

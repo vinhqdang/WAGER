@@ -1,7 +1,7 @@
 """Figure for the CIFAR-100-LT cross-domain WAGER study.
 
 Left panel: the exact decomposition of each model pair's total gain into the
-prior-transported and instance-alignment channels, at the primary superclass audit.
+transported (group-level) and covariance (case-level) channels, at the primary superclass audit.
 Right panel: the alignment channel broken out by training-frequency tier, which is
 where the two re-weighting schedules differ most sharply.
 """
@@ -18,7 +18,8 @@ import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS = os.path.join(ROOT, "results", "cifar_lt_results.json")
 OUTDIRS = [os.path.join(ROOT, "results", "figures"),
-           os.path.join(ROOT, "manuscript", "figures")]
+           os.path.join(ROOT, "manuscript", "figures"),
+           os.path.join(ROOT, "cvpr2027", "figures")]
 
 PRIOR_C = "#4C72B0"
 ALIGN_C = "#C44E52"
@@ -42,8 +43,8 @@ def main():
 
     y = np.arange(len(rows))
     h = 0.26
-    ax1.barh(y + h, prior, h, color=PRIOR_C, label=r"prior-transported $\Delta P$")
-    ax1.barh(y, align, h, color=ALIGN_C, label=r"instance alignment $\Delta R$",
+    ax1.barh(y + h, prior, h, color=PRIOR_C, label=r"transported $\Delta P$ (group-level)")
+    ax1.barh(y, align, h, color=ALIGN_C, label=r"covariance $\Delta R$ (case-level)",
              xerr=[np.array(align) - np.array(lo), np.array(hi) - np.array(align)],
              error_kw=dict(ecolor="0.25", lw=1.1, capsize=3))
     ax1.barh(y - h, total, h, color=TOTAL_C, label=r"total $\Delta T$")
@@ -68,8 +69,8 @@ def main():
     ax2.axhline(0, color="0.3", lw=1)
     ax2.set_xticks(x)
     ax2.set_xticklabels(short)
-    ax2.set_ylabel(r"alignment gain $\Delta R$")
-    ax2.set_title("Alignment gain by frequency tier", fontsize=11)
+    ax2.set_ylabel(r"covariance gain $\Delta R$ (case-level)")
+    ax2.set_title("Covariance gain by frequency tier", fontsize=11)
     ax2.legend(fontsize=8.5, framealpha=0.95)
     ax2.grid(axis="y", alpha=0.25)
 

@@ -1,0 +1,5 @@
+# Build by-products. main.pdf is the combined paper+supplementary document that
+# build.sh splits; paper.pdf and supp.pdf are the two files that are uploaded.
+main.pdf
+*.brf
+*.out

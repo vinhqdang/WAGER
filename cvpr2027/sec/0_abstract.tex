@@ -1,0 +1,18 @@
+\begin{abstract}
+Debiasing methods for scene graph generation are judged by mean recall, and one of the best
+known, Total Direct Effect (TDE), raises it on Visual Genome from 14.6 to 24.8. What did
+those ten points buy? Mean recall cannot say. A model raises it either by predicting rare
+predicates more often within each subject--object pair, or by recognising which individual
+images actually show them, and the metric credits both alike. We give an exact way to tell
+them apart. Scoring each prediction against the label of a different image from the same
+subject--object group keeps the group's predicate frequencies but breaks the link between
+image and label; this splits any proper-score difference between two frozen models into a
+group-level part and a case-level covariance, with no fitted baseline or tuning parameter,
+in $O(NK)$ time, with image-clustered confidence intervals. On TDE's released checkpoints
+with calibration matched, the change is almost entirely group-level: the case-level part is
+at most a twelfth of it under either proper score, and under the quadratic score
+indistinguishable from zero. The ten-point gain is therefore not evidence that the debiased
+model recognises individual relations better. The converse also occurs: a CLIP model reading
+image crops, ranked last on accuracy and on the proper score, discriminates individual
+relations significantly better than the geometry model ranked above it.
+\end{abstract}

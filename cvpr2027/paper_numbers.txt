@@ -1,0 +1,94 @@
+# Checks whose number the paper itself must print, not only the
+# supplementary. Written by verify_manuscript_numbers.py
+# --freeze-paper-scope from a state in which every check passed.
+CLIP alignment gain
+CLIP total gain
+bridge spatial dR
+consequence VISUAL' dP
+consequence VISUAL' dR
+consequence both-corrected dR
+consequence cal-matched dR
+consequence corrected dR
+consequence corrected dT
+cvpr CLASS-FREQ dR
+cvpr CLASS-FREQ dT
+cvpr CLASS-FREQ p
+cvpr CLIP accuracy
+cvpr CLIP matched ci hi
+cvpr CLIP matched ci lo
+cvpr CLIP matched dR
+cvpr CLIP-class dR
+cvpr CLIP-geometry dP
+cvpr CLIP-geometry dR ci hi
+cvpr CLIP-geometry dR ci lo
+cvpr CLIP-geometry p
+cvpr SPATIAL-CLASS dP
+cvpr SPATIAL-CLASS dR ci hi
+cvpr SPATIAL-CLASS dR ci lo
+cvpr SPATIAL-CLASS dT
+cvpr T* TDE
+cvpr T* baseline
+cvpr VG coverage
+cvpr VG identified cells
+cvpr both corrected dR
+cvpr corrected dR
+cvpr corrected deficit
+cvpr geometry accuracy
+cvpr geometry-class dR
+cvpr identified cells
+cvpr identified share of relations
+cvpr mR TDE, points
+cvpr mR base, points
+cvpr matched log dP
+cvpr matched log dT
+cvpr matched quad dR ci hi
+cvpr matched quad dR ci lo
+cvpr matched quad dT
+cvpr matched quad p
+cvpr prior correction dP
+cvpr prior correction dR
+cvpr raw log dP
+cvpr raw log dR
+cvpr raw log dT
+cvpr raw log |dP| rounded
+cvpr raw log |dR| rounded
+cvpr raw quad dR ci hi
+cvpr raw quad dR ci lo
+cvpr robustness value
+cvpr sim calib matched sd
+cvpr sim null mean x1e5
+cvpr sim prior-only sd
+cvpr sim shortcut sd
+cvpr sim type-I
+cvpr subject dP
+cvpr subject dP rounded
+cvpr subject dR rounded
+cvpr subject dT
+cvpr train subsample
+sens class-pair dR
+sgg base R@50
+sgg base acc
+sgg base mR@50
+sgg cal dP
+sgg cal dR
+sgg cal log dR
+sgg cal log dR ci hi
+sgg cal log dR ci lo
+sgg n cells
+sgg n images
+sgg n relations
+sgg raw dP
+sgg raw dR
+sgg raw dT
+sgg raw log dR ci hi
+sgg raw log dR ci lo
+sgg subject dR
+sgg tde acc
+sgg tde mR@50
+sgg tde zR@50
+sim calib matched dR
+sim calib raw dR
+sim coverage clustered
+sim coverage iid
+sim prior-only dR
+sim shortcut dR

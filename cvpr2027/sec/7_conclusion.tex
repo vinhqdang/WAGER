@@ -1,0 +1,27 @@
+\section{Limitations and conclusion}\label{sec:discussion}
+
+\paragraph{Limitations.} Four bound what the split can say, and we would rather state them
+than have them found. \emph{It is conditional on the grouping.} The case-level part measures
+discrimination among relations sharing an object pair; two equally fine partitions of the
+same cases can disagree completely about whether a gain is case-level
+(\cref{app:partition}), so declaring $\phi$ is a modelling decision that the benchmark, not
+the submitting author, should make before a leaderboard opens. \emph{It credits any
+within-cell signal}, including shortcuts nobody recorded, and our own bound on that exposure is
+not reassuring: for the controlled-predictor pair of \cref{sec:data}, an unrecorded covariate
+correlated at $0.061$ with both parts would account for the entire case-level gain
+(\cref{app:sensitivity}). \emph{It is not invariant to recalibration}, which is why every
+comparison here is confidence-matched; a rank-based within-cell contrast would be invariant,
+at the cost of the exact additivity that is the point of the construction. And \emph{it needs
+probabilities}: most benchmarks archive ranked predictions, and that, not compute, is the
+obstacle to routine use.
+
+\paragraph{Conclusion.} A ten-point mean-recall gain is two different achievements summed
+together, and the field's metrics report the sum. Scoring each prediction against another
+case's label from the same group separates them exactly, with no fitted reference model and
+with intervals that respect the clustering of relations within images. Applied to a released
+debiasing method, the split finds a large metric gain carrying no detectable case-level
+improvement under the quadratic score; applied to a model every aggregate metric ranks last,
+it finds the best recogniser of the three. We suggest that benchmarks whose labels lean on a
+feature every model sees report the split beside the headline metric: the declared grouping
+and its coverage, both signed parts with the case-level interval, and the confidence-matched
+row. Code and cached predictions to reproduce every number are in the supplementary material.

@@ -1,9 +1,9 @@
 """Figure for the matched-subsample real-pixel study on Visual Genome.
 
-Left: the exact decomposition of each pair's gain into prior-transported and
-instance-alignment channels, with 95% image-clustered intervals on the alignment term.
+Left: the exact decomposition of each pair's gain into transported (group-level) and
+covariance (case-level) channels, with 95% image-clustered intervals on the covariance term.
 Right: the alignment term alone, which is the quantity the study is actually about --
-whether real pixel content buys instance alignment beyond box geometry.
+whether real pixel content buys case-level covariance beyond box geometry.
 """
 from __future__ import annotations
 
@@ -18,7 +18,8 @@ import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS = os.path.join(ROOT, "results", "vg_visual_results.json")
 OUTDIRS = [os.path.join(ROOT, "results", "figures"),
-           os.path.join(ROOT, "manuscript", "figures")]
+           os.path.join(ROOT, "manuscript", "figures"),
+           os.path.join(ROOT, "cvpr2027", "figures")]
 
 PRIOR_C = "#4C72B0"
 ALIGN_C = "#C44E52"
@@ -43,8 +44,8 @@ def main():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 3.9))
     y = np.arange(len(rows))
     h = 0.26
-    ax1.barh(y + h, prior, h, color=PRIOR_C, label=r"prior-transported $\Delta P$")
-    ax1.barh(y, align, h, color=ALIGN_C, label=r"instance alignment $\Delta R$",
+    ax1.barh(y + h, prior, h, color=PRIOR_C, label=r"transported $\Delta P$ (group-level)")
+    ax1.barh(y, align, h, color=ALIGN_C, label=r"covariance $\Delta R$ (case-level)",
              xerr=[align - lo, hi - align],
              error_kw=dict(ecolor="0.25", lw=1.1, capsize=3))
     ax1.barh(y - h, total, h, color=TOTAL_C, label=r"total $\Delta T$")
@@ -60,8 +61,8 @@ def main():
              error_kw=dict(ecolor="0.25", lw=1.2, capsize=4))
     ax2.axvline(0, color="0.3", lw=1)
     ax2.set_yticks(y); ax2.set_yticklabels(labels, fontsize=9)
-    ax2.set_xlabel(r"instance-alignment gain $\Delta R$")
-    ax2.set_title("Alignment channel with 95% CI", fontsize=11)
+    ax2.set_xlabel(r"covariance gain $\Delta R$ (case-level)")
+    ax2.set_title("Covariance gain with 95% CI", fontsize=11)
     ax2.grid(axis="x", alpha=0.25)
 
     fig.tight_layout()

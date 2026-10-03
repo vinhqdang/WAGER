@@ -94,7 +94,8 @@ relation-for-relation. Our reproduction matches the published behaviour: the bas
 $R@50=0.6612$ with $mR@50=0.1459$, and TDE trades the former for the latter, reaching
 $mR@50=0.2476$ and raising zero-shot recall to $zR@50=0.1432$. Top-1 predicate accuracy falls
 from $0.6981$ to $0.5577$. The audit uses $183{,}639$ relations over $26{,}446$ images and
-$7{,}127$ class-pair cells, of which $98.9\%$ are identified.
+$7{,}127$ class-pair cells; $98.9\%$ of the relations fall in the $5{,}044$ cells holding at
+least two, and so are identified.
 
 \paragraph{What is audited} The calibration-matched rows do not decompose the checkpoints as
 released; they decompose the two models after each is rescaled by its own temperature

@@ -1,0 +1,117 @@
+\section{Splitting a score gain}\label{sec:method}
+
+\paragraph{Setup.}\label{sec:setup} Let $q_0(\cdot\mid x)$ and $q_1(\cdot\mid x)$ be the
+predictive distributions of an old and a new frozen model over $K$ labels, and $S(q,y)$ a
+bounded proper score, larger being better. Our default is the quadratic score
+$S(q,y)=2q_y-\lVert q\rVert_2^2$, negative Brier loss up to a label-only constant; the log
+score is the second case we report. Let $C=\phi(X)$ be a discrete grouping both models
+observe, declared before the audit --- for relation prediction, the ordered subject--object
+class pair. We call a value of $C$ a \emph{cell}. The gain vector
+\begin{equation}
+H_x(y)=S(q_1(\cdot\mid x),y)-S(q_0(\cdot\mid x),y),\qquad y=1,\ldots,K,
+\label{eq:gain-vector}
+\end{equation}
+can be evaluated at a counterfactual label without rerunning either model, and that is all
+the construction needs.
+
+\paragraph{Transport.} For a cell $c$, let $\dT_c=\mathbb E[H_X(Y)\mid C=c]$ be the observed
+gain and $\dP_c=\mathbb E_{H\mid c}\mathbb E_{Y'\mid c}[H_X(Y')]$ the gain when each case is
+scored against an \emph{independent} label $Y'$ drawn from the same cell, and set
+$\dR_c=\dT_c-\dP_c$. Transport keeps the cell and its label distribution and removes only
+the pairing between a case and its own label.
+
+\begin{theorem}[Transport and covariance identities]\label{thm:population}
+For any integrable score contrast $H$,
+\begin{gather}
+\dT_c=\dP_c+\dR_c,\notag\\
+\dR_c=\sum_{y=1}^K\operatorname{Cov}\!\left(H_X(y),\ind\{Y=y\}\mid C=c\right).
+\label{eq:population-id}
+\end{gather}
+For the quadratic score, with $\Delta q_y(X)=q_1(y\mid X)-q_0(y\mid X)$,
+\begin{equation}
+\dR_c=2\sum_{y=1}^K\operatorname{Cov}\!\left(\Delta q_y(X),\ind\{Y=y\}\mid C=c\right).
+\label{eq:cov-id}
+\end{equation}
+Consequently, if the gain vector is a function of $c$ alone, $\dR_c=0$.
+\end{theorem}
+
+\noindent Eq.~\eqref{eq:cov-id} is what the split means. The new model earns case-level
+credit only insofar as its probability \emph{change} rises on the label the individual case
+actually carries, relative to other cases in the same cell. Anything constant within a cell
+--- shifting probability towards rare predicates for every (\textsf{man}, \textsf{surfboard})
+relation alike --- lands in $\dP$, which is why we call it the group-level part. It is
+\emph{not} simply ``prior fit'': under the quadratic score $\dP_c$ is the improvement in how
+close the model's mean forecast sits to the cell's label frequencies \emph{minus} the
+increase in the dispersion of its forecasts (\cref{prop:transported}). The covariance form is
+due to Yates~\cite{yates1982external} and generalises: for every Bregman score, including the
+log score, $\dR_c$ is the same covariance with $\Delta q_y$ replaced by the contrast of the
+$y$-th gradient coordinate (\cref{thm:bregman}). All proofs are in the supplementary.
+
+\paragraph{Why it matters which part a gain is in.} One cell, four cases, three labelled 1
+and one labelled 2; the old model predicts $(\tfrac12,\tfrac12)$ for all four. Model A
+predicts $(\tfrac34,\tfrac14)$ for every case --- the cell's frequencies. Model B predicts
+$(\tfrac34,\tfrac14)$ for the three label-1 cases and $(\tfrac14,\tfrac34)$ for the label-2
+case: the same distance from the old model, but pointed at each case's own label. Under the
+quadratic score A gains $+\tfrac18$, all of it group-level, and B gains $+\tfrac38$ with a
+case-level part of $+\tfrac12$. Now let deployment see this cell's labels in proportions
+$(\tfrac14,\tfrac34)$ instead, a label shift. Reweighting each case by $p'(y)/p(y)$ sends A
+to $-\tfrac38$ --- worse than the model it replaced, with not one prediction changed --- and
+leaves B at $+\tfrac38$. The split said in advance which gain was exposed: a group-level gain
+is contingent on the evaluation set's label frequencies matching deployment, and a case-level
+gain is not. That is the operational reason to want them apart. (\Cref{app:worked} works the
+example through.)
+
+\paragraph{Estimator.} In a cell with $n_c\ge2$ cases, write $H_i(y)=H_{x_i}(y)$ and estimate
+\begin{gather}
+\hdT_c=\tfrac1{n_c}\textstyle\sum_iH_i(y_i),\qquad
+\hdP_c=\tfrac1{n_c(n_c-1)}\textstyle\sum_{i\ne j}H_i(y_j),
+\label{eq:sample-prior}\\
+\hdR_c=\tbinom{n_c}{2}^{-1}\textstyle\sum_{i<j}A_{ij},
+\label{eq:sample-reason}\\
+A_{ij}=\tfrac12\{H_i(y_i)+H_j(y_j)-H_i(y_j)-H_j(y_i)\}.
+\label{eq:kernel}
+\end{gather}
+These satisfy $\hdT_c=\hdP_c+\hdR_c$ exactly in every sample, and $\hdR_c$ is an unbiased
+order-two U-statistic~\cite{hoeffding1948class} for $\dR_c$ (\cref{thm:sample}).
+Transporting a case only to the \emph{other} cases' labels matters: fitting the cell's label
+frequencies on all $n_c$ cases, the natural plug-in, shrinks every cell's case-level gain by
+exactly $(n_c-1)/n_c$, halving it at $n_c=2$ (\cref{prop:attenuate}). With $m_{cy}$ the count
+of label $y$ in cell $c$, case $i$'s transported score is
+\begin{equation}
+P_i=\frac{\sum_{y}m_{cy}H_i(y)-H_i(y_i)}{n_c-1},
+\label{eq:linear}
+\end{equation}
+so the whole estimator costs $O(NK)$ on cached predictions, with no fitted model, held-out
+fold or smoothing parameter. Cells are weighted by size; singletons cannot identify a
+within-cell counterfactual and are excluded and reported.
+
+\paragraph{Inference.}\label{sec:inference} With $\bar A_i=(n_c-1)^{-1}\sum_{j\ne i}A_{ij}$,
+the H\'ajek influence contribution of case $i$ is
+\begin{equation}
+\widehat\psi_i=2\bar A_i-\hdR_c-\hdR.
+\label{eq:influence}
+\end{equation}
+We sum $\widehat\psi_i$ within each image and use the one-way cluster-robust sandwich
+variance, since relations from one photograph are not independent. The estimator is
+asymptotically normal under bounded scores and non-dominating clusters (\cref{thm:clt}); at a
+single cell, the total-gain interval \emph{is} a clustered Diebold--Mariano
+test~\cite{diebold1995comparing} (\cref{cor:dm}). A randomization test that cyclically shifts
+labels within every cell is a secondary, relation-level diagnostic.
+
+\paragraph{Confidence matching.}\label{sec:matching} One property of the split must be part of
+the procedure rather than a caveat. Because $\dR$ is a covariance between probability
+\emph{movements} and labels, rescaling a fixed model's confidence moves score between the two
+parts while changing no ranking, no top-1 decision and no information about any case
+(\cref{sec:simulation} measures how much). Two released checkpoints that differ in
+calibration therefore cannot be compared on their raw outputs. Wherever compared models differ
+visibly in confidence we split the images at random, fit each model a single temperature by
+maximum likelihood on one half, and run the split on the other half with each model's own
+temperature applied. The protocol uses no label from the audited half.
+
+\paragraph{Choosing the grouping.}\label{sec:coarsening} The split is conditional on $\phi$.
+Merging cells changes it by an explicit between-cell covariance term of either sign
+(\cref{prop:coarsen}), so the finest grouping that the benchmark's construction defends is
+the conservative choice. A relevant variable left out of $\phi$ is the same term with the
+fully adjusted cell as the fine partition, and \cref{prop:sensitivity} bounds it by a single
+elicited correlation, in the spirit of the robustness value of Cinelli and
+Hazlett~\cite{cinelli2020making}.
