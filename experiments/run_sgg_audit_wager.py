@@ -34,8 +34,17 @@ N_OBJ = 150
 ALPHA = 0.05
 
 
+def _rerun(effect: str):
+    """Same fields from the branch-dump rerun (colab_sgg_rank.py output)."""
+    meta = np.load(MDIR / "wager_sgg/meta.npz")
+    v = np.load(MDIR / f"wager_sgg/variant_{effect}.npz")
+    return {"probs": v["probs"], **{k: meta[k] for k in
+                                    ("pred", "subj", "obj", "image_index")}}
+
+
 def load(effect: str):
-    d = np.load(MDIR / f"motifs_{effect}_predcls.npz")
+    legacy = MDIR / f"motifs_{effect}_predcls.npz"
+    d = np.load(legacy) if legacy.exists() else _rerun(effect)
     q = d["probs"].astype(np.float64)[:, 1:]          # drop background column
     q /= q.sum(axis=1, keepdims=True)
     return {
