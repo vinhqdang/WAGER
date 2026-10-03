@@ -1,0 +1,2 @@
+{"note": "Ground-truth relations whose (subject, object) pair the evaluated model never scored (image 13051, 35 objects). Their stored probs are not theirs; probability-based analyses drop them. Their recall ranks are exact (they are matched only through duplicate objects, as in the official evaluator).",
+ "rows": [86877, 86880, 86883]}

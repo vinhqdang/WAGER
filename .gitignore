@@ -219,7 +219,12 @@ __marimo__/
 
 # WAGER large/derived artifacts (reproducible)
 downloads/
-data/
+data/*
+# per-relation SGG rerun outputs: archived because they need a GPU to regenerate
+!data/vg_motifs/
+data/vg_motifs/*
+!data/vg_motifs/wager_sgg/
+!data/vg_motifs/motifs_*_recalls.json
 results/*.npz
 scratchpad/
 
