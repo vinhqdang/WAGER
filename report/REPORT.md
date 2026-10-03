@@ -1138,3 +1138,51 @@ Nothing further is planned until the decision. Five venues in, and the substance
 classical resolution term, the transported gain is not prior fit, the sensitivity bound is
 reported against the paper's own estimates --- has survived every reframing intact, which
 is the part worth protecting if there is a next one.
+
+## Addendum: desk-rejected by TMLR (2026-10-03)
+
+Rejected without review. The stated reason is the volume boilerplate --- "deemed to be
+unlikely to meet one or both of TMLR criterion and could not be sent for further review
+due to high volume of submissions and scarce bandwidth" --- with a pointer to
+`https://openreview.net/forum?id=nYajCMyuXW` in case an action editor left a comment.
+That forum is behind a bot challenge, so the comment, if there is one, has to be read by
+hand in a browser; nothing in this repository records a reason beyond the boilerplate.
+
+### The record, which is now worth reading as a whole
+
+| Venue | Outcome | Reason given |
+|---|---|---|
+| Computer Vision and Image Understanding | desk reject, Aug 2026 | boilerplate, none disclosed |
+| Computational Statistics and Data Analysis | desk reject | novelty / fit |
+| Journal of Statistical Planning and Inference | reject after review | one referee: unreadable; editors: insufficient substance or interest |
+| Econometrics and Statistics | withdrawn | sent back pre-review on a double-blind formatting point |
+| Transactions on Machine Learning Research | desk reject, Oct 2026 | volume boilerplate |
+
+Four rejections, three of them before any referee saw the paper. In five attempts the
+work has drawn exactly one substantive referee report, and that report's complaint ---
+legibility --- was addressed twice over, by a full restructure and then by a reframe.
+
+That distribution is the finding. Desk rejection is an editor's judgement that a paper is
+not worth two reviewers' time, formed from the title, the abstract and the first page.
+Four editors in four different communities reached it independently. Formatting is not
+the explanation: the paper has been correctly formatted for each venue in turn, and the
+TMLR submission was anonymous, inside the template, and 17 pages of body. Correctness is
+not the explanation either: 20 tests, 89 verified numbers, and the three framing errors
+the 2026-09-07 panel caught were fixed rather than papered over.
+
+What the pattern points at is the front page. The title names a method and describes a
+mechanism. The abstract spends its first two thirds on the construction and reaches the
+one result an editor would find arresting --- that a published debiasing method's
+ten-point mean-recall gain is, under a proper score, overwhelmingly label-prior fitting
+--- in its eighth sentence. The paper has been reframed twice, but both reframes changed
+the introduction while leaving the title, the abstract's order and the overall shape
+built around the estimator rather than around the finding. An editor triaging on volume
+never reaches the part that would change their mind.
+
+This is a hypothesis, not a diagnosis. The single piece of evidence that could confirm or
+refute it is whatever is on that OpenReview forum, and it has not been read yet.
+
+### No further submission from this state
+
+Nothing was changed in response to this rejection. A sixth venue with the same front page
+is the same bet placed a sixth time.

@@ -1,6 +1,11 @@
 # TMLR submission checklist
 
-**Submitted 2026-09-09.** The Econometrics and Statistics submission was withdrawn
+**Submitted 2026-09-09. Desk-rejected without review 2026-10-03** on volume grounds;
+any action-editor comment would be at https://openreview.net/forum?id=nYajCMyuXW, which is
+behind a bot challenge and has to be opened in a browser. The camera-ready restore list
+below is moot unless the paper returns to TMLR.
+
+**Originally submitted 2026-09-09.** The Econometrics and Statistics submission was withdrawn
 first, so no other venue held the paper. What follows is the record of what went in and
 what has to change on acceptance.
 

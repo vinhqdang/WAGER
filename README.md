@@ -8,15 +8,12 @@ positioning claim wrong, and this revision corrects it (see
 [`report/REPORT.md`](report/REPORT.md)). Previously desk-rejected at *Computational
 Statistics and Data Analysis* and *Computer Vision and Image Understanding*.
 
-**Status (2026-09-09): under review at TMLR.** The Econometrics and Statistics submission
-has been withdrawn, and this paper was submitted to *Transactions on Machine Learning
-Research*. The Pattern Recognition version it was reformatted from was never submitted --
-the author had another manuscript with that editor. One document of 42 pages: 17 of body
-and references, 25 of appendices, anonymized for double-blind review, with the code
-attached as anonymized supplementary material. See
-[`submission_notes/tmlr_submission.md`](submission_notes/tmlr_submission.md) for what was
-removed for anonymity and how to restore it on acceptance, and
-[`report/REPORT.md`](report/REPORT.md) for the venue history.
+**Status (2026-10-03): desk-rejected by TMLR, not currently under submission.** Rejected
+without review on volume grounds. That is the fourth rejection in five attempts and the
+third without a referee ever seeing the paper; the venue history and what the pattern
+suggests about the paper's front page are in
+[`report/REPORT.md`](report/REPORT.md). Nothing has been changed in response, and nothing
+should be sent anywhere until it has been.
 
 When two models are compared on a benchmark whose labels are partly determined by a
 feature both of them observe, the score difference sums two different improvements. WAGER
