@@ -424,6 +424,45 @@ if abs(_frq["auc"]["difference"]) > 5e-4:
     print("FAIL 'dropping the frequency prior does not move the within-cell AUC'")
     sys.exit(1)
 
+_ie = load("sgg_recall_split_ietrans_vs_none.json")["results"]["gc@50"]
+_iec = load("sgg_recall_split_ietrans_vs_ietrans_ctx.json")["results"]["gc@50"]["mean_recall"]
+_ies = json.loads((ROOT / "data/vg_motifs/wager_ietrans/summary.json").read_text())
+_iq = _cmp("IETrans vs MOTIFS", "brier")
+_il = _cmp("IETrans vs MOTIFS", "log")
+_ia = auc[("ietrans", "none")]
+CHECKS += [
+    ("iet mR@50 standard", "5_audit.tex", "0.3587",
+     _ies["official_protocol"]["standard_test ietrans mR@50"], 5e-5),
+    ("iet mR@50 own test", "5_audit.tex", "0.3576",
+     _ies["official_protocol"]["ietrans_dedup_test ietrans mR@50"], 5e-5),
+    ("iet mR@50 own test = official run", "5_audit.tex", "0.3576",
+     _ies["official_ietrans_run"]["predcls_mean_recall@50"], 5e-5),
+    ("iet dmR", "5_audit.tex", "+0.2204", _ie["mean_recall"]["total"], 5e-5),
+    ("iet group", "5_audit.tex", "+0.2143", _ie["mean_recall"]["group"], 5e-5),
+    ("iet case", "5_audit.tex", "+0.0060", _ie["mean_recall"]["case"], 5e-5),
+    ("iet case lo", "5_audit.tex", "-0.0031", _ie["mean_recall"]["case_ci"][0], 5e-5),
+    ("iet case hi", "5_audit.tex", "+0.0151", _ie["mean_recall"]["case_ci"][1], 5e-5),
+    ("iet tail", "5_audit.tex", "+0.0889", _ie["mean_recall_tail"]["total"], 5e-5),
+    ("iet quad case", "5_audit.tex", "-0.0162", _iq["reasoning_gain"], 5e-5),
+    ("iet log case", "5_audit.tex", "-0.0544", _il["reasoning_gain"], 5e-5),
+    ("iet auc", "5_audit.tex", "-0.0093", _ia["difference"], 5e-5),
+    ("iet auc lo", "5_audit.tex", "-0.0181", _ia["ci"][0], 5e-5),
+    ("iet auc hi", "5_audit.tex", "+0.0004", _ia["ci"][1], 5e-5),
+    ("iet points", "0_abstract.tex", "21 points",
+     "checked below", 0),
+    ("iet group share", "0_abstract.tex", "97\\%", "checked below", 0),
+    ("iet own test relations", "3_recall.tex", "152{,}226", _ies["ietrans_relations"], 0),
+    ("iet prior cost", "3_recall.tex", "0.0133", -_iec["total"], 5e-5),
+    ("iet prior case", "3_recall.tex", "-0.0088", _iec["case"], 5e-5),
+]
+if round(100 * (_ies["official_protocol"]["standard_test ietrans mR@50"]
+                - sgg["recalls"]["MOTIFS"]["predcls_mean_recall@50"])) != 21:
+    print("FAIL '21 points'"); sys.exit(1)
+if round(100 * _ie["mean_recall"]["group"] / _ie["mean_recall"]["total"]) != 97:
+    print("FAIL '97% group-level'"); sys.exit(1)
+if not (_iq["reasoning_ci"][1] < 0 and _il["reasoning_ci"][1] < 0):
+    print("FAIL 'falls under both proper scores'"); sys.exit(1)
+
 # Claims no single literal carries.
 assert m50["total"] - m50["group"] - m50["case"] < 1e-12
 if not r_cost_la < 0.1 * r_cost_tde:
@@ -537,7 +576,7 @@ def inputted_files(driver: pathlib.Path) -> list[str]:
 driver_arg = sys.argv[sys.argv.index("--driver") + 1] if "--driver" in sys.argv else None
 
 if driver_arg is None:
-    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc ", "path "))]
+    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc ", "path ", "iet "))]
     LIVE = set(inputted_files(MS / "main.tex"))
     orphans = sorted({f for _, f, *_ in CHECKS} - LIVE)
     if orphans:

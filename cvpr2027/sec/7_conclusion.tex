@@ -21,10 +21,10 @@ obstacle to routine use.
 \paragraph{Conclusion.} A ten-point mean-recall gain is two different achievements summed
 together, and the field's metrics report the sum. Scoring each prediction against another
 case's label from the same group separates them exactly, with no fitted reference model and
-with intervals that respect the clustering of relations within images. Applied to a released
-debiasing method, the split finds a ten-point mean-recall gain that is $87\%$ group-level,
-whose case-level remainder a ranking-preserving logit adjustment matches, and behind which no
-within-group discrimination was gained;
+with intervals that respect the clustering of relations within images. Applied to two released
+debiasing methods, the split finds mean-recall gains that are almost entirely group-level:
+TDE's, whose case-level remainder a ranking-preserving logit adjustment matches and behind
+which no within-group discrimination was gained, and IETrans's, behind which some was lost;
 applied to a model every aggregate metric ranks last, it finds a case-level gain that the
 aggregates conceal. We suggest that benchmarks whose labels lean on a
 feature every model sees report the split beside the headline metric: the declared grouping

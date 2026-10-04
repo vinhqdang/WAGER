@@ -165,3 +165,52 @@ share is zero up to float32 rounding.}
 \label{tab:logit-energy}
 \input{supp/tab_logit_energy}
 \end{table}
+
+\subsection{The IETrans checkpoint}\label{app:ietrans}
+
+\paragraph{What was run.} The authors release one Neural-Motifs PredCls checkpoint for
+VG150 (their model zoo, Google Drive), saved at iteration $30{,}000$. It holds no
+frequency-bias weights: the model was trained without one. Their evaluation command builds
+the bias at test time from the training split's log predicate frequencies per object-class
+pair, so the released model's logit is a learned context term plus a fixed per-cell
+log-prior; we ran exactly that command, with the dump hook of \cref{app:recall} recording
+both terms and their sum (equal to the returned logits with largest difference $0$). Their
+annotation file matches the standard VG150 file array for array, except that $5{,}000$
+training images were moved to a validation split; the test split is identical.
+
+\paragraph{Test relations.} IETrans's data loader removes exact duplicate relations --- the
+same subject object, object object and predicate annotated twice --- from the test set as
+well as the training set, which leaves $152{,}226$ test relations where the standard protocol
+keeps $183{,}642$. A duplicate shares its pair and its label with the relation that was kept,
+so the evaluator matches it at the same ranks and the model scores it with the same
+probabilities. We therefore mapped every standard relation to the IETrans row with the same
+image, boxes, classes and predicate: the map is total, uses every IETrans row, and no key is
+ambiguous. \Cref{tab:ietrans-protocols} reports IETrans on both test sets; the difference is
+small, and every comparison in the paper uses the standard relations.
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{The released IETrans checkpoint under the official recall rules, on its own test
+relations and on the standard ones.}
+\label{tab:ietrans-protocols}
+\input{supp/tab_ietrans_protocols}
+\end{table}
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Mean-recall split of the IETrans checkpoint against the MOTIFS baseline (with
+tiers), the logit-adjusted baseline, TDE, and itself without the test-time prior. The
+proper-score rows are in \cref{tab:proper-configs}, the AUC rows in \cref{tab:recall-auc}.}
+\label{tab:ietrans-split}
+\input{supp/tab_ietrans_split}
+\end{table}
+
+\paragraph{Reading it.} Adding the test-time prior to IETrans's context term is a change
+constant within every cell: it leaves the within-cell AUC exactly where it was, costs
+$0.0133$ of mean recall, and its case-level part, $-0.0088$, is again an operating-point
+effect. Against the baseline, the mean-recall gain is $97\%$ group-level and its case-level
+part is not distinguishable from zero, while both matched proper scores give a case-level
+loss (\cref{tab:proper-configs}). The comparison is between models of the same family trained
+separately: IETrans released no plain baseline, and the MOTIFS-SUM baseline of
+\cref{sec:sggaudit} differs from IETrans's Motifs predictor in its fusion of the visual
+term.

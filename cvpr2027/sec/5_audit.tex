@@ -44,7 +44,9 @@ discrimination. It reaches $mR@50=0.2343$ at $R@50=0.6437$.
 \footnotesize
 \setlength\tabcolsep{1.5pt}
 \caption{\textbf{Mean recall@50 split} (graph constraint, micro-averaged over identified
-relations; official $mR@50$ in the first column). LA is the logit-adjusted baseline. The
+relations; official $mR@50$ in the first column). Each row is a model against the MOTIFS
+baseline, except TDE$-$LA; LA is the logit-adjusted baseline, IETrans the released IETrans
+checkpoint scored on the same relations. The
 case-level interval is image-clustered. $\Delta$AUC is the change in within-cell AUC, which
 no calibration or group-level shift can move (LA's residue is float32 rounding); its
 interval is an image bootstrap.}
@@ -53,12 +55,15 @@ interval is an image bootstrap.}
 \toprule
 & $mR$ & $\Delta mR$ & group & case, 95\% CI & $\Delta$AUC, CI \\
 \midrule
-TDE$-$base & $.2476$ & $+.0972$ & $+.0841$ & $+.0130$ & $+.0026$ \\
+TDE & $.2476$ & $+.0972$ & $+.0841$ & $+.0130$ & $+.0026$ \\
 & & & & {\scriptsize$[+.0093,+.0168]$} & {\scriptsize$[-.0028,+.0086]$} \\
-LA$-$base & $.2343$ & $+.0941$ & $+.0802$ & $+.0139$ & $+.0001$ \\
+LA & $.2343$ & $+.0941$ & $+.0802$ & $+.0139$ & $+.0001$ \\
 & & & & {\scriptsize$[+.0101,+.0176]$} & {\scriptsize$[-.0000,+.0001]$} \\
 TDE$-$LA & & $+.0031$ & $+.0039$ & $-.0008$ & $+.0026$ \\
 & & & & {\scriptsize$[-.0050,+.0033]$} & {\scriptsize$[-.0029,+.0086]$} \\
+\midrule
+IETrans & $.3587$ & $+.2204$ & $+.2143$ & $+.0060$ & $-.0093$ \\
+& & & & {\scriptsize$[-.0031,+.0151]$} & {\scriptsize$[-.0181,+.0004]$} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -123,3 +128,17 @@ That term is, to $99.96\%$ of its energy, one vector shared by every relation in
 correlated $+0.75$ with the log training prior. In PredCls, TDE's counterfactual is to first
 order a learned logit adjustment of the context branch, which is why the explicit one
 reproduces it.
+
+\paragraph{A second method.} IETrans~\cite{zhang2022finegrained} relabels training data,
+moving general predicates to specific ones within the same object pair, and adds the
+training log-prior at test time. We ran its released Neural-Motifs PredCls checkpoint once
+with the authors' evaluation command and re-scored it the same way (\cref{app:ietrans}). It
+reaches $mR@50=0.3587$ ($0.3576$ on the authors' test set, which drops duplicate
+relations): $+0.2204$ over the baseline, of which $+0.2143$ is group-level and $+0.0060$
+case-level, interval $[-0.0031,+0.0151]$. Unlike TDE it reaches the tail ($+0.0889$), again
+group-level. Its within-cell discrimination does not improve and, on both proper scores,
+falls: matched case-level parts $-0.0162$ (quadratic) and $-0.0544$ (log), intervals
+excluding zero; the AUC change is $-0.0093$, interval $[-0.0181,+0.0004]$. The split
+separates the two methods: TDE's gain is group-level with within-cell discrimination intact,
+IETrans's is group-level with some of it lost. IETrans released no baseline of its own, so
+this compares it with a model of the same family trained separately.

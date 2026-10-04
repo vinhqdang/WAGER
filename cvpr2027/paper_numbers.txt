@@ -65,6 +65,22 @@ cvpr sim prior-only sd
 cvpr sim shortcut sd
 cvpr sim type-I
 cvpr train subsample
+iet auc
+iet auc hi
+iet auc lo
+iet case
+iet case hi
+iet case lo
+iet dmR
+iet group
+iet group share
+iet log case
+iet mR@50 own test
+iet mR@50 own test = official run
+iet mR@50 standard
+iet points
+iet quad case
+iet tail
 path avg AUC
 path avg dmR
 path avg-ctx corr log prior

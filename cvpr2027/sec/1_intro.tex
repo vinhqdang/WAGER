@@ -49,8 +49,10 @@ moves. Subtracting the training predicate prior from the baseline's
 logits~\cite{menon2021long}, which leaves every within-group ranking exactly as it was,
 recovers nine of the ten points with the same split, at under a tenth of TDE's cost in
 $R@50$; against it, TDE's case-level part is $-0.0008$ with an interval straddling zero,
-and a threshold-free within-group AUC finds no discrimination TDE gained. The converse
-appears too. A model reading image crops through a frozen
+and a threshold-free within-group AUC finds no discrimination TDE gained. The split also
+separates methods: IETrans~\cite{zhang2022finegrained}, which relabels training data within
+object pairs, gains 21 points of mean recall, $97\%$ group-level, and loses within-group
+discrimination under both proper scores. The converse appears too. A model reading image crops through a frozen
 CLIP encoder~\cite{radford2021learning}, which every aggregate measure ranks last, gains
 $+0.00467$ of case-level covariance over the geometry-based model ranked above it, with
 calibration matched and an interval excluding zero (\cref{sec:vgvisual}): its deficit is
@@ -60,11 +62,12 @@ measures' disagreement is itself part of what \cref{sec:vgvisual} reports.
 \paragraph{Contributions.}
 \begin{itemize}
 \setlength\itemsep{1pt}
-\item An audit of a published debiasing method's released checkpoint that splits its
-  ten-point mean-recall gain exactly: $87\%$ group-level, a case-level part no larger than a
-  ranking-preserving logit adjustment's, and no gain in within-group discrimination
-  --- with a reversal in which the model ranked last is the best discriminator among
-  relations sharing an object pair.
+\item Audits of two published debiasing methods' released checkpoints that split their
+  mean-recall gains exactly: TDE's ten points $87\%$ group-level, with a case-level part no
+  larger than a ranking-preserving logit adjustment's and no gain in within-group
+  discrimination, and the mechanism behind it; IETrans's 21 points $97\%$ group-level, with
+  a loss in within-group discrimination --- and a reversal in which the model ranked last is
+  the best discriminator among relations sharing an object pair.
 \item An exact, model-free decomposition of the difference between two frozen models into
   group-level and case-level parts, for every Bregman score and for label-weighted hit rates
   such as mean recall, computed in one pass over cached predictions, with cluster-robust
