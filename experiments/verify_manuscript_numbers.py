@@ -401,6 +401,29 @@ CHECKS += [
     ("acc LA", "3_recall.tex", "0.6820", sgg["accuracy"]["MOTIFS logit-adjusted tau=1"], 5e-5),
 ]
 
+_tp = load("sgg_tde_path.json")
+_st = {r["step"]: r for r in _tp["path"]}
+_frq, _vis, _avg = (_st["drop the frequency prior"], _st["drop the visual term"],
+                    _st["subtract the averaged context"])
+_en = _tp["logit_energy"]["ctx(avg)"]
+CHECKS += [
+    ("path frq dmR", "5_audit.tex", "-0.0009", _frq["mR@50 gc"]["total"], 5e-5),
+    ("path vis dmR", "5_audit.tex", "+0.0164", _vis["mR@50 gc"]["total"], 5e-5),
+    ("path vis case", "5_audit.tex", "+0.0016", _vis["mR@50 gc"]["case"], 5e-5),
+    ("path vis case lo", "5_audit.tex", "-0.0006", _vis["mR@50 gc"]["case_ci"][0], 5e-5),
+    ("path vis case hi", "5_audit.tex", "+0.0037", _vis["mR@50 gc"]["case_ci"][1], 5e-5),
+    ("path avg dmR", "5_audit.tex", "+0.0817", _avg["mR@50 gc"]["total"], 5e-5),
+    ("path avg-ctx global share, %", "5_audit.tex", "99.96", 100 * _en["global"], 5e-3),
+    ("path avg-ctx corr log prior", "5_audit.tex", "+0.75", _en["corr_global_log_prior"], 5e-3),
+    ("path frq quad case", "3_recall.tex", "+0.00915", _frq["proper brier matched"]["case"], 1e-5),
+    ("path avg-ctx non-global rms", "3_recall.tex", "0.021", _en["rms_non_global"], 5e-4),
+    ("path avg-ctx rms", "3_recall.tex", "1.10", _en["rms"], 5e-3),
+    ("path avg AUC", "3_recall.tex", "+0.0016", _avg["auc"]["difference"], 5e-5),
+]
+if abs(_frq["auc"]["difference"]) > 5e-4:
+    print("FAIL 'dropping the frequency prior does not move the within-cell AUC'")
+    sys.exit(1)
+
 # Claims no single literal carries.
 assert m50["total"] - m50["group"] - m50["case"] < 1e-12
 if not r_cost_la < 0.1 * r_cost_tde:
@@ -514,7 +537,7 @@ def inputted_files(driver: pathlib.Path) -> list[str]:
 driver_arg = sys.argv[sys.argv.index("--driver") + 1] if "--driver" in sys.argv else None
 
 if driver_arg is None:
-    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc "))]
+    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc ", "path "))]
     LIVE = set(inputted_files(MS / "main.tex"))
     orphans = sorted({f for _, f, *_ in CHECKS} - LIVE)
     if orphans:

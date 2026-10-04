@@ -122,3 +122,46 @@ audit the other half.}
 \label{tab:proper-configs}
 \input{supp/tab_proper_configs}
 \end{table}
+
+\subsection{TDE along its branches}\label{app:tdepath}
+
+In PredCls the baseline's logits are $\mathrm{vis}+\mathrm{ctx}+\mathrm{frq}$ and TDE's are
+$\mathrm{ctx}-\mathrm{ctx}_{\mathrm{avg}}$, so the change runs through two intermediate models
+built from the same branches: the baseline without the frequency prior
+($\mathrm{vis}+\mathrm{ctx}$), and the context term alone. The split is linear in the gain
+vector, the AUC is a difference of per-model values, and in the matched proper-score split
+each model keeps one held-out temperature throughout; so along this path every part adds up
+to TDE's exactly, which the script asserts (\cref{tab:tde-path}). The order of the three
+steps is a choice, and the steps are attributions along it, not order-free effects.
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{TDE's change from the baseline, step by step (graph-constrained $mR@50$ above;
+no-graph-constraint $mR@50$ and the matched quadratic-score case-level part below). Each
+column sums over the steps to TDE's row in \cref{tab:recall-split,tab:proper-configs}.}
+\label{tab:tde-path}
+\input{supp/tab_tde_path}
+\end{table}
+
+Two observations make the mechanism plain. Dropping the frequency prior, which is constant
+within every cell, cannot move the within-cell AUC and does not; it moves mean recall by
+$-0.0009$, but shifts the matched quadratic case-level part by $+0.00915$, another instance
+of the operating-point effect. And the averaged-context term that TDE subtracts is almost a
+constant: splitting each logit term's energy, after removing each row's mean, into the
+vector shared by every relation, what the subject--object cell adds, and what varies within
+cells (\cref{tab:logit-energy}), $99.96\%$ of $\mathrm{ctx}_{\mathrm{avg}}$ is the shared
+vector, with a non-shared remainder of $0.021$ logits against a size of $1.10$. The shared
+vector correlates $+0.75$ with the log training prior. Subtracting it is therefore, to first
+order, a logit adjustment of the context branch by a learned prior; its small remainder is
+what moves the within-cell AUC by $+0.0016$.
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Energy of each logit term across the $183{,}639$ scored relations: shared by all
+relations (global), set by the subject--object cell (between), varying within cells
+(within); root-mean-square size of the term and of its non-global part; correlation of the
+global vector with the log training prior $\log\pi$. The frequency term's within-cell
+share is zero up to float32 rounding.}
+\label{tab:logit-energy}
+\input{supp/tab_logit_energy}
+\end{table}

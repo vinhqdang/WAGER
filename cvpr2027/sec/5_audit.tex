@@ -111,6 +111,15 @@ in which predicates the model favours within each object pair. Everything they d
 gain, its split, its tier profile --- a one-line prior shift that ranks the relations of
 every cell exactly as the baseline did also does, at under a tenth of TDE's cost in $R@50$ ($0.0175$ against $0.2023$). Measured
 against that control, neither recall nor the threshold-free AUC finds any within-cell
-discrimination TDE gained, and the two proper scores split on its sign. That is not built into TDE.
-Its subtraction removes the image-specific visual term along with the prior; a case-level
-change near zero means whatever it lost there it recovered elsewhere, or neither moved.
+discrimination TDE gained, and the two proper scores split on its sign.
+
+\paragraph{Why.} TDE's change from the baseline is three subtractions, and splitting along
+them answers why; the parts add up to TDE's exactly (\cref{app:tdepath}). Removing the
+frequency prior, constant within every cell, moves mean recall by $-0.0009$ and the
+within-cell AUC not at all. Removing the visual term adds $+0.0164$, with a case-level part
+of $+0.0016$, interval $[-0.0006,+0.0037]$: within a cell, the context term already knew what
+the visual term did. Subtracting the averaged context supplies $+0.0817$ of the $0.0972$.
+That term is, to $99.96\%$ of its energy, one vector shared by every relation in every image,
+correlated $+0.75$ with the log training prior. In PredCls, TDE's counterfactual is to first
+order a learned logit adjustment of the context branch, which is why the explicit one
+reproduces it.

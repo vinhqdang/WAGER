@@ -65,6 +65,16 @@ cvpr sim prior-only sd
 cvpr sim shortcut sd
 cvpr sim type-I
 cvpr train subsample
+path avg AUC
+path avg dmR
+path avg-ctx corr log prior
+path avg-ctx global share, %
+path avg-ctx non-global rms
+path frq dmR
+path vis case
+path vis case hi
+path vis case lo
+path vis dmR
 ps LA log case
 ps LA quad case
 ps TDE-LA log case
