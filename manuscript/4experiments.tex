@@ -208,21 +208,21 @@ them isolates the features rather than the training-set size; the full protocol,
 Appendix~\ref{app:vgvisual-full}.
 
 This is the sharpest case in the paper for separating the components. By every aggregate
-measure the CLIP model is the worst of the three: top-1 accuracy $0.6161$ against $0.6467$
-for the geometry model, and a quadratic score $0.04655$ lower. An evaluator reading either
+measure the CLIP model is the worst of the three: top-1 accuracy $0.6156$ against $0.6467$
+for the geometry model, and a quadratic score $0.04642$ lower. An evaluator reading either
 number would discard it. The decomposition contradicts that reading on the axis that
-matters. Against the geometry model the CLIP model loses $0.05296$ of transported gain while
-\emph{gaining} $0.00641$ of covariance (95\% CI $[0.00514,0.00769]$, randomization
+matters. Against the geometry model the CLIP model loses $0.05282$ of transported gain while
+\emph{gaining} $0.00640$ of covariance (95\% CI $[0.00513,0.00767]$, randomization
 $p=.002$): its entire deficit sits in the transported channel and its within-cell
 discrimination is significantly better, not worse. Against the class-only baseline, pixels
-buy $0.01665$ of covariance where box geometry buys $0.01023$, with well-separated intervals.
+buy $0.01663$ of covariance where box geometry buys $0.01023$, with well-separated intervals.
 Real image content carries more case-specific signal than the geometric proxy standing in for
 it, and a benchmark whose headline metric rewards transported gain will nonetheless rank the
 pixel model last. Two falsification checks support the reading: post-hoc prior correction
-registers as almost pure transported movement ($+0.02401$ against $+0.00111$), and applied to
-the CLIP model it halves the aggregate deficit ($-0.04655$ to $-0.02143$) while the
-covariance advantage persists ($+0.00752$, and $+0.00663$ when both models are corrected) and
-survives confidence matching ($+0.00467$, CI $[+0.00314,+0.00621]$).
+registers as almost pure transported movement ($+0.02390$ against $+0.00114$), and applied to
+the CLIP model it halves the aggregate deficit ($-0.04642$ to $-0.02138$) while the
+covariance advantage persists ($+0.00754$, and $+0.00664$ when both models are corrected) and
+survives confidence matching ($+0.00464$, CI $[+0.00311,+0.00618]$).
 
 \subsection{Other modalities, and sensitivity}\label{sec:further}
 

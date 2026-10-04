@@ -563,9 +563,9 @@ degrades every embedding. Second, because an annotated object box participates i
 several relations, crops are deduplicated by (image, box) before encoding and gathered
 afterwards: the $659{,}210$ crops implied by the audited relations collapse to
 $422{,}143$ unique ones, removing $36.0\%$ of the encoder work without changing any
-feature. Only the images referenced by those relations are retrieved, individually rather
-than through the two bulk archives; of the $71{,}990$ required, three were unavailable
-upstream and fall back to a blank crop.
+feature. The $71{,}990$ images those relations reference were all available in the run
+behind the reported predictions (an earlier run fetching them one at a time missed three,
+which fell back to a blank crop); the predictions are archived with the code.
 
 \paragraph{ResNet-32 triple (Section~\ref{app:lt}).} CIFAR-100-LT uses the standard
 exponential-profile construction of \citet{cui2019classbalanced} at imbalance ratio
@@ -975,8 +975,8 @@ accompanies $+0.51$ points of top-1 predicate accuracy, $+0.60$ of mean reciproc
 and $+0.86$ of recall@5, so in these data a hundredth of quadratic-score gain is worth
 roughly half an accuracy point. The covariance channel is not, however, a re-description
 of any rank metric, and the real-pixel comparison of Section~\ref{sec:vgvisual} is
-where that becomes visible: there $\widehat{\Delta R}=+0.00641$ while top-1 accuracy
-falls by $3.07$ points and recall@5 by $2.21$. Prior-matching both models before scoring
+where that becomes visible: there $\widehat{\Delta R}=+0.00640$ while top-1 accuracy
+falls by $3.11$ points and recall@5 by $2.20$. Prior-matching both models before scoring
 narrows the accuracy gap to $2.17$ points without closing it. The rank metrics aggregate
 the two channels into one number; when the channels carry opposite signs, as they do
 here, no single such number can represent both, which is precisely the situation the
@@ -1054,15 +1054,15 @@ isolates the features. The audit still uses the full $229{,}605$-relation test s
 the same class-pair $\phi$ and image-clustered intervals.
 
 \paragraph{Result.} By any aggregate measure the CLIP model is the worst of the three: top-1
-accuracy $0.6161$ against $0.6467$ for MLP-SPATIAL-S and $0.6416$ for MLP-CLASS-S, and a
-quadratic score $0.04655$ below MLP-SPATIAL-S. An evaluator reading either number would
+accuracy $0.6156$ against $0.6467$ for MLP-SPATIAL-S and $0.6416$ for MLP-CLASS-S, and a
+quadratic score $0.04642$ below MLP-SPATIAL-S. An evaluator reading either number would
 discard it.
 
 The decomposition contradicts that reading on the axis that matters. Against MLP-SPATIAL-S
-the CLIP model loses $0.05296$ of transported gain while \emph{gaining} $0.00641$ of
-covariance (95\% CI $[0.00514,0.00769]$, randomization $p=.002$): its entire deficit sits in
+the CLIP model loses $0.05282$ of transported gain while \emph{gaining} $0.00640$ of
+covariance (95\% CI $[0.00513,0.00767]$, randomization $p=.002$): its entire deficit sits in
 the transported channel and its within-cell discrimination is significantly better, not
-worse. Against the class-only baseline the point is plainer still --- pixels buy $0.01665$
+worse. Against the class-only baseline the point is plainer still --- pixels buy $0.01663$
 of covariance where box geometry buys $0.01023$, with well-separated intervals. Real image
 content carries more case-specific signal than the geometric proxy standing in for it.
 
@@ -1074,11 +1074,11 @@ aggregate numbers duly do. What the decomposition adds is that the punishment is
 failing to use the image. Two falsification checks, reported in
 Section~\ref{app:implementation}, support that reading: correcting a model's within-cell
 prior towards the training histogram registers as almost pure transported movement
-($+0.02401$ against $+0.00111$ of covariance), as a correction carrying no case-level
-information must, and applied to the CLIP model it halves the aggregate deficit ($-0.04655$
-to $-0.02143$) while the covariance advantage persists ($+0.00752$, and $+0.00663$ when both
-models are corrected) and survives confidence matching ($+0.00467$, CI
-$[+0.00314,+0.00621]$).
+($+0.02390$ against $+0.00114$ of covariance), as a correction carrying no case-level
+information must, and applied to the CLIP model it halves the aggregate deficit ($-0.04642$
+to $-0.02138$) while the covariance advantage persists ($+0.00754$, and $+0.00664$ when both
+models are corrected) and survives confidence matching ($+0.00464$, CI
+$[+0.00311,+0.00618]$).
 
 \begin{table}[t]
 \centering
@@ -1094,8 +1094,8 @@ New model & Old model & $\widehat{\Delta T}$ & $\widehat{\Delta P}$ &
 $\widehat{\Delta R}$ (95\% CI) & $p$ \\
 \midrule
 MLP-SPATIAL-S & MLP-CLASS-S   & $0.00503$  & $-0.00520$ & $0.01023\,[0.00967,0.01079]$ & .002 \\
-MLP-VISUAL-S  & MLP-CLASS-S   & $-0.04152$ & $-0.05816$ & $0.01665\,[0.01534,0.01796]$ & .002 \\
-MLP-VISUAL-S  & MLP-SPATIAL-S & $-0.04655$ & $-0.05296$ & $0.00641\,[0.00514,0.00769]$ & .002 \\
+MLP-VISUAL-S  & MLP-CLASS-S   & $-0.04139$ & $-0.05802$ & $0.01663\,[0.01533,0.01794]$ & .002 \\
+MLP-VISUAL-S  & MLP-SPATIAL-S & $-0.04642$ & $-0.05282$ & $0.00640\,[0.00513,0.00767]$ & .002 \\
 \bottomrule
 \end{tabular}
 }
@@ -1109,7 +1109,7 @@ Left: the exact decomposition for the three matched-subsample pairs. Both compar
 involving the CLIP model have strongly negative totals (green) driven entirely by the
 transported channel (blue), while their covariance channel (red) is positive in every case.
 Right: the covariance channel alone, with 95\% image-clustered intervals. Replacing box
-geometry with real image content raises within-group covariance from $0.01023$ to $0.01665$
+geometry with real image content raises within-group covariance from $0.01023$ to $0.01663$
 over the same class-only baseline.}
 \label{fig:vgvisual}
 \end{figure*}

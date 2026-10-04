@@ -226,6 +226,7 @@ data/vg_motifs/*
 !data/vg_motifs/wager_sgg/
 !data/vg_motifs/wager_ietrans/
 !data/vg_motifs/wager_ietrans_raw/
+!data/vg_visual/
 !data/vg_motifs/motifs_*_recalls.json
 results/*.npz
 scratchpad/

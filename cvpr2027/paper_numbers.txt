@@ -147,3 +147,10 @@ sim coverage clustered
 sim coverage iid
 sim prior-only dR
 sim shortcut dR
+vrank CLIP auc
+vrank CLIP vs class
+vrank diff
+vrank diff hi
+vrank diff lo
+vrank geometry auc
+vrank geometry vs class

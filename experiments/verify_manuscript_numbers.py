@@ -67,17 +67,17 @@ CHECKS = [
      recal["rows"]["DRW vs CE (cal-both)"]["dR"], 1e-5),
     ("cal table control dP", "appendix.tex", "+0.37960",
      recal["rows"]["CE(cal) vs CE (confound size)"]["dP"], 1e-5),
-    ("consequence VISUAL' dP", "4experiments.tex", "+0.02401",
+    ("consequence VISUAL' dP", "4experiments.tex", "+0.02390",
      cons_row("VISUAL' vs VISUAL")["prior"], 1e-5),
-    ("consequence VISUAL' dR", "4experiments.tex", "+0.00111",
+    ("consequence VISUAL' dR", "4experiments.tex", "+0.00114",
      cons_row("VISUAL' vs VISUAL")["reasoning"], 1e-5),
-    ("consequence corrected dT", "4experiments.tex", "-0.02143",
+    ("consequence corrected dT", "4experiments.tex", "-0.02138",
      cons_row("VISUAL' vs SPATIAL")["total"], 1e-5),
-    ("consequence corrected dR", "4experiments.tex", "+0.00752",
+    ("consequence corrected dR", "4experiments.tex", "+0.00754",
      cons_row("VISUAL' vs SPATIAL")["reasoning"], 1e-5),
-    ("consequence both-corrected dR", "4experiments.tex", "+0.00663",
+    ("consequence both-corrected dR", "4experiments.tex", "+0.00664",
      cons_row("VISUAL' vs SPATIAL' (both corrected)")["reasoning"], 1e-5),
-    ("consequence cal-matched dR", "4experiments.tex", "+0.00467",
+    ("consequence cal-matched dR", "4experiments.tex", "+0.00464",
      cons_row("VISUAL vs SPATIAL cal-both (audit half)")["reasoning"], 1e-5),
     ("bridge spatial dR", "4experiments.tex", "0.01023",
      bridge["MLP-SPATIAL-S vs MLP-CLASS-S"]["dR"], 1e-5),
@@ -87,9 +87,9 @@ CHECKS = [
      bridge["MLP-SPATIAL-S vs MLP-CLASS-S"]["d_mrr"] * 100, 0.006),
     ("bridge spatial r5 pts", "appendix.tex", "0.86",
      bridge["MLP-SPATIAL-S vs MLP-CLASS-S"]["d_r5"] * 100, 0.006),
-    ("bridge clip acc drop", "appendix.tex", "3.07",
+    ("bridge clip acc drop", "appendix.tex", "3.11",
      -bridge["MLP-VISUAL-S vs MLP-SPATIAL-S"]["d_acc"] * 100, 0.006),
-    ("bridge clip r5 drop", "appendix.tex", "2.21",
+    ("bridge clip r5 drop", "appendix.tex", "2.20",
      -bridge["MLP-VISUAL-S vs MLP-SPATIAL-S"]["d_r5"] * 100, 0.006),
     ("bridge clip pm acc drop", "appendix.tex", "2.17",
      -bridge["MLP-VISUAL-S vs MLP-SPATIAL-S"]["d_acc_pm"] * 100, 0.006),
@@ -110,9 +110,9 @@ CHECKS += [
     ("VG relations audited", "appendix.tex", "227,337",
      vg["comparisons"][0]["n_identified"], 0),
     ("VG test relations", "appendix.tex", "229,605", vgv["n_test"], 0),
-    ("CLIP total gain", "4experiments.tex", "-0.04655",
+    ("CLIP total gain", "4experiments.tex", "-0.04642",
      vgv_rows["MLP-VISUAL-S|MLP-SPATIAL-S"]["total_gain"], 1e-5),
-    ("CLIP alignment gain", "4experiments.tex", "0.00641",
+    ("CLIP alignment gain", "4experiments.tex", "0.00640",
      vgv_rows["MLP-VISUAL-S|MLP-SPATIAL-S"]["reasoning_gain"], 1e-5),
     ("CIFAR CB accuracy", "appendix.tex", "0.2627",
      cif["accuracy"]["CB"], 1e-4),
@@ -257,29 +257,29 @@ CHECKS += [
     ("cvpr sim calib matched sd", "4_validation.tex", "0.0017",
      sim["calibration_only"]["calibration_matched_reasoning_sd"], 5e-5),
     # CLIP (Sec. 6)
-    ("cvpr CLIP accuracy", "6_pixels.tex", "0.6161", vgv["accuracy"]["MLP-VISUAL-S"], 5e-5),
+    ("cvpr CLIP accuracy", "6_pixels.tex", "0.6156", vgv["accuracy"]["MLP-VISUAL-S"], 5e-5),
     ("cvpr geometry accuracy", "6_pixels.tex", "0.6467", vgv["accuracy"]["MLP-SPATIAL-S"], 5e-5),
-    ("cvpr CLIP-geometry dP", "6_pixels.tex", "0.05296", vis_spa["prior_gain"], 1e-5),
-    ("cvpr CLIP-geometry dR ci lo", "6_pixels.tex", "0.00514", vis_spa["reasoning_ci"][0], 1e-5),
-    ("cvpr CLIP-geometry dR ci hi", "6_pixels.tex", "0.00769", vis_spa["reasoning_ci"][1], 1e-5),
+    ("cvpr CLIP-geometry dP", "6_pixels.tex", "0.05282", vis_spa["prior_gain"], 1e-5),
+    ("cvpr CLIP-geometry dR ci lo", "6_pixels.tex", "0.00513", vis_spa["reasoning_ci"][0], 1e-5),
+    ("cvpr CLIP-geometry dR ci hi", "6_pixels.tex", "0.00767", vis_spa["reasoning_ci"][1], 1e-5),
     ("cvpr CLIP-geometry p", "6_pixels.tex", ".002", vis_spa["randomization_p"], 5e-4),
-    ("cvpr CLIP-class dR", "6_pixels.tex", "0.01665",
+    ("cvpr CLIP-class dR", "6_pixels.tex", "0.01663",
      vgv_rows["MLP-VISUAL-S|MLP-CLASS-S"]["reasoning_gain"], 1e-5),
     ("cvpr geometry-class dR", "6_pixels.tex", "0.01023",
      vgv_rows["MLP-SPATIAL-S|MLP-CLASS-S"]["reasoning_gain"], 1e-5),
     ("cvpr train subsample", "6_pixels.tex", "100{,}000", vgv["n_train_relations"], 0),
-    ("cvpr prior correction dP", "6_pixels.tex", "+0.02401", cons_rows["VISUAL' vs VISUAL"]["prior"], 1e-5),
-    ("cvpr prior correction dR", "6_pixels.tex", "+0.00111",
+    ("cvpr prior correction dP", "6_pixels.tex", "+0.02390", cons_rows["VISUAL' vs VISUAL"]["prior"], 1e-5),
+    ("cvpr prior correction dR", "6_pixels.tex", "+0.00114",
      cons_rows["VISUAL' vs VISUAL"]["reasoning"], 1e-5),
-    ("cvpr corrected deficit", "6_pixels.tex", "-0.02143", cons_rows["VISUAL' vs SPATIAL"]["total"], 1e-5),
-    ("cvpr corrected dR", "6_pixels.tex", "+0.00752", cons_rows["VISUAL' vs SPATIAL"]["reasoning"], 1e-5),
-    ("cvpr both corrected dR", "6_pixels.tex", "+0.00663",
+    ("cvpr corrected deficit", "6_pixels.tex", "-0.02138", cons_rows["VISUAL' vs SPATIAL"]["total"], 1e-5),
+    ("cvpr corrected dR", "6_pixels.tex", "+0.00754", cons_rows["VISUAL' vs SPATIAL"]["reasoning"], 1e-5),
+    ("cvpr both corrected dR", "6_pixels.tex", "+0.00664",
      cons_rows["VISUAL' vs SPATIAL' (both corrected)"]["reasoning"], 1e-5),
-    ("cvpr CLIP matched dR", "6_pixels.tex", "+0.00467",
+    ("cvpr CLIP matched dR", "6_pixels.tex", "+0.00464",
      cons_rows["VISUAL vs SPATIAL cal-both (audit half)"]["reasoning"], 1e-5),
-    ("cvpr CLIP matched ci lo", "6_pixels.tex", "+0.00314",
+    ("cvpr CLIP matched ci lo", "6_pixels.tex", "+0.00311",
      cons_rows["VISUAL vs SPATIAL cal-both (audit half)"]["reasoning_ci"][0], 1e-5),
-    ("cvpr CLIP matched ci hi", "6_pixels.tex", "+0.00621",
+    ("cvpr CLIP matched ci hi", "6_pixels.tex", "+0.00618",
      cons_rows["VISUAL vs SPATIAL cal-both (audit half)"]["reasoning_ci"][1], 1e-5),
     # Limitations (Sec. 7)
     ("cvpr robustness value", "7_conclusion.tex", "0.061",
@@ -295,13 +295,13 @@ CHECKS += [
      sgg["recalls"]["MOTIFS"]["predcls_ng_mean_recall@50"], 5e-5),
     ("cvpr TDE ng-mR@50", "5_audit.tex", "0.2981",
      sgg["recalls"]["MOTIFS-TDE"]["predcls_ng_mean_recall@50"], 5e-5),
-    ("cvpr CLIP matched dP", "6_pixels.tex", "0.04727",
+    ("cvpr CLIP matched dP", "6_pixels.tex", "0.04705",
      cons_rows["VISUAL vs SPATIAL cal-both (audit half)"]["prior"], 1e-5),
     ("cvpr CLIP prior-matched acc gap, points", "6_pixels.tex", "2.17",
      bridge_vs["d_acc_pm"] * 100, 5e-3),
-    ("cvpr CLIP prior-matched MRR gap, points", "6_pixels.tex", "1.68",
+    ("cvpr CLIP prior-matched MRR gap, points", "6_pixels.tex", "1.67",
      bridge_vs["d_mrr_pm"] * 100, 5e-3),
-    ("cvpr CLIP prior-matched R@5 gap, points", "6_pixels.tex", "1.05",
+    ("cvpr CLIP prior-matched R@5 gap, points", "6_pixels.tex", "1.07",
      bridge_vs["d_r5_pm"] * 100, 5e-3),
 ]
 
@@ -463,6 +463,23 @@ if round(100 * _ie["mean_recall"]["group"] / _ie["mean_recall"]["total"]) != 97:
 if not (_iq["reasoning_ci"][1] < 0 and _il["reasoning_ci"][1] < 0):
     print("FAIL 'falls under both proper scores'"); sys.exit(1)
 
+_vr = load("vg_visual_rank.json")
+_vrr = {(r["new"], r["old"]): r for r in _vr["rows"]}
+_vs = _vrr[("MLP-VISUAL-S", "MLP-SPATIAL-S")]
+CHECKS += [
+    ("vrank CLIP auc", "6_pixels.tex", "0.5408", _vs["auc_new"], 5e-5),
+    ("vrank geometry auc", "6_pixels.tex", "0.5323", _vs["auc_old"], 5e-5),
+    ("vrank diff", "6_pixels.tex", "+0.0085", _vs["difference"], 5e-5),
+    ("vrank diff lo", "6_pixels.tex", "-0.0062", _vs["ci"][0], 5e-5),
+    ("vrank diff hi", "6_pixels.tex", "+0.0214", _vs["ci"][1], 5e-5),
+    ("vrank CLIP vs class", "6_pixels.tex", "+0.0408",
+     _vrr[("MLP-VISUAL-S", "MLP-CLASS-S")]["difference"], 5e-5),
+    ("vrank geometry vs class", "6_pixels.tex", "+0.0323",
+     _vrr[("MLP-SPATIAL-S", "MLP-CLASS-S")]["difference"], 5e-5),
+]
+if not (_vs["ci"][0] < 0 < _vs["ci"][1]) or abs(_vr["auc_class_only"] - 0.5) > 1e-12:
+    print("FAIL 'the AUC does not separate CLIP from geometry' / class-only AUC 1/2"); sys.exit(1)
+
 # Claims no single literal carries.
 assert m50["total"] - m50["group"] - m50["case"] < 1e-12
 if not r_cost_la < 0.1 * r_cost_tde:
@@ -576,7 +593,7 @@ def inputted_files(driver: pathlib.Path) -> list[str]:
 driver_arg = sys.argv[sys.argv.index("--driver") + 1] if "--driver" in sys.argv else None
 
 if driver_arg is None:
-    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc ", "path ", "iet "))]
+    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc ", "path ", "iet ", "vrank "))]
     LIVE = set(inputted_files(MS / "main.tex"))
     orphans = sorted({f for _, f, *_ in CHECKS} - LIVE)
     if orphans:

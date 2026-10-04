@@ -8,28 +8,32 @@ case-level gain reflects what pretraining had already recovered. All three compa
 are retrained on one fixed subsample of $100{,}000$ training relations, so differences isolate
 the features rather than the amount of data.
 
-By every aggregate measure the CLIP model is the worst of the three: top-1 accuracy $0.6161$
-against $0.6467$ for the geometry model, and a quadratic score $0.04655$ lower. An evaluator
+By every aggregate measure the CLIP model is the worst of the three: top-1 accuracy $0.6156$
+against $0.6467$ for the geometry model, and a quadratic score $0.04642$ lower. An evaluator
 reading either number would discard it. The split disagrees. With each model's confidence matched on
-held-out images, the CLIP model loses $0.04727$ of group-level score against the geometry
-model while \emph{gaining} $0.00467$ of case-level score (CI $[+0.00314,+0.00621]$); on raw
-outputs the figures are $0.05296$ and $0.00641$ (CI $[0.00514,0.00769]$, $p=.002$). Its whole
-deficit is group-level (\cref{fig:where}). Against the class-only model, pixels buy $0.01665$
+held-out images, the CLIP model loses $0.04705$ of group-level score against the geometry
+model while \emph{gaining} $0.00464$ of case-level score (CI $[+0.00311,+0.00618]$); on raw
+outputs the figures are $0.05282$ and $0.00640$ (CI $[0.00513,0.00767]$, $p=.002$). Its whole
+deficit is group-level (\cref{fig:where}). Against the class-only model, pixels buy $0.01663$
 of case-level score on raw outputs where box geometry buys $0.01023$, with well-separated
 intervals.
 
 A larger case-level part is not the same as better ranking, and here the two disagree. With
 each model's prior matched within cells, the CLIP model still ranks the correct predicate
-first less often than the geometry model: top-1 accuracy $2.17$ points lower, MRR $1.68$
-lower, recall@5 $1.05$ lower. Its probability moves towards the correct predicate within a
+first less often than the geometry model: top-1 accuracy $2.17$ points lower, MRR $1.67$
+lower, recall@5 $1.07$ lower. Its probability moves towards the correct predicate within a
 pair more than the geometry model's does, but not by enough, often enough, to overtake it.
-So the CLIP model carries more case-level covariance without being the better ranker, and a
-calibration-free within-cell rank contrast is what would decide which describes recognition.
+So the CLIP model carries more case-level covariance without being the better ranker. The
+within-cell AUC, which no calibration or prior shift can move, does not settle it either way:
+$0.5408$ against $0.5323$, a difference of $+0.0085$ with interval $[-0.0062,+0.0214]$, while
+both models clear the class-only model's $0.5$ by $+0.0408$ and $+0.0323$. The CLIP model's
+case-level advantage is real in the covariance the split measures; that it is better
+recognition is not established.
 
 Two checks support this reading. Post-hoc correction of a model's label prior should move
-only the group-level part, and it does: $+0.02401$ group-level against $+0.00111$ case-level.
-Applied to the CLIP model it halves the aggregate deficit, from $-0.04655$ to $-0.02143$,
-while the case-level advantage persists ($+0.00752$; $+0.00663$ with both models corrected).
+only the group-level part, and it does: $+0.02390$ group-level against $+0.00114$ case-level.
+Applied to the CLIP model it halves the aggregate deficit, from $-0.04642$ to $-0.02138$,
+while the case-level advantage persists ($+0.00754$; $+0.00664$ with both models corrected).
 
 \paragraph{Beyond scene graphs.}\label{sec:further} Nothing in \cref{sec:method} is specific
 to relations, and the supplementary applies the identical estimator to long-tailed image

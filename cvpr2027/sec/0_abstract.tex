@@ -14,8 +14,9 @@ comes from the fifteen rarest predicates. A one-line logit adjustment of the bas
 leaves the ranking of relations within every group unchanged, recovers nine of the ten points
 with the same split, at under a tenth of TDE's cost in recall, and a threshold-free
 within-group AUC finds no discrimination that TDE gained. A second released method, IETrans,
-gains 21 points, 97\% group-level, while its within-group discrimination falls under both
-proper scores. The converse also occurs: a CLIP
-model reading image crops, ranked last on accuracy and on the proper score, discriminates
-better among relations sharing an object pair than the geometry model ranked above it.
+gains 21 points, 97\% group-level, while its case-level part falls under both proper
+scores. The converse also occurs: a CLIP
+model reading image crops, ranked last on accuracy and on the proper score, carries more
+case-level covariance than the geometry model ranked above it, though a threshold-free rank
+test cannot separate the two.
 \end{abstract}

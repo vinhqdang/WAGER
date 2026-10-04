@@ -136,9 +136,9 @@ with the authors' evaluation command and re-scored it the same way (\cref{app:ie
 reaches $mR@50=0.3587$ ($0.3576$ on the authors' test set, which drops duplicate
 relations): $+0.2204$ over the baseline, of which $+0.2143$ is group-level and $+0.0060$
 case-level, interval $[-0.0031,+0.0151]$. Unlike TDE it reaches the tail ($+0.0889$), again
-group-level. Its within-cell discrimination does not improve and, on both proper scores,
-falls: matched case-level parts $-0.0162$ (quadratic) and $-0.0544$ (log), intervals
-excluding zero; the AUC change is $-0.0093$, interval $[-0.0181,+0.0004]$. The split
-separates the two methods: TDE's gain is group-level with within-cell discrimination intact,
-IETrans's is group-level with some of it lost. IETrans released no baseline of its own, so
+group-level. Its case-level part does not improve and, on both proper scores, falls:
+matched case-level parts $-0.0162$ (quadratic) and $-0.0544$ (log), intervals
+excluding zero; the AUC change is $-0.0093$, interval $[-0.0181,+0.0004]$, points the same way
+without excluding zero. The split separates the two methods: both gains are group-level,
+TDE's with no case-level change, IETrans's with a case-level loss. IETrans released no baseline of its own, so
 this compares it with a model of the same family trained separately.
