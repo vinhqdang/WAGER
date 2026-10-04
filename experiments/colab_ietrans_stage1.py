@@ -97,7 +97,7 @@ def unpack(path, dest):
         sh(["tar", "-xf", path, "-C", dest])
 
 
-sh(["pip", "-q", "install", "gdown", "yacs", "ninja", "cython", "overrides", "h5py",
+sh(["pip", "-q", "install", "gdown", "ipdb", "yacs", "ninja", "cython", "overrides", "h5py",
     "numpy<2"])
 
 # ---- 1. images (shared layout; skipped if a previous run extracted them) ------
