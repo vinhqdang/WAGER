@@ -1,0 +1,2 @@
+data/**/*.npz filter=lfs diff=lfs merge=lfs -text
+data/**/*.pytorch filter=lfs diff=lfs merge=lfs -text
