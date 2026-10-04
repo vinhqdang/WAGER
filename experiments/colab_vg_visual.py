@@ -31,8 +31,17 @@ IMG_DIR = os.path.join(ROOT, "vg_images")
 CKPT = os.path.join(ROOT, "clip_ckpt.npz")
 os.makedirs(IMG_DIR, exist_ok=True)
 
-SEED = 0
+SEED = 0                 # fixes the training subsample; never varied
 N_TRAIN = 100_000        # relations used to train all three compared models
+# Optional, all defaulting to the run behind the paper's numbers:
+#   WAGER_SEEDS  training seeds (initialisation and batch order) per head, e.g. 0,1,2,3,4;
+#                seed 0 reproduces the archived predictions, other seeds get "@<seed>" keys
+#   WAGER_HEADS  heads to train; MLP-VISGEO-S adds CLIP crops to the geometry features
+#   WAGER_ZIPS   1 = fetch the two bulk image archives first (far faster than per image)
+#   WAGER_OUT    output path
+SEEDS = [int(x) for x in os.environ.get("WAGER_SEEDS", "0").split(",")]
+HEADS = os.environ.get("WAGER_HEADS", "MLP-CLASS-S,MLP-SPATIAL-S,MLP-VISUAL-S").split(",")
+OUT_NPZ = os.environ.get("WAGER_OUT", os.path.join(ROOT, "vg_visual_models.npz"))
 BATCH = 512
 CKPT_EVERY = 50_000
 WORKERS = 16             # concurrent image fetches; kept modest to be polite to the host
@@ -104,6 +113,29 @@ def fetch_one(img_id):
             f"{_state['bytes']/1e6/max(el,1e-9):.1f} MB/s, missing={_state['missing']}, "
             f"eta {(len(needed)-n)/max(n/max(el,1e-9),1e-9)/60:.0f} min")
 
+
+if os.environ.get("WAGER_ZIPS") == "1":
+    import zipfile
+    for name in ("images.zip", "images2.zip"):
+        dest = os.path.join(ROOT, name)
+        if os.path.exists(dest + ".done"):
+            continue
+        req = urllib.request.Request(f"https://cs.stanford.edu/people/rak248/VG_100K_2/{name}",
+                                     headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=180) as r, open(dest, "wb") as f:
+            while (chunk := r.read(1 << 22)):
+                f.write(chunk)
+        with zipfile.ZipFile(dest) as z:
+            for m in z.namelist():
+                if m.lower().endswith(".jpg"):
+                    out = os.path.join(IMG_DIR, os.path.basename(m))
+                    if not os.path.exists(out):
+                        with z.open(m) as src, open(out + ".part", "wb") as o:
+                            o.write(src.read())
+                        os.replace(out + ".part", out)
+        os.remove(dest)
+        open(dest + ".done", "w").write("1")
+        log(f"bulk archive {name} extracted")
 
 todo = [int(i) for i in needed
         if not os.path.exists(os.path.join(IMG_DIR, f"{int(i)}.jpg"))]
@@ -244,19 +276,21 @@ def spatial_features(sb, ob):
 sp_feat = spatial_features(sbox[use_idx], obox[use_idx])
 vis_feat = np.concatenate([emb[subj_slot], emb[obj_slot]], axis=1)
 
-FEATURES = {
-    "MLP-CLASS-S": cls_feat,
-    "MLP-SPATIAL-S": np.concatenate([cls_feat, sp_feat], axis=1),
-    "MLP-VISUAL-S": np.concatenate([cls_feat, vis_feat], axis=1),
+ALL_FEATURES = {
+    "MLP-CLASS-S": lambda: cls_feat,
+    "MLP-SPATIAL-S": lambda: np.concatenate([cls_feat, sp_feat], axis=1),
+    "MLP-VISUAL-S": lambda: np.concatenate([cls_feat, vis_feat], axis=1),
+    "MLP-VISGEO-S": lambda: np.concatenate([cls_feat, sp_feat, vis_feat], axis=1),
 }
+FEATURES = {h: ALL_FEATURES[h]() for h in HEADS}
 n_tr = len(tr_idx)
 y_tr = pred[tr_idx].astype(np.int64)
 y_te = pred[te_idx].astype(np.int64)
 out_models = {}
 
-for name, feat in FEATURES.items():
-    torch.manual_seed(SEED)
-    g = torch.Generator().manual_seed(SEED)
+for (name, feat), seed in [(nf, sd) for sd in SEEDS for nf in FEATURES.items()]:
+    torch.manual_seed(seed)
+    g = torch.Generator().manual_seed(seed)
     Xtr = torch.as_tensor(feat[:n_tr]); Xte = torch.as_tensor(feat[n_tr:])
     mu, sd = Xtr.mean(0, keepdim=True), Xtr.std(0, keepdim=True) + 1e-6
     Xtr, Xte = (Xtr - mu) / sd, (Xte - mu) / sd
@@ -283,13 +317,14 @@ for name, feat in FEATURES.items():
         for i in range(0, len(Xte), 65536):
             probs.append(torch.softmax(net(Xte[i:i + 65536].to(DEVICE)), 1).cpu().numpy())
     q = np.concatenate(probs).astype(np.float32)
-    out_models[name] = q
-    log(f"  {name} test accuracy {float(np.mean(q.argmax(1) == y_te)):.4f}")
+    key = name if seed == 0 else f"{name}@{seed}"
+    out_models[key] = q
+    log(f"  {key} test accuracy {float(np.mean(q.argmax(1) == y_te)):.4f}")
 
 np.savez_compressed(
-    os.path.join(ROOT, "vg_visual_models.npz"),
+    OUT_NPZ,
     **out_models, y=y_te, phi=phi_all[te_idx], image=image[te_idx],
     n_train_relations=n_tr, n_unique_crops=n_unique,
     n_missing_images=missing, n_images_fetched=len(needed),
 )
-log("Saved /content/vg_visual_models.npz")
+log(f"Saved {OUT_NPZ}")
