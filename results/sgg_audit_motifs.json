@@ -7,7 +7,8 @@
     "MOTIFS": 0.6980978985945251,
     "MOTIFS-TDE": 0.5577410027281786,
     "MOTIFS logit-adjusted tau=1": 0.6819520907868154,
-    "MOTIFS logit-adjusted tau=0.5": 0.6965078224124505
+    "MOTIFS logit-adjusted tau=0.5": 0.6965078224124505,
+    "IETrans (Motifs, released)": 0.5352076628602856
   },
   "recalls": {
     "MOTIFS": {
@@ -465,6 +466,210 @@
         NaN
       ],
       "standard_error": 0.0002822801258424353,
+      "n_total": 92027,
+      "n_identified": 90310,
+      "coverage": 0.9813424321123149,
+      "n_cells": 3708,
+      "n_singletons": 1717,
+      "randomization_p": null
+    },
+    {
+      "comparison": "IETrans vs MOTIFS",
+      "score": "brier",
+      "regime": "calibration-matched",
+      "T_old": 2.4968113558436302,
+      "T_new": 1.671818959565286,
+      "total_gain": -0.1769463367719165,
+      "prior_gain": -0.16071247875942762,
+      "reasoning_gain": -0.01623385801248885,
+      "reasoning_share": NaN,
+      "reasoning_ci": [
+        -0.017667135583691488,
+        -0.014800580441286215
+      ],
+      "prior_ci": [
+        -0.1662489388660899,
+        -0.15517601865276534
+      ],
+      "total_ci": [
+        -0.18263802629295212,
+        -0.1712546472508809
+      ],
+      "share_ci": [
+        NaN,
+        NaN
+      ],
+      "standard_error": 0.0007312775043358689,
+      "n_total": 92027,
+      "n_identified": 90310,
+      "coverage": 0.9813424321123149,
+      "n_cells": 3708,
+      "n_singletons": 1717,
+      "randomization_p": null
+    },
+    {
+      "comparison": "IETrans vs MOTIFS",
+      "score": "log",
+      "regime": "calibration-matched",
+      "T_old": 2.4968113558436302,
+      "T_new": 1.671818959565286,
+      "total_gain": -0.48127290901109043,
+      "prior_gain": -0.42691992606725016,
+      "reasoning_gain": -0.05435298294384029,
+      "reasoning_share": NaN,
+      "reasoning_ci": [
+        -0.057858109882026845,
+        -0.05084785600565374
+      ],
+      "prior_ci": [
+        -0.44086923678199813,
+        -0.4129706153525022
+      ],
+      "total_ci": [
+        -0.49539140304747914,
+        -0.4671544149747017
+      ],
+      "share_ci": [
+        NaN,
+        NaN
+      ],
+      "standard_error": 0.0017883629320918912,
+      "n_total": 92027,
+      "n_identified": 90310,
+      "coverage": 0.9813424321123149,
+      "n_cells": 3708,
+      "n_singletons": 1717,
+      "randomization_p": null
+    },
+    {
+      "comparison": "IETrans vs MOTIFS logit-adjusted tau=1",
+      "score": "brier",
+      "regime": "calibration-matched",
+      "T_old": 1.9925086167342425,
+      "T_new": 1.671818959565286,
+      "total_gain": -0.15191268267190017,
+      "prior_gain": -0.1317612789506021,
+      "reasoning_gain": -0.02015140372129806,
+      "reasoning_share": NaN,
+      "reasoning_ci": [
+        -0.02173584252731398,
+        -0.018566964915282144
+      ],
+      "prior_ci": [
+        -0.1361380433796752,
+        -0.12738451452152902
+      ],
+      "total_ci": [
+        -0.15642419744293312,
+        -0.1474011679008672
+      ],
+      "share_ci": [
+        NaN,
+        NaN
+      ],
+      "standard_error": 0.0008084020005029534,
+      "n_total": 92027,
+      "n_identified": 90310,
+      "coverage": 0.9813424321123149,
+      "n_cells": 3708,
+      "n_singletons": 1717,
+      "randomization_p": null
+    },
+    {
+      "comparison": "IETrans vs MOTIFS logit-adjusted tau=1",
+      "score": "log",
+      "regime": "calibration-matched",
+      "T_old": 1.9925086167342425,
+      "T_new": 1.671818959565286,
+      "total_gain": -0.43031980074455517,
+      "prior_gain": -0.3474470874384308,
+      "reasoning_gain": -0.08287271330612438,
+      "reasoning_share": NaN,
+      "reasoning_ci": [
+        -0.08746692273748993,
+        -0.07827850387475882
+      ],
+      "prior_ci": [
+        -0.3585027938204959,
+        -0.3363913810563657
+      ],
+      "total_ci": [
+        -0.4413943372716698,
+        -0.4192452642174405
+      ],
+      "share_ci": [
+        NaN,
+        NaN
+      ],
+      "standard_error": 0.002344027475812868,
+      "n_total": 92027,
+      "n_identified": 90310,
+      "coverage": 0.9813424321123149,
+      "n_cells": 3708,
+      "n_singletons": 1717,
+      "randomization_p": null
+    },
+    {
+      "comparison": "IETrans vs MOTIFS-TDE",
+      "score": "brier",
+      "regime": "calibration-matched",
+      "T_old": 0.9159979863534178,
+      "T_new": 1.671818959565286,
+      "total_gain": 0.005693467845631285,
+      "prior_gain": 0.021869671742216008,
+      "reasoning_gain": -0.016176203896584723,
+      "reasoning_share": -2.8411864851396422,
+      "reasoning_ci": [
+        -0.01747196801667187,
+        -0.014880439776497577
+      ],
+      "prior_ci": [
+        0.018666484246274557,
+        0.02507285923815746
+      ],
+      "total_ci": [
+        0.002297636692635133,
+        0.009089298998627437
+      ],
+      "share_ci": [
+        -4.625023830763702,
+        -1.0573491395155827
+      ],
+      "standard_error": 0.0006611162910685956,
+      "n_total": 92027,
+      "n_identified": 90310,
+      "coverage": 0.9813424321123149,
+      "n_cells": 3708,
+      "n_singletons": 1717,
+      "randomization_p": null
+    },
+    {
+      "comparison": "IETrans vs MOTIFS-TDE",
+      "score": "log",
+      "regime": "calibration-matched",
+      "T_old": 0.9159979863534178,
+      "T_new": 1.671818959565286,
+      "total_gain": 0.0663315988396118,
+      "prior_gain": 0.16464770333532552,
+      "reasoning_gain": -0.09831610449571371,
+      "reasoning_share": -1.4821910856308418,
+      "reasoning_ci": [
+        -0.1038843830433667,
+        -0.09274782594806072
+      ],
+      "prior_ci": [
+        0.15438409841613618,
+        0.17491130825451487
+      ],
+      "total_ci": [
+        0.05636127354849972,
+        0.07630192413072388
+      ],
+      "share_ci": [
+        -1.7373921664225216,
+        -1.226990004839162
+      ],
+      "standard_error": 0.0028410106469174204,
       "n_total": 92027,
       "n_identified": 90310,
       "coverage": 0.9813424321123149,
