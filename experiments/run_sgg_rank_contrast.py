@@ -30,6 +30,11 @@ N_BOOT = 200
 COMPARISONS = [("TDE", "none"), ("la1", "none"), ("la0.5", "none"),
                ("TDE", "la1"), ("TDE", "ctx"), ("vis_ctx", "none"),
                ("ctx", "none"), ("vis", "none")]
+# the released IETrans checkpoint, when its rerun is present (REV-2)
+IETRANS = [("ietrans", "none"), ("ietrans", "la1"), ("ietrans", "TDE"),
+           ("ietrans", "ietrans_ctx")]
+if (ROOT / "data/vg_motifs/wager_ietrans/variant_ietrans.npz").exists():
+    COMPARISONS += IETRANS
 
 
 def main():

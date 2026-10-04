@@ -204,6 +204,28 @@ def main():
                                      "T_old": t_v, "T_new": t_tde, **g.as_row(),
                                      "randomization_p": None})
 
+    # the released IETrans checkpoint against the same baseline and control (REV-2)
+    if (MDIR / "wager_ietrans/variant_ietrans.npz").exists():
+        iet = load("ietrans")
+        t_iet = fit_temperature(iet["q"][cal], y[cal])
+        acc["IETrans (Motifs, released)"] = float((iet["q"].argmax(1) == y).mean())
+        others = {"MOTIFS": (base["q"], t_base),
+                  "MOTIFS logit-adjusted tau=1": (load("la1")["q"], None),
+                  "MOTIFS-TDE": (tde["q"], t_tde)}
+        for name, (q_old, t_old) in others.items():
+            if t_old is None:
+                t_old = fit_temperature(q_old[cal], y[cal])
+            for sc in ("brier", "log"):
+                g = decompose_gain(temp_scale(iet["q"], t_iet)[aud],
+                                   temp_scale(q_old, t_old)[aud],
+                                   y[aud], phi[aud], groups=image[aud], score=sc)
+                print(f"  (IETrans vs {name}, cal-matched, {sc}) dT={g.total_gain:+.5f} "
+                      f"dP={g.prior_gain:+.5f} dR={g.alignment_gain:+.5f} "
+                      f"CI=[{g.alignment_ci[0]:+.5f},{g.alignment_ci[1]:+.5f}]")
+                rows.append({"comparison": f"IETrans vs {name}", "score": sc,
+                             "regime": "calibration-matched", "T_old": t_old,
+                             "T_new": t_iet, **g.as_row(), "randomization_p": None})
+
     out = {
         "dataset": "VG150 PredCls (canonical split, Tang et al. released checkpoints)",
         "n_relations": int(len(y)), "n_images": int(len(np.unique(image))),
