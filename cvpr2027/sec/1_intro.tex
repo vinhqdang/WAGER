@@ -9,7 +9,7 @@ field now leads with mean recall, which averages recall over predicates and so r
 the rare ones~\cite{chen2019kern,tang2019vctree}. Debiasing methods are now judged by how far they raise it.
 Total Direct Effect (TDE)~\cite{tang2020unbiased}, among the most cited of them, raises
 mean recall@50 of a MOTIFS model from $14.6$ to $24.8$ on the canonical VG150 split, in our
-evaluation of the released checkpoint with the authors' own code.
+evaluation of the released checkpoint.
 
 What did those ten points buy? There are two ways to raise mean recall, and the metric
 cannot tell them apart. A model can move probability towards rare predicates \emph{within
@@ -28,10 +28,9 @@ models to one route or the other.
 (\cref{fig:concept}). Take two frozen models and a test set grouped by a discrete feature
 both models observe, here the subject--object pair. Score each model's prediction for one
 relation against the label of a \emph{different} relation in the same group. This
-relabelling preserves each group's predicate frequencies exactly, so any part of the score
-gain earned at the level of the group survives it; it destroys the correspondence between an
-image and its own label, so any part earned by getting individual cases right does not. The
-observed gain therefore splits exactly into a \emph{group-level} part $\hdP$ and a
+relabelling keeps each group's predicate frequencies, so gain earned at the level of the
+group survives it, and breaks the link between an image and its own label, so gain earned
+on individual cases does not. The observed gain therefore splits exactly into a \emph{group-level} part $\hdP$ and a
 \emph{case-level} remainder $\hdR$, which is a within-group covariance between the change in
 the models' predictions and the label (\cref{thm:population}). The split holds in the observed
 sample for any proper score and for mean recall itself, needs no fitted reference model, held-out fold or tuning
@@ -75,10 +74,12 @@ within-group AUC does not separate the two models; the disagreement is itself pa
   inference, and paired with an operating-point control and a threshold-free AUC.
 \item Validation that the case-level part is exactly zero when it should be, covers at the
   nominal rate under image clustering, and separates calibration, prior and shortcut
-  effects --- together with a protocol for the one confound it does not separate.
+  effects, with a protocol for the one confound it does not separate.
 \end{itemize}
 
-\paragraph{What is not claimed.} The split is conditional on the declared grouping: $\hdR$
+\paragraph{What is not claimed.} Every scene-graph result is PredCls, where object boxes
+and classes are given and every model sees the cell; in SGCls and SGDet the cell is itself
+predicted, and the split as stated does not apply. The split is conditional on the declared grouping: $\hdR$
 measures case-level discrimination \emph{among relations sharing an object pair}, and
 credits any signal varying inside a pair, including a shortcut nobody recorded. It is not
 invariant to recalibration --- rescaling a model's confidence moves score between the two

@@ -5,6 +5,10 @@
                                           every comparison, with tiers
   cvpr2027/supp/tab_recall_validation.tex re-scored vs official recall
   cvpr2027/supp/tab_proper_configs.tex   proper-score split, every configuration
+  cvpr2027/supp/tab_split_robustness.tex  matched split over 20 image splits
+  cvpr2027/supp/tab_label_shift.tex       split under a within-cell label shift
+  cvpr2027/supp/tab_predicate_merge.tex   split after merging predicates
+  cvpr2027/supp/tab_clip_zeroshot.tex     zero-shot CLIP on the canonical relations
 
 Run: python experiments/make_cvpr_recall_tables.py
 """
@@ -238,6 +242,104 @@ def vg_seeds():
     return "\n".join(lines)
 
 
+def f5(x):
+    return f"{x:+.5f}"
+
+
+def ci5(c):
+    return r"{\scriptsize$[" + f5(c[0]) + "," + f5(c[1]) + r"]$}"
+
+
+ROB_LABELS = {"TDE": "TDE vs base", "la1": r"LA$_{1}$ vs base", "ietrans": "IETrans vs base",
+              "TDE common-T": "TDE vs base, one $T$"}
+
+
+def split_robustness():
+    d = json.loads((RES / "sgg_split_robustness.json").read_text())
+    n = d["n_splits"]
+    lines = [r"\begin{tabular}{@{}llrrrrr@{}}", r"\toprule",
+             r"Comparison & Score & mean & sd & min & max & CI $\not\ni 0$ \\", r"\midrule"]
+    for k, v in enumerate(("TDE", "la1", "ietrans", "TDE common-T")):
+        for j, sc in enumerate(("brier", "log")):
+            m = d["summary"][f"{v} {sc}"]
+            lines.append(f"{ROB_LABELS[v] if j == 0 else ''} & {'quadratic' if sc == 'brier' else 'log'} & "
+                         f"${f5(m['mean'])}$ & ${m['sd']:.5f}$ & ${f5(m['min'])}$ & ${f5(m['max'])}$ & "
+                         f"{m['n_excluding_zero']}/{n} \\\\")
+        if k < 3:
+            lines.append(r"\midrule")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
+def label_shift():
+    d = json.loads((RES / "label_shift.json").read_text())
+    short = {"TDE vs MOTIFS": "TDE vs base", "logit-adjusted vs MOTIFS": r"LA$_{1}$ vs base",
+             "IETrans vs MOTIFS": "IETrans vs base", "TDE vs logit-adjusted": r"TDE vs LA$_{1}$",
+             "class-only vs FREQ": "class vs FREQ", "geometry vs class-only": "geometry vs class",
+             "CLIP vs class-only": "CLIP vs class", "CLIP vs geometry": "CLIP vs geometry"}
+    lines = [r"\begin{tabular}{@{}lrrlrrl@{}}", r"\toprule",
+             r"& \multicolumn{3}{c}{benchmark labels} & \multicolumn{3}{c}{uniform within cells} \\",
+             r"\cmidrule(lr){2-4}\cmidrule(l){5-7}",
+             r"Comparison & group & case & case 95\% CI & group & case & case 95\% CI \\", r"\midrule"]
+    for k, r in enumerate(d["rows"]):
+        o, s_ = r["original"], r["shifted"]
+        if k == 4:
+            lines.append(r"\midrule")
+        lines.append(f"{short[r['comparison']]} & ${f5(o['group'])}$ & ${f5(o['case'])}$ & {ci5(o['case_ci'])} & "
+                     f"${f5(s_['group'])}$ & ${f5(s_['case'])}$ & {ci5(s_['case_ci'])} \\\\")
+    lines += [r"\midrule", r"& \multicolumn{3}{c}{$\Delta$AUC, benchmark labels} & "
+              r"\multicolumn{3}{c}{$\Delta$AUC, uniform within cells} \\", r"\midrule"]
+    for v, lab in (("TDE", "TDE vs base"), ("la1", r"LA$_{1}$ vs base"), ("ietrans", "IETrans vs base")):
+        a = d["auc_sgg"][v]
+        lines.append(f"{lab} & \\multicolumn{{3}}{{l}}{{${f4(a['original']['difference'])}$ "
+                     f"{ci(a['original']['ci'])}}} & \\multicolumn{{3}}{{l}}{{${f4(a['shifted']['difference'])}$ "
+                     f"{ci(a['shifted']['ci'])}}} \\\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
+def predicate_merge():
+    d = json.loads((RES / "predicate_merge.json").read_text())
+    lab = {"TDE": "TDE", "la1": r"LA$_{1}$", "ietrans": "IETrans"}
+    lines = [r"\begin{tabular}{@{}llrlrlrrl@{}}", r"\toprule",
+             r"Merge & vs base & case & 95\% CI & case, single & $\Delta$AUC [95\% CI] & "
+             r"$\Delta mR$ & group & case [95\% CI] \\", r"\midrule"]
+    for k, (mname, res) in enumerate(d["merges"].items()):
+        for j, v in enumerate(("TDE", "la1", "ietrans")):
+            r = res[v]
+            a, b = r["matched quadratic, all"], r["matched quadratic, single annotation"]
+            m, au = r["mR@50"], r["auc"]
+            first = f"{mname} ({res['n_classes']})" if j == 0 else ""
+            lines.append(f"{first} & {lab[v]} & ${f5(a['case'])}$ & {ci5(a['case_ci'])} & ${f5(b['case'])}$ & "
+                         f"${f4(au['difference'])}$ {ci(au['ci'])} & ${f4(m['total'])}$ & ${f4(m['group'])}$ & "
+                         f"${f4(m['case'])}$ {ci(m['case_ci'])} \\\\")
+        if k < 2:
+            lines.append(r"\midrule")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
+def clip_zeroshot():
+    d = json.loads((RES / "clip_zeroshot_audit.json").read_text())
+    name = {"CLIP0": "zero-shot CLIP", "CLIP0+FREQ": "zero-shot CLIP + FREQ", "MOTIFS": "MOTIFS",
+            "TDE": "TDE", "FREQ": "FREQ"}
+    lines = [r"\begin{tabular}{@{}lrrrlrl@{}}", r"\toprule",
+             r"Comparison & $\Delta T$ & group & case & case 95\% CI & case (log) & 95\% CI \\",
+             r"\midrule"]
+    for r in d["rows"]:
+        b, lg = r["brier"], r["log"]
+        lines.append(f"{name[r['new']]} vs {name[r['old']]} & ${f5(b['total'])}$ & ${f5(b['group'])}$ & "
+                     f"${f5(b['case'])}$ & {ci5(b['case_ci'])} & ${f5(lg['case'])}$ & {ci5(lg['case_ci'])} \\\\")
+    lines += [r"\midrule", r"Model & \multicolumn{2}{r}{top-1 acc.} & \multicolumn{2}{r}{within-cell AUC} & "
+              r"\multicolumn{2}{r}{$T^*$} \\", r"\midrule"]
+    for k in ("CLIP0", "CLIP0+FREQ", "FREQ", "MOTIFS", "TDE"):
+        auc = d["auc"].get(k, d["auc"]["CLIP0"] if k == "CLIP0+FREQ" else None)
+        lines.append(f"{name[k]} & \\multicolumn{{2}}{{r}}{{{d['accuracy'][k]:.4f}}} & "
+                     f"\\multicolumn{{2}}{{r}}{{{auc:.4f}}} & \\multicolumn{{2}}{{r}}{{{d['temperatures'][k]:.2f}}} \\\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
 def main():
     head = "% generated by experiments/make_cvpr_recall_tables.py -- do not edit\n"
     (OUT / "tab_recall_split.tex").write_text(head + recall_split() + "\n")
@@ -250,6 +352,10 @@ def main():
     (OUT / "tab_ietrans_protocols.tex").write_text(head + ietrans_protocols() + "\n")
     (OUT / "tab_vg_seeds.tex").write_text(head + vg_seeds() + "\n")
     (OUT / "tab_proper_configs.tex").write_text(head + proper_configs() + "\n")
+    (OUT / "tab_split_robustness.tex").write_text(head + split_robustness() + "\n")
+    (OUT / "tab_label_shift.tex").write_text(head + label_shift() + "\n")
+    (OUT / "tab_predicate_merge.tex").write_text(head + predicate_merge() + "\n")
+    (OUT / "tab_clip_zeroshot.tex").write_text(head + clip_zeroshot() + "\n")
     print("wrote", ", ".join(p.name for p in sorted(OUT.glob("tab_*.tex"))))
 
 

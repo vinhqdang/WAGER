@@ -141,6 +141,16 @@ $(n_c-1)/n_c$.
 \end{proposition}
 
 \subsection{Inference}
+With $\bar A_i=(n_c-1)^{-1}\sum_{j\ne i}A_{ij}$, the H\'ajek influence contribution of case
+$i$ is
+\begin{equation}
+\widehat\psi_i=2\bar A_i-\hdR_c-\hdR,
+\label{eq:influence}
+\end{equation}
+summed within each image for the one-way cluster-robust sandwich variance. A randomization
+test that cyclically shifts labels within every cell is a secondary, relation-level
+diagnostic (\cref{app:random}).
+
 \begin{theorem}[Asymptotic normality of the covariance-gain estimator]\label{thm:clt}
 Suppose (i) $H_x(y)\in[-M,M]$ for all $x,y$; (ii) examples are partitioned into clusters
 $g=1,\dots,G$ (e.g.\ images) that are mutually independent, with cluster sizes having a

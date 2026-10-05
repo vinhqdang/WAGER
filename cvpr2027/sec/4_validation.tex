@@ -4,12 +4,11 @@ A released checkpoint cannot validate the split, because what the model can see 
 We validate it where the answer is known, first in simulation and then on Visual Genome
 predictors whose information content we control. All intervals are 95\%.
 
-\paragraph{Simulation.}\label{sec:simulation} We draw 24 cells over five labels with
-Dirichlet label distributions, take the old model to be exactly the cell prior, and let the
-new one interpolate towards an oracle. The estimated case-level gain grows linearly with the
-injected signal. Under a null that perturbs the prior predictions and reassigns them within
-cells, the randomization test rejects in $0.030$ of 200 datasets at level $0.05$, with mean
-estimate $-8.97\times10^{-5}$. For the interval we use on real data, we simulate relations
+\paragraph{Simulation.}\label{sec:simulation} With 24 cells over five labels, an old model
+equal to the cell prior and a new one interpolating towards an oracle, the estimated
+case-level gain grows linearly with the injected signal; under a within-cell null the
+randomization test rejects in $0.030$ of 200 datasets at level $0.05$ (mean estimate
+$-8.97\times10^{-5}$). For the interval we use on real data, we simulate relations
 clustered into images with a shared per-image effect and Zipf-distributed cell sizes, most
 cells holding two cases: the image-clustered interval covers in $94.0\%$ of 500 runs, against
 $88.6\%$ for an interval that treats relations as independent.
@@ -23,8 +22,7 @@ signal relative to the declared grouping, shortcut or not. And a \emph{calibrati
 change, where the new model is a temperature-softened copy of an overconfident one carrying
 identical case-level information, is credited a large spurious case-level \emph{loss} of
 $-0.488$ on raw outputs, which the confidence-matching protocol of \cref{sec:matching}
-reduces to $-0.0003$ (sd $0.0017$). That last design is why the protocol is part of the
-procedure.
+reduces to $-0.0003$ (sd $0.0017$), which is why that protocol is part of the procedure.
 
 \paragraph{Controlled predictors on VG150.}\label{sec:data} We train predicate classifiers whose inputs we control on a VG150-style split we
 reconstruct from the released Visual Genome annotations, with the same 150-object and
@@ -34,7 +32,7 @@ its test set is larger; models trained here from annotations need not reproduce 
 split. The predictors are: a frequency table that sees only the class
 pair (FREQ), an MLP on class embeddings (MLP-CLASS), and MLPs adding twelve box-geometry
 features (MLP-SPATIAL, MLP-SPATIAL+). The audit covers $227{,}337$ of $229{,}605$ test
-relations, $99.0\%$, in $6{,}346$ identified class-pair cells.
+relations ($99.0\%$) in $6{,}346$ class-pair cells.
 
 MLP-CLASS beats FREQ by $0.03386$ of quadratic score and the split assigns \emph{all} of it
 to the group-level part: the case-level gain is $0.00000$ with a zero-width interval

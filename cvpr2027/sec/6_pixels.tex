@@ -21,32 +21,38 @@ intervals.
 A larger case-level part is not the same as better ranking, and here the two disagree. With
 each model's prior matched within cells, the CLIP model still ranks the correct predicate
 first less often than the geometry model: top-1 accuracy $2.17$ points lower, MRR $1.67$
-lower, recall@5 $1.07$ lower. Its probability moves towards the correct predicate within a
-pair more than the geometry model's does, but not by enough, often enough, to overtake it.
-So the CLIP model carries more case-level covariance without being the better ranker. The
+lower, recall@5 $1.07$ lower. So the CLIP model carries more case-level covariance without being the better ranker. The
 within-cell AUC, which no calibration or prior shift can move, does not settle it either way:
 $0.5408$ against $0.5323$, a difference of $+0.0085$ with interval $[-0.0062,+0.0214]$, while
-both models clear the class-only model's $0.5$ by $+0.0408$ and $+0.0323$. The CLIP model's
-case-level advantage is real in the covariance the split measures; that it is better
-recognition is not established.
+both models clear the class-only model's $0.5$ by $+0.0408$ and $+0.0323$. Its case-level
+advantage is real covariance; that it is better recognition is not established.
 
 \paragraph{Seeds.} Over five training seeds (seed $0$ reproduces the predictions above
 exactly; \cref{app:vgseeds}), the CLIP model's matched case-level advantage over geometry stays
 between $+0.00413$ and $+0.00474$, every interval excluding zero, its accuracy stays below
 geometry's, and its AUC difference is positive in all five but excludes zero in one. Adding
 the CLIP features to geometry, rather than replacing it, doubles that advantage ($+0.00807$ to
-$+0.00949$).
+$+0.00949$). Zero-shot, with prompts and no training on Visual Genome, CLIP carries little of
+this: on the canonical relations of \cref{sec:sggaudit} its within-cell AUC is $0.5164$ against
+MOTIFS's $0.5705$, and its case-level part over the frequency prior $+0.00046$ against
+$+0.02943$ (\cref{app:zeroshot}).
 
-Two checks support this reading. Post-hoc correction of a model's label prior should move
-only the group-level part, and it does: $+0.02390$ group-level against $+0.00114$ case-level.
-Applied to the CLIP model it halves the aggregate deficit, from $-0.04642$ to $-0.02138$,
-while the case-level advantage persists ($+0.00754$; $+0.00664$ with both models corrected).
+\paragraph{Under a label shift.} A label shift should move group-level parts and only
+reweight case-level ones (\cref{sec:method}). We test this by weighting the test relations so
+that every predicate of an object pair is equally frequent (\cref{app:labelshift}). Across the
+eight comparisons of \cref{sec:sggaudit} and this section, seven group-level parts change sign,
+and the totals follow: the CLIP model now beats geometry by $+0.02478$. Five of the six
+case-level parts that excluded zero keep their sign and grow. The exceptions are TDE's: against
+the baseline its null becomes $+0.01430$, interval $[+0.01144,+0.01632]$, and against the
+control $-0.00398$ becomes $+0.00723$, while the AUC separates it from the baseline at neither
+mix. TDE gains discrimination between some predicate pairs and loses it between others, and the
+benchmark's label mix weights the two to zero.
 
 \paragraph{Beyond scene graphs.}\label{sec:further} Nothing in \cref{sec:method} is specific
 to relations, and the supplementary applies the identical estimator to long-tailed image
-classification on CIFAR-100-LT across seeds and imbalance ratios, with superclasses as the
+classification on CIFAR-100-LT across seeds and imbalance ratios, with label-derived superclasses beside a global cell as the
 grouping, and to long-tailed text classification. On CIFAR-100-LT two standard re-weighting
-schedules turn out to have opposite compositions once confidence is matched, reversing what
+schedules have opposite compositions once confidence is matched, reversing what
 their raw scores suggest about both. The constraint on the grouping bites here: the fine
 class label cannot serve as a cell, because it leaves every cell label-homogeneous and
 forces the case-level part to zero by construction --- an artefact that reads exactly like a

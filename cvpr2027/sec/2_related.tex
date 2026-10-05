@@ -4,15 +4,22 @@
 Scene graph generation was posed as structured prediction over a whole image, solved by
 message passing between object and relation nodes~\cite{xu2017scene}; MOTIFS then showed a
 frequency predictor of the predicate given the object pair to be surprisingly
-competitive~\cite{zellers2018neural}. Mean recall became the headline metric, and the causal TDE
-intervention was introduced, to reduce that dependence~\cite{tang2020unbiased}; a long line of debiasing work
-has followed~\cite{kuang2024debiasing,luo2025rebalancing}, and the metrics themselves have
+competitive~\cite{zellers2018neural}. Mean recall became the headline metric, and debiasing methods now span the causal TDE
+intervention~\cite{tang2020unbiased}, loss re-weighting and group-wise
+learning~\cite{desai2021learning,dong2022stacked}, predicate-rebalancing message
+passing~\cite{li2021bgnn}, relabelling of the training data~\cite{zhang2022finegrained}
+and, outside scene graphs, post-hoc logit adjustment~\cite{menon2021long}; the line
+continues~\cite{kuang2024debiasing,luo2025rebalancing}, and the metrics themselves have
 been shown to reward pathologies~\cite{li2022rethinking}, a diagnosis that recurs in
 open-vocabulary settings~\cite{li2024pixels}. Benchmark audits outside scene graphs find the
 same pattern: VQA models collapse when answer priors change between train and
 test~\cite{agrawal2018dont}, GQA-OOD stratifies accuracy by answer rarity within question
 groups~\cite{kervadec2021roses}, and multimodal models exploit non-visual
-shortcuts~\cite{geirhos2020shortcut,zhou2025shortcut}. Long-tailed recognition faces the
+shortcuts~\cite{geirhos2020shortcut,zhou2025shortcut}. Gains can also be credited to a
+mechanism that did not produce them: grounding-based VQA methods keep their
+out-of-distribution improvement when the grounding signal is
+irrelevant~\cite{shrestha2020negative}, and methods can exploit how an
+out-of-distribution split was built~\cite{teney2020value}. Long-tailed recognition faces the
 same question for re-weighting and logit adjustment~\cite{cao2019learning,menon2021long}.
 All of these characterise a \emph{single} model. We attribute the gain \emph{between} two.
 
@@ -24,7 +31,10 @@ due to Yates~\cite{yates1982external}, which a monotone recalibration moves whil
 classical resolution is invariant to it. The two coincide only when both models are
 calibrated within every group. Variance estimators exist for single-model
 decompositions~\cite{siegert2014variance}, but not for a contrast between two models
-scored on the same data.
+scored on the same data. The grouping loss~\cite{perezlebel2023beyond} is the
+single-model relative of our case-level part: what calibration leaves behind because
+inputs sharing a confidence level differ; ours contrasts two models within groups
+declared in advance.
 
 \paragraph{Comparing two predictors.} Inference on a paired score difference is the
 Diebold--Mariano test~\cite{diebold1995comparing} and its conditional

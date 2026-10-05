@@ -28,11 +28,22 @@ def text(p):
                           capture_output=True, text=True).stdout
 supp = next(p for p in range(1, n + 1) if "Supplementary Material" in text(p))
 refs = next(p for p in range(1, supp) if "\nReferences\n" in "\n" + text(p))
-# The reference list may start part-way down a page; that page still counts towards the
-# eight only if paper text sits above the heading.
-first = text(refs)
-before = first.split("References")[0].strip()
-content_pages = refs if before else refs - 1
+# The reference list may start part-way down a page; that page counts towards the eight
+# only if paper text sits above the heading. pdftotext's plain mode does not keep column
+# order, so read the page in layout mode: a heading in the right column means the left
+# column is paper text; a heading in the left column counts the page only if text other
+# than the running header and ruler numbers sits above it in that column.
+import re
+lay = subprocess.run(["pdftotext", "-f", str(refs), "-l", str(refs), "-layout", "main.pdf", "-"],
+                     capture_output=True, text=True).stdout.splitlines()
+row = next(k for k, l in enumerate(lay) if re.search(r"(^|\s)References\s*($|\s{2})", l))
+col = lay[row].index("References")
+noise = re.compile(r"\d+|CVPR|#\*+|CVPR \d{4} Submission.*")
+if col > 40:
+    content_pages = refs
+else:
+    above = [l[:col + 45].strip() for l in lay[:row]]
+    content_pages = refs if any(a and not noise.fullmatch(a) for a in above) else refs - 1
 subprocess.run(["qpdf", "main.pdf", "--pages", "main.pdf", f"1-{supp-1}", "--", "paper.pdf"], check=True)
 subprocess.run(["qpdf", "main.pdf", "--pages", "main.pdf", f"{supp}-{n}", "--", "supp.pdf"], check=True)
 print(f"paper.pdf  {supp-1} pages: {content_pages} of content, references from page {refs}")

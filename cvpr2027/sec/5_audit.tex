@@ -3,15 +3,12 @@
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig2_where_gains_live.pdf}
-\caption{\textbf{Where each proper-score gain in this paper lives}, under the quadratic
-score. (a) Every comparison's total gain $\hdT$ (diamond) split into its group-level part
-$\hdP$ and case-level part $\hdR$; the two parts sum to the total exactly. (b) The
-case-level part alone with its image-clustered 95\% interval. Two models built from the
-class pair alone differ by a purely group-level gain, as \cref{thm:population} forces. Box
-geometry and CLIP crops each buy a significant case-level gain, the CLIP model despite
-losing on the total. TDE's large proper-score change is group-level, with a case-level part
-whose interval straddles zero. The CLIP and TDE rows are confidence-matched on held-out
-images.}
+\caption{\textbf{Where each proper-score gain lives} (quadratic score). (a) Total gain
+$\hdT$ (diamond) split exactly into group-level $\hdP$ and case-level $\hdR$. (b)
+$\hdR$ with its image-clustered 95\% interval. Class-pair-only models differ purely at
+group level (\cref{thm:population}); geometry and CLIP crops buy case-level gain, CLIP
+despite losing overall; TDE's change is group-level. CLIP and TDE rows are
+confidence-matched.}
 \label{fig:where}
 \end{figure*}
 
@@ -97,8 +94,7 @@ Against it, TDE's case-level part is $-0.0008$, interval $[-0.0050,+0.0033]$. So
 case-level part of a thresholded metric is not by itself evidence of new discrimination.
 When the boundary between \textsf{on} and \textsf{parked on} moves, the cases that cross it
 are those the baseline already scored as more \textsf{parked on}-like, and they are more
-often labelled so; the covariance of hit gains with labels is real, but it was bought with
-discrimination the baseline had. The direct test is the within-cell AUC, which no prior
+often labelled so; the covariance is real, but bought with discrimination the baseline had. The direct test is the within-cell AUC, which no prior
 shift or recalibration can move: TDE's change is $+0.0026$, interval $[-0.0028,+0.0086]$.
 
 \paragraph{The proper score agrees.} With each model's temperature fitted on held-out
@@ -109,14 +105,19 @@ group-level $-0.59157$. Against the control the two scores disagree in sign ($-0
 quadratic, $+0.0154$ log, both intervals excluding zero), and the control's own case-level
 parts ($+0.0039$, $+0.0285$) show that the proper-score split, too, responds to the
 operating point (\cref{app:recall}). Unmatched outputs and a coarser grouping give different
-answers; all configurations are in \cref{app:recall}.
+answers; all configurations are in \cref{app:recall}. Over 20 calibration halves TDE's
+quadratic case-level part stays within $[-0.00131,+0.00059]$, never significantly positive; a
+temperature shared by both models makes it negative (\cref{app:splits}). Merging synonymous
+predicates (32 classes) or collapsing them into three families leaves it null and IETrans's
+negative (\cref{app:merge}).
 
 \paragraph{What that licenses.} On this checkpoint, the ten points of mean recall are a change
 in which predicates the model favours within each object pair. Everything they did --- the
 gain, its split, its tier profile --- a one-line prior shift that ranks the relations of
 every cell exactly as the baseline did also does, at under a tenth of TDE's cost in $R@50$ ($0.0175$ against $0.2023$). Measured
 against that control, neither recall nor the threshold-free AUC finds any within-cell
-discrimination TDE gained, and the two proper scores split on its sign.
+discrimination TDE gained at the benchmark's label mix (\cref{sec:vgvisual}), and the two
+proper scores split on its sign.
 
 \paragraph{Why.} TDE's change from the baseline is three subtractions, and splitting along
 them answers why; the parts add up to TDE's exactly (\cref{app:tdepath}). Removing the
@@ -140,5 +141,5 @@ group-level. Its case-level part does not improve and, on both proper scores, fa
 matched case-level parts $-0.0162$ (quadratic) and $-0.0544$ (log), intervals
 excluding zero; the AUC change is $-0.0093$, interval $[-0.0181,+0.0004]$, points the same way
 without excluding zero. The split separates the two methods: both gains are group-level,
-TDE's with no case-level change, IETrans's with a case-level loss. IETrans released no baseline of its own, so
-this compares it with a model of the same family trained separately.
+TDE's with no case-level change, IETrans's with a case-level loss. With no IETrans baseline released, this
+compares it with a separately trained model of its family.

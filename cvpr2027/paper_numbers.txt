@@ -2,20 +2,15 @@
 # supplementary. Written by verify_manuscript_numbers.py
 # --freeze-paper-scope from a state in which every check passed.
 CLIP alignment gain
-CLIP total gain
 auc LA-base
 auc TDE-LA lo
 auc TDE-base
 auc TDE-base hi
 auc TDE-base lo
 bridge clip pm acc drop
+bridge spatial acc pts
 bridge spatial dR
-consequence VISUAL' dP
-consequence VISUAL' dR
-consequence both-corrected dR
 consequence cal-matched dR
-consequence corrected dR
-consequence corrected dT
 cvpr CLASS-FREQ dR
 cvpr CLASS-FREQ dT
 cvpr CLASS-FREQ p
@@ -43,9 +38,6 @@ cvpr TDE ng-mR@50
 cvpr VG coverage
 cvpr VG identified cells
 cvpr base ng-mR@50
-cvpr both corrected dR
-cvpr corrected dR
-cvpr corrected deficit
 cvpr geometry accuracy
 cvpr geometry-class dR
 cvpr identified cells
@@ -56,8 +48,6 @@ cvpr matched log dP
 cvpr matched quad dR ci hi
 cvpr matched quad dR ci lo
 cvpr matched quad dT
-cvpr prior correction dP
-cvpr prior correction dR
 cvpr robustness value
 cvpr sim calib matched sd
 cvpr sim null mean x1e5
@@ -81,6 +71,9 @@ iet mR@50 standard
 iet points
 iet quad case
 iet tail
+merge LA auc max
+merge syn TDE case
+merge synonym classes
 path avg AUC
 path avg dmR
 path avg-ctx corr log prior
@@ -120,6 +113,7 @@ rec n body
 rec n head
 rec n relations
 rec n tail
+rec ng TDE-LA case
 rec on loss
 rec parked on after
 rec parked on before
@@ -145,12 +139,21 @@ sgg cal log dR
 sgg n cells
 sgg n images
 sgg tde mR@50
+shift CLIP-geo total
+shift TDE auc original
+shift TDE case
+shift TDE case hi
+shift TDE case lo
+shift TDE-LA case
+shift TDE-LA case shifted
 sim calib matched dR
 sim calib raw dR
 sim coverage clustered
 sim coverage iid
 sim prior-only dR
 sim shortcut dR
+splits TDE quad max
+splits TDE quad min
 vrank CLIP auc
 vrank CLIP vs class
 vrank diff
@@ -158,3 +161,7 @@ vrank diff hi
 vrank diff lo
 vrank geometry auc
 vrank geometry vs class
+zs MOTIFS auc
+zs MOTIFS case vs FREQ
+zs auc
+zs case vs FREQ

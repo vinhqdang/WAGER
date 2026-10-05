@@ -684,12 +684,9 @@ Two things about condition (iv) deserve saying plainly rather than in a footnote
 what licenses treating the per-cell plug-ins $\widehat{\Delta R}_c$ as consistent for
 $\Delta R_c$ in the variance argument, and a cell's size is not controlled by the
 aggregate identified count, so this needs its own divergence requirement. But it also
-forces every cell to be eventually identified, hence $N_*/N\to1$: an earlier version of
-this theorem additionally assumed an identified fraction converging to some
-$\kappa\in(0,1]$, which condition (iv) makes vacuous, and under which the
-identified-subpopulation estimand $\theta$ would in any case coincide with the
-unconditional target. We have therefore dropped that assumption rather than state two
-conditions that cannot both bind. The price is that the theorem does not describe the
+forces every cell to be eventually identified, hence $N_*/N\to1$, so no separate
+assumption on the identified fraction is needed, and the identified-subpopulation estimand
+$\theta$ coincides with the unconditional target. The price is that the theorem does not describe the
 regime the paper's own applications sit in, where $\theta$ is a random, $N$-dependent
 target because coverage is short of one ($99.0\%$ on VG150, $98.9\%$ in
 Section~\ref{sec:sggaudit}). What the theorem licenses is the interval's form and its
@@ -719,9 +716,8 @@ estimator. This theorem licenses reading the image-clustered intervals reported
 throughout Section~\ref{sec:exp} as asymptotically valid in the idealized regime where
 every eligible cell's size grows without bound. That regime is not attained in-sample:
 VG150's eligible cells are heavy-tailed, and $2{,}286$ of the $6{,}346$ eligible
-class-pair cells hold fewer than five examples (Table~\ref{tab:sensitivity}). The
-proportion is smaller than earlier drafts of this paper asserted --- those cells carry
-$2.7\%$ of identified relations, and the median eligible cell holds appreciably more than
+class-pair cells hold fewer than five examples (Table~\ref{tab:sensitivity}). Those
+cells carry only $2.7\%$ of identified relations, and the median eligible cell holds appreciably more than
 the minimum --- but a third of the cells still sit where condition (iv)'s divergence is
 plainly hypothetical. The reported $94.0\%$ empirical coverage against a nominal $95\%$
 (Section~\ref{sec:simulation}), not this theorem directly, is therefore the evidence that
@@ -753,8 +749,8 @@ The first and third partitions are equally fine, both fully identified, and they
 about whether this model pair's improvement is entirely case-level or entirely
 transported. The third is the degenerate case the paper already warns about --- grouping
 by something that determines the label leaves each cell label-homogeneous and drives
-$\widehat{\Delta R}$ to zero algebraically --- but the warning was previously attached to
-the choice $\phi=Y$, and the point here is more general and less comfortable: any $\phi$
+$\widehat{\Delta R}$ to zero algebraically --- but that warning concerns the choice
+$\phi=Y$, and the point here is more general and less comfortable: any $\phi$
 correlated with the label inside a cell partially degenerates the estimand, ``finest
 defensible'' cannot detect it, and Proposition~\ref{prop:coarsen} is silent because
 neither partition is a coarsening of the other. What the analyst actually needs to
@@ -784,12 +780,11 @@ could choose.
 % --- statements relocated from the method section for length ---
 
 
-Earlier versions of this corollary bounded $\sum_y\operatorname{Var}(b_y\mid c)$ by
-Popoviciu's inequality applied label by label, giving $K/4$ and hence $|\rho|KM/2$. That
-discards Eq.~\eqref{eq:simplex-var}: the $b_y$ are not $K$ unconstrained quantities in
-$[0,1]$ but a point on the simplex, and $K/4$ is unattainable for $K>2$. At VG150's
-$K=50$ and $M=2$ the corrected free bound is $14.00|\rho|$ rather than $50.00|\rho|$, a
-factor of $3.57$.
+Bounding $\sum_y\operatorname{Var}(b_y\mid c)$ label by label with Popoviciu's inequality
+would give $K/4$ and hence $|\rho|KM/2$, but that discards Eq.~\eqref{eq:simplex-var}: the
+$b_y$ are not $K$ unconstrained quantities in $[0,1]$ but a point on the simplex, and $K/4$
+is unattainable for $K>2$. At VG150's $K=50$ and $M=2$ the free bound is $14.00|\rho|$
+against the label-by-label $50.00|\rho|$, a factor of $3.57$.
 
 An analyst willing to bound $|\rho|\le\bar\rho$ -- how strongly an unrecorded variable
 could jointly move a model's within-cell score gain and the within-cell label
@@ -1214,7 +1209,11 @@ $\widehat{\Delta R}$ would come out identically zero -- an algebraic artifact we
 appearance of a finding. CIFAR-100's own 20 coarse superclasses avoid this, each
 gathering five fine labels into a cell of $500$ balanced test images, which is
 structurally the situation of a VG class-pair cell holding several predicates
-(Figure~\ref{fig:samples}). Alongside the superclass audit we report two further
+(Figure~\ref{fig:samples}). Unlike a class pair, though, a superclass is a function of the
+label, not of the input, and no model observes it at test time: the superclass rows show how
+the estimator behaves under a label-derived grouping, not an audit of a feature both models
+condition on. The input-grounded row is the global cell, which every model trivially
+observes. Alongside the superclass audit we report two further
 declared priors: the trivial coarsening to a single global cell, which audits against
 the global class marginal and so instantiates Proposition~\ref{prop:coarsen} in a second
 domain, and a partition into head, medium and tail training-frequency tiers. CIFAR-100
@@ -1466,8 +1465,9 @@ Newsgroups' 20 fine categories, keeping the standard balanced test split ($7{,}5
 documents) untouched (Section~\ref{app:implementation}). The 20 categories fall into
 six conventional coarse topics -- computing, recreation, science, politics, religion,
 and classifieds -- which we use as the primary declared $\phi$, the direct analogue of
-CIFAR's coarse superclasses; a global (trivial) and a training-frequency-tier partition
-are reported alongside, as in Section~\ref{app:lt}. Documents are represented by a
+CIFAR's coarse superclasses and, like them, a function of the label rather than of the
+input; the global (trivial) cell, the input-grounded row, and a training-frequency-tier
+partition are reported alongside, as in Section~\ref{app:lt}. Documents are represented by a
 TF-IDF vector reduced to $300$ dimensions by truncated SVD, and the three compared
 classifiers -- CE, CB, and DRW -- follow the same three-arm protocol as
 Section~\ref{app:lt}: an identical small MLP architecture and optimizer across runs,

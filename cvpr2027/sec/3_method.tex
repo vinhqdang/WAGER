@@ -47,23 +47,17 @@ due to Yates~\cite{yates1982external} and generalises: for every Bregman score, 
 log score, $\dR_c$ is the same covariance with $\Delta q_y$ replaced by the contrast of the
 $y$-th gradient coordinate (\cref{thm:bregman}). All proofs are in the supplementary.
 
-\paragraph{Why it matters which part a gain is in.} One cell, four cases, three labelled 1
-and one labelled 2; the old model predicts $(\tfrac12,\tfrac12)$ for all four. Model A
-predicts $(\tfrac34,\tfrac14)$ for every case --- the cell's frequencies. Model B predicts
-$(\tfrac34,\tfrac14)$ for the three label-1 cases and $(\tfrac14,\tfrac34)$ for the label-2
-case: the same distance from the old model, but pointed at each case's own label. Under the
-quadratic score A gains $+\tfrac18$, all of it group-level, and B gains $+\tfrac38$ with a
-case-level part of $+\tfrac12$. Now let deployment see this cell's labels in proportions
-$(\tfrac14,\tfrac34)$ instead, a label shift. Reweighting each case by $p'(y)/p(y)$ sends A
-to $-\tfrac38$ --- worse than the model it replaced, with not one prediction changed --- and
-leaves B at $+\tfrac38$. The split said in advance which gain was exposed. With $m_y(z)=\mathbb E[H_X(z)\mid Y=y,C=c]$,
-the case-level part is a sum over label pairs,
-$\dR_c=\sum_{y<z}p(y)p(z)\,D(y,z)$ with $D(y,z)=m_y(y)-m_y(z)+m_z(z)-m_z(y)$, and a label
-shift leaves every $D$ fixed and changes only the weights. With two labels, as here, a shift
-can rescale the case-level part but never reverse it; with three or more it can
-(\cref{app:worked}). A case-level gain is therefore less exposed to a shift than a group-level
-one, not immune to it. That is the operational reason to want them apart. (\Cref{app:worked} works the
-example through.)
+\paragraph{Why it matters which part a gain is in.} In one cell with three cases labelled 1
+and one labelled 2, against an old model predicting $(\tfrac12,\tfrac12)$, a model predicting
+the cell's frequencies $(\tfrac34,\tfrac14)$ for every case gains $+\tfrac18$ of quadratic
+score, all group-level; a model equally far from the old one but pointed at each case's own
+label gains $+\tfrac38$, with a case-level part of $+\tfrac12$. Shift the cell's labels to
+$(\tfrac14,\tfrac34)$ and the first falls to $-\tfrac38$, worse than the model it replaced,
+while the second stays at $+\tfrac38$. In general, with
+$m_y(z)=\mathbb E[H_X(z)\mid Y=y,C=c]$, $\dR_c=\sum_{y<z}p(y)p(z)\,D(y,z)$ where
+$D(y,z)=m_y(y)-m_y(z)+m_z(z)-m_z(y)$: a label shift fixes every $D$ and moves only the
+weights, so a case-level gain is less exposed to a shift than a group-level one, though with
+three or more labels it can still reverse (\cref{app:worked}).
 
 \paragraph{Estimator.} In a cell with $n_c\ge2$ cases, write $H_i(y)=H_{x_i}(y)$ and estimate
 \begin{gather}
@@ -89,18 +83,12 @@ so the whole estimator costs $O(NK)$ on cached predictions, with no fitted model
 fold or smoothing parameter. Cells are weighted by size; singletons cannot identify a
 within-cell counterfactual and are excluded and reported.
 
-\paragraph{Inference.}\label{sec:inference} With $\bar A_i=(n_c-1)^{-1}\sum_{j\ne i}A_{ij}$,
-the H\'ajek influence contribution of case $i$ is
-\begin{equation}
-\widehat\psi_i=2\bar A_i-\hdR_c-\hdR.
-\label{eq:influence}
-\end{equation}
-We sum $\widehat\psi_i$ within each image and use the one-way cluster-robust sandwich
-variance, since relations from one photograph are not independent. The estimator is
-asymptotically normal under bounded scores and non-dominating clusters (\cref{thm:clt}); at a
-single cell, the total-gain interval \emph{is} a clustered Diebold--Mariano
-test~\cite{diebold1995comparing} (\cref{cor:dm}). A randomization test that cyclically shifts
-labels within every cell is a secondary, relation-level diagnostic.
+\paragraph{Inference.}\label{sec:inference} The H\'ajek influence contributions of the
+U-statistic (\cref{app:influence}), summed within each image, give one-way cluster-robust
+intervals, since relations from one photograph are not independent; the estimator is
+asymptotically normal under bounded scores and non-dominating clusters (\cref{thm:clt}),
+and at a single cell the total-gain interval is a clustered Diebold--Mariano
+test~\cite{diebold1995comparing} (\cref{cor:dm}).
 
 \paragraph{Confidence matching.}\label{sec:matching} One property of the split must be part of
 the procedure rather than a caveat. Because $\dR$ is a covariance between probability

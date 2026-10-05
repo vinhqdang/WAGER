@@ -501,6 +501,135 @@ if not _ok:
     print("FAIL seeds claims (seed 0 exact; intervals; accuracy below; AUC 5/5 positive, 1/5 "
           "excluding zero; 'doubles')"); sys.exit(1)
 
+_ls = load("label_shift.json")
+_lr = {r["comparison"]: r for r in _ls["rows"]}
+_lt, _ll = _lr["TDE vs MOTIFS"], _lr["TDE vs logit-adjusted"]
+_la = _ls["auc_sgg"]["TDE"]
+CHECKS += [
+    ("shift CLIP-geo total", "6_pixels.tex", "+0.02478", _lr["CLIP vs geometry"]["shifted"]["total"], 1e-5),
+    ("shift TDE case", "6_pixels.tex", "+0.01430", _lt["shifted"]["case"], 1e-5),
+    ("shift TDE case lo", "6_pixels.tex", "+0.01144", _lt["shifted"]["case_ci"][0], 1e-5),
+    ("shift TDE case hi", "6_pixels.tex", "+0.01632", _lt["shifted"]["case_ci"][1], 1e-5),
+    ("shift TDE-LA case", "6_pixels.tex", "-0.00398", _ll["original"]["case"], 1e-5),
+    ("shift TDE-LA case shifted", "6_pixels.tex", "+0.00723", _ll["shifted"]["case"], 1e-5),
+    ("shift class-FREQ group", "5_robust.tex", "-0.01412", _lr["class-only vs FREQ"]["original"]["group"], 1e-5),
+    ("shift class-FREQ group shifted", "5_robust.tex", "-0.00180", _lr["class-only vs FREQ"]["shifted"]["group"], 1e-5),
+    ("shift geo case", "5_robust.tex", "+0.00882", _lr["geometry vs class-only"]["original"]["case"], 1e-5),
+    ("shift geo case shifted", "5_robust.tex", "+0.01152", _lr["geometry vs class-only"]["shifted"]["case"], 1e-5),
+    ("shift CLIP-geo case", "5_robust.tex", "+0.00472", _lr["CLIP vs geometry"]["original"]["case"], 1e-5),
+    ("shift CLIP-geo case shifted", "5_robust.tex", "+0.00619", _lr["CLIP vs geometry"]["shifted"]["case"], 1e-5),
+    ("shift iet case", "5_robust.tex", "-0.01623", _lr["IETrans vs MOTIFS"]["original"]["case"], 1e-5),
+    ("shift iet case shifted", "5_robust.tex", "-0.01830", _lr["IETrans vs MOTIFS"]["shifted"]["case"], 1e-5),
+    ("shift TDE auc", "5_robust.tex", "-0.0183", _la["shifted"]["difference"], 5e-5),
+    ("shift TDE auc lo", "5_robust.tex", "-0.0684", _la["shifted"]["ci"][0], 5e-5),
+    ("shift TDE auc hi", "5_robust.tex", "+0.0082", _la["shifted"]["ci"][1], 5e-5),
+    ("shift TDE auc original", "5_robust.tex", "+0.0026", _la["original"]["difference"], 5e-5),
+]
+_rows8 = _ls["rows"]
+_flip = sum((r["original"]["group"] > 0) != (r["shifted"]["group"] > 0) for r in _rows8)
+_sig = [r for r in _rows8 if r["original"]["case_ci"][0] > 0 or r["original"]["case_ci"][1] < 0]
+_keep = [r for r in _sig if (r["original"]["case"] > 0) == (r["shifted"]["case"] > 0)
+         and abs(r["shifted"]["case"]) > abs(r["original"]["case"])
+         and (r["shifted"]["case_ci"][0] > 0 or r["shifted"]["case_ci"][1] < 0)]
+_ok = (len(_rows8) == 8 and _flip == 7 and len(_sig) == 6 and len(_keep) == 5
+       and [r["comparison"] for r in _sig if r not in _keep] == ["TDE vs logit-adjusted"]
+       and _lt["original"]["case_ci"][0] < 0 < _lt["original"]["case_ci"][1]
+       and _lt["shifted"]["case_ci"][0] > 0 and _ll["shifted"]["case_ci"][0] > 0
+       and all(a["ci"][0] < 0 < a["ci"][1] for a in _la.values())
+       and _lr["CLIP vs geometry"]["shifted"]["total_ci"][0] > 0
+       and abs(_lr["class-only vs FREQ"]["shifted"]["case"]) < 1e-12)
+if not _ok:
+    print("FAIL label-shift claims (7 of 8 group parts flip; 5 of 6 significant case parts keep "
+          "sign and grow; TDE exceptions; AUC covers zero at both mixes)"); sys.exit(1)
+
+_pm = load("predicate_merge.json")
+_mg = _pm["merges"]
+_q = lambda m, v, sub="all": _mg[m][v][f"matched quadratic, {sub}"]
+CHECKS += [
+    ("merge synonym classes", "5_robust.tex", "(32 classes)", "checked below", 0),
+    ("merge single-annotation n", "5_robust.tex", "166{,}940", _pm["n_single_annotation"], 0),
+    ("merge relations n", "5_robust.tex", "183{,}639", _pm["n_relations"], 0),
+    ("merge syn TDE case", "5_robust.tex", "+0.00059", _q("synonym", "TDE")["case"], 1e-5),
+    ("merge syn TDE lo", "5_robust.tex", "-0.00050", _q("synonym", "TDE")["case_ci"][0], 1e-5),
+    ("merge syn TDE hi", "5_robust.tex", "+0.00168", _q("synonym", "TDE")["case_ci"][1], 1e-5),
+    ("merge coarse TDE case", "5_robust.tex", "-0.00015", _q("coarse", "TDE")["case"], 1e-5),
+    ("merge coarse TDE lo", "5_robust.tex", "-0.00095", _q("coarse", "TDE")["case_ci"][0], 1e-5),
+    ("merge coarse TDE hi", "5_robust.tex", "+0.00065", _q("coarse", "TDE")["case_ci"][1], 1e-5),
+    ("merge syn iet case", "5_robust.tex", "-0.01540", _q("synonym", "ietrans")["case"], 1e-5),
+    ("merge coarse iet case", "5_robust.tex", "-0.00761", _q("coarse", "ietrans")["case"], 1e-5),
+    ("merge coarse iet mR case", "5_robust.tex", "-0.0063", _mg["coarse"]["ietrans"]["mR@50"]["case"], 5e-5),
+    ("merge LA auc max", "5_robust.tex", "0.0012",
+     max(abs(_mg[m]["la1"]["auc"]["difference"]) for m in ("synonym", "coarse")), 5e-5),
+]
+_M = ("synonym", "coarse")
+_ok = (_mg["synonym"]["n_classes"] == 32 and _mg["coarse"]["n_classes"] == 3
+       and all(_q(m, "TDE", s_)["case_ci"][0] < 0 < _q(m, "TDE", s_)["case_ci"][1]
+               for m in _M for s_ in ("all", "single annotation"))
+       and all(_mg[m]["TDE"]["auc"]["ci"][0] < 0 < _mg[m]["TDE"]["auc"]["ci"][1] for m in _M)
+       and all(_q(m, "ietrans", s_)["case_ci"][1] < 0 for m in _mg for s_ in ("all", "single annotation"))
+       and _mg["coarse"]["ietrans"]["mR@50"]["case_ci"][1] < 0
+       and all(_q(m, "la1")["case_ci"][0] > 0 for m in _mg))
+if not _ok:
+    print("FAIL predicate-merge claims (TDE null, IETrans negative, control positive)"); sys.exit(1)
+
+_rb = load("sgg_split_robustness.json")
+_rs = _rb["summary"]
+CHECKS += [
+    ("splits TDE quad min", "5_audit.tex", "-0.00131", _rs["TDE brier"]["min"], 1e-5),
+    ("splits TDE quad max", "5_audit.tex", "+0.00059", _rs["TDE brier"]["max"], 1e-5),
+    ("splits TDE log min", "5_robust.tex", "+0.04142", _rs["TDE log"]["min"], 1e-5),
+    ("splits TDE log max", "5_robust.tex", "+0.04761", _rs["TDE log"]["max"], 1e-5),
+    ("splits common T", "5_robust.tex", "($1.47$)", "checked below", 0),
+    ("splits common quad min", "5_robust.tex", "-0.02035", _rs["TDE common-T brier"]["min"], 1e-5),
+    ("splits common quad max", "5_robust.tex", "-0.01738", _rs["TDE common-T brier"]["max"], 1e-5),
+    ("splits common log min", "5_robust.tex", "-0.09440", _rs["TDE common-T log"]["min"], 1e-5),
+    ("splits common log max", "5_robust.tex", "-0.08727", _rs["TDE common-T log"]["max"], 1e-5),
+    ("splits T drift", "5_robust.tex", "at most $0.06$", "checked below", 0),
+]
+_rr = _rb["rows"]
+_drift = max(max(r["T"][v] for r in _rr) - min(r["T"][v] for r in _rr) for v in _rr[0]["T"])
+_tde_sig = [r["TDE brier"]["case_ci"] for r in _rr
+            if r["TDE brier"]["case_ci"][0] > 0 or r["TDE brier"]["case_ci"][1] < 0]
+_ok = (_rb["n_splits"] == 20 and _drift <= 0.065 and len(_tde_sig) == 3
+       and all(c[1] < 0 for c in _tde_sig)
+       and _rs["TDE log"]["n_positive"] == 20 and _rs["TDE log"]["n_excluding_zero"] == 20
+       and all(_rs[f"{v} {sc}"]["n_excluding_zero"] == 20 for v in ("la1", "ietrans") for sc in ("brier", "log"))
+       and _rs["la1 brier"]["n_positive"] == 20 and _rs["ietrans brier"]["n_positive"] == 0
+       and all(_rs[f"TDE common-T {sc}"]["n_excluding_zero"] == 20 and _rs[f"TDE common-T {sc}"]["max"] < 0
+               for sc in ("brier", "log"))
+       and all(round(r["T_common"], 2) == 1.47 for r in _rr)
+       and all(r["T"]["TDE"] < r["T_common"] < r["T"]["none"] for r in _rr))
+if not _ok:
+    print("FAIL split-robustness claims (20 halves; TDE 3/20 significant, all negative; others "
+          "keep sign; one T negative in every half; T drift)"); sys.exit(1)
+
+_zs = load("clip_zeroshot_audit.json")
+_zr = {(r["new"], r["old"]): r for r in _zs["rows"]}
+_zf, _mf = _zr[("CLIP0", "FREQ")]["brier"], _zr[("MOTIFS", "FREQ")]["brier"]
+CHECKS += [
+    ("zs auc", "6_pixels.tex", "0.5164", _zs["auc"]["CLIP0"], 5e-5),
+    ("zs MOTIFS auc", "6_pixels.tex", "0.5705", _zs["auc"]["MOTIFS"], 5e-5),
+    ("zs case vs FREQ", "6_pixels.tex", "+0.00046", _zf["case"], 1e-5),
+    ("zs MOTIFS case vs FREQ", "6_pixels.tex", "+0.02943", _mf["case"], 1e-5),
+    ("zs case lo", "5_robust.tex", "+0.00041", _zf["case_ci"][0], 1e-5),
+    ("zs case hi", "5_robust.tex", "+0.00051", _zf["case_ci"][1], 1e-5),
+    ("zs group vs FREQ", "5_robust.tex", "-0.51900", _zf["group"], 1e-5),
+    ("zs top-1 %", "5_robust.tex", "$2.5\\%$", "checked below", 0),
+    ("zs FREQ auc", "5_robust.tex", "0.5002", _zs["auc"]["FREQ"], 5e-5),
+    ("zs auc diff", "5_robust.tex", "-0.0542", _zs["auc_clip0_minus_motifs"]["difference"], 5e-5),
+    ("zs auc diff lo", "5_robust.tex", "-0.0655", _zs["auc_clip0_minus_motifs"]["ci"][0], 5e-5),
+    ("zs auc diff hi", "5_robust.tex", "-0.0423", _zs["auc_clip0_minus_motifs"]["ci"][1], 5e-5),
+    ("zs prior top-1", "5_robust.tex", "0.6289", _zs["accuracy"]["CLIP0+FREQ"], 5e-5),
+    ("zs prior case", "5_robust.tex", "+0.00989", _zr[("CLIP0+FREQ", "FREQ")]["brier"]["case"], 1e-5),
+    ("zs TDE case vs FREQ", "5_robust.tex", "+0.02937", _zr[("TDE", "FREQ")]["brier"]["case"], 1e-5),
+]
+_ok = (_zs["n_relations"] == 183639 and round(100 * _zs["accuracy"]["CLIP0"], 1) == 2.5
+       and 2.5 < _mf["case"] / _zr[("CLIP0+FREQ", "FREQ")]["brier"]["case"] < 3.5      # "a third"
+       and round(_zr[("TDE", "FREQ")]["brier"]["case"], 3) == round(_mf["case"], 3)       # third decimal
+       and _zf["case_ci"][0] > 0)
+if not _ok:
+    print("FAIL zero-shot claims (a third of MOTIFS's; TDE equals MOTIFS to the third decimal)"); sys.exit(1)
+
 # Claims no single literal carries.
 assert m50["total"] - m50["group"] - m50["case"] < 1e-12
 if not r_cost_la < 0.1 * r_cost_tde:
@@ -614,7 +743,7 @@ def inputted_files(driver: pathlib.Path) -> list[str]:
 driver_arg = sys.argv[sys.argv.index("--driver") + 1] if "--driver" in sys.argv else None
 
 if driver_arg is None:
-    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc ", "path ", "iet ", "vrank ", "seeds "))]
+    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc ", "path ", "iet ", "vrank ", "seeds ", "shift ", "merge ", "splits ", "zs "))]
     LIVE = set(inputted_files(MS / "main.tex"))
     orphans = sorted({f for _, f, *_ in CHECKS} - LIVE)
     if orphans:

@@ -1,0 +1,163 @@
+\section{How robust the scene-graph audit is}\label{app:robust}
+
+Three choices in \cref{sec:sggaudit} could carry its conclusions: the random half of the test
+images on which each model's temperature is fitted, the 50 predicates themselves, several of
+which are near-synonyms, and the label mix of the test set. This section varies each.
+Scripts: \texttt{run\_sgg\_split\_robustness.py}, \texttt{run\_predicate\_merge.py},
+\texttt{run\_label\_shift.py}; tables are generated from their results files.
+
+\subsection{Calibration halves and a shared temperature}\label{app:splits}
+
+The confidence-matched rows of \cref{sec:sggaudit} fit each model's temperature on a random
+half of the test images and split the other half. The released checkpoints come with no
+validation-set outputs, and we did not rerun them on the validation split; the calibration
+half shares no image with the audited half, so no relation is used both to fit a temperature
+and to be scored. To see how much the result depends on which half, \cref{tab:splits} repeats
+the split for 20 independent halves. The fitted temperatures move by at most $0.06$ across
+halves. TDE's quadratic case-level part ranges from $-0.00131$ to $+0.00059$; its interval
+excludes zero in three halves, each time on the negative side, and never on the positive side.
+Under the log score it is positive in all twenty ($+0.04142$ to $+0.04761$). The control's and
+IETrans's parts keep their sign, and exclude zero, in every half under both scores.
+
+TDE and the baseline share weights, so one may prefer a single temperature for both, fitted on
+the pooled calibration half. That temperature ($1.47$) lies between the two models' own optima
+($0.92$ and $2.50$), so neither model is confidence-matched, and TDE's case-level part turns
+negative under both scores in every half (quadratic $-0.02035$ to $-0.01738$, log $-0.09440$ to
+$-0.08727$). We keep the per-model temperature as the primary protocol, because only it
+compares each model at its own best confidence. Under neither protocol, in any of the 20
+halves, does TDE show a positive quadratic case-level part whose interval excludes zero.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength\tabcolsep{2.5pt}
+\caption{\textbf{The matched split over 20 calibration halves}: case-level part, its mean, SD
+and range over halves, and the number of halves whose image-clustered interval excludes zero.
+``One $T$'': a single temperature for TDE and the baseline.}
+\label{tab:splits}
+\input{supp/tab_split_robustness}
+\end{table}
+
+\subsection{Merging near-synonymous predicates}\label{app:merge}
+
+A case-level part near zero could reflect predicates that no model can tell apart from the
+image: \textsf{on}, \textsf{sitting on} and \textsf{standing on}; \textsf{wearing} and
+\textsf{wears}; \textsf{has}, \textsf{with} and \textsf{of}. We apply two merges declared
+before looking at their results. \emph{Synonym} merges eleven placement verbs into
+\textsf{on}, three \textsf{in} forms, the two \textsf{wear} forms, and six possessive forms
+into \textsf{has}, leaving every other predicate itself (32 classes). \emph{Coarse} collapses
+the 50 predicates into three families: geometric, possessive and semantic. A model's
+probability for a merged class is the sum over its members; for recall, a relation counts as a
+hit for a merged class when any member would (the smallest of the members' first-hit ranks).
+Temperatures are fitted on the unmerged distributions on the audit's calibration half. We also
+restrict to the $166{,}940$ of $183{,}639$ relations whose subject--object box pair carries a
+single annotated predicate, so that no second annotated predicate competes with the label.
+
+\Cref{tab:merge} reports the result. No conclusion of \cref{sec:sggaudit} depends on the
+predicate vocabulary. TDE's matched case-level part stays null under both merges ($+0.00059$,
+interval $[-0.00050,+0.00168]$; $-0.00015$, $[-0.00095,+0.00065]$) and on single-annotation
+pairs, and the interval of its AUC change covers zero under both. IETrans's stays negative and
+excludes zero under every merge ($-0.01540$ synonym, $-0.00761$ coarse); under the coarse merge
+its mean-recall case-level part also turns significantly negative ($-0.0063$). The
+logit-adjusted control keeps a positive matched case-level part throughout. Summing
+probabilities over a merged class can reorder the merged classes within a cell, so under a
+merge the control's AUC is no longer fixed by construction; it moves by at most $0.0012$.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength\tabcolsep{3pt}
+\caption{\textbf{The audit after merging predicates} (number of classes in brackets). Matched
+quadratic case-level part on the audit half, on all relations and on single-annotation box
+pairs; within-cell AUC change; mean recall@50 split (graph constraint) with its
+image-clustered case-level interval. Every row is against the MOTIFS baseline.}
+\label{tab:merge}
+\input{supp/tab_predicate_merge}
+\end{table*}
+
+\subsection{A label-shifted test}\label{app:labelshift}
+
+\Cref{sec:method} writes a cell's case-level part as $\dR_c=\sum_{y<z}p(y)p(z)\,D(y,z)$, where
+$D(y,z)$ depends only on the class-conditional behaviour of the gain. A label shift that leaves
+$P(X\mid Y,C)$ fixed changes the weights $p(y)p(z)$ and no $D$, while the group-level part
+depends on the cell's label frequencies directly. The prediction is that group-level parts
+move under such a shift, and a case-level part keeps its sign unless its $D(y,z)$ have mixed
+signs. We test it without retraining anything by reweighting the test relations: relation
+$i$ in cell $c$ gets weight $w_i=1/(L_c\,\hat p_c(y_i))$, with $L_c$ the number of predicates
+present in the cell and $\hat p_c$ their frequencies, so that every predicate present in a
+cell carries equal total weight. This is the test set a deployment with uniform within-pair
+predicate frequencies would see. The split is recomputed with pairs $(i,j)$ of a cell weighted
+by $w_iw_j$, so that a gain constant within a cell still has a case-level part of exactly zero
+and unit weights give the estimator of \cref{sec:method}; the within-cell AUC is recomputed
+with the same comparison weights. Temperatures and calibration halves are those of
+\cref{sec:sggaudit,sec:vgvisual}; intervals are image bootstraps (100 replicates).
+
+\Cref{tab:labelshift} gives the result for the eight comparisons of the two audits. The
+group-level part changes sign in seven of them; in the eighth, the class-pair model against
+FREQ, it shrinks from $-0.01412$ to $-0.00180$. With the group-level parts, the totals reverse
+too: the CLIP model, last on the benchmark by every aggregate, beats geometry by $+0.02478$
+under uniform labels. Of the six case-level parts whose interval excludes zero on the
+benchmark, five keep their sign and grow in size: geometry over the class-pair model
+($+0.00882\to+0.01152$), CLIP over geometry ($+0.00472\to+0.00619$), IETrans over the baseline
+($-0.01623\to-0.01830$). The exception is TDE against the logit-adjusted control, whose
+case-level part turns from $-0.00398$ to $+0.00723$; and TDE's null against the baseline
+becomes $+0.01430$, interval $[+0.01144,+0.01632]$. Both exceptions involve TDE, and both
+mean that TDE's $D(y,z)$ have mixed signs: it gains within-cell discrimination between some
+pairs of predicates and loses it between others, and the benchmark's label mix weights the
+two to a null. The threshold-free AUC does not separate TDE from the baseline at either mix:
+$+0.0026$ on the benchmark, $-0.0183$, interval $[-0.0684,+0.0082]$, under uniform labels.
+What \cref{sec:sggaudit} says about TDE's case-level part therefore holds at the benchmark's
+label mix; under a different mix the same predictions carry a case-level part, of a sign the
+split computes but cannot know in advance.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength\tabcolsep{4pt}
+\caption{\textbf{The split under a label shift.} Matched quadratic split on the benchmark's
+labels and with every predicate of a cell given equal weight. Upper block: the scene-graph
+audit (\cref{sec:sggaudit}); middle block: the real-pixel study (\cref{sec:vgvisual}); lower
+block: within-cell AUC change under the same two weightings. Intervals: image bootstrap.}
+\label{tab:labelshift}
+\input{supp/tab_label_shift}
+\end{table*}
+
+\subsection{Zero-shot CLIP on the canonical split}\label{app:zeroshot}
+
+The CLIP model of \cref{sec:vgvisual} trains a head on Visual Genome labels. To audit the
+model as the audience uses it, we score the canonical test relations of \cref{sec:sggaudit}
+zero-shot: frozen CLIP ViT-B/32~\cite{radford2021learning} encodes the union box of subject
+and object and is compared with one prompt per predicate, ``a photo of a \{subject\}
+\{predicate\} a \{object\}'' (\texttt{colab\_clip\_zeroshot.py}). The map from dataset index
+to image file follows the codebase's loader, and every image's size matches the one stored
+with the audit. Nothing is trained, so the model has no predicate prior of its own. FREQ is
+the MOTIFS frequency branch, constant within a cell up to 31 relations whose scored pair is a
+duplicate box with another label (hence its AUC of $0.5002$). Against FREQ a model's
+case-level part is its own within-cell information. ``Zero-shot CLIP + FREQ'' multiplies the
+two distributions and renormalises, which leaves the within-cell AUC unchanged. Protocol as in
+\cref{sec:sggaudit}: per-model temperature on the calibration half, split on the other.
+
+Zero-shot CLIP ranks the correct predicate first for $2.5\%$ of relations, and its group-level
+loss against FREQ is $-0.51900$. It does carry within-cell information: its AUC is $0.5164$,
+above the $0.5$ of any model constant within cells, and its case-level part over FREQ is
+$+0.00046$, interval $[+0.00041,+0.00051]$. But this is a small fraction of what MOTIFS learns
+from Visual Genome: MOTIFS's AUC is $0.5705$, the difference $-0.0542$, interval
+$[-0.0655,-0.0423]$, and its case-level part over FREQ is $+0.02943$. Given the training prior,
+zero-shot CLIP reaches $0.6289$ top-1, but its case-level part over FREQ ($+0.00989$) is a third
+of MOTIFS's. The vision--language model the audience uses does not, zero-shot, rank predicates
+within an object pair the way a trained scene-graph model does, in line with evidence that such
+models often treat captions as bags of words~\cite{yuksekgonul2023when}. TDE's case-level part
+over FREQ, $+0.02937$, equals MOTIFS's to the third decimal, as the null of \cref{sec:sggaudit}
+implies.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength\tabcolsep{4pt}
+\caption{\textbf{Zero-shot CLIP on the canonical relations.} Upper block: matched split
+(quadratic, with the log-score case-level part); lower block: top-1 accuracy, within-cell AUC
+and fitted temperature. The AUC of zero-shot CLIP + FREQ equals zero-shot CLIP's by
+construction.}
+\label{tab:zeroshot}
+\input{supp/tab_clip_zeroshot}
+\end{table}

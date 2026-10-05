@@ -1,7 +1,6 @@
 \section{Limitations and conclusion}\label{sec:discussion}
 
-\paragraph{Limitations.} Four bound what the split can say, and we would rather state them
-than have them found. \emph{It is conditional on the grouping.} The case-level part measures
+\paragraph{Limitations.} Four bound what the split can say. \emph{It is conditional on the grouping.} The case-level part measures
 discrimination among relations sharing an object pair; two equally fine partitions of the
 same cases can disagree completely about whether a gain is case-level
 (\cref{app:partition}), so declaring $\phi$ is a modelling decision that the benchmark, not
@@ -9,19 +8,17 @@ the submitting author, should make before a leaderboard opens. \emph{It credits 
 within-cell signal}, including shortcuts nobody recorded, and our own bound on that exposure is
 not reassuring: for the controlled-predictor pair of \cref{sec:data}, an unrecorded covariate
 correlated at $0.061$ with both parts would account for the entire case-level gain
-(\cref{app:sensitivity}). \emph{It is not invariant to recalibration or to the operating point}: the comparisons whose
-models differ visibly in confidence are read confidence-matched, the case-level part of a
-thresholded metric is read against a control that moves only the operating point, and the
-within-cell AUC that is invariant to both gives up the exact additivity that is the point of
-the construction. And \emph{it needs
+(\cref{app:sensitivity}). \emph{It is not invariant to recalibration, to the operating point or to the label mix}: we
+read it confidence-matched and, for thresholded metrics, against an operating-point control;
+the within-cell AUC, invariant to the first two, gives up exact additivity; and a case-level
+null can be a cancellation that another label mix undoes (\cref{sec:vgvisual}). And \emph{it needs
 scores for every label}: most benchmarks archive only ranked top-$k$ predictions, and
-recovering the rest took a rerun of the released checkpoint. That, not compute, is the
-obstacle to routine use.
+recovering the rest took a rerun of the released checkpoint: that, not compute, blocks routine use.
 
 \paragraph{Conclusion.} A ten-point mean-recall gain is two different achievements summed
 together, and the field's metrics report the sum. Scoring each prediction against another
-case's label from the same group separates them exactly, with no fitted reference model and
-with intervals that respect the clustering of relations within images. Applied to two released
+case's label from the same group separates them exactly, with no fitted reference model and with
+image-clustered intervals. Applied to two released
 debiasing methods, the split finds mean-recall gains that are almost entirely group-level:
 TDE's, whose case-level remainder a ranking-preserving logit adjustment matches and behind
 which no within-group discrimination was gained, and IETrans's, with a case-level loss;
@@ -29,5 +26,5 @@ applied to a model every aggregate metric ranks last, it finds a case-level gain
 aggregates conceal. We suggest that benchmarks whose labels lean on a
 feature every model sees report the split beside the headline metric: the declared grouping
 and its coverage, both signed parts with the case-level interval, the confidence-matched
-row, and, for a thresholded metric, the operating-point control. Code, the results files behind every number, and the scripts that regenerate the model
-predictions are in the supplementary material.
+row, and, for a thresholded metric, the operating-point control. Code, results files and the scripts that regenerate every prediction are in the
+supplement.
