@@ -37,6 +37,12 @@ EXTRA = {"sgcls": "https://1drv.ms/u/s!AmRLLNf6bzcir9xyuLO_I8TSZ6kfyQ?e=Y5686s",
          "sgdet": "https://1drv.ms/u/s!AmRLLNf6bzcir9x7OYb6sKBlzoXuYA?e=s3Y602"}
 for _proto in filter(None, os.environ.get("WAGER_EXTRA_CKPTS", "").split(",")):
     ONEDRIVE[f"{ROOT}/causal_motif_{_proto}.zip"] = EXTRA[_proto]
+# WAGER_SKIP_PREDCLS=1: the SGCls/SGDet runs do not need the PredCls checkpoint.
+# WAGER_TEST_IMAGES_ONLY=1: fetch only the test images (colab_vg_test_images.py).
+SKIP_PREDCLS = os.environ.get("WAGER_SKIP_PREDCLS", "") == "1"
+TEST_ONLY = os.environ.get("WAGER_TEST_IMAGES_ONLY", "") == "1"
+if SKIP_PREDCLS:
+    ONEDRIVE.pop(f"{ROOT}/causal_motif_predcls.zip")
 
 
 def log(msg):
@@ -113,7 +119,16 @@ else:
 
 # ---- 2. VG images + metadata ------------------------------------------------
 os.makedirs(f"{SGG}/datasets/vg/VG_100K", exist_ok=True)
-for name in ("images.zip", "images2.zip"):
+fetch("https://homes.cs.washington.edu/~ranjay/visualgenome/data/dataset/image_data.json.zip",
+      f"{ROOT}/image_data.json.zip")
+with zipfile.ZipFile(f"{ROOT}/image_data.json.zip") as z:
+    z.extractall(f"{ROOT}/imgmeta")
+if TEST_ONLY:
+    sh(["pip", "-q", "install", "h5py"])
+    sh(["python", f"{ROOT}/colab_vg_test_images.py", f"{ROOT}/VG-SGG-with-attri.h5",
+        f"{ROOT}/imgmeta/image_data.json", f"{SGG}/datasets/vg/VG_100K"])
+    log("test images fetched")
+for name in (() if TEST_ONLY else ("images.zip", "images2.zip")):
     dest = f"{ROOT}/{name}"
     if not os.path.exists(dest + ".unzipped"):
         fetch(f"https://cs.stanford.edu/people/rak248/VG_100K_2/{name}", dest)
@@ -130,11 +145,6 @@ for name in ("images.zip", "images2.zip"):
         log(f"extracted+removed {name}")
 n_imgs = len(os.listdir(f"{SGG}/datasets/vg/VG_100K"))
 log(f"VG_100K contains {n_imgs} images")
-
-fetch("https://homes.cs.washington.edu/~ranjay/visualgenome/data/dataset/image_data.json.zip",
-      f"{ROOT}/image_data.json.zip")
-with zipfile.ZipFile(f"{ROOT}/image_data.json.zip") as z:
-    z.extractall(f"{ROOT}/imgmeta")
 
 # ---- 3. repo clone + deps ---------------------------------------------------
 if not os.path.exists(SGG + "/.git"):
@@ -158,8 +168,9 @@ shutil.copy(f"{ROOT}/imgmeta/image_data.json", f"{SGG}/datasets/vg/")
 
 # checkpoint
 os.makedirs(f"{ROOT}/ckpt", exist_ok=True)
-with zipfile.ZipFile(f"{ROOT}/causal_motif_predcls.zip") as z:
-    z.extractall(f"{ROOT}/ckpt")
+if not SKIP_PREDCLS:
+    with zipfile.ZipFile(f"{ROOT}/causal_motif_predcls.zip") as z:
+        z.extractall(f"{ROOT}/ckpt")
 for dirpath, _dirs, files in os.walk(f"{ROOT}/ckpt"):
     for fn in files:
         if fn.endswith(".pth") or fn == "last_checkpoint":
