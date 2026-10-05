@@ -384,7 +384,7 @@ CHECKS += [
     ("auc TDE-base hi", "5_audit.tex", "+0.0086", auc[("TDE", "none")]["ci"][1], 5e-5),
     ("auc TDE-LA lo", "5_audit.tex", "-.0029", auc[("TDE", "la1")]["ci"][0], 5e-5),
     ("auc LA-base", "5_audit.tex", "+.0001", auc[("la1", "none")]["difference"], 5e-5),
-    ("ps TDE-LA quad case", "5_audit.tex", "-0.0040", tla_q["reasoning_gain"], 5e-5),
+    ("ps TDE-LA quad case", "5_robust.tex", "-0.00398", tla_q["reasoning_gain"], 1e-5),
     ("ps TDE-LA log case", "5_audit.tex", "+0.0154", tla_l["reasoning_gain"], 5e-5),
     ("ps LA quad case", "5_audit.tex", "+0.0039", la_q["reasoning_gain"], 5e-5),
     ("ps LA log case", "5_audit.tex", "+0.0285", la_l["reasoning_gain"], 5e-5),
@@ -445,9 +445,9 @@ CHECKS += [
     ("iet tail", "5_audit.tex", "+0.0889", _ie["mean_recall_tail"]["total"], 5e-5),
     ("iet quad case", "5_audit.tex", "-0.0162", _iq["reasoning_gain"], 5e-5),
     ("iet log case", "5_audit.tex", "-0.0544", _il["reasoning_gain"], 5e-5),
-    ("iet auc", "5_audit.tex", "-0.0093", _ia["difference"], 5e-5),
-    ("iet auc lo", "5_audit.tex", "-0.0181", _ia["ci"][0], 5e-5),
-    ("iet auc hi", "5_audit.tex", "+0.0004", _ia["ci"][1], 5e-5),
+    ("iet auc", "5_audit.tex", "-.0093", _ia["difference"], 5e-5),
+    ("iet auc lo", "5_audit.tex", "-.0181", _ia["ci"][0], 5e-5),
+    ("iet auc hi", "5_audit.tex", "+.0004", _ia["ci"][1], 5e-5),
     ("iet points", "0_abstract.tex", "21 points",
      "checked below", 0),
     ("iet group share", "0_abstract.tex", "97\\%", "checked below", 0),
@@ -506,18 +506,18 @@ _lr = {r["comparison"]: r for r in _ls["rows"]}
 _lt, _ll = _lr["TDE vs MOTIFS"], _lr["TDE vs logit-adjusted"]
 _la = _ls["auc_sgg"]["TDE"]
 CHECKS += [
-    ("shift CLIP-geo total", "6_pixels.tex", "+0.02478", _lr["CLIP vs geometry"]["shifted"]["total"], 1e-5),
+    ("shift CLIP-geo total", "6_pixels.tex", "+0.02981", _lr["CLIP vs geometry"]["shifted"]["total"], 1e-5),
     ("shift TDE case", "6_pixels.tex", "+0.01430", _lt["shifted"]["case"], 1e-5),
-    ("shift TDE case lo", "6_pixels.tex", "+0.01144", _lt["shifted"]["case_ci"][0], 1e-5),
-    ("shift TDE case hi", "6_pixels.tex", "+0.01632", _lt["shifted"]["case_ci"][1], 1e-5),
+    ("shift TDE case lo", "6_pixels.tex", "+0.01116", _lt["shifted"]["case_ci"][0], 1e-5),
+    ("shift TDE case hi", "6_pixels.tex", "+0.01744", _lt["shifted"]["case_ci"][1], 1e-5),
     ("shift TDE-LA case", "6_pixels.tex", "-0.00398", _ll["original"]["case"], 1e-5),
     ("shift TDE-LA case shifted", "6_pixels.tex", "+0.00723", _ll["shifted"]["case"], 1e-5),
-    ("shift class-FREQ group", "5_robust.tex", "-0.01412", _lr["class-only vs FREQ"]["original"]["group"], 1e-5),
-    ("shift class-FREQ group shifted", "5_robust.tex", "-0.00180", _lr["class-only vs FREQ"]["shifted"]["group"], 1e-5),
-    ("shift geo case", "5_robust.tex", "+0.00882", _lr["geometry vs class-only"]["original"]["case"], 1e-5),
-    ("shift geo case shifted", "5_robust.tex", "+0.01152", _lr["geometry vs class-only"]["shifted"]["case"], 1e-5),
-    ("shift CLIP-geo case", "5_robust.tex", "+0.00472", _lr["CLIP vs geometry"]["original"]["case"], 1e-5),
-    ("shift CLIP-geo case shifted", "5_robust.tex", "+0.00619", _lr["CLIP vs geometry"]["shifted"]["case"], 1e-5),
+    ("shift class-FREQ group", "5_robust.tex", "-0.01432", _lr["class-only vs FREQ"]["original"]["group"], 1e-5),
+    ("shift class-FREQ group shifted", "5_robust.tex", "-0.00241", _lr["class-only vs FREQ"]["shifted"]["group"], 1e-5),
+    ("shift geo case", "5_robust.tex", "+0.00891", _lr["geometry vs class-only"]["original"]["case"], 1e-5),
+    ("shift geo case shifted", "5_robust.tex", "+0.01157", _lr["geometry vs class-only"]["shifted"]["case"], 1e-5),
+    ("shift CLIP-geo case", "5_robust.tex", "+0.00464", _lr["CLIP vs geometry"]["original"]["case"], 1e-5),
+    ("shift CLIP-geo case shifted", "5_robust.tex", "+0.00615", _lr["CLIP vs geometry"]["shifted"]["case"], 1e-5),
     ("shift iet case", "5_robust.tex", "-0.01623", _lr["IETrans vs MOTIFS"]["original"]["case"], 1e-5),
     ("shift iet case shifted", "5_robust.tex", "-0.01830", _lr["IETrans vs MOTIFS"]["shifted"]["case"], 1e-5),
     ("shift TDE auc", "5_robust.tex", "-0.0183", _la["shifted"]["difference"], 5e-5),
@@ -629,6 +629,92 @@ _ok = (_zs["n_relations"] == 183639 and round(100 * _zs["accuracy"]["CLIP0"], 1)
        and _zf["case_ci"][0] > 0)
 if not _ok:
     print("FAIL zero-shot claims (a third of MOTIFS's; TDE equals MOTIFS to the third decimal)"); sys.exit(1)
+
+_sh = load("sgg_share_intervals.json")["rows"]
+_rr = load("sgg_rank_robustness.json")
+_ra = {(r["new"], r["old"]): r for r in _rr["sgg_auc"] + _rr["pixel_auc"]}
+_tla = load("sgg_auc_tde_la.json")["rows"][0]
+_tp = _rr["tier_pair_auc"]
+_rc = {r["new"]: r for r in _rr["recalibration"]}
+_fk = load("sgg_fk.json")["F@50"]
+_cw = load("sim_classwise_shift.json")["logit adjustment"]
+_sc = load("sim_small_cells.json")
+_lsp = {r["comparison"]: r for r in load("label_shift.json")["rows"]}["TDE vs MOTIFS"]
+_A = lambda n, o, k: _ra[(n, o)][k]
+CHECKS += [
+    ("splits share TDE lo %", "0_abstract.tex", "83--91", "checked below", 0),
+    ("splits share TDE lo", "5_audit.tex", "[83\\%,91\\%]", "checked below", 0),
+    ("rankrob TDE rel", "5_audit.tex", "-0.0015", _A("TDE", "none", "all, relation")["difference"], 5e-5),
+    ("rankrob TDE rel lo", "5_audit.tex", "-0.0036", _A("TDE", "none", "all, relation")["ci"][0], 5e-5),
+    ("rankrob TDE rel hi", "5_audit.tex", "+0.0018", _A("TDE", "none", "all, relation")["ci"][1], 5e-5),
+    ("rankrob TDE-LA rel", "5_audit.tex", "-.0018", _tla["all, relation"]["difference"], 5e-5),
+    ("rankrob TDE-LA rel lo", "5_audit.tex", "-.0039", _tla["all, relation"]["ci"][0], 5e-5),
+    ("rankrob TDE-LA rel hi", "5_audit.tex", "+.0014", _tla["all, relation"]["ci"][1], 5e-5),
+    ("rankrob TDE-LA cmp", "5_audit.tex", "+.0026", _tla["all, comparison"]["difference"], 5e-5),
+    ("rankrob TDE-LA cmp lo", "5_audit.tex", "-.0029", _tla["all, comparison"]["ci"][0], 5e-5),
+    ("rankrob LA rel", "5_audit.tex", "+.0003", _A("la1", "none", "all, relation")["difference"], 5e-5),
+    ("rankrob iet rel", "5_audit.tex", "-0.0235", _A("ietrans", "none", "all, relation")["difference"], 5e-5),
+    ("rankrob iet rel lo", "5_audit.tex", "-0.0275", _A("ietrans", "none", "all, relation")["ci"][0], 5e-5),
+    ("rankrob iet rel hi", "5_audit.tex", "-0.0182", _A("ietrans", "none", "all, relation")["ci"][1], 5e-5),
+    ("rankrob tier hh", "5_audit.tex", "+0.0068", _tp["TDE vs none"]["head-head"]["difference"], 5e-5),
+    ("rankrob tier hh lo", "5_audit.tex", "-0.0003", _tp["TDE vs none"]["head-head"]["ci"][0], 5e-5),
+    ("rankrob tier hh hi", "5_audit.tex", "+0.0134", _tp["TDE vs none"]["head-head"]["ci"][1], 5e-5),
+    ("rankrob tier rest", "5_audit.tex", "-0.0051", _tp["TDE vs none"]["all but head-head"]["difference"], 5e-5),
+    ("rankrob tier rest lo", "5_audit.tex", "-0.0130", _tp["TDE vs none"]["all but head-head"]["ci"][0], 5e-5),
+    ("rankrob tier rest hi", "5_audit.tex", "+0.0026", _tp["TDE vs none"]["all but head-head"]["ci"][1], 5e-5),
+    ("rankrob tier hh weight %", "5_audit.tex", "$65\\%$", 100 * _tp["TDE vs none"]["head-head"]["weight_share"], 0.5),
+    ("rankrob iet hb", "5_robust.tex", "-0.0250", _tp["ietrans vs none"]["head-body"]["difference"], 5e-5),
+    ("rankrob iet bb", "5_robust.tex", "-0.0260", _tp["ietrans vs none"]["body-body"]["difference"], 5e-5),
+    ("rankrob recal TDE tb", "5_audit.tex", "+0.00445", _rc["TDE"]["temperature + class bias, brier"]["case"], 1e-5),
+    ("rankrob recal TDE tb lo", "5_audit.tex", "+0.00354", _rc["TDE"]["temperature + class bias, brier"]["case_ci"][0], 1e-5),
+    ("rankrob recal TDE tb hi", "5_audit.tex", "+0.00536", _rc["TDE"]["temperature + class bias, brier"]["case_ci"][1], 1e-5),
+    ("rankrob recal TDE shared", "5_audit.tex", "-0.0184", _rc["TDE"]["shared temperature, brier"]["case"], 5e-5),
+    ("rankrob recal TDE tb log", "5_robust.tex", "+0.02543", _rc["TDE"]["temperature + class bias, log"]["case"], 1e-5),
+    ("rankrob recal iet tb", "5_audit.tex", "-0.0168", _rc["ietrans"]["temperature + class bias, brier"]["case"], 5e-5),
+    ("rankrob recal iet tb log", "5_robust.tex", "-0.06609", _rc["ietrans"]["temperature + class bias, log"]["case"], 1e-5),
+    ("rankrob recal LA temp", "5_robust.tex", "+0.00392", _rc["la1"]["temperature, brier"]["case"], 1e-5),
+    ("rankrob F@50 LA", "5_audit.tex", "0.344", _fk["la1"], 5e-4),
+    ("rankrob F@50 TDE", "5_audit.tex", "0.322", _fk["TDE"], 5e-4),
+    ("rankrob classwise temp", "4_validation.tex", "+0.0106", _cw["temperature matched"]["mean"], 5e-5),
+    ("rankrob classwise tb sd", "4_validation.tex", "sd $0.0003$", "checked below", 0),
+    ("rankrob small n2 %", "4_validation.tex", "$81.5\\%$", 100 * _sc["n_c=2"]["coverage"], 0.05),
+    ("rankrob small VG %", "4_validation.tex", "$96.3\\%$", 100 * _sc["VG150 cell sizes"]["coverage"], 0.06),
+    ("rankrob small se ratio", "2_appendix.tex", "$0.71$", _sc["n_c=2"]["se_over_sd"], 5e-3),
+    ("rankrob two-case share %", "7_conclusion.tex", "$1.0\\%$", 100 * _sc["vg_fraction_in_two_case_cells"], 0.05),
+    ("shift path TDE a25", "5_robust.tex", "+0.00238", _lsp["alpha=0.25"]["case"], 1e-5),
+    ("shift path TDE a25 lo", "5_robust.tex", "+0.00092", _lsp["alpha=0.25"]["case_ci"][0], 1e-5),
+    ("shift path TDE a25 hi", "5_robust.tex", "+0.00385", _lsp["alpha=0.25"]["case_ci"][1], 1e-5),
+    ("shift kish benchmark", "5_robust.tex", "92{,}027", _lsp["original"]["kish_n"], 0.5),
+    ("shift kish uniform", "5_robust.tex", "7{,}296", _lsp["shifted"]["kish_n"], 0.5),
+    ("rankrob CLIP-geo rel", "6_pixels.tex", "-0.0067", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "all, relation")["difference"], 5e-5),
+    ("rankrob CLIP-geo rel lo", "6_pixels.tex", "-0.0120", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "all, relation")["ci"][0], 5e-5),
+    ("rankrob CLIP-geo rel hi", "6_pixels.tex", "-0.0019", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "all, relation")["ci"][1], 5e-5),
+    ("rankrob CLIP-geo aud cmp", "5_robust.tex", "+0.0214", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "audit half, comparison")["difference"], 5e-5),
+    ("rankrob CLIP-geo aud cmp lo", "5_robust.tex", "+0.0001", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "audit half, comparison")["ci"][0], 5e-5),
+    ("rankrob CLIP-geo aud cmp hi", "5_robust.tex", "+0.0435", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "audit half, comparison")["ci"][1], 5e-5),
+]
+_t = _sh["TDE"]
+_tde_keys = ("all, comparison", "all, relation", "audit half, comparison", "audit half, relation")
+_ok = (round(100 * _t["share_ci"][0]) == 83 and round(100 * _t["share_ci"][1]) == 91
+       and round(100 * _t["share"]) == 87
+       and all(_A("TDE", "none", k)["ci"][0] < 0 < _A("TDE", "none", k)["ci"][1] for k in _tde_keys)
+       and all(_tp["TDE vs none"][k]["ci"][0] < 0 < _tp["TDE vs none"][k]["ci"][1]
+               for k in ("head-head", "all but head-head"))
+       and all(_rc["ietrans"][k]["case_ci"][1] < 0 for k in _rc["ietrans"] if isinstance(_rc["ietrans"][k], dict))
+       and abs(_rc["la1"]["temperature + class bias, brier"]["case"]) < 1e-6
+       and _rc["TDE"]["temperature + class bias, brier"]["case_ci"][0] > 0
+       and _rc["TDE"]["shared temperature, brier"]["case_ci"][1] < 0
+       and abs(_cw["temperature + class bias matched"]["mean"]) < 5e-5
+       and round(_cw["temperature + class bias matched"]["sd"], 4) == 0.0003
+       and all(_sc[f"n_c={n}"]["coverage"] >= 0.94 for n in (3, 4, 8, 20))
+       and _fk["la1"] > _fk["TDE"]
+       and all(_lsp[k]["case_ci"][0] > 0 for k in ("alpha=0.25", "alpha=0.5", "alpha=0.75", "shifted"))
+       and all(a < b for a, b in zip([_lsp[k]["case"] for k in ("original", "alpha=0.25", "alpha=0.5", "alpha=0.75")],
+                                     [_lsp[k]["case"] for k in ("alpha=0.25", "alpha=0.5", "alpha=0.75", "shifted")])))
+if not _ok:
+    print("FAIL R2 robustness claims (share 87 [83, 91]; TDE AUC covers zero under all weightings and "
+          "both tier groups; IETrans negative under all recalibrations; LA = base under T+bias; "
+          "class-wise sim; small-cell coverage from 3 up; F@50; label-shift path monotone)"); sys.exit(1)
 
 # Claims no single literal carries.
 assert m50["total"] - m50["group"] - m50["case"] < 1e-12
@@ -743,7 +829,7 @@ def inputted_files(driver: pathlib.Path) -> list[str]:
 driver_arg = sys.argv[sys.argv.index("--driver") + 1] if "--driver" in sys.argv else None
 
 if driver_arg is None:
-    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc ", "path ", "iet ", "vrank ", "seeds ", "shift ", "merge ", "splits ", "zs "))]
+    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc ", "path ", "iet ", "vrank ", "seeds ", "shift ", "merge ", "splits ", "zs ", "rankrob "))]
     LIVE = set(inputted_files(MS / "main.tex"))
     orphans = sorted({f for _, f, *_ in CHECKS} - LIVE)
     if orphans:
@@ -800,7 +886,7 @@ for label, fname, literal, actual, tol in CHECKS:
     else:
         try:
             quoted = float(literal.replace("{,}", "").replace(",", "")
-                           .replace("+", ""))
+                           .replace("+", "").replace("$", "").replace("\\%", ""))
             ok_val = abs(abs(quoted) - abs(float(actual))) <= tol
         except ValueError:
             ok_val = False

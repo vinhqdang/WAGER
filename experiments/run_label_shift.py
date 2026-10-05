@@ -15,7 +15,17 @@ which case carries which label and should hold. Comparisons: TDE, the logit-
 adjusted baseline and IETrans against the MOTIFS baseline (temperature-matched
 as in Sec. 5), and on the real-pixel study the class-only model against the
 training frequency table (FREQ), and geometry and CLIP against the class-only
-model (temperature-matched as in Sec. 6). Intervals: image bootstrap.
+model (temperature-matched as in Sec. 6, on that study's own temperature grid).
+
+Intervals: delete-a-group jackknife over images (G = 100 random groups of test images),
+normal around the full-sample estimate. An image bootstrap is biased here: a
+resampled image's same-label pairs have kernel zero and get weight E[w^2] = 2, which
+pulls the case-level part towards zero.
+
+Besides the uniform mix (alpha = 1), the split is reported along the path of mixes with
+weights w_i^alpha, alpha in {0, 0.25, 0.5, 0.75, 1}, which moves from the benchmark's
+label mix to uniform within-cell frequencies, with the Kish effective sample size of
+each mix.
 
 Run: python experiments/run_label_shift.py
 """
@@ -36,7 +46,8 @@ from sgg_variants import load_variant  # noqa: E402
 import run_sgg_audit_wager as AU  # noqa: E402
 
 OUT = ROOT / "results/label_shift.json"
-N_BOOT = 100
+N_GROUPS = 100
+ALPHAS = (0.0, 0.25, 0.5, 0.75, 1.0)
 
 
 def shift_weights(y, phi):
@@ -59,48 +70,54 @@ def weighted_split(h, y, phi, w, img_w=None):
     w = w if img_w is None else w * img_w
     _, cinv = np.unique(phi, return_inverse=True)
     n, k = h.shape
+    nc = cinv.max() + 1
     obs = h[np.arange(n), y]
-    T_num = R_num = W_tot = 0.0
-    order = np.argsort(cinv, kind="stable")
-    bounds = np.flatnonzero(np.diff(cinv[order])) + 1
-    for idx in np.split(order, bounds):
-        if len(idx) < 2:
-            continue
-        wi = w[idx]
-        Wc = wi.sum()
-        pair_w = Wc * Wc - (wi * wi).sum()
-        if Wc <= 0 or pair_w <= 0:
-            continue
-        wl = np.bincount(y[idx], weights=wi, minlength=k)
-        # sum_{i!=j} w_i w_j (h_i(y_i) - h_i(y_j)) = sum_i w_i (W_c h_i(y_i) - h_i . wl)
-        r_sum = float((wi * (Wc * obs[idx] - h[idx] @ wl)).sum())
-        T_num += float((wi * obs[idx]).sum())
-        R_num += Wc * r_sum / pair_w
-        W_tot += Wc
-    T, R = T_num / W_tot, R_num / W_tot
+    W = np.bincount(cinv, w, nc)
+    W2 = np.bincount(cinv, w * w, nc)
+    cnt = np.bincount(cinv, minlength=nc)
+    pair_w = W * W - W2
+    ok = (cnt >= 2) & (W > 0) & (pair_w > 0)
+    wl = np.zeros((nc, k))
+    np.add.at(wl, (cinv, y), w)
+    # sum_{i!=j} w_i w_j (h_i(y_i) - h_i(y_j)) = sum_i w_i (W_c h_i(y_i) - h_i . wl_c)
+    r_i = w * (W[cinv] * obs - np.einsum("ik,ik->i", h, wl[cinv]))
+    r_sum = np.bincount(cinv, r_i, nc)
+    t_sum = np.bincount(cinv, w * obs, nc)
+    W_tot = W[ok].sum()
+    T = t_sum[ok].sum() / W_tot
+    R = (W[ok] * r_sum[ok] / pair_w[ok]).sum() / W_tot
     return T, T - R, R
 
 
-def compare(name, q_new, q_old, y, phi, image, rng):
+def jackknife(stat, image):
+    """Delete-a-group jackknife over images: (point, standard errors) of stat(mask)."""
+    imgs = np.unique(image)
+    grp_of = np.random.default_rng(0).permutation(len(imgs)) % N_GROUPS
+    grp = grp_of[np.searchsorted(imgs, image)]
+    point = np.asarray(stat(np.ones(len(image), bool)))
+    jk = np.asarray([stat(grp != g) for g in range(N_GROUPS)])
+    se = np.sqrt((N_GROUPS - 1) / N_GROUPS * ((jk - jk.mean(0)) ** 2).sum(0))
+    return point, se
+
+
+def compare(name, q_new, q_old, y, phi, image, rng=None):
     h = gain_matrix(q_new, q_old, score="brier")
-    w1 = np.ones(len(y))
     ws = shift_weights(y, phi)
-    _, iinv = np.unique(image, return_inverse=True)
     res = {}
-    for tag, w in (("original", w1), ("shifted", ws)):
-        T, P, R = weighted_split(h, y, phi, w)
-        boots = []
-        for _ in range(N_BOOT):
-            iw = rng.multinomial(iinv.max() + 1, np.full(iinv.max() + 1, 1 / (iinv.max() + 1)))[iinv]
-            boots.append(weighted_split(h, y, phi, w, iw.astype(float)))
-        b = np.asarray(boots)
-        res[tag] = {"total": T, "group": P, "case": R,
-                    "total_ci": list(np.percentile(b[:, 0], [2.5, 97.5])),
-                    "group_ci": list(np.percentile(b[:, 1], [2.5, 97.5])),
-                    "case_ci": list(np.percentile(b[:, 2], [2.5, 97.5]))}
-    o, s = res["original"], res["shifted"]
-    print(f"{name:34s} T {o['total']:+.5f} -> {s['total']:+.5f} | P {o['group']:+.5f} -> "
-          f"{s['group']:+.5f} | R {o['case']:+.5f} -> {s['case']:+.5f}", flush=True)
+    for a in ALPHAS:
+        w = ws ** a
+        pt, se = jackknife(lambda m: weighted_split(h[m], y[m], phi[m], w[m]), image)
+        tag = {0.0: "original", 1.0: "shifted"}.get(a, f"alpha={a:g}")
+        res[tag] = {"total": float(pt[0]), "group": float(pt[1]), "case": float(pt[2]),
+                    "total_ci": [float(pt[0] - 1.96 * se[0]), float(pt[0] + 1.96 * se[0])],
+                    "group_ci": [float(pt[1] - 1.96 * se[1]), float(pt[1] + 1.96 * se[1])],
+                    "case_ci": [float(pt[2] - 1.96 * se[2]), float(pt[2] + 1.96 * se[2])],
+                    "kish_n": float(w.sum() ** 2 / (w * w).sum())}
+    o, s_ = res["original"], res["shifted"]
+    print(f"{name:34s} T {o['total']:+.5f} -> {s_['total']:+.5f} | P {o['group']:+.5f} -> "
+          f"{s_['group']:+.5f} | R {o['case']:+.5f} -> {s_['case']:+.5f} "
+          f"[{s_['case_ci'][0]:+.5f},{s_['case_ci'][1]:+.5f}] | path R " +
+          " ".join(f"{res[k]['case']:+.5f}" for k in res), flush=True)
     return {"comparison": name, **res}
 
 
@@ -179,7 +196,8 @@ def pixel_rows(rng):
     cal_imgs = set(imgs[g.permutation(len(imgs))[: len(imgs) // 2]].tolist())
     cal = np.array([i in cal_imgs for i in image])
     aud = ~cal
-    q = {v: AU.temp_scale(x, AU.fit_temperature(x[cal], y[cal]))[aud] for v, x in q.items()}
+    import vg_visual_seed_stats as VS                    # the grid Sec. 6 uses
+    q = {v: AU.temp_scale(x, VS.fit_temperature(x[cal], y[cal]))[aud] for v, x in q.items()}
     pairs = [("MLP-CLASS-S", "FREQ", "class-only vs FREQ"),
              ("MLP-SPATIAL-S", "MLP-CLASS-S", "geometry vs class-only"),
              ("MLP-VISUAL-S", "MLP-CLASS-S", "CLIP vs class-only"),
@@ -191,7 +209,9 @@ def main():
     rng = np.random.default_rng(0)
     rows = sgg_rows(rng) + pixel_rows(rng)
     auc = shifted_auc()
-    OUT.write_text(json.dumps({"n_boot": N_BOOT, "score": "quadratic, temperature-matched",
+    OUT.write_text(json.dumps({"n_groups": N_GROUPS, "alphas": list(ALPHAS),
+                               "interval": "delete-a-group jackknife over images",
+                               "score": "quadratic, temperature-matched",
                                "rows": rows, "auc_sgg": auc}, indent=1))
     print(f"wrote {OUT.relative_to(ROOT)}")
 

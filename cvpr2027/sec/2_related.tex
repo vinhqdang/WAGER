@@ -4,14 +4,19 @@
 Scene graph generation was posed as structured prediction over a whole image, solved by
 message passing between object and relation nodes~\cite{xu2017scene}; MOTIFS then showed a
 frequency predictor of the predicate given the object pair to be surprisingly
-competitive~\cite{zellers2018neural}. Mean recall became the headline metric, and debiasing methods now span the causal TDE
-intervention~\cite{tang2020unbiased}, loss re-weighting and group-wise
-learning~\cite{desai2021learning,dong2022stacked}, predicate-rebalancing message
-passing~\cite{li2021bgnn}, relabelling of the training data~\cite{zhang2022finegrained}
-and, outside scene graphs, post-hoc logit adjustment~\cite{menon2021long}; the line
-continues~\cite{kuang2024debiasing,luo2025rebalancing}, and the metrics themselves have
-been shown to reward pathologies~\cite{li2022rethinking}, a diagnosis that recurs in
-open-vocabulary settings~\cite{li2024pixels}. Benchmark audits outside scene graphs find the
+competitive~\cite{zellers2018neural}. Mean recall became the headline metric, and debiasing
+methods now span the causal TDE intervention~\cite{tang2020unbiased}, class-balanced sampling
+and group-wise learning~\cite{desai2021learning,dong2022stacked}, predicate-rebalancing message
+passing~\cite{li2021bgnn}, predicate-correlation and hierarchical
+losses~\cite{yan2020pcpl,yu2021cogtree}, prototype embeddings~\cite{zheng2023prototype}, and
+correction or relabelling of the training labels~\cite{li2022devil,zhang2022finegrained}.
+Correction by the predicate prior is known to rival them: post hoc, DLFE~\cite{chiou2021recovering}
+recovers unbiased predicate probabilities from estimated label frequencies and Structured
+Sparse R-CNN~\cite{teng2022structured} applies logit adjustment~\cite{menon2021long}; in
+training, RTPB~\cite{chen2022resistance} resists a prior bias. The
+metrics themselves have been shown to reward pathologies~\cite{li2022rethinking}, and
+open-vocabulary methods inherit them~\cite{li2024pixels}. These works compare methods by their
+metrics; we ask which part of a metric's change is group-level. Benchmark audits outside scene graphs find the
 same pattern: VQA models collapse when answer priors change between train and
 test~\cite{agrawal2018dont}, GQA-OOD stratifies accuracy by answer rarity within question
 groups~\cite{kervadec2021roses}, and multimodal models exploit non-visual
@@ -21,7 +26,7 @@ out-of-distribution improvement when the grounding signal is
 irrelevant~\cite{shrestha2020negative}, and methods can exploit how an
 out-of-distribution split was built~\cite{teney2020value}. Long-tailed recognition faces the
 same question for re-weighting and logit adjustment~\cite{cao2019learning,menon2021long}.
-All of these characterise a \emph{single} model. We attribute the gain \emph{between} two.
+All of these characterise a \emph{single} model; we account for the gain \emph{between} two.
 
 \paragraph{Proper-score decompositions.} Conditional on a grouping, a proper score splits
 into reliability and resolution terms~\cite{murphy1973vector,degroot1983comparison}, for
@@ -34,7 +39,12 @@ decompositions~\cite{siegert2014variance}, but not for a contrast between two mo
 scored on the same data. The grouping loss~\cite{perezlebel2023beyond} is the
 single-model relative of our case-level part: what calibration leaves behind because
 inputs sharing a confidence level differ; ours contrasts two models within groups
-declared in advance.
+declared in advance. Transporting labels within a group is a within-group permutation of
+the input--label pairing, so one model's case-level part is a conditional permutation
+importance~\cite{strobl2008conditional} or model reliance~\cite{fisher2019all} of the
+non-grouping part of its input, and the case-level part of a gain is the difference of the two
+models' (\cref{prop:reliance}). What the split adds is the exact additive accounting of a
+paired gain, including thresholded metrics, and paired inference for it.
 
 \paragraph{Comparing two predictors.} Inference on a paired score difference is the
 Diebold--Mariano test~\cite{diebold1995comparing} and its conditional

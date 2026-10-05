@@ -8,12 +8,10 @@ auc TDE-base
 auc TDE-base hi
 auc TDE-base lo
 bridge clip pm acc drop
-bridge spatial acc pts
 bridge spatial dR
 consequence cal-matched dR
 cvpr CLASS-FREQ dR
 cvpr CLASS-FREQ dT
-cvpr CLASS-FREQ p
 cvpr CLIP accuracy
 cvpr CLIP matched ci hi
 cvpr CLIP matched ci lo
@@ -44,7 +42,6 @@ cvpr identified cells
 cvpr identified share of relations
 cvpr mR TDE, points
 cvpr mR base, points
-cvpr matched log dP
 cvpr matched quad dR ci hi
 cvpr matched quad dR ci lo
 cvpr matched quad dT
@@ -84,11 +81,44 @@ path vis case
 path vis case hi
 path vis case lo
 path vis dmR
-ps LA log case
 ps LA quad case
-ps TDE-LA log case
 ps TDE-LA quad case
 ps matched quad dP
+rankrob CLIP-geo aud cmp
+rankrob CLIP-geo rel
+rankrob CLIP-geo rel hi
+rankrob CLIP-geo rel lo
+rankrob F@50 LA
+rankrob F@50 TDE
+rankrob LA rel
+rankrob TDE rel
+rankrob TDE rel hi
+rankrob TDE rel lo
+rankrob TDE-LA cmp
+rankrob TDE-LA cmp lo
+rankrob TDE-LA rel
+rankrob TDE-LA rel hi
+rankrob TDE-LA rel lo
+rankrob classwise tb sd
+rankrob classwise temp
+rankrob iet rel
+rankrob iet rel hi
+rankrob iet rel lo
+rankrob recal TDE shared
+rankrob recal TDE tb
+rankrob recal TDE tb hi
+rankrob recal TDE tb lo
+rankrob recal iet tb
+rankrob small VG %
+rankrob small n2 %
+rankrob tier hh
+rankrob tier hh hi
+rankrob tier hh lo
+rankrob tier hh weight %
+rankrob tier rest
+rankrob tier rest hi
+rankrob tier rest lo
+rankrob two-case share %
 rec LA R@50
 rec LA case
 rec LA dmR
@@ -108,6 +138,7 @@ rec TDE-LA case hi
 rec TDE-LA case lo
 rec body group
 rec body total
+rec drop-frq case
 rec head loss
 rec n body
 rec n head
@@ -139,6 +170,7 @@ sgg cal log dR
 sgg n cells
 sgg n images
 sgg tde mR@50
+shift CLIP-geo case
 shift CLIP-geo total
 shift TDE auc original
 shift TDE case
@@ -154,6 +186,8 @@ sim prior-only dR
 sim shortcut dR
 splits TDE quad max
 splits TDE quad min
+splits share TDE lo
+splits share TDE lo %
 vrank CLIP auc
 vrank CLIP vs class
 vrank diff
@@ -161,7 +195,3 @@ vrank diff hi
 vrank diff lo
 vrank geometry auc
 vrank geometry vs class
-zs MOTIFS auc
-zs MOTIFS case vs FREQ
-zs auc
-zs case vs FREQ

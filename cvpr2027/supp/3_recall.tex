@@ -169,8 +169,13 @@ share is zero up to float32 rounding.}
 \subsection{The IETrans checkpoint}\label{app:ietrans}
 
 \paragraph{What was run.} The authors release one Neural-Motifs PredCls checkpoint for
-VG150 (their model zoo, Google Drive), saved at iteration $30{,}000$. It holds no
-frequency-bias weights: the model was trained without one. Their evaluation command builds
+VG150 (their model zoo, Google Drive), saved at iteration $30{,}000$. It is the IETrans+Rwt variant: the evaluation command the
+authors give for it (\texttt{cmds/50/motif/predcls/lt/combine/val.sh}) reads the output
+of their \texttt{combine/rwt} training, internal and external transfer followed by a
+reweighted loss, and its official numbers ($R@50=0.4858$, $mR@50=0.3576$ on their test set)
+are those of their IETrans+Rwt row. We call it IETrans+Rwt throughout; its effect cannot be
+attributed to relabelling alone. It holds no frequency-bias weights: the model was trained
+without one. Their evaluation command builds
 the bias at test time from the training split's log predicate frequencies per object-class
 pair, so the released model's logit is a learned context term plus a fixed per-cell
 log-prior; we ran exactly that command, with the dump hook of \cref{app:recall} recording

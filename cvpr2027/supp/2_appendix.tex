@@ -645,9 +645,10 @@ therefore do not claim that a confounder would have to be implausibly strong to 
 these Visual Genome gains away; on this evidence a modest one would suffice, and the
 reader should treat Section~\ref{sec:results}'s covariance gains as conditional on the
 declared $\phi$ being close to complete. The flagship audit of
-Section~\ref{sec:sggaudit} is not exposed in the same way, because its reported
-$\widehat{\Delta R}$ is indistinguishable from zero and a sensitivity bound on a null
-result changes nothing about it.
+Section~\ref{sec:sggaudit} is exposed differently: its reported $\widehat{\Delta R}$ is
+indistinguishable from zero, but by \cref{prop:coarsen} the omitted between-cell term has
+either sign, so a null at the declared $\phi$ can hide a non-zero part at a finer grouping;
+the bound applies to it in both directions.
 
 \begin{table}[t]
 \centering
@@ -703,13 +704,33 @@ from the weak law of large numbers applied to each plug-in $\widehat{\Delta R}_c
 \widehat{\Delta R}$ together with continuity of the variance functional. One step needs
 more care than that section's per-cell statement supplies: a per-cell H\'ajek remainder of
 order $o_p(n_c^{-1/2})$ does not aggregate to $o_p(N_*^{-1/2})$ at the dataset level when
-the number of cells grows, since summing $C$ such remainders admits a $\sqrt C$ inflation.
-The repair does not need a new condition on cell sizes, only that the cell count be
-negligible relative to the identified sample, $\#\{c:n_c\ge2\}=o(N_*)$: the second-order
-degenerate term of a two-sample U-statistic is $O_p(n_c^{-1})$ rather than
-$o_p(n_c^{-1/2})$, and $\sum_c n_c\cdot O_p(n_c^{-1})=O_p(C)=o_p(N_*)$ gives the
-dataset-level rate directly. We state that condition explicitly; on VG150 it holds
-comfortably ($C=6{,}346$ against $N_*=227{,}337$). Condition (ii) is what rules out a single cluster dominating the
+the number of cells grows. The second-order degenerate term of each cell's U-statistic is
+$O_p(n_c^{-1})$, so the weighted sum of these terms is $O_p(C/N_*)$ with $C=\#\{c:n_c\ge2\}$,
+and it is negligible at the $\sqrt{N_*}$ rate exactly when $C=o(\sqrt{N_*})$,
+Eq.~\eqref{eq:cellcount}. Under condition (iv) the set of cells is fixed, so this holds
+trivially; for a number of cells that grows with $N$ it is the condition to state. VG150 does
+not meet it at its sample size ($C/\sqrt{N_*}\approx13.3$), so the theorem does not by itself
+license the reported intervals. Nor is the omitted term small in every cell: in a cell of two
+cases the U-statistic is its single kernel, and the degenerate term is of the same order as
+the projection the variance keeps. \Cref{tab:smallcells} measures what this costs. With
+every cell holding two cases (each relation its own image, cells and their label priors fixed
+across replicates) the nominal $95\%$ interval covers $81.5\%$ and the standard error is $0.71$
+of the estimator's standard deviation; from three cases up coverage is nominal, and with
+VG150's own cell sizes it is $96.3\%$. On VG150 $1.0\%$ of audited relations sit in two-case
+cells; a grouping finer than the benchmark's would need a variance with the second-order term,
+or a delete-a-group jackknife over images (used in \cref{app:labelshift}).
+
+\begin{table}[t]
+\centering
+\footnotesize
+\caption{\textbf{Coverage of the nominal 95\% case-level interval} by cell size, 400
+replicates of about 4{,}000 relations each (\texttt{sim\_small\_cells.py}). SE/SD: mean
+estimated standard error over the standard deviation of the estimates.}
+\label{tab:smallcells}
+\input{supp/tab_small_cells}
+\end{table}
+
+Condition (ii) is what rules out a single cluster dominating the
 sum -- an image contributing a positive fraction of all relations, for instance -- and
 is a standard requirement for cluster-robust inference generally, not specific to this
 estimator. This theorem licenses reading the image-clustered intervals reported

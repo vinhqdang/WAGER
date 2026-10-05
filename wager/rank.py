@@ -8,9 +8,16 @@ have a larger log-odds  log q(y) - log q(z)  than the relations labelled z.
 
     AUC_c(y, z) = P( s_i > s_j ),  s = log q(y) - log q(z),  y_i = y, y_j = z
 
-(ties count one half), averaged over cells and label pairs with weight
-n_c(y) n_c(z), the number of comparisons -- the same p(y) p(z) weighting as
-the pairwise form of the case-level part. Within a cell a temperature T maps
+(ties count one half), averaged over cells and label pairs. Two weightings:
+
+  comparison  weight n_c(y) n_c(z), the number of comparisons. Within a cell this
+              is the p(y) p(z) weighting of the pairwise form of the case-level
+              part, but across cells it weights a cell by about n_c^2, so the
+              largest cells dominate.
+  relation    weight n_c(y) n_c(z) / n_c = n_c p(y) p(z): the weighting of the
+              case-level part itself, which combines cells in proportion to n_c.
+
+Within a cell a temperature T maps
 s to s / T and any change of the predicted prior adds a constant to s, so the
 statistic is unchanged by calibration and by every group-level adjustment.
 
@@ -32,16 +39,20 @@ class _Blocks:
     block: np.ndarray       # block id of each element
     tie: np.ndarray         # tie-group id (same block and score)
     n_blocks: int
+    blk_cell: np.ndarray    # cell id of each block
+    row_cell: np.ndarray    # cell id of each input row
+    n_cells: int
 
 
 def _blocks(logq: np.ndarray, y: np.ndarray, phi: np.ndarray) -> _Blocks:
     _, inv = np.unique(phi, return_inverse=True)
     order = np.argsort(inv, kind="stable")
     bounds = np.flatnonzero(np.diff(inv[order])) + 1
-    elems, poss, blks, scores = [], [], [], []
+    elems, poss, blks, scores, bcell = [], [], [], [], []
     b = 0
     for idx in np.split(order, bounds):
         labs, cnt = np.unique(y[idx], return_counts=True)
+        cell = inv[idx[0]]
         if len(labs) < 2:
             continue
         for a in range(len(labs)):
@@ -53,6 +64,7 @@ def _blocks(logq: np.ndarray, y: np.ndarray, phi: np.ndarray) -> _Blocks:
                 poss.append(y[m] == ly)
                 blks.append(np.full(len(m), b))
                 scores.append(s)
+                bcell.append(cell)
                 b += 1
     if b == 0:
         raise ValueError("no cell holds two different labels")
@@ -61,11 +73,12 @@ def _blocks(logq: np.ndarray, y: np.ndarray, phi: np.ndarray) -> _Blocks:
     o = np.lexsort((score, block))
     elem, pos, block, score = elem[o], pos[o], block[o], score[o]
     new_tie = np.r_[True, (np.diff(block) != 0) | (np.diff(score) != 0)]
-    return _Blocks(elem, pos, block, np.cumsum(new_tie) - 1, b)
+    return _Blocks(elem, pos, block, np.cumsum(new_tie) - 1, b,
+                   np.asarray(bcell), inv, int(inv.max()) + 1)
 
 
-def _auc(bl: _Blocks, w: np.ndarray) -> float:
-    """Comparison-weighted mean AUC for element weights w (one per row)."""
+def _auc(bl: _Blocks, w: np.ndarray, weighting: str = "comparison") -> float:
+    """Mean within-cell AUC for element weights w (one per row)."""
     we = w[bl.elem]
     wn = np.where(bl.pos, 0.0, we)
     wp = np.where(bl.pos, we, 0.0)
@@ -77,10 +90,16 @@ def _auc(bl: _Blocks, w: np.ndarray) -> float:
     blk_start = np.r_[0, np.flatnonzero(np.diff(bl.block)) + 1]
     blk_cum0 = np.r_[0.0, cum][blk_start]                # cum before each block
     below = below_tie[bl.tie] - blk_cum0[bl.block]
-    num = np.sum(wp * (below + 0.5 * tie_neg[bl.tie]))
-    den = np.sum(np.bincount(bl.block, wp, bl.n_blocks)
-                 * np.bincount(bl.block, wn, bl.n_blocks))
-    return float(num / den)
+    num = np.bincount(bl.block, wp * (below + 0.5 * tie_neg[bl.tie]), bl.n_blocks)
+    den = np.bincount(bl.block, wp, bl.n_blocks) * np.bincount(bl.block, wn, bl.n_blocks)
+    if weighting == "comparison":
+        return float(num.sum() / den.sum())
+    if weighting != "relation":
+        raise ValueError(weighting)
+    n_cell = np.bincount(bl.row_cell, w, bl.n_cells)[bl.blk_cell]
+    ok = n_cell > 0
+    scale = np.where(ok, 1.0 / np.where(ok, n_cell, 1.0), 0.0)
+    return float((num * scale).sum() / (den * scale).sum())
 
 
 @dataclass(frozen=True)
@@ -96,27 +115,28 @@ class AUCContrast:
 
 
 def within_cell_auc(q: np.ndarray, y: np.ndarray, phi: np.ndarray,
-                    eps: float = 1e-12) -> float:
-    """Comparison-weighted within-cell AUC of one model."""
+                    eps: float = 1e-12, weighting: str = "comparison") -> float:
+    """Within-cell AUC of one model."""
     logq = np.log(np.maximum(np.asarray(q, dtype=np.float64), eps))
-    return _auc(_blocks(logq, np.asarray(y), np.asarray(phi)), np.ones(len(y)))
+    return _auc(_blocks(logq, np.asarray(y), np.asarray(phi)), np.ones(len(y)), weighting)
 
 
 def within_cell_auc_contrast(q_new, q_old, y, phi, groups, *, n_boot=200,
-                             alpha=0.05, seed=0, eps=1e-12) -> AUCContrast:
+                             alpha=0.05, seed=0, eps=1e-12, weighting="comparison",
+                             weights=None) -> AUCContrast:
     """AUC of each model and their difference, cluster bootstrap over groups."""
     y, phi = np.asarray(y), np.asarray(phi)
     bn = _blocks(np.log(np.maximum(np.asarray(q_new, float), eps)), y, phi)
     bo = _blocks(np.log(np.maximum(np.asarray(q_old, float), eps)), y, phi)
-    ones = np.ones(len(y))
-    a_new, a_old = _auc(bn, ones), _auc(bo, ones)
+    base = np.ones(len(y)) if weights is None else np.asarray(weights, float)
+    a_new, a_old = _auc(bn, base, weighting), _auc(bo, base, weighting)
     _, ginv = np.unique(groups, return_inverse=True)
     n_g = ginv.max() + 1
     rng = np.random.default_rng(seed)
     draws = np.empty((n_boot, 2))
     for r in range(n_boot):
-        w = rng.multinomial(n_g, np.full(n_g, 1.0 / n_g)).astype(float)[ginv]
-        draws[r] = _auc(bn, w), _auc(bo, w)
+        w = rng.multinomial(n_g, np.full(n_g, 1.0 / n_g)).astype(float)[ginv] * base
+        draws[r] = _auc(bn, w, weighting), _auc(bo, w, weighting)
     lo, hi = 100 * alpha / 2, 100 * (1 - alpha / 2)
     d = draws[:, 0] - draws[:, 1]
     return AUCContrast(a_new, a_old, a_new - a_old,

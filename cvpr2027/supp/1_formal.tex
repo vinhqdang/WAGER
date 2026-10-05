@@ -1,6 +1,6 @@
 \section{Formal results}\label{app:formal}
 
-The main paper states one result, \cref{thm:population}, and uses ten more. They are stated
+The main paper states one result, \cref{thm:population}, and uses eleven more. They are stated
 here in the order the paper relies on them; proofs are in \cref{app:proofs}. Equation and
 section references to the main paper resolve to its numbering, since both are compiled as one
 document.
@@ -50,6 +50,32 @@ For $\psi(q)=\lVert q\rVert_2^2$, $\Delta g_y(x)=2\Delta q_y(x)$ and Eq.~\eqref{
 meaning as the quadratic ones. The implemented log score floors each probability at
 $\epsilon=10^{-6}$; the identity is exact for the unfloored score and negligibly different
 whenever no relevant probability is within $\epsilon$ of zero.
+
+\subsection{One model at a time}
+\begin{proposition}[The case-level part as a difference of within-cell reliances]\label{prop:reliance}
+For a model $m$, a score $S$ and the identified cells of $\phi$, let
+\begin{equation}
+\hat\rho(q_m)=\frac1{N_*}\sum_{c}\sum_{i\in c}\Bigl[S\bigl(q_m(\cdot\mid x_i),y_i\bigr)
+-\frac1{n_c-1}\sum_{j\in c,\,j\ne i}S\bigl(q_m(\cdot\mid x_i),y_j\bigr)\Bigr],
+\label{eq:reliance}
+\end{equation}
+the loss in model $m$'s score when the labels are permuted within cells. Then for the contrast
+$H_i(y)=S(q_1(\cdot\mid x_i),y)-S(q_0(\cdot\mid x_i),y)$,
+$\hdR=\hat\rho(q_1)-\hat\rho(q_0)$, and the same holds for the population quantities and for
+any contrast that is a difference of two per-model, per-label contributions, mean recall
+included.
+\end{proposition}
+
+\noindent\emph{Proof.} $\hdR=\hdT-\hdP$ with $\hdT=N_*^{-1}\sum_iH_i(y_i)$ and
+$\hdP=N_*^{-1}\sum_c\sum_{i\in c}(n_c-1)^{-1}\sum_{j\ne i}H_i(y_j)$, both linear in $H$;
+substituting $H=S(q_1)-S(q_0)$ gives the claim. $\square$
+
+\noindent So $\hat\rho$ is a within-group permutation importance~\cite{strobl2008conditional}
+or model reliance~\cite{fisher2019all} of whatever in the input is not the grouping
+variable, and a leaderboard can report it once per model. What a single model's $\hat\rho$
+does not give is the split of a gain into its two parts, the group-level part in particular,
+and an interval for the difference that accounts for the two models being scored on the same
+relations; that is what the paired estimator and its clustered variance supply.
 
 \subsection{Coarsening, and a variable left out of the grouping}
 \begin{proposition}[Coarsening decomposition]\label{prop:coarsen}

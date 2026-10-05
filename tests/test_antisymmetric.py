@@ -496,3 +496,28 @@ def test_matrix_form_matches_score_form_and_splits_mean_recall_exactly():
     mr = lambda hit: np.mean([hit[y == c, c].mean() for c in range(k)])
     assert g.total_gain == pytest.approx(mr(hit_a) - mr(hit_b), abs=1e-12)
     assert g.total_gain == pytest.approx(g.prior_gain + g.alignment_gain, abs=1e-12)
+
+
+def test_case_level_part_is_a_difference_of_per_model_reliances():
+    """Prop. reliance: R(q1 vs q0) = rho(q1) - rho(q0), rho = within-cell permutation loss."""
+    rng = np.random.default_rng(21)
+    n, k = 400, 4
+    phi = rng.integers(0, 15, n)
+    y = rng.integers(0, k, n)
+    q1, q0 = rng.dirichlet(np.ones(k), n), rng.dirichlet(np.ones(k), n)
+
+    def rho(q):
+        s = -((q[:, None, :] - np.eye(k)[None, :, :]) ** 2).sum(-1)     # quadratic score S(q_i, y)
+        tot = 0.0
+        n_id = 0
+        for c in np.unique(phi):
+            idx = np.flatnonzero(phi == c)
+            if len(idx) < 2:
+                continue
+            for i in idx:
+                others = idx[idx != i]
+                tot += s[i, y[i]] - s[i, y[others]].mean()
+            n_id += len(idx)
+        return tot / n_id
+    g = decompose_gain(q1, q0, y, phi, score="brier")
+    assert g.alignment_gain == pytest.approx(rho(q1) - rho(q0), abs=1e-10)

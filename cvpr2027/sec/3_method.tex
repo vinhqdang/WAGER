@@ -51,7 +51,7 @@ $y$-th gradient coordinate (\cref{thm:bregman}). All proofs are in the supplemen
 and one labelled 2, against an old model predicting $(\tfrac12,\tfrac12)$, a model predicting
 the cell's frequencies $(\tfrac34,\tfrac14)$ for every case gains $+\tfrac18$ of quadratic
 score, all group-level; a model equally far from the old one but pointed at each case's own
-label gains $+\tfrac38$, with a case-level part of $+\tfrac12$. Shift the cell's labels to
+label gains $+\tfrac38$, all case-level. Shift the cell's labels to
 $(\tfrac14,\tfrac34)$ and the first falls to $-\tfrac38$, worse than the model it replaced,
 while the second stays at $+\tfrac38$. In general, with
 $m_y(z)=\mathbb E[H_X(z)\mid Y=y,C=c]$, $\dR_c=\sum_{y<z}p(y)p(z)\,D(y,z)$ where
@@ -71,9 +71,8 @@ A_{ij}=\tfrac12\{H_i(y_i)+H_j(y_j)-H_i(y_j)-H_j(y_i)\}.
 \end{gather}
 These satisfy $\hdT_c=\hdP_c+\hdR_c$ exactly in every sample, and $\hdR_c$ is an unbiased
 order-two U-statistic~\cite{hoeffding1948class} for $\dR_c$ (\cref{thm:sample}).
-Transporting a case only to the \emph{other} cases' labels matters: fitting the cell's label
-frequencies on all $n_c$ cases, the natural plug-in, shrinks every cell's case-level gain by
-exactly $(n_c-1)/n_c$, halving it at $n_c=2$ (\cref{prop:attenuate}). With $m_{cy}$ the count
+Transporting only to the \emph{other} cases' labels matters: the all-case plug-in shrinks
+the case-level gain by $(n_c-1)/n_c$ (\cref{prop:attenuate}). With $m_{cy}$ the count
 of label $y$ in cell $c$, case $i$'s transported score is
 \begin{equation}
 P_i=\frac{\sum_{y}m_{cy}H_i(y)-H_i(y_i)}{n_c-1},
@@ -90,15 +89,13 @@ asymptotically normal under bounded scores and non-dominating clusters (\cref{th
 and at a single cell the total-gain interval is a clustered Diebold--Mariano
 test~\cite{diebold1995comparing} (\cref{cor:dm}).
 
-\paragraph{Confidence matching.}\label{sec:matching} One property of the split must be part of
-the procedure rather than a caveat. Because $\dR$ is a covariance between probability
-\emph{movements} and labels, rescaling a fixed model's confidence moves score between the two
-parts while changing no ranking, no top-1 decision and no information about any case
-(\cref{sec:simulation} measures how much). Two released checkpoints that differ in
-calibration therefore cannot be compared on their raw outputs. Wherever compared models differ
-visibly in confidence we split the images at random, fit each model a single temperature by
-maximum likelihood on one half, and run the split on the other half with each model's own
-temperature applied. The protocol uses no label from the audited half.
+\paragraph{Confidence matching.}\label{sec:matching} Because $\dR$ is a covariance between
+probability \emph{movements} and labels, rescaling a model's confidence moves score between the
+two parts while changing no ranking (\cref{sec:simulation}), so models that differ in
+calibration are not compared on raw outputs. We split the images at random, fit each model a
+temperature by maximum likelihood on one half, and split the gain on the other. A temperature
+cannot undo a class-wise shift of the operating point, so we also report matching by a
+temperature and a per-class bias, which preserves every within-cell ranking too.
 
 \paragraph{Splitting mean recall.}\label{sec:hitrate} Nothing in \cref{thm:population} or
 the estimator uses properness: both hold for any contrast $H_x(y)$ that can be evaluated at
@@ -115,9 +112,10 @@ often: a case-level part with no new discrimination. We therefore read the split
 an \emph{operating-point control}, the old model's logits shifted by the training
 log-prior~\cite{menon2021long}, and pair it with a threshold-free test, the
 \emph{within-cell AUC}: the probability that a case labelled $y$ has larger log-odds
-$\log q(y)-\log q(z)$ than one labelled $z$ in the same cell, averaged with weight
-$n_c(y)n_c(z)$ as in the pairwise form above. A temperature, and any change constant within a
-cell, leaves it unchanged.
+$\log q(y)-\log q(z)$ than one labelled $z$ in the same cell. Averaged with weight
+$n_c(y)n_c(z)$, the number of comparisons, it weights a cell by about $n_c^2$; with weight
+$n_c(y)n_c(z)/n_c$ it combines cells as the split does. We report both. A temperature, and any
+change constant within a cell, leaves either unchanged.
 
 \paragraph{Choosing the grouping.}\label{sec:coarsening} The split is conditional on $\phi$.
 Merging cells changes it by an explicit between-cell covariance term of either sign

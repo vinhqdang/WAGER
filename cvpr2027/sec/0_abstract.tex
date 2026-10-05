@@ -2,21 +2,16 @@
 Debiasing methods for scene graph generation are judged by mean recall, and one of the best
 known, Total Direct Effect (TDE), raises it on Visual Genome from 14.6 to 24.8. What did
 those ten points buy? A model raises mean recall either by predicting rare predicates more
-often within each subject--object pair, or by recognising which individual images actually
-show them, and the metric credits both alike. We give an exact way to tell them apart.
-Scoring each prediction against the label of a different relation from the same
-subject--object group keeps the group's predicate frequencies but breaks the link between
-each relation and its own label; this splits the difference between two frozen models, in
-a proper score or in mean recall itself, into a group-level part and a case-level
-covariance, with no fitted baseline, in $O(NK)$ time, with image-clustered intervals. On
-TDE's released checkpoint, 87\% of the mean-recall gain is group-level and almost none of it
-comes from the fifteen rarest predicates. A one-line logit adjustment of the baseline, which
-leaves the ranking of relations within every group unchanged, recovers nine of the ten points
-with the same split, at under a tenth of TDE's cost in recall, and a threshold-free
-within-group AUC finds no discrimination that TDE gained. A second released method, IETrans,
-gains 21 points, 97\% group-level, while its case-level part falls under both proper
-scores. The converse also occurs: a CLIP
-model reading image crops, ranked last on accuracy and on the proper score, carries more
-case-level covariance than the geometry model ranked above it, though a threshold-free rank
-test cannot separate the two.
+often within each subject--object pair, or by telling which individual relations carry
+them, and the metric credits both alike. Scoring each prediction against the label of
+another relation from the same pair keeps the pair's predicate frequencies but breaks the
+link between each relation and its own label. This splits the difference between two frozen
+models, in a proper score or in mean recall itself, exactly into a group-level part and a
+case-level covariance, in $O(NK)$ time with image-clustered intervals. On TDE's released
+checkpoint, 87\% of the mean-recall gain (interval 83--91\%) is group-level, and a logit
+adjustment that changes no ranking within any pair recovers nine of the ten points at under
+a tenth of TDE's cost in recall. No measure detects a change in TDE's ranking within pairs,
+and its small case-level part changes sign with the calibration protocol and the label mix.
+A second released method, IETrans, gains 21 points, 97\% group-level, and loses
+within-pair discrimination under every measure.
 \end{abstract}

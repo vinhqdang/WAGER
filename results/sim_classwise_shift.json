@@ -1,0 +1,40 @@
+{
+ "n_reps": 200,
+ "score": "quadratic",
+ "logit adjustment": {
+  "raw": {
+   "mean": 0.004939927311396099,
+   "sd": 0.006526917850617761
+  },
+  "temperature matched": {
+   "mean": 0.010586330147146264,
+   "sd": 0.023813739064735384
+  },
+  "temperature + class bias matched": {
+   "mean": 4.9340649699913125e-06,
+   "sd": 0.00025209779051638646
+  },
+  "auc difference": {
+   "mean": 0.0,
+   "sd": 0.0
+  }
+ },
+ "random offsets": {
+  "raw": {
+   "mean": -0.10526873642217134,
+   "sd": 0.06920964296374287
+  },
+  "temperature matched": {
+   "mean": -0.3390097662865742,
+   "sd": 0.17131876280977748
+  },
+  "temperature + class bias matched": {
+   "mean": -6.608228932215277e-06,
+   "sd": 8.740004170346358e-05
+  },
+  "auc difference": {
+   "mean": 0.0,
+   "sd": 0.0
+  }
+ }
+}

@@ -22,38 +22,34 @@ A larger case-level part is not the same as better ranking, and here the two dis
 each model's prior matched within cells, the CLIP model still ranks the correct predicate
 first less often than the geometry model: top-1 accuracy $2.17$ points lower, MRR $1.67$
 lower, recall@5 $1.07$ lower. So the CLIP model carries more case-level covariance without being the better ranker. The
-within-cell AUC, which no calibration or prior shift can move, does not settle it either way:
-$0.5408$ against $0.5323$, a difference of $+0.0085$ with interval $[-0.0062,+0.0214]$, while
-both models clear the class-only model's $0.5$ by $+0.0408$ and $+0.0323$. Its case-level
-advantage is real covariance; that it is better recognition is not established.
+within-cell AUC, which no calibration or prior shift can move, does not favour it either:
+weighted by comparison, $0.5408$ against $0.5323$, a difference of $+0.0085$ with interval
+$[-0.0062,+0.0214]$; weighted as the split weights cells, geometry ranks better, $-0.0067$,
+$[-0.0120,-0.0019]$. Both models clear the class-only model's $0.5$ (by $+0.0408$ and
+$+0.0323$, comparison-weighted). The CLIP model's case-level advantage is real covariance,
+not better ranking.
 
 \paragraph{Seeds.} Over five training seeds (seed $0$ reproduces the predictions above
 exactly; \cref{app:vgseeds}), the CLIP model's matched case-level advantage over geometry stays
 between $+0.00413$ and $+0.00474$, every interval excluding zero, its accuracy stays below
-geometry's, and its AUC difference is positive in all five but excludes zero in one. Adding
+geometry's, and its comparison-weighted AUC difference is positive in all five but excludes zero in one. Adding
 the CLIP features to geometry, rather than replacing it, doubles that advantage ($+0.00807$ to
-$+0.00949$). Zero-shot, with prompts and no training on Visual Genome, CLIP carries little of
-this: on the canonical relations of \cref{sec:sggaudit} its within-cell AUC is $0.5164$ against
-MOTIFS's $0.5705$, and its case-level part over the frequency prior $+0.00046$ against
-$+0.02943$ (\cref{app:zeroshot}).
+$+0.00949$).
 
-\paragraph{Under a label shift.} A label shift should move group-level parts and only
-reweight case-level ones (\cref{sec:method}). We test this by weighting the test relations so
-that every predicate of an object pair is equally frequent (\cref{app:labelshift}). Across the
-eight comparisons of \cref{sec:sggaudit} and this section, seven group-level parts change sign,
-and the totals follow: the CLIP model now beats geometry by $+0.02478$. Five of the six
-case-level parts that excluded zero keep their sign and grow. The exceptions are TDE's: against
-the baseline its null becomes $+0.01430$, interval $[+0.01144,+0.01632]$, and against the
-control $-0.00398$ becomes $+0.00723$, while the AUC separates it from the baseline at neither
-mix. TDE gains discrimination between some predicate pairs and loses it between others, and the
-benchmark's label mix weights the two to zero.
+\paragraph{Under a label shift.} A label shift moves group-level parts and only reweights
+case-level ones (\cref{sec:method}), so the split says which parts of a gain a shift can
+reverse. We reweight the test relations along a path from the benchmark's predicate mix to
+uniform frequencies within each object pair (\cref{app:labelshift}). At the uniform end, seven
+of the eight group-level parts of \cref{sec:sggaudit} and this section change sign, and the
+totals follow: the CLIP model now beats geometry by $+0.02981$. Five of the six case-level
+parts that excluded zero keep their sign and grow. The exceptions are TDE's: its part against
+the baseline rises steadily along the path, from $-0.00006$ to $+0.01430$, interval
+$[+0.01116,+0.01744]$, and against the control from $-0.00398$ to $+0.00723$, while the AUC
+separates it from the baseline at neither end. TDE gains discrimination between some
+predicate pairs and loses it between others, and the benchmark's mix weights the two to zero.
 
 \paragraph{Beyond scene graphs.}\label{sec:further} Nothing in \cref{sec:method} is specific
-to relations, and the supplementary applies the identical estimator to long-tailed image
-classification on CIFAR-100-LT across seeds and imbalance ratios, with label-derived superclasses beside a global cell as the
-grouping, and to long-tailed text classification. On CIFAR-100-LT two standard re-weighting
-schedules have opposite compositions once confidence is matched, reversing what
-their raw scores suggest about both. The constraint on the grouping bites here: the fine
-class label cannot serve as a cell, because it leaves every cell label-homogeneous and
-forces the case-level part to zero by construction --- an artefact that reads exactly like a
-null result.
+to relations; the supplementary applies the estimator to long-tailed image classification
+(CIFAR-100-LT, across seeds and imbalance ratios) and to long-tailed text classification. The
+constraint on the grouping bites there: the fine class label cannot serve as a cell, because
+it forces the case-level part to zero by construction, an artefact that reads like a null.

@@ -80,35 +80,43 @@ image-clustered case-level interval. Every row is against the MOTIFS baseline.}
 \Cref{sec:method} writes a cell's case-level part as $\dR_c=\sum_{y<z}p(y)p(z)\,D(y,z)$, where
 $D(y,z)$ depends only on the class-conditional behaviour of the gain. A label shift that leaves
 $P(X\mid Y,C)$ fixed changes the weights $p(y)p(z)$ and no $D$, while the group-level part
-depends on the cell's label frequencies directly. The prediction is that group-level parts
-move under such a shift, and a case-level part keeps its sign unless its $D(y,z)$ have mixed
-signs. We test it without retraining anything by reweighting the test relations: relation
-$i$ in cell $c$ gets weight $w_i=1/(L_c\,\hat p_c(y_i))$, with $L_c$ the number of predicates
-present in the cell and $\hat p_c$ their frequencies, so that every predicate present in a
-cell carries equal total weight. This is the test set a deployment with uniform within-pair
-predicate frequencies would see. The split is recomputed with pairs $(i,j)$ of a cell weighted
-by $w_iw_j$, so that a gain constant within a cell still has a case-level part of exactly zero
-and unit weights give the estimator of \cref{sec:method}; the within-cell AUC is recomputed
-with the same comparison weights. Temperatures and calibration halves are those of
-\cref{sec:sggaudit,sec:vgvisual}; intervals are image bootstraps (100 replicates).
+depends on the cell's label frequencies directly. So a case-level part keeps its sign under
+every such shift if its $D(y,z)$ share one sign, and can change sign otherwise; that much
+follows from the identity, and the reweighted estimator below inherits it. What the data
+decide is which comparisons have $D(y,z)$ of mixed sign, and how far the group-level parts
+move. This is a sensitivity analysis, not an independent test.
+
+Relation $i$ in cell $c$ gets weight $w_i=1/(L_c\,\hat p_c(y_i))$, with $L_c$ the number of
+predicates present in the cell and $\hat p_c$ their frequencies, so that every predicate present
+in a cell carries equal total weight; the path $w_i^\alpha$, $\alpha\in\{0,\tfrac14,\tfrac12,
+\tfrac34,1\}$, moves from the benchmark's mix to that uniform one. The split is recomputed
+with pairs $(i,j)$ of a cell weighted by $w_iw_j$, so a gain constant within a cell still has a
+case-level part of exactly zero and unit weights give the estimator of \cref{sec:method}; the
+within-cell AUC is recomputed with the same comparison weights. Temperatures are those fitted
+at the benchmark's mix, on the calibration halves of \cref{sec:sggaudit,sec:vgvisual}, each
+study on its own temperature grid; they are not refitted under the shift. Intervals are a
+delete-a-group jackknife over images (100 groups). An image bootstrap biases the case-level
+part towards zero here, because a resampled image's same-label pairs have kernel zero and
+receive weight $\mathbb E[w^2]=2$. At the uniform end the weights are very unequal: the
+Kish effective sample size of the audit half falls from $92{,}027$ to $7{,}296$.
 
 \Cref{tab:labelshift} gives the result for the eight comparisons of the two audits. The
 group-level part changes sign in seven of them; in the eighth, the class-pair model against
-FREQ, it shrinks from $-0.01412$ to $-0.00180$. With the group-level parts, the totals reverse
-too: the CLIP model, last on the benchmark by every aggregate, beats geometry by $+0.02478$
+FREQ, it shrinks from $-0.01432$ to $-0.00241$. With the group-level parts, the totals reverse
+too: the CLIP model, last on the benchmark by every aggregate, beats geometry by $+0.02981$
 under uniform labels. Of the six case-level parts whose interval excludes zero on the
 benchmark, five keep their sign and grow in size: geometry over the class-pair model
-($+0.00882\to+0.01152$), CLIP over geometry ($+0.00472\to+0.00619$), IETrans over the baseline
-($-0.01623\to-0.01830$). The exception is TDE against the logit-adjusted control, whose
-case-level part turns from $-0.00398$ to $+0.00723$; and TDE's null against the baseline
-becomes $+0.01430$, interval $[+0.01144,+0.01632]$. Both exceptions involve TDE, and both
-mean that TDE's $D(y,z)$ have mixed signs: it gains within-cell discrimination between some
-pairs of predicates and loses it between others, and the benchmark's label mix weights the
-two to a null. The threshold-free AUC does not separate TDE from the baseline at either mix:
-$+0.0026$ on the benchmark, $-0.0183$, interval $[-0.0684,+0.0082]$, under uniform labels.
-What \cref{sec:sggaudit} says about TDE's case-level part therefore holds at the benchmark's
-label mix; under a different mix the same predictions carry a case-level part, of a sign the
-split computes but cannot know in advance.
+($+0.00891\to+0.01157$), CLIP over geometry ($+0.00464\to+0.00615$), IETrans+Rwt over the
+baseline ($-0.01623\to-0.01830$). The exception is TDE against the logit-adjusted control,
+whose case-level part turns from $-0.00398$ to $+0.00723$; and TDE's null against the
+baseline becomes $+0.01430$, interval $[+0.01116,+0.01744]$. Along the path
+(\cref{tab:labelshiftpath}) TDE's part rises monotonically and already excludes zero at
+$\alpha=\tfrac14$ ($+0.00238$, $[+0.00092,+0.00385]$): its null holds at the benchmark's exact
+mix and nowhere near it. Both exceptions mean that TDE's $D(y,z)$ have mixed signs: it gains
+within-cell discrimination between some pairs of predicates and loses it between others,
+consistent with the tier pattern of \cref{app:rankrob}. The threshold-free AUC does not
+separate TDE from the baseline at either end: $+0.0026$ on the benchmark, $-0.0183$, interval
+$[-0.0684,+0.0082]$, under uniform labels.
 
 \begin{table*}[t]
 \centering
@@ -117,15 +125,91 @@ split computes but cannot know in advance.
 \caption{\textbf{The split under a label shift.} Matched quadratic split on the benchmark's
 labels and with every predicate of a cell given equal weight. Upper block: the scene-graph
 audit (\cref{sec:sggaudit}); middle block: the real-pixel study (\cref{sec:vgvisual}); lower
-block: within-cell AUC change under the same two weightings. Intervals: image bootstrap.}
+block: within-cell AUC change under the same two weightings (image bootstrap). Split
+intervals: delete-a-group jackknife over images.}
 \label{tab:labelshift}
 \input{supp/tab_label_shift}
 \end{table*}
 
+\begin{table}[t]
+\centering
+\scriptsize
+\setlength\tabcolsep{1.5pt}
+\caption{\textbf{Case-level part along the path of label mixes} $w^\alpha$ ($\alpha=0$: the
+benchmark; $\alpha=1$: uniform within cells), matched quadratic score, jackknife intervals;
+last row: Kish effective sample size.}
+\label{tab:labelshiftpath}
+\input{supp/tab_label_shift_path}
+\end{table}
+
+\subsection{How the case-level verdicts depend on the measure}\label{app:rankrob}
+
+\paragraph{AUC weighting.} The within-cell AUC of \cref{sec:method} averages the AUCs of each
+cell's label pairs with weight $n_c(y)n_c(z)$, the number of comparisons. Across cells this
+weights a cell by about $n_c^2$: the largest cell carries $27\%$ of the weight, against $2.5\%$
+of the relations. Weighting by $n_c(y)n_c(z)/n_c$ instead combines cells as the case-level
+part does. \Cref{tab:rankweighting} gives both, on all identified relations and on the audit
+half on which the matched split is computed. TDE's change covers zero under all four. The
+logit-adjusted control's moves by float32 rounding only. IETrans+Rwt's loss excludes zero
+under the split's weighting ($-0.0235$, $[-0.0275,-0.0182]$) though not by comparison. CLIP
+against geometry is the case the weighting decides: by comparison it favours CLIP on the audit
+half ($+0.0214$, $[+0.0001,+0.0435]$), by relation it favours geometry on all relations
+($-0.0067$, $[-0.0120,-0.0019]$), and the other two estimates cover zero.
+
+\paragraph{Where TDE's discrimination moved.} \Cref{tab:tierpair} restricts the
+comparison-weighted AUC change to label pairs by predicate tier. $65\%$ of the weight sits on
+head--head pairs, where TDE's change is $+0.0068$, $[-0.0003,+0.0134]$; on all other pairs it is
+$-0.0051$, $[-0.0130,+0.0026]$. Neither excludes zero, so we read it as a pattern consistent with
+the label-shift result rather than as a finding. IETrans+Rwt's loss is concentrated on
+head--body ($-0.0250$) and body--body ($-0.0260$) pairs, both excluding zero.
+
+\paragraph{Recalibration family.} \Cref{tab:recalibration} repeats the matched split under
+three families, each fitted on the calibration half and each preserving every model's
+within-cell ranking: one temperature per model (the protocol of \cref{sec:sggaudit}), one
+temperature shared by the two models, and a temperature with a per-class bias per model. The
+third absorbs any global shift of the log-prior, so the logit-adjusted control becomes the
+baseline exactly (case-level part $0.00000$), which the first cannot achieve ($+0.00392$): the
+simulation of \cref{sec:simulation} shows the same for a synthetic class-wise offset, which a
+temperature leaves at $+0.0106$ and the third family removes. Under it TDE's case-level part
+is $+0.00445$, $[+0.00354,+0.00536]$ (quadratic) and $+0.02543$ (log), while IETrans+Rwt's loss
+is unchanged ($-0.01679$, $-0.06609$). IETrans+Rwt's case-level loss is negative under all six
+protocol-score combinations; TDE's sign is not.
+
+\begin{table}[t]
+\centering
+\scriptsize
+\setlength\tabcolsep{2pt}
+\caption{\textbf{Within-cell AUC change under both weightings}, on all identified relations
+and on the audit half; image bootstrap, 200 replicates. Lower block: the real-pixel study
+(seed 0).}
+\label{tab:rankweighting}
+\input{supp/tab_rank_weighting}
+\end{table}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{\textbf{Comparison-weighted AUC change by predicate-tier pair} (head: more than
+10{,}000 training instances; tail: fewer than 500), with each tier pair's share of the
+comparison weight; image bootstrap, 200 replicates.}
+\label{tab:tierpair}
+\input{supp/tab_tier_pair_auc}
+\end{table*}
+
+\begin{table}[t]
+\centering
+\scriptsize
+\setlength\tabcolsep{2pt}
+\caption{\textbf{The matched split under three recalibration families}, audit half,
+image-clustered intervals. Every family preserves each model's within-cell ranking.}
+\label{tab:recalibration}
+\input{supp/tab_recalibration}
+\end{table}
+
 \subsection{Zero-shot CLIP on the canonical split}\label{app:zeroshot}
 
-The CLIP model of \cref{sec:vgvisual} trains a head on Visual Genome labels. To audit the
-model as the audience uses it, we score the canonical test relations of \cref{sec:sggaudit}
+The CLIP model of \cref{sec:vgvisual} trains a head on Visual Genome labels. As a first look
+at a vision--language model used with no training at all, we score the canonical test relations of \cref{sec:sggaudit}
 zero-shot: frozen CLIP ViT-B/32~\cite{radford2021learning} encodes the union box of subject
 and object and is compared with one prompt per predicate, ``a photo of a \{subject\}
 \{predicate\} a \{object\}'' (\texttt{colab\_clip\_zeroshot.py}). The map from dataset index
@@ -144,9 +228,12 @@ $+0.00046$, interval $[+0.00041,+0.00051]$. But this is a small fraction of what
 from Visual Genome: MOTIFS's AUC is $0.5705$, the difference $-0.0542$, interval
 $[-0.0655,-0.0423]$, and its case-level part over FREQ is $+0.02943$. Given the training prior,
 zero-shot CLIP reaches $0.6289$ top-1, but its case-level part over FREQ ($+0.00989$) is a third
-of MOTIFS's. The vision--language model the audience uses does not, zero-shot, rank predicates
-within an object pair the way a trained scene-graph model does, in line with evidence that such
-models often treat captions as bags of words~\cite{yuksekgonul2023when}. TDE's case-level part
+of MOTIFS's. Frozen ViT-B/32 with one prompt per predicate is a weak baseline, at $2.5\%$ top-1 close to
+chance, so this bounds what such a model carries only from below: a larger model, prompt
+ensembles or region-level features may carry more, and we draw no general conclusion about
+vision--language models from it. What it shows is that the split separates a model with no
+predicate prior and little within-pair information from one with both, in line with evidence
+that such models often treat captions as bags of words~\cite{yuksekgonul2023when}. TDE's case-level part
 over FREQ, $+0.02937$, equals MOTIFS's to the third decimal, as the null of \cref{sec:sggaudit}
 implies.
 

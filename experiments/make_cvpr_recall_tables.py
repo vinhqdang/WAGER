@@ -9,6 +9,11 @@
   cvpr2027/supp/tab_label_shift.tex       split under a within-cell label shift
   cvpr2027/supp/tab_predicate_merge.tex   split after merging predicates
   cvpr2027/supp/tab_clip_zeroshot.tex     zero-shot CLIP on the canonical relations
+  cvpr2027/supp/tab_rank_weighting.tex    within-cell AUC under both weightings
+  cvpr2027/supp/tab_tier_pair_auc.tex     AUC change by predicate-tier pair
+  cvpr2027/supp/tab_recalibration.tex     matched split under three recalibration families
+  cvpr2027/supp/tab_label_shift_path.tex  case-level part along a path of label mixes
+  cvpr2027/supp/tab_small_cells.tex       interval coverage with small cells
 
 Run: python experiments/make_cvpr_recall_tables.py
 """
@@ -340,6 +345,96 @@ def clip_zeroshot():
     return "\n".join(lines)
 
 
+NAME = {"TDE": "TDE", "la1": r"LA$_{1}$", "ietrans": "IETrans+Rwt", "none": "base",
+        "MLP-VISUAL-S": "CLIP", "MLP-SPATIAL-S": "geometry", "MLP-CLASS-S": "class"}
+
+
+def rank_weighting():
+    d = json.loads((RES / "sgg_rank_robustness.json").read_text())
+    tl = json.loads((RES / "sgg_auc_tde_la.json").read_text())["rows"]
+    cols = ("all, comparison", "all, relation", "audit half, comparison", "audit half, relation")
+    lines = [r"\begin{tabular}{@{}llll@{}}", r"\toprule",
+             r"Comparison & weighting & all relations & audit half \\", r"\midrule"]
+    rows = d["sgg_auc"][:1] + tl + d["sgg_auc"][1:] + [None] + d["pixel_auc"]
+    for r in rows:
+        if r is None:
+            lines.append(r"\midrule")
+            continue
+        for j, wt in enumerate(("comparison", "relation")):
+            a, b = r[f"all, {wt}"], r[f"audit half, {wt}"]
+            lab = f"{NAME[r['new']]} vs {NAME[r['old']]}" if j == 0 else ""
+            lines.append(f"{lab} & {wt} & ${f4(a['difference'])}$ {ci(a['ci'])} & "
+                         f"${f4(b['difference'])}$ {ci(b['ci'])} \\\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
+def tier_pair():
+    d = json.loads((RES / "sgg_rank_robustness.json").read_text())["tier_pair_auc"]
+    order = ["head-head", "head-body", "head-tail", "body-body", "body-tail", "tail-tail",
+             "all but head-head"]
+    lines = [r"\begin{tabular}{@{}lr" + "l" * 3 + r"@{}}", r"\toprule",
+             r"Tier pair & weight & TDE vs base & LA$_{1}$ vs base & IETrans+Rwt vs base \\",
+             r"\midrule"]
+    for t in order:
+        w = d["TDE vs none"][t]["weight_share"]
+        cells = [f"${f4(d[k][t]['difference'])}$ {ci(d[k][t]['ci'])}"
+                 for k in ("TDE vs none", "la1 vs none", "ietrans vs none")]
+        if t == "all but head-head":
+            lines.append(r"\midrule")
+        lines.append(f"{t} & {w:.3f} & " + " & ".join(cells) + r" \\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
+def recalibration():
+    d = json.loads((RES / "sgg_rank_robustness.json").read_text())["recalibration"]
+    fams = ("temperature", "shared temperature", "temperature + class bias")
+    lines = [r"\begin{tabular}{@{}llrrl@{}}", r"\toprule",
+             r"Comparison & Matching & group & case & case 95\% CI \\", r"\midrule"]
+    for k, r in enumerate(d):
+        for sc in ("brier", "log"):
+            for j, fam in enumerate(fams):
+                m = r[f"{fam}, {sc}"]
+                lab = (f"{NAME[r['new']]} vs base, {'quadratic' if sc == 'brier' else 'log'}"
+                       if j == 0 else "")
+                lines.append(f"{lab} & {fam} & ${f5(m['group'])}$ & ${f5(m['case'])}$ & "
+                             f"{ci5(m['case_ci'])} \\\\")
+        if k < len(d) - 1:
+            lines.append(r"\midrule")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
+def label_shift_path():
+    d = json.loads((RES / "label_shift.json").read_text())
+    keys = ["original", "alpha=0.25", "alpha=0.5", "alpha=0.75", "shifted"]
+    short = {"TDE vs MOTIFS": "TDE vs base", "logit-adjusted vs MOTIFS": r"LA$_{1}$ vs base",
+             "IETrans vs MOTIFS": "IETrans+Rwt vs base", "TDE vs logit-adjusted": r"TDE vs LA$_{1}$"}
+    lines = [r"\begin{tabular}{@{}l" + "r" * len(keys) + r"@{}}", r"\toprule",
+             r"$\alpha$ & " + " & ".join(["0", ".25", ".5", ".75", "1"]) + r" \\", r"\midrule"]
+    for r in d["rows"][:4]:
+        lines.append(short[r["comparison"]] + " & " + " & ".join(f"${f5(r[k]['case'])}$" for k in keys)
+                     + r" \\")
+        lines.append(" & " + " & ".join(ci5(r[k]["case_ci"]) for k in keys) + r" \\")
+    r0 = d["rows"][0]
+    lines += [r"\midrule", "Kish $n$ & " + " & ".join(f"{r0[k]['kish_n']:,.0f}".replace(",", "{,}")
+                                                     for k in keys) + r" \\",
+              r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
+def small_cells():
+    d = json.loads((RES / "sim_small_cells.json").read_text())
+    lines = [r"\begin{tabular}{@{}lrr@{}}", r"\toprule",
+             r"Cell sizes & coverage & SE / SD \\", r"\midrule"]
+    for k in ("n_c=2", "n_c=3", "n_c=4", "n_c=8", "n_c=20", "VG150 cell sizes"):
+        lab = k.replace("n_c=", "every cell $n_c=") + "$" if k.startswith("n_c") else k
+        lines.append(f"{lab} & {100 * d[k]['coverage']:.1f}\\% & {d[k]['se_over_sd']:.2f} \\\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
 def main():
     head = "% generated by experiments/make_cvpr_recall_tables.py -- do not edit\n"
     (OUT / "tab_recall_split.tex").write_text(head + recall_split() + "\n")
@@ -356,6 +451,11 @@ def main():
     (OUT / "tab_label_shift.tex").write_text(head + label_shift() + "\n")
     (OUT / "tab_predicate_merge.tex").write_text(head + predicate_merge() + "\n")
     (OUT / "tab_clip_zeroshot.tex").write_text(head + clip_zeroshot() + "\n")
+    (OUT / "tab_rank_weighting.tex").write_text(head + rank_weighting() + "\n")
+    (OUT / "tab_tier_pair_auc.tex").write_text(head + tier_pair() + "\n")
+    (OUT / "tab_recalibration.tex").write_text(head + recalibration() + "\n")
+    (OUT / "tab_label_shift_path.tex").write_text(head + label_shift_path() + "\n")
+    (OUT / "tab_small_cells.tex").write_text(head + small_cells() + "\n")
     print("wrote", ", ".join(p.name for p in sorted(OUT.glob("tab_*.tex"))))
 
 

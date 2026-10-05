@@ -31,6 +31,12 @@ ONEDRIVE = {
     f"{ROOT}/causal_motif_predcls.zip":
         "https://1drv.ms/u/s!AmRLLNf6bzcir9xx725wYjN7lytynA?e=0B65Ws",
 }
+# SGCls / SGDet checkpoints of the same causal MOTIFS-SUM release (README, "Examples of
+# Pretrained Causal MOTIFS-SUM models"), fetched only when asked for.
+EXTRA = {"sgcls": "https://1drv.ms/u/s!AmRLLNf6bzcir9xyuLO_I8TSZ6kfyQ?e=Y5686s",
+         "sgdet": "https://1drv.ms/u/s!AmRLLNf6bzcir9x7OYb6sKBlzoXuYA?e=s3Y602"}
+for _proto in filter(None, os.environ.get("WAGER_EXTRA_CKPTS", "").split(",")):
+    ONEDRIVE[f"{ROOT}/causal_motif_{_proto}.zip"] = EXTRA[_proto]
 
 
 def log(msg):
@@ -158,6 +164,18 @@ for dirpath, _dirs, files in os.walk(f"{ROOT}/ckpt"):
     for fn in files:
         if fn.endswith(".pth") or fn == "last_checkpoint":
             log(f"ckpt file: {os.path.join(dirpath, fn)}")
+
+for _proto in filter(None, os.environ.get("WAGER_EXTRA_CKPTS", "").split(",")):
+    _dst = f"{ROOT}/ckpt_{_proto}"
+    if not os.path.exists(_dst + "/.done"):
+        os.makedirs(_dst, exist_ok=True)
+        with zipfile.ZipFile(f"{ROOT}/causal_motif_{_proto}.zip") as z:
+            z.extractall(_dst)
+        open(_dst + "/.done", "w").write("1")
+    for dirpath, _dirs, files in os.walk(_dst):
+        for fn in files:
+            if fn.endswith(".pth"):
+                log(f"{_proto} ckpt file: {os.path.join(dirpath, fn)}")
 
 # GloVe
 os.makedirs(f"{ROOT}/glove", exist_ok=True)
