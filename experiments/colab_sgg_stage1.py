@@ -104,7 +104,7 @@ def sh(args, cwd=None):
 T0 = time.time()
 
 # ---- 1. OneDrive artifacts -------------------------------------------------
-for attempt in range(3):
+for attempt in range(20):           # OneDrive resets long transfers; fetch resumes
     try:
         tok = badger_token()
         for dest, share in ONEDRIVE.items():
@@ -113,9 +113,9 @@ for attempt in range(3):
         break
     except Exception as e:  # tempauth URLs expire; refresh token and resume
         log(f"onedrive attempt {attempt}: {e}")
-        time.sleep(10)
+        time.sleep(15)
 else:
-    raise RuntimeError("OneDrive downloads failed after 3 attempts")
+    raise RuntimeError("OneDrive downloads failed after 20 attempts")
 
 # ---- 2. VG images + metadata ------------------------------------------------
 os.makedirs(f"{SGG}/datasets/vg/VG_100K", exist_ok=True)
