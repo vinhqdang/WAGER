@@ -240,3 +240,24 @@ fired_conditions: []
 da_critical_adjudications: []
 editorial_decision=major_revision
 ```
+
+---
+
+## Status (2026-10-05, after the round-2 revision)
+
+| ID | State | Where |
+|---|---|---|
+| R2-1 | **Done.** Headline restated around what survives every protocol: 87% [83, 91] group-level (image-group jackknife), no detected change in within-cell ranking under either AUC weighting or by tier pair; the proper-score case-level part is protocol- and mix-dependent (−0.00006 per-model T; +0.00445 T + class bias; −0.0184 shared T; +0.044 log; +0.0143 uniform mix). | Abstract, Sec. 1, 5, 7 |
+| R2-2 | **Done.** Relation-weighted AUC added to `wager/rank.py` (tested against brute force) and reported beside the comparison-weighted one, on all relations and on the audit half; Sec. 6 now says geometry ranks better under the split's weighting (−0.0067 [−0.0120, −0.0019]). | Tab. 1, Sec. 6, App. on robustness |
+| R2-3 | **Done.** Temperature + per-class-bias matching (control ≡ baseline exactly); non-tautological validation arm: a class-wise operating-point shift survives temperature matching (+0.0106) and is removed by T + bias (0.0000). | Sec. 3, 4; `sim_classwise_shift.py` |
+| R2-4 | **Done.** Named IETrans+Rwt throughout, with the evaluation-script evidence; framed as a cross-model contrast. Its within-cell loss holds under every measure (relation-weighted AUC −0.0235 [−0.0275, −0.0182]; T + bias −0.0168). | Sec. 5, App. on IETrans |
+| R2-5 | **Done for SGCls; partial for SGDet.** Inline evaluator replay, equal to the codebase's evaluator on 200 images in both protocols, reproducing the released recalls on the full SGCls test set. SGCls: +0.0517 mR@50, 99% group-level; control +0.0518 at R@50 0.384 vs 0.263; TDE's within-cell ranking worse (rel. AUC −0.0128 [−0.0171, −0.0074]). SGDet on the first 4,000 test images only (GPU quota exhausted on both accounts): +0.0375, 81% group-level; control +0.0510 at nearly twice TDE's R@50; no detected discrimination change. Full SGDet run and other backbones still open. | Sec. 5 "Beyond PredCls", App. on SGCls/SGDet |
+| R2-6 | **Done.** DLFE, RTPB, SSRCNN-LA, PCPL, CogTree, NICE, PE-Net cited (each checked on Crossref); permutation-importance lineage (Strobl 2008; Fisher et al. 2019) with a proposition ΔR̂ = ρ̂(q₁) − ρ̂(q₀), tested; contribution restated. | Sec. 2, Supp. Prop. 2 |
+| R2-7 | **Done.** "Case-level covariance" wording in Fig. 1, intro and conclusion; the CLIP study is described as a controlled real-pixel study. | Fig. 1, Sec. 1, 6, 7 |
+| R2-8 | **Done (supplement).** Zero-shot CLIP removed from the main text; its limits (single prompt, ViT-B/32, near-chance top-1) stated. A stronger VLM was not run. | App. on zero-shot CLIP |
+| R2-9 | **Done.** Label-shift intervals by a delete-a-group jackknife; one temperature grid per study; 87%/97% shares with intervals; algebraic-zero p removed; limit-theorem conditions made consistent, with a small-cell coverage table (81.5% at n_c = 2, nominal from 3 up, 96.3% at VG150's cell sizes); worked example at population values; sensitivity-bound sentence corrected. | Sec. 3, 4, App. on robustness and limit theorem |
+| R2-10 | **Done.** Label shift framed as a sensitivity analysis along a path of mixes (TDE's case-level part significant from α = ¼); micro vs official mR stated; "nine of ten points" scoped to mR@50 (graph constraint). | Sec. 6, App. on label shift |
+| R2-11 | **Done.** [22] authors fixed (arXiv 2208.01909); [9] described as class-balanced sampling; open-vocabulary citation reworded; F@50 reported (control 0.344 vs TDE 0.322); mechanism scoped to SUM fusion and the union-region term. | Sec. 2, 5 |
+| R2-12 | **Not done.** No input-grounded non-SGG audit; the generality paragraph was narrowed instead. | Sec. 6 |
+| R2-13 | **Partly.** Identical-input ties cap the within-cell AUC at 0.9996, so MOTIFS's 0.57 is not that kind of ceiling; annotator style is not measurable from the data. | App. on predicate merges |
+| R2-14 | **Done.** Abstract shortened (210 words), intro condensed; paper at 8 content pages. | — |
