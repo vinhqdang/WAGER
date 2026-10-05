@@ -244,13 +244,21 @@ TDE's case-level part against it is $-0.0027$, $[-0.0063,+0.0009]$. On relations
 matched pair TDE's within-cell discrimination falls: the AUC change weighted as the split
 weights cells is $-0.0128$, interval $[-0.0171,-0.0074]$ ($-0.0047$, $[-0.0122,+0.0031]$, by
 comparison), and the matched quadratic case-level part is $-0.00540$, $[-0.00655,-0.00425]$.
-%DET-SGDET%
+The SGDet run covers the first $4{,}000$ of the $26{,}446$ test images in the codebase's order
+(marked $\ast$): GPU time ran out before the rest, so the replayed recalls are not comparable
+with the released full-set numbers, and its intervals are wider. On that subset the picture is
+the same. TDE raises $mR@50$ by $+0.0375$, $81\%$ group-level, with a case-level part of
+$+0.0071$, $[-0.0001,+0.0142]$; the control gains more, $+0.0510$, at $R@50=0.3212$ against
+TDE's $0.1679$; and neither AUC weighting nor the matched quadratic score detects a change in
+TDE's within-cell discrimination ($-0.0054$, $[-0.0156,+0.0045]$, relation-weighted;
+$-0.00160$, $[-0.00404,+0.00083]$).
 
 \begin{table}[t]
 \centering
 \footnotesize
 \caption{\textbf{Recall of the SGCls and SGDet checkpoints}, released (repository README) and
-replayed by the inline evaluator on the full test set (graph constraint).}
+replayed by the inline evaluator (graph constraint), on the full test set except
+$\ast$: SGDet on the first $4{,}000$ test images.}
 \label{tab:detrecall}
 \input{supp/tab_det_recall}
 \end{table}
@@ -262,7 +270,8 @@ replayed by the inline evaluator on the full test set (graph constraint).}
 \caption{\textbf{The audit in SGCls and SGDet.} Mean recall@50 split (graph constraint,
 micro-averaged, grouping by ground-truth class pair) with its image-clustered case-level
 interval and group-level share, and the within-cell AUC change on relations with a matched
-pair, by comparison ($c$) and as the split weights cells ($r$); image bootstrap.}
+pair, by comparison ($c$) and as the split weights cells ($r$); image bootstrap. $\ast$: first
+$4{,}000$ test images.}
 \label{tab:det}
 \input{supp/tab_det_protocols}
 \end{table*}

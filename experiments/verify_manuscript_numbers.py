@@ -759,6 +759,33 @@ if not _ok:
     print("FAIL SGCls replay claims (equals the evaluator on 200 images; reproduces released recall)")
     sys.exit(1)
 
+_dd = load("sgg_sgdet_audit.json")
+_ddm, _dda, _ddq = _dd["mR_split"], _dd["auc"], _dd["matched_split"]
+CHECKS += [
+    ("det sgdet n images", "5_audit.tex", "first $4{,}000$ SGDet", "checked below", 0),
+    ("det sgdet LA dmR", "5_audit.tex", "+0.0510", _ddm["la1 vs none"]["total"], 5e-5),
+    ("det sgdet TDE dmR", "5_audit.tex", "+0.0375", _ddm["TDE vs none"]["total"], 5e-5),
+    ("det sgdet share %", "5_robust.tex", "$81\\%$", 100 * _ddm["TDE vs none"]["share_group"], 0.5),
+    ("det sgdet case", "5_robust.tex", "+0.0071", _ddm["TDE vs none"]["case"], 5e-5),
+    ("det sgdet case lo", "5_robust.tex", "-0.0001", _ddm["TDE vs none"]["case_ci"][0], 5e-5),
+    ("det sgdet case hi", "5_robust.tex", "+0.0142", _ddm["TDE vs none"]["case_ci"][1], 5e-5),
+    ("det sgdet LA R@50", "5_robust.tex", "0.3212", _dd["recall"]["la1"]["R@50"], 5e-5),
+    ("det sgdet TDE R@50", "5_robust.tex", "0.1679", _dd["recall"]["TDE"]["R@50"], 5e-5),
+    ("det sgdet auc rel", "5_robust.tex", "-0.0054", _dda["TDE vs none"]["relation"]["difference"], 5e-5),
+    ("det sgdet auc rel lo", "5_robust.tex", "-0.0156", _dda["TDE vs none"]["relation"]["ci"][0], 5e-5),
+    ("det sgdet auc rel hi", "5_robust.tex", "+0.0045", _dda["TDE vs none"]["relation"]["ci"][1], 5e-5),
+    ("det sgdet quad case", "5_robust.tex", "-0.00160", _ddq["TDE vs none"]["case"], 1e-5),
+    ("det sgdet quad lo", "5_robust.tex", "-0.00404", _ddq["TDE vs none"]["case_ci"][0], 1e-5),
+    ("det sgdet quad hi", "5_robust.tex", "+0.00083", _ddq["TDE vs none"]["case_ci"][1], 1e-5),
+]
+_r = _dd["recall"]["la1"]["R@50"] / _dd["recall"]["TDE"]["R@50"]
+_ok = (_dd["n_images"] == 4000 and 1.8 <= _r < 2.0
+       and all(_dda["TDE vs none"][w]["ci"][0] < 0 < _dda["TDE vs none"][w]["ci"][1]
+               for w in ("comparison", "relation"))
+       and _ddq["TDE vs none"]["case_ci"][0] < 0 < _ddq["TDE vs none"]["case_ci"][1])
+if not _ok:
+    print("FAIL SGDet subset claims (4,000 images; nearly twice R@50; no detected change)"); sys.exit(1)
+
 # Claims no single literal carries.
 assert m50["total"] - m50["group"] - m50["case"] < 1e-12
 if not r_cost_la < 0.1 * r_cost_tde:

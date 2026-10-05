@@ -60,7 +60,11 @@ det sgcls auc rel
 det sgcls auc rel hi
 det sgcls auc rel lo
 det sgcls dmR
+det sgcls group
 det sgcls share %
+det sgdet LA dmR
+det sgdet TDE dmR
+det sgdet n images
 iet auc
 iet auc hi
 iet auc lo

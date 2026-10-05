@@ -150,4 +150,5 @@ share every object prediction, so the ground-truth pair remains a common groupin
 the evaluator inside the inference loop and reproduce the released recalls (\cref{app:det}). In
 SGCls TDE raises $mR@50$ by $+0.0517$, $99\%$ of it group-level; the control gains $+0.0518$ at
 $R@50=0.384$ against TDE's $0.263$; and TDE's within-cell ranking gets worse, by $-0.0128$ of
-relation-weighted AUC, interval $[-0.0171,-0.0074]$.%SGDET-MAIN%
+relation-weighted AUC, interval $[-0.0171,-0.0074]$. On the first $4{,}000$ SGDet test images
+the control again gains more than TDE ($+0.0510$ against $+0.0375$) at nearly twice its $R@50$.

@@ -452,7 +452,8 @@ def det_protocols():
                                       ("TDE vs la1", r"TDE vs LA$_{1}$"))):
             m, a = d["mR_split"][k], d["auc"][k]
             share = f"{100 * m['share_group']:.0f}\\%" if abs(m["total"]) > 0.005 else "--"
-            lines.append(f"{proto.upper() if j == 0 else ''} & {lab} & ${f4(m['total'])}$ & ${f4(m['group'])}$ & "
+            tag = proto.upper() + ("$^\\ast$" if d["n_images"] < 26446 else "")
+            lines.append(f"{tag if j == 0 else ''} & {lab} & ${f4(m['total'])}$ & ${f4(m['group'])}$ & "
                          f"${f4(m['case'])}$ & {ci(m['case_ci'])} & "
                          f"{share} & "
                          f"${f4(a['comparison']['difference'])}$ {ci(a['comparison']['ci'])} & "
@@ -473,7 +474,8 @@ def det_recall():
         for j, v in enumerate(("none", "TDE", "la1")):
             rel = d["released"].get(v, {})
             rr = d["recall"][v]
-            lines.append(f"{proto.upper() if j == 0 else ''} & {NAME[v]} & "
+            tag = proto.upper() + ("$^\\ast$" if d["n_images"] < 26446 else "")
+            lines.append(f"{tag if j == 0 else ''} & {NAME[v]} & "
                          f"{rel.get('R@50', float('nan')):.4f} & {rr['R@50']:.4f} & "
                          f"{rel.get('mR@50', float('nan')):.4f} & {rr['mR@50']:.4f} \\\\".replace("nan", "--"))
     lines += [r"\bottomrule", r"\end{tabular}"]
