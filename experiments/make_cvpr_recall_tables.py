@@ -451,8 +451,10 @@ def det_protocols():
         for j, (k, lab) in enumerate((("TDE vs none", "TDE vs base"), ("la1 vs none", r"LA$_{1}$ vs base"),
                                       ("TDE vs la1", r"TDE vs LA$_{1}$"))):
             m, a = d["mR_split"][k], d["auc"][k]
+            share = f"{100 * m['share_group']:.0f}\\%" if abs(m["total"]) > 0.005 else "--"
             lines.append(f"{proto.upper() if j == 0 else ''} & {lab} & ${f4(m['total'])}$ & ${f4(m['group'])}$ & "
-                         f"${f4(m['case'])}$ & {ci(m['case_ci'])} & {100 * m['share_group']:.0f}\\% & "
+                         f"${f4(m['case'])}$ & {ci(m['case_ci'])} & "
+                         f"{share} & "
                          f"${f4(a['comparison']['difference'])}$ {ci(a['comparison']['ci'])} & "
                          f"${f4(a['relation']['difference'])}$ {ci(a['relation']['ci'])} \\\\")
     lines += [r"\bottomrule", r"\end{tabular}"]

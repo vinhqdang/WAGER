@@ -34,9 +34,7 @@ protocols are therefore part of the procedure.
 \paragraph{Controlled predictors on VG150.}\label{sec:data} We train predicate classifiers whose inputs we control on a VG150-style split we
 reconstruct from the released Visual Genome annotations, with the same 150-object and
 50-predicate vocabulary and images divided 70/30 between fitting and audit
-(\cref{app:vgmain-full}). It is not the canonical split of \cref{sec:sggaudit}, which is why
-its test set is larger; models trained here from annotations need not reproduce a released
-split. The predictors are: a frequency table that sees only the class
+(\cref{app:vgmain-full}); it is not the canonical split of \cref{sec:sggaudit}. The predictors are: a frequency table that sees only the class
 pair (FREQ), an MLP on class embeddings (MLP-CLASS), and MLPs adding twelve box-geometry
 features (MLP-SPATIAL, MLP-SPATIAL+). The audit covers $227{,}337$ of $229{,}605$ test
 relations ($99.0\%$) in $6{,}346$ class-pair cells.
@@ -46,7 +44,5 @@ to the group-level part: the case-level gain is $0.00000$ with a zero-width inte
 functions of the class pair alone, so \cref{thm:population} forces it --- and it is the
 sharpest check that nothing is credited to case-level evidence when none exists. Adding box
 geometry then yields a case-level gain of $0.01439$ (CI $[0.01373,0.01504]$, $p=.002$) that no
-aggregate score isolates. Against MLP-CLASS the total gain of $0.00885$ even
-\emph{understates} it, because the group-level part deteriorates by $0.00554$: geometry moved
-the model's probability towards each relation's own label within its pair, and made it a
-slightly worse fit to the cell frequencies at once.
+aggregate score isolates; against MLP-CLASS the total gain of $0.00885$ even
+\emph{understates} it, because the group-level part falls by $0.00554$.

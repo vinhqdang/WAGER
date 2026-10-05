@@ -13,21 +13,15 @@ confidence-matched.}
 \end{figure*}
 
 Tang \etal~\cite{tang2020unbiased} release a causal MOTIFS PredCls checkpoint that yields two
-models from one set of weights: the baseline (MOTIFS-SUM) and its Total Direct Effect
-counterpart (MOTIFS-TDE). The baseline's predicate logit is a sum of three terms: a visual
-term from the union region, a context term, and a frequency prior indexed by the object pair,
-which in PredCls is fixed by the subject--object cell. TDE subtracts the same sum evaluated
-with an averaged context. The visual and frequency terms enter both halves unchanged and
-cancel, so TDE's output is the context term minus its averaged counterpart: it removes the
-frequency prior, constant within a cell, and also the image-specific visual term, which is
-not. We ran the released checkpoint once with the authors' code on the canonical VG150 test
-split, saving every branch's logits for every object pair, and re-scored them offline with
-an exact replay of the official evaluator's matching (\cref{app:recall}). The replay
-reproduces the official numbers to the fourth decimal: the baseline reaches $R@50=0.6612$
-with $mR@50=0.1459$, TDE reaches $mR@50=0.2476$ while $R@50$ falls to $0.4588$, and without
-the graph constraint TDE's mean recall \emph{falls}, from $0.3260$ to $0.2981$. The audit
-covers $183{,}642$ relations over $26{,}446$ images in $7{,}127$ subject--object cells;
-$98.9\%$ of the relations fall in the $5{,}044$ cells holding at least two.
+models from one set of weights: the baseline (MOTIFS-SUM), whose predicate logit sums a
+union-region visual term, a context term and a frequency prior indexed by the object pair, and
+TDE, which subtracts the same sum with an averaged context and so keeps only the context term
+minus its average. We ran it once with the authors' code on the canonical VG150 test split,
+saving every branch's logits, and replayed the official evaluator offline (\cref{app:recall}).
+The replay reproduces the official numbers to the fourth decimal: baseline $R@50=0.6612$ and
+$mR@50=0.1459$, TDE $0.4588$ and $0.2476$; without the graph constraint TDE's mean recall
+\emph{falls}, from $0.3260$ to $0.2981$. The audit covers $183{,}642$ relations over $26{,}446$
+images in $7{,}127$ cells; $98.9\%$ fall in the $5{,}044$ cells holding at least two.
 
 \paragraph{An operating-point control.} We add one model that needs no training: the
 baseline's logits minus $\tau\log\pi(y)$, the training predicate prior, with
@@ -72,12 +66,10 @@ gain, interval $[83\%,91\%]$, survives shuffling every label among the relations
 its object pair.
 It lives in the body of the distribution. Splitting predicates by training frequency (9
 head above $10{,}000$ instances, 26 body, 15 tail below $500$), the body gains $+0.1224$, of
-which $+0.1082$ is group-level; the head loses $0.0255$; the tail gains $0.0003$. Of the 15 tail
-predicates, $1{,}480$ test relations, the baseline recalls none and TDE recalls one,
-\textsf{to}, at $0.016$: none of the ten points comes from the rarest predicates. \Cref{fig:predicates} shows the mechanism one
+which $+0.1082$ is group-level; the head loses $0.0255$; the tail gains $0.0003$: of the 15 tail
+predicates the baseline recalls none and TDE one, \textsf{to}, at $0.016$. \Cref{fig:predicates} shows the mechanism one
 predicate at a time. Recall of \textsf{parked on} rises from $0.000$ to $0.886$, almost all of
-it group-level: TDE now says \textsf{parked on} for (\textsf{car}, \textsf{street}), and so
-recalls most relations that carry it. Recall of \textsf{on} falls by $0.558$ in the same way.
+it group-level: TDE now says \textsf{parked on} for (\textsf{car}, \textsf{street}). Recall of \textsf{on} falls by $0.558$ in the same way.
 
 \begin{figure}[t]
 \centering
@@ -151,3 +143,11 @@ change weighted as the split weights cells is $-0.0235$, interval $[-0.0275,-0.0
 concentrated on head--body and body--body pairs. Both methods' gains are group-level; with TDE no change in within-cell ranking is detected,
 while IETrans+Rwt loses some. No IETrans baseline was released, so this compares two
 separately trained models and does not isolate the effect of relabelling.
+
+\paragraph{Beyond PredCls.} The same release holds SGCls and SGDet checkpoints, where object
+classes (and in SGDet boxes) are predicted. One TDE pass still yields all three models, which
+share every object prediction, so the ground-truth pair remains a common grouping; we replay
+the evaluator inside the inference loop and reproduce the released recalls (\cref{app:det}). In
+SGCls TDE raises $mR@50$ by $+0.0517$, $99\%$ of it group-level; the control gains $+0.0518$ at
+$R@50=0.384$ against TDE's $0.263$; and TDE's within-cell ranking gets worse, by $-0.0128$ of
+relation-weighted AUC, interval $[-0.0171,-0.0074]$.%SGDET-MAIN%

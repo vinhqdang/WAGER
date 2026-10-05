@@ -57,9 +57,9 @@ operating-point control and a threshold-free AUC. (iii) Validation that the case
 is zero when it should be, covers at the nominal rate under image clustering, and separates
 calibration, prior and shortcut effects, with protocols for the confounds it does not.
 
-\paragraph{What is not claimed.} Every scene-graph result is PredCls, where object boxes
-and classes are given and every model sees the cell; in SGCls and SGDet the cell is itself
-predicted, and the split as stated does not apply. The split is conditional on the declared grouping: $\hdR$
+\paragraph{What is not claimed.} The scene-graph audits are PredCls, where every model sees
+the cell, except a replication of TDE in SGCls (\cref{sec:sggaudit}), where the two models
+share every predicted object. The split is conditional on the declared grouping: $\hdR$
 measures case-level discrimination \emph{among relations sharing an object pair}, and
 credits any signal varying inside a pair, including a shortcut nobody recorded. It is not
 invariant to recalibration --- rescaling a model's confidence moves score between the two

@@ -359,8 +359,7 @@ CHECKS += [
     ("rec body group", "5_audit.tex", "+0.1082", sp["gc@50"]["mean_recall_body"]["group"], 5e-5),
     ("rec head loss", "5_audit.tex", "0.0255", -sp["gc@50"]["mean_recall_head"]["total"], 5e-5),
     ("rec tail gain", "5_audit.tex", "0.0003", sp["gc@50"]["mean_recall_tail"]["total"], 5e-5),
-    ("rec tail test relations", "5_audit.tex", "1{,}480", tail_n, 0),
-    ("rec tail predicates TDE recalls", "5_audit.tex", "TDE recalls one", "counted below", 0),
+    ("rec tail predicates TDE recalls", "5_audit.tex", "TDE one", "counted below", 0),
     ("rec tail baseline recalls none", "5_audit.tex", "baseline recalls none", "counted below", 0),
     ("rec tail 'to' recall", "5_audit.tex", "0.016",
      sp["gc@50"]["official_per_predicate_TDE"][_names.index("to") - 1], 5e-4),
@@ -723,6 +722,43 @@ CHECKS += [
     ("merge auc ceiling", "5_robust.tex", "$0.9996$", _cl["comparison"]["auc_ceiling"], 5e-5),
 ]
 
+_dc = load("sgg_sgcls_audit.json")
+_dm, _da, _dq = _dc["mR_split"], _dc["auc"], _dc["matched_split"]
+_rp = load("sgg_det_replay_check.json")
+CHECKS += [
+    ("det sgcls dmR", "5_audit.tex", "+0.0517", _dm["TDE vs none"]["total"], 5e-5),
+    ("det sgcls share %", "5_audit.tex", "$99\\%$", 100 * _dm["TDE vs none"]["share_group"], 0.5),
+    ("det sgcls LA dmR", "5_audit.tex", "+0.0518", _dm["la1 vs none"]["total"], 5e-5),
+    ("det sgcls LA R@50", "5_audit.tex", "0.384", _dc["recall"]["la1"]["R@50"], 5e-4),
+    ("det sgcls TDE R@50", "5_audit.tex", "0.263", _dc["recall"]["TDE"]["R@50"], 5e-4),
+    ("det sgcls auc rel", "5_audit.tex", "-0.0128", _da["TDE vs none"]["relation"]["difference"], 5e-5),
+    ("det sgcls auc rel lo", "5_audit.tex", "-0.0171", _da["TDE vs none"]["relation"]["ci"][0], 5e-5),
+    ("det sgcls auc rel hi", "5_audit.tex", "-0.0074", _da["TDE vs none"]["relation"]["ci"][1], 5e-5),
+    ("det sgcls group", "5_robust.tex", "+0.0510", _dm["TDE vs none"]["group"], 5e-5),
+    ("det sgcls case", "5_robust.tex", "+0.0008", _dm["TDE vs none"]["case"], 5e-5),
+    ("det sgcls case lo", "5_robust.tex", "-0.0024", _dm["TDE vs none"]["case_ci"][0], 5e-5),
+    ("det sgcls case hi", "5_robust.tex", "+0.0040", _dm["TDE vs none"]["case_ci"][1], 5e-5),
+    ("det sgcls TDE-LA case", "5_robust.tex", "-0.0027", _dm["TDE vs la1"]["case"], 5e-5),
+    ("det sgcls TDE-LA case lo", "5_robust.tex", "-0.0063", _dm["TDE vs la1"]["case_ci"][0], 5e-5),
+    ("det sgcls TDE-LA case hi", "5_robust.tex", "+0.0009", _dm["TDE vs la1"]["case_ci"][1], 5e-5),
+    ("det sgcls auc cmp", "5_robust.tex", "-0.0047", _da["TDE vs none"]["comparison"]["difference"], 5e-5),
+    ("det sgcls auc cmp lo", "5_robust.tex", "-0.0122", _da["TDE vs none"]["comparison"]["ci"][0], 5e-5),
+    ("det sgcls auc cmp hi", "5_robust.tex", "+0.0031", _da["TDE vs none"]["comparison"]["ci"][1], 5e-5),
+    ("det sgcls quad case", "5_robust.tex", "-0.00540", _dq["TDE vs none"]["case"], 1e-5),
+    ("det sgcls quad case lo", "5_robust.tex", "-0.00655", _dq["TDE vs none"]["case_ci"][0], 1e-5),
+    ("det sgcls quad case hi", "5_robust.tex", "-0.00425", _dq["TDE vs none"]["case_ci"][1], 1e-5),
+    ("det sgcls matched %", "5_robust.tex", "$58\\%$", 100 * _dc["matched_fraction"], 0.5),
+    ("det sgcls LA R@50 4dp", "5_robust.tex", "0.3840", _dc["recall"]["la1"]["R@50"], 5e-5),
+    ("det sgcls TDE R@50 4dp", "5_robust.tex", "0.2631", _dc["recall"]["TDE"]["R@50"], 5e-5),
+]
+_ok = (all(v < 5e-5 for v in _rp["max_abs_diff"].values())
+       and all(abs(_dc["recall"][v][k] - _dc["released"][v][k]) <= 1.5e-4
+               for v in ("none", "TDE") for k in ("R@50", "mR@50"))
+       and _dc["n_images"] == 26446)
+if not _ok:
+    print("FAIL SGCls replay claims (equals the evaluator on 200 images; reproduces released recall)")
+    sys.exit(1)
+
 # Claims no single literal carries.
 assert m50["total"] - m50["group"] - m50["case"] < 1e-12
 if not r_cost_la < 0.1 * r_cost_tde:
@@ -836,7 +872,7 @@ def inputted_files(driver: pathlib.Path) -> list[str]:
 driver_arg = sys.argv[sys.argv.index("--driver") + 1] if "--driver" in sys.argv else None
 
 if driver_arg is None:
-    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc ", "path ", "iet ", "vrank ", "seeds ", "shift ", "merge ", "splits ", "zs ", "rankrob "))]
+    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc ", "path ", "iet ", "vrank ", "seeds ", "shift ", "merge ", "splits ", "zs ", "rankrob ", "det "))]
     LIVE = set(inputted_files(MS / "main.tex"))
     orphans = sorted({f for _, f, *_ in CHECKS} - LIVE)
     if orphans:

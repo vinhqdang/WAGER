@@ -214,6 +214,59 @@ image-clustered intervals. Every family preserves each model's within-cell ranki
 \input{supp/tab_recalibration}
 \end{table}
 
+\subsection{Beyond PredCls: SGCls and SGDet}\label{app:det}
+
+The causal MOTIFS-SUM release includes SGCls and SGDet checkpoints alongside the PredCls one.
+Under SUM fusion TDE's logit is $\mathrm{ctx(post)}-\mathrm{ctx(avg)}$ in every protocol, so one
+TDE pass again yields the baseline ($\mathrm{vis}+\mathrm{ctx(post)}+\mathrm{frq}$ of the predicted
+labels) and the logit-adjusted control, and all three share every object prediction: the boxes,
+labels and scores come from the factual object branch. A pass stores logits for up to $6{,}320$
+pairs per image in SGDet, too many to keep, so the evaluator is replayed inside the inference
+loop (\texttt{colab\_sgg\_inline.py}): for each ground-truth relation and each predicate it keeps
+the first-hit rank with and without the graph constraint, ordering pairs by the
+post-processor's triple score (predicate times subject and object scores) and matching a pair
+when both its labels equal the ground truth and both boxes overlap it at IoU $\ge0.5$, and it
+keeps the predicate distribution of the matched pair with the largest summed IoU, chosen from
+boxes and labels alone and so the same for all three models. On test images 0--199 the
+replayed TDE recalls equal the codebase's evaluator in both protocols to its printed
+precision, for $R$, $mR$, ng-$R$ and ng-$mR$ at $K=20,50,100$; on the full test set they
+reproduce the released numbers (\cref{tab:detrecall}).
+
+The grouping is the ground-truth subject--object class pair, as in PredCls. A relation whose
+objects the model fails to recognise is a miss for all three models under every predicate
+label, so it adds to neither part; the AUC and the proper score use the relations with a
+matched pair ($58\%$ in SGCls).
+
+\Cref{tab:det} gives the result. In SGCls TDE raises $mR@50$ by $+0.0517$, of which $+0.0510$
+is group-level ($99\%$) and $+0.0008$, interval $[-0.0024,+0.0040]$, case-level. The
+logit-adjusted control gains as much, $+0.0518$, at $R@50=0.3840$ against TDE's $0.2631$, and
+TDE's case-level part against it is $-0.0027$, $[-0.0063,+0.0009]$. On relations with a
+matched pair TDE's within-cell discrimination falls: the AUC change weighted as the split
+weights cells is $-0.0128$, interval $[-0.0171,-0.0074]$ ($-0.0047$, $[-0.0122,+0.0031]$, by
+comparison), and the matched quadratic case-level part is $-0.00540$, $[-0.00655,-0.00425]$.
+%DET-SGDET%
+
+\begin{table}[t]
+\centering
+\footnotesize
+\caption{\textbf{Recall of the SGCls and SGDet checkpoints}, released (repository README) and
+replayed by the inline evaluator on the full test set (graph constraint).}
+\label{tab:detrecall}
+\input{supp/tab_det_recall}
+\end{table}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength\tabcolsep{3pt}
+\caption{\textbf{The audit in SGCls and SGDet.} Mean recall@50 split (graph constraint,
+micro-averaged, grouping by ground-truth class pair) with its image-clustered case-level
+interval and group-level share, and the within-cell AUC change on relations with a matched
+pair, by comparison ($c$) and as the split weights cells ($r$); image bootstrap.}
+\label{tab:det}
+\input{supp/tab_det_protocols}
+\end{table*}
+
 \subsection{Zero-shot CLIP on the canonical split}\label{app:zeroshot}
 
 The CLIP model of \cref{sec:vgvisual} trains a head on Visual Genome labels. As a first look
