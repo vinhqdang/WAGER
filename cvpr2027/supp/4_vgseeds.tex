@@ -1,0 +1,26 @@
+\section{The real-pixel study across seeds}\label{app:vgseeds}
+
+Every head of \cref{sec:vgvisual} was retrained with five seeds, which set the
+initialisation and the batch order; the training subsample of $100{,}000$ relations, the
+CLIP features and the test set are the same throughout, and seed $0$ reproduces the reported
+predictions exactly (largest absolute difference $0$). A fourth head,
+MLP-VISGEO-S, receives the class embeddings, the twelve geometry features and the CLIP crop
+features together, so that what pixels add \emph{to} the geometric proxy is measured
+directly. Each row of \cref{tab:vg-seeds} uses the paper's protocol: temperatures fitted on
+the same held-out half of the images, the split on the other half, and the within-cell AUC
+with an image bootstrap of $200$ replicates.
+
+\begin{table}[h]
+\centering\footnotesize
+\setlength\tabcolsep{3pt}
+\caption{Matched quadratic-score split and within-cell AUC for five training seeds.}
+\label{tab:vg-seeds}
+\input{supp/tab_vg_seeds}
+\end{table}
+
+The case-level advantage of pixels over geometry is stable across seeds, in contrast with
+the roughly fourfold seed variation of the CIFAR-100-LT effect (\cref{sec:cifarlt}); so is
+the accuracy deficit. The AUC difference has the same sign in every seed and is small against
+its bootstrap interval, which is why the paper reports the covariance and not better
+recognition. The combined head loses at group level almost as much as the CLIP head does
+against geometry, and gains about twice its case-level part.

@@ -480,6 +480,27 @@ CHECKS += [
 if not (_vs["ci"][0] < 0 < _vs["ci"][1]) or abs(_vr["auc_class_only"] - 0.5) > 1e-12:
     print("FAIL 'the AUC does not separate CLIP from geometry' / class-only AUC 1/2"); sys.exit(1)
 
+_sd = load("vg_visual_seeds.json")
+_seeds = [_sd["per_seed"][str(k)] for k in _sd["seeds"]]
+_vsp = [r["pairs"]["MLP-VISUAL-S vs MLP-SPATIAL-S"] for r in _seeds]
+_gsp = [r["pairs"]["MLP-VISGEO-S vs MLP-SPATIAL-S"] for r in _seeds]
+CHECKS += [
+    ("seeds CLIP case min", "6_pixels.tex", "+0.00413", min(p["matched"]["case"] for p in _vsp), 1e-5),
+    ("seeds CLIP case max", "6_pixels.tex", "+0.00474", max(p["matched"]["case"] for p in _vsp), 1e-5),
+    ("seeds CLIP+geo case min", "6_pixels.tex", "+0.00807", min(p["matched"]["case"] for p in _gsp), 1e-5),
+    ("seeds CLIP+geo case max", "6_pixels.tex", "+0.00949", max(p["matched"]["case"] for p in _gsp), 1e-5),
+]
+_ok = (len(_seeds) == 5 and max(_sd["seed0_vs_reference"].values()) == 0.0
+       and all(p["matched"]["case_ci"][0] > 0 for p in _vsp + _gsp)
+       and all(r["accuracy"]["MLP-VISUAL-S"] < r["accuracy"]["MLP-SPATIAL-S"] for r in _seeds)
+       and all(p["auc"]["difference"] > 0 for p in _vsp)
+       and sum(p["auc"]["ci"][0] > 0 for p in _vsp) == 1
+       and 1.5 < min(g["matched"]["case"] / v["matched"]["case"] for g, v in zip(_gsp, _vsp))
+       and max(g["matched"]["case"] / v["matched"]["case"] for g, v in zip(_gsp, _vsp)) < 2.5)
+if not _ok:
+    print("FAIL seeds claims (seed 0 exact; intervals; accuracy below; AUC 5/5 positive, 1/5 "
+          "excluding zero; 'doubles')"); sys.exit(1)
+
 # Claims no single literal carries.
 assert m50["total"] - m50["group"] - m50["case"] < 1e-12
 if not r_cost_la < 0.1 * r_cost_tde:
@@ -593,7 +614,7 @@ def inputted_files(driver: pathlib.Path) -> list[str]:
 driver_arg = sys.argv[sys.argv.index("--driver") + 1] if "--driver" in sys.argv else None
 
 if driver_arg is None:
-    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc ", "path ", "iet ", "vrank "))]
+    CHECKS = [c for c in CHECKS if not c[0].startswith(("cvpr ", "rec ", "auc ", "ps ", "acc ", "path ", "iet ", "vrank ", "seeds "))]
     LIVE = set(inputted_files(MS / "main.tex"))
     orphans = sorted({f for _, f, *_ in CHECKS} - LIVE)
     if orphans:

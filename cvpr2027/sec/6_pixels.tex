@@ -30,6 +30,13 @@ both models clear the class-only model's $0.5$ by $+0.0408$ and $+0.0323$. The C
 case-level advantage is real in the covariance the split measures; that it is better
 recognition is not established.
 
+\paragraph{Seeds.} Over five training seeds (seed $0$ reproduces the predictions above
+exactly; \cref{app:vgseeds}), the CLIP model's matched case-level advantage over geometry stays
+between $+0.00413$ and $+0.00474$, every interval excluding zero, its accuracy stays below
+geometry's, and its AUC difference is positive in all five but excludes zero in one. Adding
+the CLIP features to geometry, rather than replacing it, doubles that advantage ($+0.00807$ to
+$+0.00949$).
+
 Two checks support this reading. Post-hoc correction of a model's label prior should move
 only the group-level part, and it does: $+0.02390$ group-level against $+0.00114$ case-level.
 Applied to the CLIP model it halves the aggregate deficit, from $-0.04642$ to $-0.02138$,

@@ -132,6 +132,10 @@ rec tail baseline recalls none
 rec tail gain
 rec tail predicates TDE recalls
 rec tail test relations
+seeds CLIP case max
+seeds CLIP case min
+seeds CLIP+geo case max
+seeds CLIP+geo case min
 sens class-pair dR
 sgg base R@50
 sgg base mR@50
