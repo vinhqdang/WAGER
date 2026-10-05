@@ -1,0 +1,11 @@
+{
+ "comparison": {
+  "tie_share": 0.0007115753316656975,
+  "auc_ceiling": 0.9996442123341671
+ },
+ "relation": {
+  "tie_share": 0.006406867765354025,
+  "auc_ceiling": 0.996796566117323
+ },
+ "relations_on_box_pairs_with_more_than_one_relation": 0.3311551467825462
+}

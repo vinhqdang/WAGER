@@ -716,6 +716,13 @@ if not _ok:
           "both tier groups; IETrans negative under all recalibrations; LA = base under T+bias; "
           "class-wise sim; small-cell coverage from 3 up; F@50; label-shift path monotone)"); sys.exit(1)
 
+_cl = load("sgg_auc_ceiling.json")
+CHECKS += [
+    ("merge tie share cmp %", "5_robust.tex", "$0.07\\%$", 100 * _cl["comparison"]["tie_share"], 0.005),
+    ("merge tie share rel %", "5_robust.tex", "$0.64\\%$", 100 * _cl["relation"]["tie_share"], 0.005),
+    ("merge auc ceiling", "5_robust.tex", "$0.9996$", _cl["comparison"]["auc_ceiling"], 5e-5),
+]
+
 # Claims no single literal carries.
 assert m50["total"] - m50["group"] - m50["case"] < 1e-12
 if not r_cost_la < 0.1 * r_cost_tde:

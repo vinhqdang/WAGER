@@ -63,6 +63,14 @@ logit-adjusted control keeps a positive matched case-level part throughout. Summ
 probabilities over a merged class can reorder the merged classes within a cell, so under a
 merge the control's AUC is no longer fixed by construction; it moves by at most $0.0012$.
 
+Could the benchmark leave little room for any case-level gain? One kind of ceiling is
+measurable: two relations with the same image and the same subject and object boxes but
+different predicates receive the same prediction from every model that sees the image and the
+boxes, so every comparison between them is a tie. They carry $0.07\%$ of the AUC's comparison
+weight ($0.64\%$ weighted as the split weights cells), which caps the within-cell AUC at
+$0.9996$ (\texttt{sgg\_auc\_ceiling.py}). MOTIFS's $0.5705$ is far below that; how much of
+the gap is annotator style rather than missing recognition, the data cannot say.
+
 \begin{table*}[t]
 \centering
 \footnotesize
