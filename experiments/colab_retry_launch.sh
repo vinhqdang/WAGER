@@ -2,6 +2,7 @@
 # Retry a Colab T4 on either account every 10 min; on success upload and launch the SGDet resume.
 export PATH="$HOME/.local/bin:$PATH"; D=~/.config/colab-cli; R=/home/user/WAGER/experiments; cd /tmp
 SESSION=${SESSION:-det4}
+START=${START:-4000}
 for i in $(seq 1 ${TRIES:-11}); do
   for acct in 1 2; do
     cp $D/token.account$acct.json $D/token.json
@@ -13,7 +14,7 @@ for i in $(seq 1 ${TRIES:-11}); do
       done
       colab --auth oauth2 upload -s $SESSION $R/colab_det_chain.sh /content/det_chain.sh >/dev/null 2>&1
       colab --auth oauth2 upload -s $SESSION $R/colab_det_all_resume.sh /content/det_all.sh >/dev/null 2>&1
-      echo 'import subprocess; subprocess.Popen("cd /content && START=4000 setsid nohup bash det_all.sh > /content/all.out 2>&1 &", shell=True); print("LAUNCHED")' \
+      echo 'import subprocess; subprocess.Popen("cd /content && START='"$START"' setsid nohup bash det_all.sh > /content/all.out 2>&1 &", shell=True); print("LAUNCHED")' \
         | timeout 110 colab --auth oauth2 exec -s $SESSION 2>&1 | grep LAUNCHED
       exit 0
     fi
