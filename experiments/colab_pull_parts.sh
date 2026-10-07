@@ -8,7 +8,7 @@ for i in $(seq 1 70); do
     proto=$(echo $f | sed 's#.*/inline_\(sg[a-z]*\)/.*#\1#'); d=/home/user/WAGER/data/vg_motifs/wager_$proto/parts; mkdir -p $d
     [ -f $d/$(basename $f) ] || colab --auth oauth2 download -s ${SESSION:-det2} $f $d/$(basename $f) >/dev/null 2>&1
   done
-  git -C /home/user/WAGER add -f data/vg_motifs/wager_sg*/parts >/dev/null 2>&1
+  git -C /home/user/WAGER add -f /home/user/WAGER/data/vg_motifs/wager_sg*/parts >/dev/null 2>&1
   if ! git -C /home/user/WAGER diff --cached --quiet; then
     git -C /home/user/WAGER commit -qm "SGG inline-replay parts (partial run)" && \
       git -C /home/user/WAGER push -q origin HEAD:claude/wager-paper-rejection-w2lq20 >/dev/null 2>&1
