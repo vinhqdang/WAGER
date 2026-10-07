@@ -762,33 +762,37 @@ if not _ok:
 _dd = load("sgg_sgdet_audit.json")
 _ddm, _dda, _ddq = _dd["mR_split"], _dd["auc"], _dd["matched_split"]
 CHECKS += [
-    ("det sgdet n images", "5_audit.tex", "first $15{,}500$ SGDet", "checked below", 0),
-    ("det sgdet LA dmR", "5_audit.tex", "+0.0427", _ddm["la1 vs none"]["total"], 5e-5),
-    ("det sgdet TDE dmR", "5_audit.tex", "+0.0320", _ddm["TDE vs none"]["total"], 5e-5),
-    ("det sgdet share %", "5_robust.tex", "$86\\%$", 100 * _ddm["TDE vs none"]["share_group"], 0.5),
-    ("det sgdet case", "5_robust.tex", "+0.0044", _ddm["TDE vs none"]["case"], 5e-5),
-    ("det sgdet case lo", "5_robust.tex", "+0.0006", _ddm["TDE vs none"]["case_ci"][0], 5e-5),
-    ("det sgdet case hi", "5_robust.tex", "+0.0082", _ddm["TDE vs none"]["case_ci"][1], 5e-5),
-    ("det sgdet TDE-LA case", "5_robust.tex", "+0.0000", _ddm["TDE vs la1"]["case"], 5e-5),
-    ("det sgdet TDE-LA lo", "5_robust.tex", "-0.0041", _ddm["TDE vs la1"]["case_ci"][0], 5e-5),
-    ("det sgdet TDE-LA hi", "5_robust.tex", "+0.0041", _ddm["TDE vs la1"]["case_ci"][1], 5e-5),
-    ("det sgdet LA R@50", "5_robust.tex", "0.3204", _dd["recall"]["la1"]["R@50"], 5e-5),
-    ("det sgdet TDE R@50", "5_robust.tex", "0.1642", _dd["recall"]["TDE"]["R@50"], 5e-5),
-    ("det sgdet auc rel", "5_robust.tex", "-0.0010", _dda["TDE vs none"]["relation"]["difference"], 5e-5),
-    ("det sgdet auc rel lo", "5_robust.tex", "-0.0061", _dda["TDE vs none"]["relation"]["ci"][0], 5e-5),
-    ("det sgdet auc rel hi", "5_robust.tex", "+0.0056", _dda["TDE vs none"]["relation"]["ci"][1], 5e-5),
-    ("det sgdet quad case", "5_robust.tex", "-0.00320", _ddq["TDE vs none"]["case"], 1e-5),
-    ("det sgdet quad lo", "5_robust.tex", "-0.00464", _ddq["TDE vs none"]["case_ci"][0], 1e-5),
-    ("det sgdet quad hi", "5_robust.tex", "-0.00177", _ddq["TDE vs none"]["case_ci"][1], 1e-5),
+    ("det sgdet n images", "5_audit.tex", "In SGDet, on the full test set", "checked below", 0),
+    ("det sgdet LA dmR", "5_audit.tex", "+0.0418", _ddm["la1 vs none"]["total"], 5e-5),
+    ("det sgdet TDE dmR", "5_audit.tex", "+0.0310", _ddm["TDE vs none"]["total"], 5e-5),
+    ("det sgdet share %", "5_robust.tex", "$87\\%$", 100 * _ddm["TDE vs none"]["share_group"], 0.5),
+    ("det sgdet case", "5_robust.tex", "+0.0041", _ddm["TDE vs none"]["case"], 5e-5),
+    ("det sgdet case lo", "5_robust.tex", "+0.0013", _ddm["TDE vs none"]["case_ci"][0], 5e-5),
+    ("det sgdet case hi", "5_robust.tex", "+0.0070", _ddm["TDE vs none"]["case_ci"][1], 5e-5),
+    ("det sgdet TDE-LA case", "5_robust.tex", "-0.0000", _ddm["TDE vs la1"]["case"], 5e-5),
+    ("det sgdet TDE-LA lo", "5_robust.tex", "-0.0030", _ddm["TDE vs la1"]["case_ci"][0], 5e-5),
+    ("det sgdet TDE-LA hi", "5_robust.tex", "+0.0030", _ddm["TDE vs la1"]["case_ci"][1], 5e-5),
+    ("det sgdet LA R@50", "5_robust.tex", "0.3186", _dd["recall"]["la1"]["R@50"], 5e-5),
+    ("det sgdet TDE R@50", "5_robust.tex", "0.1657", _dd["recall"]["TDE"]["R@50"], 5e-5),
+    ("det sgdet auc rel", "5_robust.tex", "-0.0012", _dda["TDE vs none"]["relation"]["difference"], 5e-5),
+    ("det sgdet auc rel lo", "5_robust.tex", "-0.0051", _dda["TDE vs none"]["relation"]["ci"][0], 5e-5),
+    ("det sgdet auc rel hi", "5_robust.tex", "+0.0030", _dda["TDE vs none"]["relation"]["ci"][1], 5e-5),
+    ("det sgdet quad case", "5_robust.tex", "-0.00446", _ddq["TDE vs none"]["case"], 1e-5),
+    ("det sgdet quad lo", "5_robust.tex", "-0.00560", _ddq["TDE vs none"]["case_ci"][0], 1e-5),
+    ("det sgdet quad hi", "5_robust.tex", "-0.00332", _ddq["TDE vs none"]["case_ci"][1], 1e-5),
 ]
 _r = _dd["recall"]["la1"]["R@50"] / _dd["recall"]["TDE"]["R@50"]
-_ok = (_dd["n_images"] == 15500 and 1.8 <= _r < 2.0
+_ok = (_dd["n_images"] == 26446
+       and all(abs(_dd["recall"][v]["R@50"] - _dd["released"][v]["R@50"]) <= 3e-4
+               and abs(_dd["recall"][v]["mR@50"] - _dd["released"][v]["mR@50"]) <= 1e-3
+               for v in ("none", "TDE"))
+       and 1.8 <= _r < 2.0
        and abs(_ddm["la1 vs none"]["case"] - _ddm["TDE vs none"]["case"]) < 5e-5
        and all(_dda["TDE vs none"][w]["ci"][0] < 0 < _dda["TDE vs none"][w]["ci"][1]
                for w in ("comparison", "relation"))
        and _ddq["TDE vs none"]["case_ci"][1] < 0)
 if not _ok:
-    print("FAIL SGDet subset claims (15,500 images; nearly twice R@50; control matches the case-level"
+    print("FAIL SGDet claims (26,446 images; replay reproduces the released recall; nearly twice R@50; control matches the case-level"
           " part; no detected AUC change; matched quadratic part negative)"); sys.exit(1)
 
 # Claims no single literal carries.

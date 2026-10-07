@@ -63,9 +63,12 @@ det sgcls dmR
 det sgcls share %
 det sgdet LA dmR
 det sgdet TDE dmR
-det sgdet TDE-LA hi
+det sgdet TDE-LA case
+det sgdet auc rel
+det sgdet auc rel lo
 det sgdet case
 det sgdet n images
+det sgdet share %
 iet auc
 iet auc hi
 iet auc lo

@@ -41,12 +41,25 @@ RELEASED = {  # Scene-Graph-Benchmark.pytorch README, causal MOTIFS-SUM, this ch
 }
 
 
+def _block(m, v):
+    """A merged block (meta.npz + variant_*.npz) in the layout of one inline-replay part."""
+    z = {k: m[k] for k in ("image_index", "sbox", "obox", "img_wh", "subj", "obj", "pred", "matched")}
+    for name in VARIANTS:
+        z[f"{name}_probs"], z[f"{name}_gc"], z[f"{name}_ng"] = (
+            v[name]["probs"], v[name]["gc_rank"], v[name]["ng_rank"])
+    return z
+
+
 def merge(proto):
     d = ROOT / f"data/vg_motifs/wager_{proto}"
     parts = sorted(glob.glob(str(d / "parts/part_*.npz")))
     if not parts:
         raise SystemExit(f"no parts under {d}/parts")
     Z = [np.load(p) for p in parts]
+    base = d / "base"                    # an earlier merge of the leading images, if the
+    if (base / "meta.npz").exists():     # parts that produced it are no longer kept
+        Z.append(_block(np.load(base / "meta.npz"),
+                        {v: np.load(base / f"variant_{v}.npz") for v in VARIANTS}))
     order = np.argsort([int(z["image_index"][0]) for z in Z])
     Z = [Z[i] for i in order]
     img = np.concatenate([z["image_index"] for z in Z])

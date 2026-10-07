@@ -244,22 +244,18 @@ TDE's case-level part against it is $-0.0027$, $[-0.0063,+0.0009]$. On relations
 matched pair TDE's within-cell discrimination falls: the AUC change weighted as the split
 weights cells is $-0.0128$, interval $[-0.0171,-0.0074]$ ($-0.0047$, $[-0.0122,+0.0031]$, by
 comparison), and the matched quadratic case-level part is $-0.00540$, $[-0.00655,-0.00425]$.
-The SGDet run covers the first $15{,}500$ of the $26{,}446$ test images in the codebase's order
-(marked $\ast$): Colab GPU sessions ended before the rest, so the replayed recalls are not
-comparable with the released full-set numbers. On that subset the picture is the same. TDE
-raises $mR@50$ by $+0.0320$, $86\%$ group-level, with a case-level part of $+0.0044$,
-$[+0.0006,+0.0082]$, which the control matches exactly (TDE against the control: $+0.0000$,
-$[-0.0041,+0.0041]$); the control gains more, $+0.0427$, at $R@50=0.3204$ against TDE's
-$0.1642$; neither AUC weighting detects a change in TDE's within-cell ranking ($-0.0010$,
-$[-0.0061,+0.0056]$, relation-weighted), and the matched quadratic case-level part is negative,
-$-0.00320$, $[-0.00464,-0.00177]$.
+In SGDet, on all $26{,}446$ test images, TDE raises $mR@50$ by $+0.0310$, $87\%$
+group-level, with a case-level part of $+0.0041$, $[+0.0013,+0.0070]$, which the control
+matches exactly (TDE against the control: $-0.0000$, $[-0.0030,+0.0030]$); the control gains
+more, $+0.0418$, at $R@50=0.3186$ against TDE's $0.1657$; neither AUC weighting detects a
+change in TDE's within-cell ranking ($-0.0012$, $[-0.0051,+0.0030]$, relation-weighted), and
+the matched quadratic case-level part is negative, $-0.00446$, $[-0.00560,-0.00332]$.
 
 \begin{table}[t]
 \centering
 \footnotesize
 \caption{\textbf{Recall of the SGCls and SGDet checkpoints}, released (repository README) and
-replayed by the inline evaluator (graph constraint), on the full test set except
-$\ast$: SGDet on the first $15{,}500$ test images.}
+replayed by the inline evaluator (graph constraint), on the full test set.}
 \label{tab:detrecall}
 \input{supp/tab_det_recall}
 \end{table}
@@ -271,8 +267,7 @@ $\ast$: SGDet on the first $15{,}500$ test images.}
 \caption{\textbf{The audit in SGCls and SGDet.} Mean recall@50 split (graph constraint,
 micro-averaged, grouping by ground-truth class pair) with its image-clustered case-level
 interval and group-level share, and the within-cell AUC change on relations with a matched
-pair, by comparison ($c$) and as the split weights cells ($r$); image bootstrap. $\ast$: first
-$15{,}500$ test images.}
+pair, by comparison ($c$) and as the split weights cells ($r$); image bootstrap.}
 \label{tab:det}
 \input{supp/tab_det_protocols}
 \end{table*}
