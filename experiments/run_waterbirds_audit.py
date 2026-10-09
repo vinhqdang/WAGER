@@ -13,9 +13,10 @@ Models are logistic regressions on frozen CLIP ViT-L/14 features
 Temperature and a per-class bias are fitted on the validation split, which is
 group-balanced like the test split; everything is evaluated on the test split. A model's
 gain over ERM splits into a group-level part (a different label prior in each
-background) and a case-level part (better discrimination between birds on the same kind
-of background). The control is ERM recalibrated with temperature and class bias, whose
-within-cell ranking is ERM's: its case-level part is zero by construction.
+background) and a case-level part (what the model knows about a bird beyond its
+background). The matched comparison recalibrates both models the same way; "ERM
+recalibrated vs ERM" shows what recalibration alone does to the two parts, and the
+within-cell AUC is unchanged by it.
 
 Run: python experiments/run_waterbirds_audit.py
 """

@@ -345,6 +345,26 @@ def clip_zeroshot(fname="clip_zeroshot_audit.json"):
     return "\n".join(lines)
 
 
+def waterbirds():
+    d = json.loads((RES / "waterbirds_audit.json").read_text())
+    lines = [r"\begin{tabular}{@{}lrrrlrl@{}}", r"\toprule",
+             r"Comparison (cells: background scene) & $\Delta T$ & group & case & case 95\% CI & case (log) & 95\% CI \\",
+             r"\midrule"]
+    for k in ("GRW vs ERM", "ERM recalibrated vs ERM", "GRW vs ERM, both recalibrated"):
+        b, lg = d["splits"]["scene"]["brier"][k], d["splits"]["scene"]["log"][k]
+        lines.append(f"{k} & ${f5(b['total'])}$ & ${f5(b['group'])}$ & ${f5(b['case'])}$ & {ci5(b['case_ci'])} & "
+                     f"${f5(lg['case'])}$ & {ci5(lg['case_ci'])} \\\\")
+    a = d["auc"]["scene"]
+    lines += [r"\midrule", r"Model & \multicolumn{2}{r}{accuracy} & \multicolumn{2}{r}{worst-group acc.} & "
+              r"\multicolumn{2}{r}{within-cell AUC} \\", r"\midrule"]
+    for k in ("ERM", "GRW"):
+        lines.append(f"{k} & \\multicolumn{{2}}{{r}}{{{d['accuracy'][k]:.4f}}} & "
+                     f"\\multicolumn{{2}}{{r}}{{{d['worst_group_accuracy'][k]:.4f}}} & "
+                     f"\\multicolumn{{2}}{{r}}{{{a[k]:.4f}}} \\\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
 NAME = {"TDE": "TDE", "la1": r"LA$_{1}$", "ietrans": "IETrans+Rwt", "none": "base",
         "MLP-VISUAL-S": "CLIP", "MLP-SPATIAL-S": "geometry", "MLP-CLASS-S": "class"}
 
@@ -498,6 +518,7 @@ def main():
     (OUT / "tab_label_shift.tex").write_text(head + label_shift() + "\n")
     (OUT / "tab_predicate_merge.tex").write_text(head + predicate_merge() + "\n")
     (OUT / "tab_clip_zeroshot.tex").write_text(head + clip_zeroshot() + "\n")
+    (OUT / "tab_waterbirds.tex").write_text(head + waterbirds() + "\n")
     (OUT / "tab_clip_zeroshot_L.tex").write_text(head + clip_zeroshot("clip_zeroshot_audit_L.json") + "\n")
     (OUT / "tab_rank_weighting.tex").write_text(head + rank_weighting() + "\n")
     (OUT / "tab_tier_pair_auc.tex").write_text(head + tier_pair() + "\n")

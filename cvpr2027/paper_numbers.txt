@@ -211,3 +211,4 @@ vrank diff hi
 vrank diff lo
 vrank geometry auc
 vrank geometry vs class
+zs wb auc diff

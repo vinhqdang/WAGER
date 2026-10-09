@@ -50,6 +50,7 @@ predicate pairs and loses it between others, and the benchmark's mix weights the
 
 \paragraph{Beyond scene graphs.}\label{sec:further} Nothing in \cref{sec:method} is specific
 to relations; the supplementary applies the estimator to long-tailed image classification
-(CIFAR-100-LT, across seeds and imbalance ratios) and to long-tailed text classification. The
+(CIFAR-100-LT, across seeds and imbalance ratios), to long-tailed text classification and to
+Waterbirds, where the cell is the background scene. The
 constraint on the grouping bites there: the fine class label cannot serve as a cell, because
 it forces the case-level part to zero by construction, an artefact that reads like a null.

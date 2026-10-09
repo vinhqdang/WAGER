@@ -645,6 +645,37 @@ _ok = (_zs["n_relations"] == 183639 and round(100 * _zs["accuracy"]["CLIP0"], 1)
 if not _ok:
     print("FAIL zero-shot claims (a third of MOTIFS's; TDE equals MOTIFS to the third decimal)"); sys.exit(1)
 
+_wb = load("waterbirds_audit.json")
+_wbs, _wbl = _wb["splits"]["scene"]["brier"], _wb["splits"]["background"]["brier"]
+CHECKS += [
+    ("zs wb n", "5_robust.tex", "5{,}794", _wb["n_test"], 0),
+    ("zs wb acc ERM", "5_robust.tex", "0.8952", _wb["accuracy"]["ERM"], 5e-5),
+    ("zs wb acc GRW", "5_robust.tex", "0.9391", _wb["accuracy"]["GRW"], 5e-5),
+    ("zs wb wg ERM", "5_robust.tex", "0.6433", _wb["worst_group_accuracy"]["ERM"], 5e-5),
+    ("zs wb wg GRW", "5_robust.tex", "0.8536", _wb["worst_group_accuracy"]["GRW"], 5e-5),
+    ("zs wb total", "5_robust.tex", "+0.06373", _wbs["GRW vs ERM"]["total"], 5e-6),
+    ("zs wb group", "5_robust.tex", "-0.02766", _wbs["GRW vs ERM"]["group"], 5e-6),
+    ("zs wb case", "5_robust.tex", "+0.09139", _wbs["GRW vs ERM"]["case"], 5e-6),
+    ("zs wb case lo", "5_robust.tex", "+0.08494", _wbs["GRW vs ERM"]["case_ci"][0], 5e-6),
+    ("zs wb case hi", "5_robust.tex", "+0.09785", _wbs["GRW vs ERM"]["case_ci"][1], 5e-6),
+    ("zs wb cal group", "5_robust.tex", "-0.05563", _wbs["GRW vs ERM, both recalibrated"]["group"], 5e-6),
+    ("zs wb cal case", "5_robust.tex", "+0.11375", _wbs["GRW vs ERM, both recalibrated"]["case"], 5e-6),
+    ("zs wb cal case lo", "5_robust.tex", "+0.10726", _wbs["GRW vs ERM, both recalibrated"]["case_ci"][0], 5e-6),
+    ("zs wb cal case hi", "5_robust.tex", "+0.12025", _wbs["GRW vs ERM, both recalibrated"]["case_ci"][1], 5e-6),
+    ("zs wb recal case", "5_robust.tex", "-0.04560", _wbs["ERM recalibrated vs ERM"]["case"], 5e-6),
+    ("zs wb auc ERM", "5_robust.tex", "0.9723", _wb["auc"]["scene"]["ERM"], 5e-5),
+    ("zs wb auc GRW", "5_robust.tex", "0.9754", _wb["auc"]["scene"]["GRW"], 5e-5),
+    ("zs wb auc diff", "5_robust.tex", "+0.0031", _wb["auc"]["scene"]["GRW minus ERM, comparison"]["difference"], 5e-5),
+    ("zs wb auc lo", "5_robust.tex", "+0.0009", _wb["auc"]["scene"]["GRW minus ERM, comparison"]["ci"][0], 5e-5),
+    ("zs wb auc hi", "5_robust.tex", "+0.0057", _wb["auc"]["scene"]["GRW minus ERM, comparison"]["ci"][1], 5e-5),
+]
+_ok = (_wb["n_scene_cells"] == 4
+       and _wbs["GRW vs ERM"]["case_ci"][0] > 0 and abs(_wbs["GRW vs ERM"]["group"]) < _wbs["GRW vs ERM"]["case"]
+       and abs(_wbl["GRW vs ERM"]["case"] - _wbs["GRW vs ERM"]["case"]) < 0.005                   # "holds with two cells"
+       and _wb["auc"]["scene"]["GRW minus ERM, comparison"]["difference"] < 0.01)                # "only"
+if not _ok:
+    print("FAIL Waterbirds claims (4 cells; case-level part positive and larger than group-level; same with two cells; small AUC change)"); sys.exit(1)
+
 _sh = load("sgg_share_intervals.json")["rows"]
 _rr = load("sgg_rank_robustness.json")
 _ra = {(r["new"], r["old"]): r for r in _rr["sgg_auc"] + _rr["pixel_auc"]}
