@@ -12,7 +12,7 @@ for i in $(seq 1 ${TRIES:-10}); do
       colab --auth oauth2 upload -s $SESSION $R/colab_vg_test_images.py /content/colab_vg_test_images.py >/dev/null 2>&1
       colab --auth oauth2 upload -s $SESSION $W/meta.npz /content/meta.npz >/dev/null 2>&1
       colab --auth oauth2 upload -s $SESSION $W/predicate_names.json /content/predicate_names.json >/dev/null 2>&1
-      echo 'import subprocess; subprocess.Popen("cd /content && WAGER_CLIP_MODEL=ViT-L-14 WAGER_CLIP_PRETRAINED=openai WAGER_PROMPTS=ensemble WAGER_ZS_OUT=variant_clip_zs_L.npz setsid nohup python -u colab_clip_zeroshot.py > /content/zs.log 2>&1 &", shell=True); print("LAUNCHED")' \
+      echo 'import subprocess; subprocess.Popen("cd /content && WAGER_CLIP_MODEL=ViT-L-14-quickgelu WAGER_CLIP_PRETRAINED=openai WAGER_PROMPTS=ensemble WAGER_ZS_OUT=variant_clip_zs_L.npz setsid nohup python -u colab_clip_zeroshot.py > /content/zs.log 2>&1 &", shell=True); print("LAUNCHED")' \
         | timeout 110 colab --auth oauth2 exec -s $SESSION 2>&1 | grep LAUNCHED
       exit 0
     fi
