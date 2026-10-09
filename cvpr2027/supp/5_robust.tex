@@ -295,13 +295,32 @@ from Visual Genome: MOTIFS's AUC is $0.5705$, the difference $-0.0542$, interval
 $[-0.0655,-0.0423]$, and its case-level part over FREQ is $+0.02943$. Given the training prior,
 zero-shot CLIP reaches $0.6289$ top-1, but its case-level part over FREQ ($+0.00989$) is a third
 of MOTIFS's. Frozen ViT-B/32 with one prompt per predicate is a weak baseline, at $2.5\%$ top-1 close to
-chance, so this bounds what such a model carries only from below: a larger model, prompt
-ensembles or region-level features may carry more, and we draw no general conclusion about
+chance. A larger model with prompt ensembles (below) changes the picture little, but
+region-level features or fine-tuning may carry more, and we draw no general conclusion about
 vision--language models from it. What it shows is that the split separates a model with no
 predicate prior and little within-pair information from one with both, in line with evidence
 that such models often treat captions as bags of words~\cite{yuksekgonul2023when}. TDE's case-level part
 over FREQ, $+0.02937$, equals MOTIFS's to the third decimal, as the null of \cref{sec:sggaudit}
 implies.
+
+\paragraph{A larger model.} Repeating the audit with CLIP ViT-L/14 (OpenAI weights) and an
+ensemble of five prompt templates per predicate (\texttt{colab\_clip\_zeroshot.py}) gives
+the same picture (\cref{tab:zeroshotL}). Top-1 accuracy is $1.8\%$, no better than ViT-B/32's,
+but the within-cell AUC rises to $0.5252$, still below MOTIFS's $0.5705$ by $-0.0453$,
+interval $[-0.0563,-0.0307]$. Its case-level part over FREQ is $+0.00033$,
+$[+0.00030,+0.00037]$, as small as before; given the training prior it is $+0.01260$,
+$[+0.01081,+0.01438]$, against ViT-B/32's $+0.00989$ and less than half of MOTIFS's.
+A stronger zero-shot model gains within-pair ranking but not near the trained one.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength\tabcolsep{4pt}
+\caption{\textbf{Zero-shot CLIP ViT-L/14 with a five-prompt ensemble}, as in
+\cref{tab:zeroshot}.}
+\label{tab:zeroshotL}
+\input{supp/tab_clip_zeroshot_L}
+\end{table}
 
 \begin{table}[t]
 \centering

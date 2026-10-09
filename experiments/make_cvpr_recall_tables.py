@@ -324,8 +324,8 @@ def predicate_merge():
     return "\n".join(lines)
 
 
-def clip_zeroshot():
-    d = json.loads((RES / "clip_zeroshot_audit.json").read_text())
+def clip_zeroshot(fname="clip_zeroshot_audit.json"):
+    d = json.loads((RES / fname).read_text())
     name = {"CLIP0": "zero-shot CLIP", "CLIP0+FREQ": "zero-shot CLIP + FREQ", "MOTIFS": "MOTIFS",
             "TDE": "TDE", "FREQ": "FREQ"}
     lines = [r"\begin{tabular}{@{}lrrrlrl@{}}", r"\toprule",
@@ -498,6 +498,7 @@ def main():
     (OUT / "tab_label_shift.tex").write_text(head + label_shift() + "\n")
     (OUT / "tab_predicate_merge.tex").write_text(head + predicate_merge() + "\n")
     (OUT / "tab_clip_zeroshot.tex").write_text(head + clip_zeroshot() + "\n")
+    (OUT / "tab_clip_zeroshot_L.tex").write_text(head + clip_zeroshot("clip_zeroshot_audit_L.json") + "\n")
     (OUT / "tab_rank_weighting.tex").write_text(head + rank_weighting() + "\n")
     (OUT / "tab_tier_pair_auc.tex").write_text(head + tier_pair() + "\n")
     (OUT / "tab_recalibration.tex").write_text(head + recalibration() + "\n")

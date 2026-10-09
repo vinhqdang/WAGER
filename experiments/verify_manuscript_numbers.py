@@ -605,6 +605,8 @@ if not _ok:
 _zs = load("clip_zeroshot_audit.json")
 _zr = {(r["new"], r["old"]): r for r in _zs["rows"]}
 _zf, _mf = _zr[("CLIP0", "FREQ")]["brier"], _zr[("MOTIFS", "FREQ")]["brier"]
+_zL = load("clip_zeroshot_audit_L.json")
+_zLr = {(r["new"], r["old"]): r for r in _zL["rows"]}
 CHECKS += [
     ("zs auc", "6_pixels.tex", "0.5164", _zs["auc"]["CLIP0"], 5e-5),
     ("zs MOTIFS auc", "6_pixels.tex", "0.5705", _zs["auc"]["MOTIFS"], 5e-5),
@@ -621,11 +623,25 @@ CHECKS += [
     ("zs prior top-1", "5_robust.tex", "0.6289", _zs["accuracy"]["CLIP0+FREQ"], 5e-5),
     ("zs prior case", "5_robust.tex", "+0.00989", _zr[("CLIP0+FREQ", "FREQ")]["brier"]["case"], 1e-5),
     ("zs TDE case vs FREQ", "5_robust.tex", "+0.02937", _zr[("TDE", "FREQ")]["brier"]["case"], 1e-5),
+    ("zs L top-1 %", "5_robust.tex", "$1.8\\%$", "checked below", 0),
+    ("zs L auc", "5_robust.tex", "0.5252", _zL["auc"]["CLIP0"], 5e-5),
+    ("zs L auc diff", "5_robust.tex", "-0.0453", _zL["auc_clip0_minus_motifs"]["difference"], 5e-5),
+    ("zs L auc diff lo", "5_robust.tex", "-0.0563", _zL["auc_clip0_minus_motifs"]["ci"][0], 5e-5),
+    ("zs L auc diff hi", "5_robust.tex", "-0.0307", _zL["auc_clip0_minus_motifs"]["ci"][1], 5e-5),
+    ("zs L case vs FREQ", "5_robust.tex", "+0.00033", _zLr[("CLIP0", "FREQ")]["brier"]["case"], 1e-5),
+    ("zs L case lo", "5_robust.tex", "+0.00030", _zLr[("CLIP0", "FREQ")]["brier"]["case_ci"][0], 1e-5),
+    ("zs L case hi", "5_robust.tex", "+0.00037", _zLr[("CLIP0", "FREQ")]["brier"]["case_ci"][1], 1e-5),
+    ("zs L prior case", "5_robust.tex", "+0.01260", _zLr[("CLIP0+FREQ", "FREQ")]["brier"]["case"], 1e-5),
+    ("zs L prior case lo", "5_robust.tex", "+0.01081", _zLr[("CLIP0+FREQ", "FREQ")]["brier"]["case_ci"][0], 1e-5),
+    ("zs L prior case hi", "5_robust.tex", "+0.01438", _zLr[("CLIP0+FREQ", "FREQ")]["brier"]["case_ci"][1], 1e-5),
 ]
 _ok = (_zs["n_relations"] == 183639 and round(100 * _zs["accuracy"]["CLIP0"], 1) == 2.5
        and 2.5 < _mf["case"] / _zr[("CLIP0+FREQ", "FREQ")]["brier"]["case"] < 3.5      # "a third"
        and round(_zr[("TDE", "FREQ")]["brier"]["case"], 3) == round(_mf["case"], 3)       # third decimal
-       and _zf["case_ci"][0] > 0)
+       and _zf["case_ci"][0] > 0
+       and round(100 * _zL["accuracy"]["CLIP0"], 1) == 1.8 and _zL["n_relations"] == _zs["n_relations"]
+       and _zL["auc"]["CLIP0"] > _zs["auc"]["CLIP0"]                                        # "rises"
+       and _zLr[("CLIP0+FREQ", "FREQ")]["brier"]["case"] < 0.5 * _mf["case"])             # "less than half"
 if not _ok:
     print("FAIL zero-shot claims (a third of MOTIFS's; TDE equals MOTIFS to the third decimal)"); sys.exit(1)
 
