@@ -276,3 +276,5 @@ submission.zip
 code.zip
 reviews/*/_supp_text.txt
 data/vg_motifs/wager_*/parts/
+!data/waterbirds/
+!data/waterbirds/*.npz
