@@ -32,7 +32,7 @@ H5_SHARE = "https://1drv.ms/u/s!AmRLLNf6bzcir8xf9oC3eNWlVMTRDw?e=63t7Ed"
 DICTS = ("https://raw.githubusercontent.com/KaihuaTang/Scene-Graph-Benchmark.pytorch/"
          "master/datasets/vg/VG-SGG-dicts-with-attri.json")
 CORRUPTED = {"1592.jpg", "1722.jpg", "4616.jpg", "4617.jpg"}
-BATCH = 512
+BATCH = int(os.environ.get("WAGER_BATCH", "128"))
 MODEL = os.environ.get("WAGER_CLIP_MODEL", "ViT-B-32-quickgelu")       # e.g. ViT-L-14
 PRETRAINED = os.environ.get("WAGER_CLIP_PRETRAINED", "openai")
 ENSEMBLE = os.environ.get("WAGER_PROMPTS", "single")                    # "single" | "ensemble"
@@ -137,7 +137,7 @@ pairs, pair_of = np.unique(np.stack([subj, obj], 1), axis=0, return_inverse=True
 pair_of = pair_of.ravel()
 prompts = [t.format(s=obj_names[s_], p=pred_names[p], o=obj_names[o_])
            for s_, o_ in pairs for p in range(1, 51) for t in TEMPLATES]
-nt, step = len(TEMPLATES), 2000 * len(TEMPLATES)
+nt, step = len(TEMPLATES), 200 * len(TEMPLATES)
 with torch.no_grad():
     feats = []
     for i in range(0, len(prompts), step):
