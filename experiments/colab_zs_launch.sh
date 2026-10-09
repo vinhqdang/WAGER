@@ -3,7 +3,7 @@
 export PATH="$HOME/.local/bin:$PATH"; D=~/.config/colab-cli; R=/home/user/WAGER/experiments; W=/home/user/WAGER/data/vg_motifs/wager_sgg
 cd /tmp; SESSION=${SESSION:-zsL}
 for i in $(seq 1 ${TRIES:-10}); do
-  for acct in 1 2; do
+  for acct in 1 2 3; do
     cp $D/token.account$acct.json $D/token.json
     r=$(timeout 300 colab --auth oauth2 new -s $SESSION --gpu T4 2>&1 | tail -1)
     if echo "$r" | grep -q READY; then
