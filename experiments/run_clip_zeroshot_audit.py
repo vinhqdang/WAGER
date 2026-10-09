@@ -35,7 +35,11 @@ from wager.rank import within_cell_auc, within_cell_auc_contrast  # noqa: E402
 import run_sgg_audit_wager as AU  # noqa: E402
 
 DDIR = ROOT / "data/vg_motifs/wager_sgg"
-OUT = ROOT / "results/clip_zeroshot_audit.json"
+import os  # noqa: E402
+
+VARIANT = os.environ.get("WAGER_ZS_VARIANT", "clip_zs")     # clip_zs (ViT-B/32) or clip_zs_L (ViT-L/14, ensemble)
+OUT = ROOT / ("results/clip_zeroshot_audit.json" if VARIANT == "clip_zs"
+              else f"results/{VARIANT.replace('clip_zs', 'clip_zeroshot_audit')}.json")
 
 
 def probs(v, keep):
@@ -52,7 +56,7 @@ def main():
     phi = (meta["subj"].astype(np.int64) * 151 + meta["obj"].astype(np.int64))[keep]
     image = meta["image_index"].astype(np.int64)[keep]
 
-    Q = {"CLIP0": probs("clip_zs", keep), "FREQ": probs("frq", keep),
+    Q = {"CLIP0": probs(VARIANT, keep), "FREQ": probs("frq", keep),
          "MOTIFS": probs("none", keep), "TDE": probs("TDE", keep)}
     comb = np.log(np.clip(Q["CLIP0"], 1e-12, None)) + np.log(np.clip(Q["FREQ"], 1e-12, None))
     comb = np.exp(comb - comb.max(1, keepdims=True))

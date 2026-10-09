@@ -33,6 +33,14 @@ DICTS = ("https://raw.githubusercontent.com/KaihuaTang/Scene-Graph-Benchmark.pyt
          "master/datasets/vg/VG-SGG-dicts-with-attri.json")
 CORRUPTED = {"1592.jpg", "1722.jpg", "4616.jpg", "4617.jpg"}
 BATCH = 512
+MODEL = os.environ.get("WAGER_CLIP_MODEL", "ViT-B-32-quickgelu")       # e.g. ViT-L-14
+PRETRAINED = os.environ.get("WAGER_CLIP_PRETRAINED", "openai")
+ENSEMBLE = os.environ.get("WAGER_PROMPTS", "single")                    # "single" | "ensemble"
+OUTNAME = os.environ.get("WAGER_ZS_OUT", "variant_clip_zs.npz")
+TEMPLATES = {"single": ["a photo of a {s} {p} a {o}"],
+             "ensemble": ["a photo of a {s} {p} a {o}", "a {s} {p} a {o}",
+                          "a picture showing a {s} {p} a {o}", "an image of a {s} that is {p} a {o}",
+                          "a cropped photo in which a {s} is {p} a {o}"]}[ENSEMBLE]
 T0 = time.time()
 
 
@@ -69,28 +77,16 @@ subprocess.run([sys.executable, "-m", "pip", "install", "-q", "open_clip_torch",
 import h5py  # noqa: E402
 
 os.makedirs(IMG, exist_ok=True)
-for name in ("images.zip", "images2.zip"):
-    dest = f"{ROOT}/{name}"
-    if os.path.exists(dest + ".unzipped"):
-        continue
-    fetch(f"https://cs.stanford.edu/people/rak248/VG_100K_2/{name}", dest)
-    with zipfile.ZipFile(dest) as z:
-        for m in z.namelist():
-            if m.lower().endswith(".jpg"):
-                out = f"{IMG}/{os.path.basename(m)}"
-                if not os.path.exists(out):
-                    with z.open(m) as s, open(out + ".part", "wb") as o:
-                        o.write(s.read())
-                    os.replace(out + ".part", out)
-    open(dest + ".unzipped", "w").write("1")
-    os.remove(dest)
-    log(f"extracted {name}")
 fetch("https://homes.cs.washington.edu/~ranjay/visualgenome/data/dataset/image_data.json.zip",
       f"{ROOT}/image_data.json.zip")
 with zipfile.ZipFile(f"{ROOT}/image_data.json.zip") as z:
     z.extractall(f"{ROOT}/imgmeta")
 onedrive(H5_SHARE, f"{ROOT}/VG-SGG-with-attri.h5")
 fetch(DICTS, f"{ROOT}/dicts.json")
+if not os.path.exists(f"{IMG}/.ready"):      # test images only; placeholders keep indices aligned
+    subprocess.run([sys.executable, f"{ROOT}/colab_vg_test_images.py", f"{ROOT}/VG-SGG-with-attri.h5",
+                    f"{ROOT}/imgmeta/image_data.json", IMG], check=True)
+    open(f"{IMG}/.ready", "w").write("1")
 
 # dataset index -> file, exactly as the codebase's loader does it
 im_data = json.load(open(f"{ROOT}/imgmeta/image_data.json"))
@@ -128,8 +124,8 @@ import open_clip  # noqa: E402
 from PIL import Image  # noqa: E402
 
 dev = "cuda" if torch.cuda.is_available() else "cpu"
-model, _, preprocess = open_clip.create_model_and_transforms("ViT-B-32-quickgelu", pretrained="openai")
-tok = open_clip.get_tokenizer("ViT-B-32-quickgelu")
+model, _, preprocess = open_clip.create_model_and_transforms(MODEL, pretrained=PRETRAINED)
+tok = open_clip.get_tokenizer(MODEL)
 model = model.to(dev).eval()
 if dev == "cuda":
     model = model.half()
@@ -139,14 +135,15 @@ scale = float(model.logit_scale.exp().detach())
 subj, obj = meta["subj"].astype(np.int64), meta["obj"].astype(np.int64)
 pairs, pair_of = np.unique(np.stack([subj, obj], 1), axis=0, return_inverse=True)
 pair_of = pair_of.ravel()
-text = np.zeros((len(pairs), 50, model.text_projection.shape[1]), dtype=np.float32)
-prompts = [f"a photo of a {obj_names[s]} {pred_names[p]} a {obj_names[o]}"
-           for s, o in pairs for p in range(1, 51)]
+prompts = [t.format(s=obj_names[s_], p=pred_names[p], o=obj_names[o_])
+           for s_, o_ in pairs for p in range(1, 51) for t in TEMPLATES]
+nt, step = len(TEMPLATES), 2000 * len(TEMPLATES)
 with torch.no_grad():
     feats = []
-    for i in range(0, len(prompts), 2048):
-        f = model.encode_text(tok(prompts[i:i + 2048]).to(dev)).float()
-        feats.append(torch.nn.functional.normalize(f, dim=-1).cpu().numpy())
+    for i in range(0, len(prompts), step):
+        f = torch.nn.functional.normalize(model.encode_text(tok(prompts[i:i + step]).to(dev)).float(), dim=-1)
+        f = torch.nn.functional.normalize(f.reshape(-1, nt, f.shape[-1]).mean(1), dim=-1)   # prompt ensemble
+        feats.append(f.cpu().numpy())
 text = np.concatenate(feats).reshape(len(pairs), 50, -1)
 log(f"encoded {len(prompts)} prompts for {len(pairs)} class pairs")
 
@@ -197,7 +194,7 @@ for s in range(0, len(img_i), 8192):           # chunked: text[pair_of] in one g
     logits -= logits.max(1, keepdims=True)
     p = np.exp(logits)
     probs[s:e, 1:] = p / p.sum(1, keepdims=True)
-np.savez_compressed(f"{ROOT}/variant_clip_zs.npz", probs=probs,
+np.savez_compressed(f"{ROOT}/{OUTNAME}", probs=probs,
                     n_union_crops=len(uniq), n_class_pairs=len(pairs))
 acc = float((probs[:, 1:].argmax(1) + 1 == meta["pred"]).mean())
 log(f"zero-shot top-1 accuracy {acc:.4f}")
