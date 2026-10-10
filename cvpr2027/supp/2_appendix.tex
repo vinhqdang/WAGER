@@ -632,6 +632,8 @@ free bound. Computed by \texttt{experiments/sensitivity\_analysis.py} from per-i
 arrays for the same pair, it gives $B=0.23284$ at $\bar\rho=1$, so the
 \emph{robustness value} --- the smallest aggregate correlation at which the bound reaches
 the estimate --- is
+(its estimate, $0.01427$, is computed from those arrays and differs from the $0.01439$ of the
+tables by $0.00012$, under $1\%$, within the interval's half-width)
 \begin{equation}
 \rho^\dagger=\frac{\bigl|\widehat{\Delta R}\bigr|}{B}
 =\frac{0.01427}{0.23284}=0.06127 .
@@ -745,6 +747,21 @@ plainly hypothetical. The reported $94.0\%$ empirical coverage against a nominal
 the interval remains a good approximation well short of the idealization.
 
 \section{Choice of the grouping variable}\label{app:partition}
+
+\paragraph{The headline share under other groupings.} We recompute the graph-constrained
+$mR@50$ split of TDE against the baseline (\cref{sec:sggaudit}) with the cell declared
+differently (\texttt{run\_sgg\_grouping\_share.py}); cells with one relation drop out of each
+version. With the class pair, $87\%$ of the $+0.0972$ is group-level. Splitting each pair by the
+object's position relative to the subject (four quadrants, $9{,}974$ cells) gives $90\%$, with
+case-level part $+0.0100$, $[+0.0065,+0.0135]$, and by the subject box's area tercile
+($8{,}230$ cells) $90\%$, $+0.0095$, $[+0.0060,+0.0131]$: finer cells that the model could use
+leave the reading unchanged. Coarsening reverses it. With the subject class alone ($150$ cells)
+only $18\%$ is group-level and the case-level part is $+0.0794$, $[+0.0730,+0.0859]$, because the
+object class is then a within-cell signal that the frequency prior already used: a model that
+moves probability according to the object's class is credited with discrimination. The share
+describes the declared grouping: by \cref{prop:coarsen} the coarse case-level part is the
+fine one plus a covariance between the cells' gains and their label priors, which here is large
+and positive.
 
 \paragraph{Fineness is not a total order, and the guidance needs that qualification.}
 The advice to prefer the finest defensible $\phi$ is sound against \emph{coarsening},
@@ -1288,7 +1305,11 @@ softer, better-calibrated confidence. DRW inverts the reading its raw split sugg
 Raw, its $+0.06712$ gain divides roughly two-thirds transported to one-third covariance gain;
 calibration-matched, the improvement is $+0.02173\,(0.00275)$ of which
 $+0.01957\,(0.00329)$ is within-group covariance while the transported channel is close to zero
-($+0.00216\,(0.00410)$). What survives calibration matching is precisely the component
+($+0.00216\,(0.00410)$). A caveat applies, in the light of \cref{sec:sggaudit}: matching here is by
+temperature only, which cannot remove a class-wise shift of the operating point, and the post-hoc
+logit-adjusted baseline's matched covariance, $+0.03241$ (\cref{tab:cifar-robust}), exceeds DRW's,
+$+0.01953$; part of any such covariance may therefore be an operating-point effect, and the
+groups are label-derived, so ``group-level'' describes the label partition, not the input. What survives calibration matching is precisely the component
 the deferred schedule was designed to buy -- per-instance discrimination, concentrated
 on rare classes (Table~\ref{tab:cifar-tier}) -- while the apparently transported
 share of its raw gain was largely the calibration difference between the two runs.

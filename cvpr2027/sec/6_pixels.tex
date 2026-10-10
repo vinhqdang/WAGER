@@ -1,4 +1,4 @@
-\section{The model every metric ranks last}\label{sec:vgvisual}
+\section{The model the aggregates rank last}\label{sec:vgvisual}
 
 The predictors of \cref{sec:data} never see an image: they read the class pair and, at most,
 box coordinates from the annotation. On the same reconstructed split we add one that reads pixels --- subject and object
@@ -26,31 +26,27 @@ within-cell AUC, which no calibration or prior shift can move, does not favour i
 weighted by comparison, $0.5408$ against $0.5323$, a difference of $+0.0085$ with interval
 $[-0.0062,+0.0214]$; weighted as the split weights cells, geometry ranks better, $-0.0067$,
 $[-0.0120,-0.0019]$. Both models clear the class-only model's $0.5$ (by $+0.0408$ and
-$+0.0323$, comparison-weighted). The CLIP model's case-level advantage is real covariance,
-not better ranking.
+$+0.0323$, comparison-weighted). The CLIP model's case-level advantage is real covariance;
+whether it is better ranking depends on the weighting. (It also reads a wider input: two pipelines, not encoders alone.)
 
 \paragraph{Seeds.} Over five training seeds (seed $0$ reproduces the predictions above
 exactly; \cref{app:vgseeds}), the CLIP model's matched case-level advantage over geometry stays
 between $+0.00413$ and $+0.00474$, every interval excluding zero, its accuracy stays below
-geometry's, and its comparison-weighted AUC difference is positive in all five but excludes zero in one. Adding
-the CLIP features to geometry, rather than replacing it, doubles that advantage ($+0.00807$ to
-$+0.00949$).
+geometry's, and its comparison-weighted AUC difference is positive in all five but excludes zero in one..
 
 \paragraph{Under a label shift.} A label shift moves group-level parts and only reweights
-case-level ones (\cref{sec:method}), so the split says which parts of a gain a shift can
-reverse. We reweight the test relations along a path from the benchmark's predicate mix to
-uniform frequencies within each object pair (\cref{app:labelshift}). At the uniform end, seven
-of the eight group-level parts of \cref{sec:sggaudit} and this section change sign, and the
-totals follow: the CLIP model now beats geometry by $+0.02981$. Five of the six case-level
-parts that excluded zero keep their sign and grow. The exceptions are TDE's: its part against
-the baseline rises steadily along the path, from $-0.00006$ to $+0.01430$, interval
-$[+0.01116,+0.01744]$, and against the control from $-0.00398$ to $+0.00723$, while the AUC
-separates it from the baseline at neither end. TDE gains discrimination between some
-predicate pairs and loses it between others, and the benchmark's mix weights the two to zero.
+case-level ones (\cref{sec:method}). Reweighting the test relations along a path from the
+benchmark's predicate mix to uniform frequencies within each object pair (\cref{app:labelshift}),
+seven of the eight group-level parts of \cref{sec:sggaudit} and this section change sign, and
+the CLIP model beats geometry by $+0.02981$ at the uniform end. Five of the six case-level
+parts that excluded zero keep their sign and grow; the exceptions are TDE's: its part against
+the baseline rises from $-0.00006$ to $+0.01430$, interval $[+0.01116,+0.01744]$, and against
+the control from $-0.00398$ to $+0.00723$, while the AUC separates it from the baseline at
+neither end. TDE gains discrimination between some predicate pairs and loses it between others,
+and the benchmark's mix weights the two to zero.
 
 \paragraph{Beyond scene graphs.}\label{sec:further} Nothing in \cref{sec:method} is specific
 to relations; the supplementary applies the estimator to long-tailed image classification
 (CIFAR-100-LT, across seeds and imbalance ratios), to long-tailed text classification and to
-Waterbirds, where the cell is the background scene. The
-constraint on the grouping bites there: the fine class label cannot serve as a cell, because
-it forces the case-level part to zero by construction, an artefact that reads like a null.
+Waterbirds, where the cell is the background scene. The fine class label cannot serve as a
+cell: it forces the case-level part to zero by construction, an artefact that reads like a null.

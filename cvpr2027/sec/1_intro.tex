@@ -34,20 +34,21 @@ image-clustered intervals.
 
 \paragraph{What it finds.} We re-ran TDE's released checkpoint, replayed the official
 evaluator exactly so that recall can be computed under any labelling, and split mean recall
-itself (\cref{sec:sggaudit}). Of the ten points, $87\%$ is group-level; the fifteen rarest
+itself (\cref{sec:sggaudit}). Of the ten points, $87\%$ is group-level (of the micro-pooled recall, $+0.0972$; the
+official statistic moves $+0.1017$); the fifteen rarest
 predicates contribute almost nothing. A thresholded metric also earns case-level credit
 whenever its operating point moves, so we read the remainder against a control: subtracting
 the training predicate prior from the baseline's logits~\cite{menon2021long}, which changes
-no ranking within any group, recovers nine of the ten points with the same split at under a
+no ranking within any group, recovers $+0.0941$ of the $+0.0972$ with the same split at under a
 tenth of TDE's cost in $R@50$, and against it TDE's case-level part is $-0.0008$, interval
-straddling zero. A within-group AUC detects no change in TDE's ranking, and its
+straddling zero. A within-group AUC detects no change in TDE's ranking, excluding a gain above
+$0.009$, and its
 proper-score case-level part is small and changes sign with the calibration protocol and the
 label mix. IETrans~\cite{zhang2022finegrained}, which relabels training data within object
-pairs, gains 21 points, $97\%$ group-level, and loses within-group discrimination under every
-measure. The converse appears in a controlled study on real pixels (\cref{sec:vgvisual}): a
-model reading frozen CLIP~\cite{radford2021learning} crops, which every aggregate ranks
-last, carries $+0.00464$ more case-level covariance than the geometry model ranked above it,
-without ranking better.
+pairs, gains 21 points, $97\%$ group-level, and loses within-group discrimination on the
+matched scores and the relation-weighted AUC. The converse appears on real pixels (\cref{sec:vgvisual}): a model reading frozen
+CLIP~\cite{radford2021learning} crops, ranked last by every aggregate, carries $+0.00464$ more
+case-level covariance than a geometry model, though not clearly better ranking.
 
 \paragraph{Contributions.} (i) Audits of two released debiasing checkpoints that split their
 mean-recall gains exactly, with the mechanism behind TDE's. (ii) An exact, model-free

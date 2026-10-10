@@ -441,7 +441,6 @@ CHECKS += [
     ("iet case", "5_audit.tex", "+0.0060", _ie["mean_recall"]["case"], 5e-5),
     ("iet case lo", "5_audit.tex", "-0.0031", _ie["mean_recall"]["case_ci"][0], 5e-5),
     ("iet case hi", "5_audit.tex", "+0.0151", _ie["mean_recall"]["case_ci"][1], 5e-5),
-    ("iet tail", "5_audit.tex", "+0.0889", _ie["mean_recall_tail"]["total"], 5e-5),
     ("iet quad case", "5_audit.tex", "-0.0162", _iq["reasoning_gain"], 5e-5),
     ("iet log case", "5_audit.tex", "-0.0544", _il["reasoning_gain"], 5e-5),
     ("iet auc", "5_audit.tex", "-.0093", _ia["difference"], 5e-5),
@@ -645,6 +644,43 @@ _ok = (_zs["n_relations"] == 183639 and round(100 * _zs["accuracy"]["CLIP0"], 1)
 if not _ok:
     print("FAIL zero-shot claims (a third of MOTIFS's; TDE equals MOTIFS to the third decimal)"); sys.exit(1)
 
+_rs = load("sgg_recall_split.json")["results"]
+_rsl = load("sgg_recall_split_TDE_vs_la1.json")["results"]
+_rsl_k20 = _rs["gc@20"]["mean_recall"]["group"] / _rs["gc@20"]["mean_recall"]["total"]
+_ora = load("sgg_oracle_headroom.json")
+_ie = {(r["new"], r["old"]): r for r in load("sgg_rank_robustness.json")["sgg_auc"]}
+CHECKS += [
+    ("cvpr review micro total", "1_intro.tex", "+0.0972", _rs["gc@50"]["mean_recall"]["total"], 5e-5),
+    ("cvpr review official", "1_intro.tex", "+0.1017", _rs["gc@50"]["official_mR_TDE"] - _rs["gc@50"]["official_mR_none"], 5e-5),
+    ("cvpr review no-gc K50", "5_audit.tex", "+0.0072", _rsl["ng@50"]["mean_recall"]["case"], 5e-5),
+    ("cvpr review no-gc K100", "5_audit.tex", "+0.0148", _rsl["ng@100"]["mean_recall"]["case"], 5e-5),
+    ("cvpr review no-gc K100 lo", "5_audit.tex", "+0.0064", _rsl["ng@100"]["mean_recall"]["case_ci"][0], 5e-5),
+    ("cvpr review no-gc K100 hi", "5_audit.tex", "+0.0232", _rsl["ng@100"]["mean_recall"]["case_ci"][1], 5e-5),
+    ("cvpr review share K20 %", "5_audit.tex", "$77\\%$", 100 * _rsl_k20, 0.5),
+    ("cvpr review oracle total", "5_audit.tex", "+0.5068", _ora["oracle"]["total"], 5e-5),
+    ("cvpr review oracle case", "5_audit.tex", "+0.8041", _ora["oracle"]["case"], 5e-5),
+    ("cvpr review oracle group", "5_audit.tex", "-0.2973", _ora["oracle"]["group"], 5e-5),
+    ("cvpr review ietrans auc c", "5_audit.tex", "-0.0093", _ie[("ietrans", "none")]["all, comparison"]["difference"], 5e-5),
+    ("cvpr review ietrans auc c lo", "5_audit.tex", "-0.0181", _ie[("ietrans", "none")]["all, comparison"]["ci"][0], 5e-5),
+    ("cvpr review ietrans auc c hi", "5_audit.tex", "+0.0004", _ie[("ietrans", "none")]["all, comparison"]["ci"][1], 5e-5),
+    ("cvpr review tde auc bound", "0_abstract.tex", "0.009", _ie[("TDE", "none")]["all, comparison"]["ci"][1], 5e-4),
+]
+_gs = load("sgg_grouping_share.json")
+CHECKS += [
+    ("cvpr grp pos share %", "7_conclusion.tex", "$90\\%$", 100 * _gs["class pair x position"]["group"] / _gs["class pair x position"]["total"], 0.5),
+    ("cvpr grp subj share %", "7_conclusion.tex", "$18\\%$", 100 * _gs["subject class"]["group"] / _gs["subject class"]["total"], 0.5),
+    ("cvpr grp pos case", "2_appendix.tex", "+0.0100", _gs["class pair x position"]["case"], 5e-5),
+    ("cvpr grp pos lo", "2_appendix.tex", "+0.0065", _gs["class pair x position"]["case_ci"][0], 5e-5),
+    ("cvpr grp pos hi", "2_appendix.tex", "+0.0135", _gs["class pair x position"]["case_ci"][1], 5e-5),
+    ("cvpr grp size case", "2_appendix.tex", "+0.0095", _gs["class pair x subject size"]["case"], 5e-5),
+    ("cvpr grp size lo", "2_appendix.tex", "+0.0060", _gs["class pair x subject size"]["case_ci"][0], 5e-5),
+    ("cvpr grp size hi", "2_appendix.tex", "+0.0131", _gs["class pair x subject size"]["case_ci"][1], 5e-5),
+    ("cvpr grp subj case", "2_appendix.tex", "+0.0794", _gs["subject class"]["case"], 5e-5),
+    ("cvpr grp subj lo", "2_appendix.tex", "+0.0730", _gs["subject class"]["case_ci"][0], 5e-5),
+    ("cvpr grp subj hi", "2_appendix.tex", "+0.0859", _gs["subject class"]["case_ci"][1], 5e-5),
+    ("cvpr grp pos cells", "2_appendix.tex", "9{,}974", _gs["class pair x position"]["n_cells"], 0),
+    ("cvpr grp size cells", "2_appendix.tex", "8{,}230", _gs["class pair x subject size"]["n_cells"], 0),
+]
 _wb = load("waterbirds_audit.json")
 _wbs, _wbl = _wb["splits"]["scene"]["brier"], _wb["splits"]["background"]["brier"]
 CHECKS += [

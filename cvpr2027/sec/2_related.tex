@@ -17,14 +17,10 @@ training, RTPB~\cite{chen2022resistance} resists a prior bias. The
 metrics themselves have been shown to reward pathologies~\cite{li2022rethinking}, and
 open-vocabulary methods inherit them~\cite{li2024pixels}. These works compare methods by their
 metrics; we ask which part of a metric's change is group-level. Benchmark audits outside scene graphs find the
-same pattern: VQA models collapse when answer priors change between train and
-test~\cite{agrawal2018dont}, GQA-OOD stratifies accuracy by answer rarity within question
-groups~\cite{kervadec2021roses}, and multimodal models exploit non-visual
-shortcuts~\cite{geirhos2020shortcut,zhou2025shortcut}. Gains can also be credited to a
-mechanism that did not produce them: grounding-based VQA methods keep their
-out-of-distribution improvement when the grounding signal is
-irrelevant~\cite{shrestha2020negative}, and methods can exploit how an
-out-of-distribution split was built~\cite{teney2020value}. Long-tailed recognition faces the
+same pattern: VQA models collapse when answer priors change~\cite{agrawal2018dont},
+multimodal models exploit non-visual shortcuts~\cite{geirhos2020shortcut,zhou2025shortcut},
+and gains are credited to mechanisms that did not produce
+them~\cite{shrestha2020negative,teney2020value}. Long-tailed recognition faces the
 same question for re-weighting and logit adjustment~\cite{cao2019learning,menon2021long}.
 All of these characterise a \emph{single} model; we account for the gain \emph{between} two.
 

@@ -38,6 +38,9 @@ cvpr VG identified cells
 cvpr base ng-mR@50
 cvpr geometry accuracy
 cvpr geometry-class dR
+cvpr grp pos share %
+cvpr grp size lo
+cvpr grp subj share %
 cvpr identified cells
 cvpr identified share of relations
 cvpr mR TDE, points
@@ -45,6 +48,20 @@ cvpr mR base, points
 cvpr matched quad dR ci hi
 cvpr matched quad dR ci lo
 cvpr matched quad dT
+cvpr review ietrans auc c
+cvpr review ietrans auc c hi
+cvpr review ietrans auc c lo
+cvpr review micro total
+cvpr review no-gc K100
+cvpr review no-gc K100 hi
+cvpr review no-gc K100 lo
+cvpr review no-gc K50
+cvpr review official
+cvpr review oracle case
+cvpr review oracle group
+cvpr review oracle total
+cvpr review share K20 %
+cvpr review tde auc bound
 cvpr robustness value
 cvpr sim calib matched sd
 cvpr sim null mean x1e5
@@ -55,11 +72,14 @@ cvpr train subsample
 det sgcls LA R@50
 det sgcls LA dmR
 det sgcls TDE R@50
+det sgcls auc cmp
 det sgcls auc cmp hi
+det sgcls auc cmp lo
 det sgcls auc rel
 det sgcls auc rel hi
 det sgcls auc rel lo
 det sgcls dmR
+det sgcls matched %
 det sgcls share %
 det sgdet LA dmR
 det sgdet TDE dmR
@@ -84,10 +104,7 @@ iet mR@50 own test = official run
 iet mR@50 standard
 iet points
 iet quad case
-iet tail
 merge LA auc max
-merge syn TDE case
-merge synonym classes
 path avg AUC
 path avg dmR
 path avg-ctx corr log prior
@@ -141,6 +158,7 @@ rec LA case
 rec LA dmR
 rec LA group
 rec LA mR@50
+rec LA.5 case
 rec R cost LA
 rec R cost TDE
 rec TDE case
@@ -175,8 +193,6 @@ rec tail gain
 rec tail predicates TDE recalls
 seeds CLIP case max
 seeds CLIP case min
-seeds CLIP+geo case max
-seeds CLIP+geo case min
 sens class-pair dR
 sgg base R@50
 sgg base mR@50
@@ -200,8 +216,6 @@ sim coverage clustered
 sim coverage iid
 sim prior-only dR
 sim shortcut dR
-splits TDE quad max
-splits TDE quad min
 splits share TDE lo
 splits share TDE lo %
 vrank CLIP auc

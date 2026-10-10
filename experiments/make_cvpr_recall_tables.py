@@ -450,7 +450,7 @@ def small_cells():
              r"Cell sizes & coverage & SE / SD \\", r"\midrule"]
     for k in ("n_c=2", "n_c=3", "n_c=4", "n_c=8", "n_c=20", "VG150 cell sizes"):
         lab = k.replace("n_c=", "every cell $n_c=") + "$" if k.startswith("n_c") else k
-        lines.append(f"{lab} & {100 * d[k]['coverage']:.1f}\\% & {d[k]['se_over_sd']:.2f} \\\\")
+        lines.append(f"{lab} & {100 * d[k]['coverage'] + 1e-9:.1f}\\% & {d[k]['se_over_sd']:.2f} \\\\")
     lines += [r"\bottomrule", r"\end{tabular}"]
     return "\n".join(lines)
 

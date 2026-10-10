@@ -8,11 +8,12 @@ another relation from the same pair keeps the pair's predicate frequencies but b
 link between each relation and its own label. This splits the difference between two frozen
 models, in a proper score or in mean recall itself, exactly into a group-level part and a
 case-level covariance, in $O(NK)$ time with image-clustered intervals. On TDE's released
-checkpoint, 87\% of the mean-recall gain (interval 83--91\%) is group-level, and a logit
+checkpoint, 87\% of the (graph-constrained, micro-pooled) mean-recall gain (interval 83--91\%) is group-level, and a logit
 adjustment that changes no ranking within any pair recovers nine of the ten points at under
-a tenth of TDE's cost in recall. No measure detects a change in TDE's ranking within pairs,
-and its small case-level part changes sign with the calibration protocol and the label mix. In
+a tenth of TDE's cost in recall. No measure detects a change in TDE's ranking within pairs (the within-pair AUC excludes a
+gain above 0.009), and its small case-level part changes sign with the calibration protocol and the label mix. In
 SGCls the gain is 99\% group-level and TDE's ranking within pairs gets worse.
-A second released method, IETrans, gains 21 points, 97\% group-level, and loses
-within-pair discrimination under every measure.
+A second released checkpoint, IETrans (no baseline released), gains 21 points, 97\% group-level;
+its within-pair discrimination falls on the matched scores and the relation-weighted AUC, though
+not detectably on the comparison-weighted one. Both are Neural-Motifs checkpoints on Visual Genome.
 \end{abstract}
