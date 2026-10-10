@@ -1,0 +1,701 @@
+CVPR                                                                                                                                                     CVPR
+#*****                                                                                                                                                   #*****
+                                 CVPR 2027 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+
+                            What Did Ten Points of Mean Recall Buy?
+             Separating Group-Level from Case-Level Gains in Scene Graph Generation
+
+                                                          Anonymous CVPR submission
+
+                                                                    Paper ID *****
+
+
+
+
+         Figure 1. Within-group relabelling. Two Visual Genome relations share the subject–object pair (man, surfboard). Swapping their labels
+         keeps the pair’s predicate histogram exactly as it was but breaks the link between each image and its own label. Scoring two frozen models
+         under the observed and the swapped labels splits their score gain exactly: ∆P
+                                                                                     d is the part that survives the swap — earned at the level of the
+         group — and ∆R is the covariance between each relation’s prediction and its own label, which better ranking within the group can supply,
+                       d
+         and so can a moved operating point.
+
+
+                                    Abstract                                      level part and a case-level covariance, in O(N K) time with             013
+                                                                                  image-clustered intervals. On TDE’s released checkpoint,                014
+
+ 001     Debiasing methods for scene graph generation are judged                  87% of the mean-recall gain (interval 83–91%) is group-                 015
+
+ 002     by mean recall, and one of the best known, Total Direct Ef-              level, and a logit adjustment that changes no ranking within            016
+
+ 003     fect (TDE), raises it on Visual Genome from 14.6 to 24.8.                any pair recovers nine of the ten points at under a tenth of            017
+
+ 004     What did those ten points buy? A model raises mean re-                   TDE’s cost in recall. No measure detects a change in TDE’s              018
+
+ 005     call either by predicting rare predicates more often within              ranking within pairs, and its small case-level part changes             019
+
+ 006     each subject–object pair, or by telling which individual re-             sign with the calibration protocol and the label mix. In SG-            020
+
+ 007     lations carry them, and the metric credits both alike. Scor-             Cls the gain is 99% group-level and TDE’s ranking within                021
+
+ 008     ing each prediction against the label of another relation                pairs gets worse. A second released method, IETrans, gains              022
+
+ 009     from the same pair keeps the pair’s predicate frequencies                21 points, 97% group-level, and loses within-pair discrimi-             023
+
+ 010     but breaks the link between each relation and its own label.             nation under every measure.                                             024
+
+ 011     This splits the difference between two frozen models, in a
+ 012     proper score or in mean recall itself, exactly into a group-
+
+                                                                              1
+CVPR                                                                                                                                            CVPR
+#*****                                                                                                                                          #*****
+                                CVPR 2027 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+ 025     1. Introduction                                                       level part is −0.0008, interval straddling zero. A within-        075
+                                                                               group AUC detects no change in TDE’s ranking, and its             076
+ 026     Scene graph generation is evaluated on a benchmark whose              proper-score case-level part is small and changes sign with       077
+ 027     labels are unusually predictable from something every                 the calibration protocol and the label mix. IETrans [50],         078
+ 028     model sees. Given the ordered object pair (man, surf-                 which relabels training data within object pairs, gains 21        079
+ 029     board), the predicate on Visual Genome [20] is very of-               points, 97% group-level, and loses within-group discrim-          080
+ 030     ten riding, and a lookup table of training frequencies is fa-         ination under every measure. The converse appears in a            081
+ 031     mously competitive [49]. Recall@K rewards models that                 controlled study on real pixels (Sec. 6): a model reading         082
+ 032     echo this prior, so the field now leads with mean recall,             frozen CLIP [31] crops, which every aggregate ranks last,         083
+ 033     which averages recall over predicates and so rewards getting          carries +0.00464 more case-level covariance than the ge-          084
+ 034     the rare ones [5, 39]. Debiasing methods are now judged by            ometry model ranked above it, without ranking better.             085
+ 035     how far they raise it. Total Direct Effect (TDE) [40], among
+ 036     the most cited of them, raises mean recall@50 of a MOTIFS
+ 037     model from 14.6 to 24.8 on the canonical VG150 split, in              Contributions. (i) Audits of two released debiasing               086
+ 038     our evaluation of the released checkpoint.                            checkpoints that split their mean-recall gains exactly, with      087
+ 039        What did those ten points buy? A model can move prob-              the mechanism behind TDE’s. (ii) An exact, model-free             088
+ 040     ability towards rare predicates within each subject–object            decomposition of the difference between two frozen mod-           089
+ 041     pair — say carrying more often for (man, surfboard) —                 els, for every Bregman score and for label-weighted hit           090
+ 042     without becoming any better at deciding which relations               rates such as mean recall, with cluster-robust inference, an      091
+ 043     are a man carrying rather than riding. Or it can learn to             operating-point control and a threshold-free AUC. (iii) Val-      092
+ 044     make that decision. The metric credits both alike. Existing           idation that the case-level part is zero when it should be,       093
+ 045     remedies — head/body/tail-stratified recall [23], indepen-            covers at the nominal rate under image clustering, and sep-       094
+ 046     dent mean recall [25], zero-shot recall [27], rarity-stratified       arates calibration, prior and shortcut effects, with protocols    095
+ 047     accuracy [19] — slice one model’s performance differently;            for the confounds it does not.                                    096
+ 048     none attributes the gain between two models to one route or
+ 049     the other.                                                            What is not claimed. The scene-graph audits are Pred-             097
+                                                                               Cls, where every model sees the cell, except a replication        098
+ 050     An exact split. Take two frozen models and a test set                 of TDE in SGCls and SGDet (Sec. 5), where the two mod-            099
+ 051     grouped by a discrete feature both observe, here the                  els share every predicted object. The split is conditional on     100
+ 052     subject–object pair (Fig. 1). Score each model’s prediction           the declared grouping: ∆R   d measures case-level discrimi-       101
+ 053     for one relation against the label of a different relation in         nation among relations sharing an object pair, and credits        102
+ 054     the same group. This keeps each group’s predicate frequen-            any signal varying inside a pair, including a shortcut nobody     103
+ 055     cies, so gain earned at the level of the group survives it,           recorded. It is not invariant to recalibration — rescaling        104
+ 056     and breaks the link between a relation and its own label,             a model’s confidence moves score between the two parts            105
+ 057     so gain earned on individual cases does not. The observed             while changing no ranking — which is why the compar-              106
+ 058     gain splits exactly into a group-level part ∆P
+                                                     d and a case-             isons whose models differ visibly in confidence, TDE’s and        107
+ 059     level remainder ∆R,
+                          d a within-group covariance between the              the CLIP model’s, are read confidence-matched. For mean           108
+ 060     change in the predictions and the label (Theorem 1), for any          recall the split is of the micro-averaged version, which pools    109
+ 061     proper score and for mean recall itself, with no fitted refer-        relations across images; it tracks the official per-image av-     110
+ 062     ence model, in O(N K) on cached predictions, with image-              erage but is not it. And a proper-score case-level part near      111
+ 063     clustered intervals.                                                  zero can depend on the calibration protocol and on the label      112
+                                                                               mix; Appendices O and Q report every configuration. These         113
+                                                                               limits are taken up in Sec. 7.                                    114
+ 064     What it finds. We re-ran TDE’s released checkpoint, re-
+ 065     played the official evaluator exactly so that recall can be           2. Related work                                                   115
+ 066     computed under any labelling, and split mean recall itself
+ 067     (Sec. 5). Of the ten points, 87% is group-level; the fifteen          Bias and its evaluation in scene graph generation.                116
+ 068     rarest predicates contribute almost nothing. A thresholded            Scene graph generation was posed as structured prediction         117
+ 069     metric also earns case-level credit whenever its operating            over a whole image, solved by message passing between             118
+ 070     point moves, so we read the remainder against a control:              object and relation nodes [44]; MOTIFS then showed a fre-         119
+ 071     subtracting the training predicate prior from the baseline’s          quency predictor of the predicate given the object pair to        120
+ 072     logits [28], which changes no ranking within any group, re-           be surprisingly competitive [49]. Mean recall became the          121
+ 073     covers nine of the ten points with the same split at under            headline metric, and debiasing methods now span the causal        122
+ 074     a tenth of TDE’s cost in R@50, and against it TDE’s case-             TDE intervention [40], class-balanced sampling and group-         123
+
+
+                                                                           2
+CVPR                                                                                                                                               CVPR
+#*****                                                                                                                                             #*****
+                               CVPR 2027 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+ 124     wise learning [11, 13], predicate-rebalancing message pass-          decomposition adds a split to what those tests already re-            175
+ 125     ing [23], predicate-correlation and hierarchical losses [45,         port. DeLong et al. [10] compare correlated ROC areas with            176
+ 126     47], prototype embeddings [51], and correction or rela-              a paired U-statistic, the same device we use for a group-             177
+ 127     belling of the training labels [22, 50]. Correction by the           conditional score gain. The case-level term is an order-two           178
+ 128     predicate prior is known to rival them: post hoc, DLFE [6]           U-statistic [18], with a Hájek projection supplying its influ-       179
+ 129     recovers unbiased predicate probabilities from estimated             ence function [35].                                                   180
+ 130     label frequencies and Structured Sparse R-CNN [42] ap-
+ 131     plies logit adjustment [28]; in training, RTPB [4] resists           3. Splitting a score gain                                             181
+ 132     a prior bias. The metrics themselves have been shown to
+                                                                              Setup. Let q0 (· | x) and q1 (· | x) be the predictive dis-           182
+ 133     reward pathologies [25], and open-vocabulary methods in-
+                                                                              tributions of an old and a new frozen model over K labels,            183
+ 134     herit them [24]. These works compare methods by their
+                                                                              and S(q, y) a bounded proper score, larger being better. Our          184
+ 135     metrics; we ask which part of a metric’s change is group-
+                                                                              default is the quadratic score S(q, y) = 2qy − ∥q∥22 , nega-          185
+ 136     level. Benchmark audits outside scene graphs find the
+                                                                              tive Brier loss up to a label-only constant; the log score is         186
+ 137     same pattern: VQA models collapse when answer priors
+                                                                              the second case we report. Let C = ϕ(X) be a discrete                 187
+ 138     change between train and test [1], GQA-OOD stratifies ac-
+                                                                              grouping both models observe, declared before the audit —             188
+ 139     curacy by answer rarity within question groups [19], and
+                                                                              for relation prediction, the ordered subject–object class pair.       189
+ 140     multimodal models exploit non-visual shortcuts [15, 52].
+                                                                              We call a value of C a cell. The gain vector                          190
+ 141     Gains can also be credited to a mechanism that did not
+ 142     produce them: grounding-based VQA methods keep their                 Hx (y) = S(q1 (· | x), y)−S(q0 (· | x), y),      y = 1, . . . , K,
+ 143     out-of-distribution improvement when the grounding signal                                                                        (1)       191
+ 144     is irrelevant [36], and methods can exploit how an out-of-           can be evaluated at a counterfactual label without rerunning          192
+ 145     distribution split was built [41]. Long-tailed recognition           either model, and that is all the construction needs.                 193
+ 146     faces the same question for re-weighting and logit adjust-
+ 147     ment [3, 28]. All of these characterise a single model; we
+                                                                              Transport. For a cell c, let ∆Tc = E[HX (Y ) | C =                    194
+ 148     account for the gain between two.
+                                                                              c] be the observed gain and ∆Pc = EH|c EY ′ |c [HX (Y ′ )]            195
+                                                                              the gain when each case is scored against an independent              196
+ 149     Proper-score decompositions. Conditional on a group-                 label Y ′ drawn from the same cell, and set ∆Rc = ∆Tc −               197
+ 150     ing, a proper score splits into reliability and resolution           ∆Pc . Transport keeps the cell and its label distribution and         198
+ 151     terms [9, 29], for general proper scores [2]. Our case-level         removes only the pairing between a case and its own label.            199
+ 152     term is not that resolution term: it descends from the covari-
+ 153     ance decomposition of the Brier score due to Yates [46],             Theorem 1 (Transport and covariance identities). For any              200
+ 154     which a monotone recalibration moves while the classical             integrable score contrast H,                                          201
+ 155     resolution is invariant to it. The two coincide only when
+ 156     both models are calibrated within every group. Variance                                   ∆Tc = ∆Pc + ∆Rc ,                                202
+
+ 157     estimators exist for single-model decompositions [37], but                          K
+                                                                                             X
+ 158     not for a contrast between two models scored on the same                   ∆Rc =          Cov(HX (y), 1{Y = y} | C = c) .         (2)      203
+ 159     data. The grouping loss [30] is the single-model relative of                        y=1
+
+ 160     our case-level part: what calibration leaves behind because
+                                                                              For the quadratic score, with ∆qy (X) = q1 (y | X)−q0 (y |            204
+ 161     inputs sharing a confidence level differ; ours contrasts two
+                                                                              X),                                                                   205
+ 162     models within groups declared in advance. Transporting
+ 163     labels within a group is a within-group permutation of the                         K
+                                                                                            X
+ 164     input–label pairing, so one model’s case-level part is a con-           ∆Rc = 2          Cov(∆qy (X), 1{Y = y} | C = c) .         (3)      206
+ 165     ditional permutation importance [38] or model reliance [14]                        y=1
+ 166     of the non-grouping part of its input, and the case-level part
+ 167     of a gain is the difference of the two models’ (Proposi-             Consequently, if the gain vector is a function of c alone,            207
+ 168     tion 2). What the split adds is the exact additive accounting        ∆Rc = 0.                                                              208
+ 169     of a paired gain, including thresholded metrics, and paired          Eq. (3) is what the split means. The new model earns case-            209
+ 170     inference for it.                                                    level credit only insofar as its probability change rises on the      210
+                                                                              label the individual case actually carries, relative to other         211
+ 171     Comparing two predictors. Inference on a paired score                cases in the same cell. Anything constant within a cell —             212
+ 172     difference is the Diebold–Mariano test [12] and its condi-           shifting probability towards rare predicates for every (man,          213
+ 173     tional form [16]; at a single group our total-gain interval          surfboard) relation alike — lands in ∆P , which is why we             214
+ 174     is a clustered Diebold–Mariano test (Corollary 3), so the            call it the group-level part. It is not simply “prior fit”: under     215
+
+
+                                                                          3
+CVPR                                                                                                                                                CVPR
+#*****                                                                                                                                              #*****
+                                CVPR 2027 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+ 216     the quadratic score ∆Pc is the improvement in how close                 clusters (Theorem 4), and at a single cell the total-gain inter-    259
+ 217     the model’s mean forecast sits to the cell’s label frequencies          val is a clustered Diebold–Mariano test [12] (Corollary 3).         260
+ 218     minus the increase in the dispersion of its forecasts (Propo-
+ 219     sition 1). The covariance form is due to Yates [46] and gen-
+ 220     eralises: for every Bregman score, including the log score,             Confidence matching. Because ∆R is a covariance                     261
+ 221     ∆Rc is the same covariance with ∆qy replaced by the con-                between probability movements and labels, rescaling a               262
+ 222     trast of the y-th gradient coordinate (Theorem 2). All proofs           model’s confidence moves score between the two parts                263
+ 223     are in the supplementary.                                               while changing no ranking (Sec. 4), so models that differ           264
+                                                                                 in calibration are not compared on raw outputs. We split the        265
+ 224     Why it matters which part a gain is in. In one cell                     images at random, fit each model a temperature by maxi-             266
+ 225     with three cases labelled 1 and one labelled 2, against an              mum likelihood on one half, and split the gain on the other.        267
+ 226     old model predicting ( 12 , 12 ), a model predicting the cell’s         A temperature cannot undo a class-wise shift of the operat-         268
+ 227     frequencies ( 34 , 41 ) for every case gains + 18 of quadratic          ing point, so we also report matching by a temperature and          269
+ 228     score, all group-level; a model equally far from the old one            a per-class bias, which preserves every within-cell ranking         270
+ 229     but pointed at each case’s own label gains + 38 , all case-             too.                                                                271
+ 230     level. Shift the cell’s labels to ( 14 , 34 ) and the first falls
+ 231     to − 83 , worse than the model it replaced, while the sec-
+ 232     ond stays at + 38 . In general, P with my (z) = E[HX (z) |              Splitting mean recall. Nothing in Theorem 1 or the esti-            272
+ 233     Y = y, C = c], ∆Rc =               y<z p(y)p(z) D(y, z) where           mator uses properness: both hold for any contrast Hx (y)            273
+ 234     D(y, z) = my (y) − my (z) + mz (z) − mz (y): a label shift              that can be evaluated at a counterfactual label. Mean               274
+                                                                                                          (m)
+ 235     fixes every D and moves only the weights, so a case-level               recall@k is one. Let hx (y) ∈ {0, 1} say whether model              275
+ 236     gain is less exposed to a shift than a group-level one, though          m would recall relation x among its top k if its label were         276
+ 237     with three or more labels it can still reverse (Appendix C).            y; replaying the benchmark’s matching rules on cached               277
+                                                                                                 for every y (Appendix O). Pooling relations,
+                                                                                 scores gives it P                                                   278
+ 238     Estimator. In a cell with nc ≥ 2 cases, write Hi (y) =                  mean recall is i w(yi )hxi (yi ) with w(y) = 1/(Kny ), so           279
+                                                                                                      (1)        (0)
+ 239     Hxi (y) and estimate                                                    Hx (y) = N w(y)[hx (y) − hx (y)] makes ∆T     d its change;         280
+                                                                                 transport preserves every ny , and restricting w to one tier        281
+         d c = 1 P Hi (yi ),
+         ∆T                        ∆P
+                                   dc =         1
+                                                      P
+ 240           nc i                        nc (nc −1)  i̸=j Hi (yj ),            or predicate splits that share exactly. One difference mat-         282
+                                                                (4)              ters for reading the result. A hit is a thresholded decision,       283
+                               n
+                                   −1 P                                         so moving a model’s operating point — subtracting a log-            284
+ 241                      ∆R
+                          dc =
+                               2
+                                 c
+                                         i<j Aij ,              (5)              prior from its logits, say — flips first the cases it already       285
+ 242        Aij = 21 {Hi (yi ) + Hj (yj ) − Hi (yj ) − Hj (yi )}.     (6)        scored as most like the favoured label, and those carry that        286
+                                                                                 label more often: a case-level part with no new discrimi-           287
+ 243     These satisfy ∆Td c = ∆P d c + ∆Rd c exactly in every sample,           nation. We therefore read the split against an operating-           288
+ 244     and ∆Rc is an unbiased order-two U-statistic [18] for ∆Rc
+              d                                                                  point control, the old model’s logits shifted by the train-         289
+ 245     (Theorem 3). Transporting only to the other cases’ labels               ing log-prior [28], and pair it with a threshold-free test, the     290
+ 246     matters: the all-case plug-in shrinks the case-level gain by            within-cell AUC: the probability that a case labelled y has         291
+ 247     (nc − 1)/nc (Proposition 5). With mcy the count of label y              larger log-odds log q(y)−log q(z) than one labelled z in the        292
+ 248     in cell c, case i’s transported score is                                same cell. Averaged with weight nc (y)nc (z), the number            293
+
+                                P                                                of comparisons, it weights a cell by about n2c ; with weight        294
+                                  y mcy Hi (y) − Hi (yi )                        nc (y)nc (z)/nc it combines cells as the split does. We re-         295
+ 249                     Pi =                             ,        (7)           port both. A temperature, and any change constant within a          296
+                                        nc − 1
+                                                                                 cell, leaves either unchanged.                                      297
+ 250     so the whole estimator costs O(N K) on cached predictions,
+ 251     with no fitted model, held-out fold or smoothing parame-
+ 252     ter. Cells are weighted by size; singletons cannot identify a           Choosing the grouping. The split is conditional on ϕ.               298
+ 253     within-cell counterfactual and are excluded and reported.               Merging cells changes it by an explicit between-cell covari-        299
+                                                                                 ance term of either sign (Proposition 3), so the finest group-      300
+ 254     Inference. The Hájek influence contributions of the U-                 ing that the benchmark’s construction defends is the conser-        301
+ 255     statistic (Appendix F), summed within each image, give                  vative choice. A relevant variable left out of ϕ is the same        302
+ 256     one-way cluster-robust intervals, since relations from one              term with the fully adjusted cell as the fine partition, and        303
+ 257     photograph are not independent; the estimator is asymp-                 Proposition 4 bounds it by a single elicited correlation, in        304
+ 258     totically normal under bounded scores and non-dominating                the spirit of the robustness value of Cinelli and Hazlett [7].      305
+
+
+                                                                             4
+CVPR                                                                                                                                             CVPR
+#*****                                                                                                                                           #*****
+                                CVPR 2027 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+ 306     4. Does the split measure what it claims?                             SPATIAL, MLP-SPATIAL+). The audit covers 227,337 of                356
+                                                                               229,605 test relations (99.0%) in 6,346 class-pair cells.          357
+ 307     A released checkpoint cannot validate the split, because                 MLP-CLASS beats FREQ by 0.03386 of quadratic score              358
+ 308     what the model can see is unknown. We validate it where               and the split assigns all of it to the group-level part: the       359
+ 309     the answer is known, first in simulation and then on Visual           case-level gain is 0.00000 with a zero-width interval. That        360
+ 310     Genome predictors whose information content we control.               zero is algebraic, not empirical — both models are func-           361
+ 311     All intervals are 95%.                                                tions of the class pair alone, so Theorem 1 forces it —            362
+                                                                               and it is the sharpest check that nothing is credited to case-     363
+ 312     Simulation. With 24 cells over five labels, an old model              level evidence when none exists. Adding box geometry then          364
+ 313     equal to the cell prior and a new one interpolating towards           yields a case-level gain of 0.01439 (CI [0.01373, 0.01504],        365
+ 314     an oracle, the estimated case-level gain grows linearly with          p = .002) that no aggregate score isolates; against MLP-           366
+ 315     the injected signal; under a within-cell null the random-             CLASS the total gain of 0.00885 even understates it, be-           367
+ 316     ization test rejects in 0.030 of 200 datasets at level 0.05           cause the group-level part falls by 0.00554.                       368
+ 317     (mean estimate −8.97 × 10−5 ). For the interval we use on
+ 318     real data, we simulate relations clustered into images with a         5. What TDE’s ten points bought                                    369
+ 319     shared per-image effect and Zipf-distributed cell sizes (most
+ 320     cells hold two cases, most relations sit in a few large ones):        Tang et al. [40] release a causal MOTIFS PredCls check-            370
+ 321     the image-clustered interval covers in 94.0% of 500 runs,             point that yields two models from one set of weights: the          371
+ 322     against 88.6% for an interval that treats relations as inde-          baseline (MOTIFS-SUM), whose predicate logit sums a                372
+ 323     pendent. With VG150’s own cell sizes it covers 96.3%;                 union-region visual term, a context term and a frequency           373
+ 324     only when every cell holds two cases does it fall short, to           prior indexed by the object pair, and TDE, which subtracts         374
+ 325     81.5% (Appendix J).                                                   the same sum with an averaged context and so keeps only            375
+
+ 326        Three designs check that the two parts separate what they          the context term minus its average. We ran it once with            376
+
+ 327     claim to. A prior-only improvement, where the new model               the authors’ code on the canonical VG150 test split, sav-          377
+
+ 328     corrects a noisy estimate of the cell prior, gives a case-level       ing every branch’s logits, and replayed the official evalua-       378
+
+ 329     gain centred at zero (0.0002, sd 0.0035). An unrecorded               tor offline (Appendix O). The replay reproduces the official       379
+
+ 330     within-cell shortcut — a binary feature varying inside each           numbers to the fourth decimal: baseline R@50 = 0.6612              380
+
+ 331     cell that the new model uses — is credited to the case-level          and mR@50 = 0.1459, TDE 0.4588 and 0.2476; without                 381
+
+ 332     part (+0.041, sd 0.004): the split measures all within-cell           the graph constraint TDE’s mean recall falls, from 0.3260          382
+
+ 333     signal relative to the declared grouping, shortcut or not.            to 0.2981. The audit covers 183,642 relations over 26,446          383
+
+ 334     And a calibration-only change, where the new model is a               images in 7,127 cells; 98.9% fall in the 5,044 cells holding       384
+
+ 335     temperature-softened copy of an overconfident one carry-              at least two.                                                      385
+
+ 336     ing identical case-level information, is credited a large spu-
+ 337     rious case-level loss of −0.488 on raw outputs, which the             An operating-point control. We add one model that                  386
+ 338     confidence-matching protocol of Sec. 3 reduces to −0.0003             needs no training: the baseline’s logits minus τ log π(y),         387
+ 339     (sd 0.0017). That check is what matching is built to pass.            the training predicate prior, with τ = 1 [28]. Within a cell       388
+ 340     A class-wise shift of the operating point, adding a fixed             this adds the same constant to every log-odds log q(y) −           389
+ 341     logit offset per label to the old model, leaves every within-         log q(z), so it changes no within-cell ranking: whatever           390
+ 342     cell ranking unchanged, yet survives temperature matching             case-level part it shows is existing discrimination spent at       391
+ 343     (+0.0106 for a logit-adjustment offset) and vanishes only             a new operating point, not new discrimination. It reaches          392
+ 344     when each model is matched by a temperature and a per-                mR@50 = 0.2343 at R@50 = 0.6437.                                   393
+ 345     class bias (0.0000, sd 0.0003; Appendix Q.4). Both proto-
+ 346     cols are therefore part of the procedure.
+                                                                               Mean recall, split. Pooled over identified relations, mean         394
+                                                                               recall@50 rises by 0.0972 (0.1017 on the official per-image        395
+ 347     Controlled predictors on VG150. We train predicate                    average). Of that, +0.0841 is group-level and +0.0130              396
+ 348     classifiers whose inputs we control on a VG150-style split            case-level, interval [+0.0093, +0.0168] (Tab. 1): 87% of           397
+ 349     we reconstruct from the released Visual Genome annota-                the gain, interval [83%, 91%], survives shuffling every la-        398
+ 350     tions, with the same 150-object and 50-predicate vocab-               bel among the relations that share its object pair. It lives in    399
+ 351     ulary and images divided 70/30 between fitting and audit              the body of the distribution. Splitting predicates by training     400
+ 352     (Appendix N.1); it is not the canonical split of Sec. 5. The          frequency (9 head above 10,000 instances, 26 body, 15 tail         401
+ 353     predictors are: a frequency table that sees only the class            below 500), the body gains +0.1224, of which +0.1082 is            402
+ 354     pair (FREQ), an MLP on class embeddings (MLP-CLASS),                  group-level; the head loses 0.0255; the tail gains 0.0003: of      403
+ 355     and MLPs adding twelve box-geometry features (MLP-                    the 15 tail predicates the baseline recalls none and TDE one,      404
+
+
+                                                                           5
+CVPR                                                                                                                                                                       CVPR
+#*****                                                                                                                                                                     #*****
+                                     CVPR 2027 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+
+                                                (a) Composition of each gain                                        (b) Case-level part, zoomed
+                      MLP-CLASS vs FREQ                 total ΔT̂
+                                                        group-level ΔP ̂
+                                                                                                                              exactly 0 (forced by Thm. 1)
+                         (class pair only)
+                                                        case-level ΔR ̂
+           +box geometry vs MLP-CLASS
+                   CLIP crops vs geometry
+                                (matched)
+                            TDE vs MOTIFS                                                                                       CI straddles 0
+                      (released, matched)
+                                                          −0.15        −0.10      −0.05         0.00                      0.000 0.005 0.010 0.015
+                                                                      quadratic-score gain                          case-level gain ΔR,̂ 95% CI (image-clustered)
+
+         Figure 2. Where each proper-score gain lives (quadratic score). (a) Total gain ∆T
+                                                                                        d (diamond) split exactly into group-level ∆P
+                                                                                                                                   d and case-
+         level ∆R. (b) ∆R with its image-clustered 95% interval. Class-pair-only models differ purely at group level (Theorem 1); geometry and
+               d       d
+         CLIP crops buy case-level gain, CLIP despite losing overall; TDE’s change is group-level. CLIP and TDE rows are confidence-matched.
+
+
+         Table 1. Mean recall@50 split (graph constraint, micro-averaged
+                                                                                                 parked on
+         over identified relations) against the MOTIFS baseline, except
+         TDE−LA. LA: the logit-adjusted baseline; IETrans: the released                         walking on
+         IETrans+Rwt checkpoint, scored on the same relations against                                  riding
+         a separately trained baseline. Intervals 95%; case-level image-                        covered in
+         clustered. ∆AUC: change in within-cell AUC, weighted by com-                                 eating
+         parison (c) or as the split weights cells (r); no calibration or group-                   carrying
+         level shift moves it (LA’s residue is float32 rounding). AUC inter-
+                                                                                                  watching
+         vals: image bootstrap.
+                                                                                                           at
+                    ∆mR      group          case [CI]         ∆AUCc         ∆AUCr                 laying on
+         TDE       +.0972 +.0841            +.0130             +.0026        −.0015              in front of
+                                     [+.0093,+.0168] [−.0028,+.0086] [−.0036,+.0018]                   along
+         LA        +.0941 +.0802            +.0139             +.0001        +.0003
+                                     [+.0101,+.0176] [−.0000,+.0001] [+.0001,+.0006]          hanging from
+         TDE−LA +.0031 +.0039               −.0008             +.0026        −.0018
+                                     [−.0050,+.0033] [−.0029,+.0086] [−.0039,+.0014]
+                                                                                                   covering
+         IETrans   +.2204 +.2143            +.0060             −.0093        −.0235
+                                                                                               standing on
+                                     [−.0031,+.0151] [−.0181,+.0004] [−.0275,−.0182]              sitting on
+                                                                                                      above
+                                                                                                       using
+ 405     to, at 0.016. Figure 3 shows the mechanism one predicate                                        with
+ 406     at a time. Recall of parked on rises from 0.000 to 0.886,                                        has
+ 407     almost all of it group-level: TDE now says parked on for                                   holding
+ 408     (car, street). Recall of on falls by 0.558 in the same way.                                                                             group-level
+                                                                                                         near                                    case-level (95% CI)
+                                                                                                           on                                    logit adjustment, total
+ 409     The case-level part is matched by the control. The
+ 410     control reproduces the whole picture: +0.0941 of mean                                                  −0.6 −0.4 −0.2 0.0 0.2 0.4 0.6 0.8
+ 411     recall, +0.0802 group-level and +0.0139 case-level.
+                                                                                                                      change in recall@50 (TDE − MOTIFS)
+ 412     Against it, TDE’s case-level part is −0.0008, interval
+                                                                                             Figure 3. Where TDE’s mean recall went, for every predicate
+ 413     [−0.0050, +0.0033]. So a case-level part of a thresh-
+                                                                                             whose recall@50 moved by at least 0.12: group-level part (blue),
+ 414     olded metric is not by itself evidence of new discrimination.                       case-level part (orange) with its image-clustered 95% interval, and
+ 415     When the boundary between on and parked on moves, the                               the total under logit adjustment of the baseline (diamond), which
+ 416     cases that cross it are those the baseline already scored as                        changes no within-cell ranking.
+ 417     more parked on-like, and they are more often labelled so;
+ 418     the covariance is real, but bought with discrimination the
+ 419     baseline had. The direct test is the within-cell AUC, which                         +0.0026, interval [−0.0028, +0.0086], weighted by com-                         421
+ 420     no prior shift or recalibration can move: TDE’s change is                           parison, and −0.0015, [−0.0036, +0.0018], weighted as                          422
+
+
+                                                                                       6
+CVPR                                                                                                                                          CVPR
+#*****                                                                                                                                        #*****
+                               CVPR 2027 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+ 423     the split weights cells. By predicate tier the comparison-           A second method. IETrans [50] relabels training data,            473
+ 424     weighted change is +0.0068, [−0.0003, +0.0134], on the               moving general predicates to specific ones within the            474
+ 425     head–head pairs that carry 65% of its weight and −0.0051,            same object pair, and adds the training log-prior at test        475
+ 426     [−0.0130, +0.0026], on the rest (Appendix Q.4): a pattern            time. Its released Neural-Motifs PredCls checkpoint is           476
+ 427     of redistribution, not a detected one.                               the IETrans+Rwt variant, trained with a reweighted loss as       477
+                                                                              well; we ran it once with the authors’ evaluation command        478
+ 428     The proper score depends on the protocol. With                       and re-scored it the same way (Appendix O.2). It reaches         479
+ 429     each model’s temperature fitted on held-out images                   mR@50 = 0.3587 (0.3576 on the authors’ test set, which           480
+ 430     (T ∗ = 2.50 baseline, 0.92 TDE), TDE’s quadratic-score               drops duplicate relations): +0.2204 over the baseline, of        481
+ 431     change is −0.18264, of which −0.18258 is group-level                 which +0.2143 is group-level and +0.0060 case-level, in-         482
+ 432     and −0.00006, interval [−0.00120, +0.00109], case-level              terval [−0.0031, +0.0151]. Unlike TDE it reaches the tail        483
+ 433     (Fig. 2); over 20 calibration halves the case-level part stays       (+0.0889), again group-level. Its within-cell discrimina-        484
+ 434     within [−0.00131, +0.00059]. But a temperature cannot                tion falls under every measure: matched case-level parts         485
+ 435     undo a class-wise shift of the operating point, and the con-         −0.0162 (quadratic) and −0.0544 (log), −0.0168 with a            486
+ 436     trol shows one: its case-level part is +0.0039. Matching             per-class bias as well, and the AUC change weighted as the       487
+ 437     a temperature and a per-class bias for each model, which             split weights cells is −0.0235, interval [−0.0275, −0.0182],     488
+ 438     also preserves every within-cell ranking, makes the con-             concentrated on head–body and body–body pairs. Both              489
+ 439     trol identical to the baseline and TDE’s case-level part             methods’ gains are group-level; with TDE no change in            490
+ 440     +0.00445, interval [+0.00354, +0.00536]; one tempera-                within-cell ranking is detected, while IETrans+Rwt loses         491
+ 441     ture shared by both models makes it −0.0184; the log score           some. No IETrans baseline was released, so this compares         492
+ 442     gives +0.04396 (Appendices Q.1 and Q.4). The sign of                 two separately trained models and does not isolate the effect    493
+ 443     TDE’s case-level part depends on the protocol. Merging               of relabelling.                                                  494
+ 444     synonymous predicates (32 classes) or collapsing them into
+ 445     three families changes none of this (Appendix Q.2).
+                                                                              Beyond PredCls. The same release holds SGCls and                 495
+                                                                              SGDet checkpoints, where object classes (and in SGDet            496
+ 446     What that licenses. On this checkpoint the ten points of             boxes) are predicted. One TDE pass still yields all three        497
+ 447     mean recall are a change in which predicates the model               models, which share every object prediction, so the ground-      498
+ 448     favours within each object pair. A one-line prior shift that         truth pair remains a common grouping; we replay the eval-        499
+ 449     ranks the relations of every cell exactly as the baseline did        uator inside the inference loop and reproduce the released       500
+ 450     reproduces the gain, its split and its tier profile at under a       recalls (Appendix Q.5). In SGCls TDE raises mR@50 by             501
+ 451     tenth of TDE’s cost in R@50 (0.0175 against 0.2023), and             +0.0517, 99% of it group-level; the control gains +0.0518        502
+ 452     a better F @50, the harmonic mean of R@50 and mR@50                  at R@50 = 0.384 against TDE’s 0.263; and TDE’s within-           503
+ 453     (0.344 against 0.322). That a prior correction rivals debias-        cell ranking gets worse, by −0.0128 of relation-weighted         504
+ 454     ing is known [6, 42]; the split shows which part of TDE’s            AUC, interval [−0.0171, −0.0074]. In SGDet, on the full          505
+ 455     gain it reproduces. No measure we tried detects a change             test set, the control again gains more than TDE (+0.0418         506
+ 456     in within-cell ranking, and the proper-score case-level part,        against +0.0310) at nearly twice its R@50.                       507
+ 457     small under every protocol, has no protocol-free sign.
+                                                                              6. The model every metric ranks last                             508
+ 458     Why. Under the released SUM fusion, TDE’s change
+ 459     from the baseline is three subtractions, and splitting along         The predictors of Sec. 4 never see an image: they read the       509
+ 460     them answers why; the parts add up to TDE’s exactly (Ap-             class pair and, at most, box coordinates from the annotation.    510
+ 461     pendix O.1). Removing the frequency prior, constant within           On the same reconstructed split we add one that reads pixels     511
+ 462     every cell, moves mean recall by −0.0009 and the within-             — subject and object regions cropped from the image and          512
+ 463     cell AUC not at all. Removing the visual (union-region)              encoded by a frozen CLIP ViT-B/32 [31], concatenated with        513
+ 464     term adds +0.0164, with a case-level part of +0.0016, in-            the class embeddings MLP-CLASS uses. CLIP is not fine-           514
+ 465     terval [−0.0006, +0.0037]: within a cell, the context term           tuned, so any case-level gain reflects what pretraining had      515
+ 466     already knew what the visual term did. Subtracting the aver-         already recovered. All three compared models are retrained       516
+ 467     aged context supplies +0.0817 of the 0.0972. That term is,           on one fixed subsample of 100,000 training relations, so dif-    517
+ 468     to 99.96% of its energy, one vector shared by every relation         ferences isolate the features rather than the amount of data.    518
+ 469     in every image, correlated +0.75 with the log training prior.           By every aggregate measure the CLIP model is the worst        519
+ 470     In PredCls, TDE’s counterfactual is to first order a learned         of the three: top-1 accuracy 0.6156 against 0.6467 for the       520
+ 471     logit adjustment of the context branch, which is why the             geometry model, and a quadratic score 0.04642 lower. An          521
+ 472     explicit one reproduces it.                                          evaluator reading either number would discard it. The split      522
+
+
+                                                                          7
+CVPR                                                                                                                                           CVPR
+#*****                                                                                                                                         #*****
+                               CVPR 2027 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+ 523     disagrees. With each model’s confidence matched on held-            Beyond scene graphs. Nothing in Sec. 3 is specific to re-          573
+ 524     out images, the CLIP model loses 0.04705 of group-level             lations; the supplementary applies the estimator to long-          574
+ 525     score against the geometry model while gaining 0.00464 of           tailed image classification (CIFAR-100-LT, across seeds            575
+ 526     case-level score (CI [+0.00311, +0.00618]); on raw outputs          and imbalance ratios), to long-tailed text classification and      576
+ 527     the figures are 0.05282 and 0.00640 (CI [0.00513, 0.00767],         to Waterbirds, where the cell is the background scene. The         577
+ 528     p = .002). Its whole deficit is group-level (Fig. 2). Against       constraint on the grouping bites there: the fine class label       578
+ 529     the class-only model, pixels buy 0.01663 of case-level score        cannot serve as a cell, because it forces the case-level part      579
+ 530     on raw outputs where box geometry buys 0.01023, with                to zero by construction, an artefact that reads like a null.       580
+ 531     well-separated intervals.
+ 532         A larger case-level part is not the same as better rank-        7. Limitations and conclusion                                      581
+ 533     ing, and here the two disagree. With each model’s prior
+                                                                             Limitations. Five bound what the split can say. It is con-         582
+ 534     matched within cells, the CLIP model still ranks the correct
+                                                                             ditional on the grouping. The case-level part measures dis-        583
+ 535     predicate first less often than the geometry model: top-1 ac-
+                                                                             crimination among relations sharing an object pair; two            584
+ 536     curacy 2.17 points lower, MRR 1.67 lower, recall@5 1.07
+                                                                             equally fine partitions of the same cases can disagree com-        585
+ 537     lower. So the CLIP model carries more case-level covari-
+                                                                             pletely about whether a gain is case-level (Appendix K),           586
+ 538     ance without being the better ranker. The within-cell AUC,
+                                                                             so declaring ϕ is a modelling decision that the benchmark,         587
+ 539     which no calibration or prior shift can move, does not favour
+                                                                             not the submitting author, should make before a leaderboard        588
+ 540     it either: weighted by comparison, 0.5408 against 0.5323,
+                                                                             opens. It credits any within-cell signal, including shortcuts      589
+ 541     a difference of +0.0085 with interval [−0.0062, +0.0214];
+                                                                             nobody recorded, and our own bound on that exposure is             590
+ 542     weighted as the split weights cells, geometry ranks better,
+                                                                             not reassuring: for the controlled-predictor pair of Sec. 4,       591
+ 543     −0.0067, [−0.0120, −0.0019]. Both models clear the class-
+                                                                             an unrecorded covariate correlated at 0.061 with both parts        592
+ 544     only model’s 0.5 (by +0.0408 and +0.0323, comparison-
+                                                                             would account for the entire case-level gain (Appendix I).         593
+ 545     weighted). The CLIP model’s case-level advantage is real
+                                                                             It is not invariant to recalibration, to the operating point or    594
+ 546     covariance, not better ranking.
+                                                                             to the label mix: a temperature does not undo a class-wise         595
+                                                                             shift of the operating point (Sec. 4), so we report matching       596
+ 547     Seeds. Over five training seeds (seed 0 reproduces the              with a temperature and with a per-class bias as well; the          597
+ 548     predictions above exactly; Appendix P), the CLIP model’s            within-cell AUC, invariant to both, gives up exact additiv-        598
+ 549     matched case-level advantage over geometry stays between            ity; and a case-level null can be a cancellation that another      599
+ 550     +0.00413 and +0.00474, every interval excluding zero,               label mix undoes (Sec. 6). Its interval assumes cells that are     600
+ 551     its accuracy stays below geometry’s, and its comparison-            not tiny: with every cell holding two cases it covers 81.5%,       601
+ 552     weighted AUC difference is positive in all five but ex-             not 95%, and from three cases up it reaches nominal cov-           602
+ 553     cludes zero in one. Adding the CLIP features to geometry,           erage (Appendix J); 1.0% of VG150’s audited relations sit          603
+ 554     rather than replacing it, doubles that advantage (+0.00807          in two-case cells. And it needs scores for every label: most       604
+ 555     to +0.00949).                                                       benchmarks archive only ranked top-k predictions, and re-          605
+                                                                             covering the rest took a rerun of the released checkpoint:         606
+                                                                             that, not compute, blocks routine use.                             607
+ 556     Under a label shift. A label shift moves group-level
+ 557     parts and only reweights case-level ones (Sec. 3), so the           Conclusion. A ten-point mean-recall gain is two achieve-           608
+ 558     split says which parts of a gain a shift can reverse. We            ments summed, and the field’s metrics report the sum.              609
+ 559     reweight the test relations along a path from the bench-            Scoring each prediction against another case’s label from          610
+ 560     mark’s predicate mix to uniform frequencies within each             the same group separates them exactly. On two released de-         611
+ 561     object pair (Appendix Q.3). At the uniform end, seven               biasing methods the gains are almost entirely group-level:         612
+ 562     of the eight group-level parts of Sec. 5 and this section           TDE’s is matched by a ranking-preserving logit adjustment          613
+ 563     change sign, and the totals follow: the CLIP model now              and leaves within-group ranking unchanged as far as we             614
+ 564     beats geometry by +0.02981. Five of the six case-level              can detect; IETrans’s costs within-group discrimination.           615
+ 565     parts that excluded zero keep their sign and grow. The              We suggest that benchmarks whose labels lean on a feature          616
+ 566     exceptions are TDE’s: its part against the baseline rises           every model sees report, beside the headline metric, the           617
+                                                                             declared grouping with its coverage and cell sizes, both           618
+ 567     steadily along the path, from −0.00006 to +0.01430, in-
+                                                                             signed parts with intervals under both matching protocols,         619
+ 568     terval [+0.01116, +0.01744], and against the control from           the within-group AUC under both weightings, the parts              620
+ 569     −0.00398 to +0.00723, while the AUC separates it from               along a path of label mixes, and, for a thresholded metric,        621
+ 570     the baseline at neither end. TDE gains discrimination be-           the operating-point control; each model’s within-group             622
+ 571     tween some predicate pairs and loses it between others, and         reliance (Proposition 2) is a one-column summary a leader-         623
+ 572     the benchmark’s mix weights the two to zero.                        board can carry. Code and results are in the supplement.           624
+
+
+                                                                         8
+CVPR                                                                                                                                                   CVPR
+#*****                                                                                                                                                 #*****
+                                 CVPR 2027 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+ 625                                                                              [15] Robert Geirhos, Jörn-Henrik Jacobsen, Claudio Michaelis,        680
+                                                                                       Richard Zemel, Wieland Brendel, Matthias Bethge, and Fe-         681
+ 626     References                                                                    lix A Wichmann. Shortcut learning in deep neural networks.       682
+                                                                                       Nature Machine Intelligence, 2(11):665–673, 2020. 3              683
+ 627      [1] Aishwarya Agrawal, Dhruv Batra, Devi Parikh, and Anirud-            [16] Raffaella Giacomini and Halbert White. Tests of conditional      684
+ 628          dha Kembhavi. Don’t just assume; look and answer: Over-                  predictive ability. Econometrica, 74(6):1545–1578, 2006. 3       685
+ 629          coming priors for visual question answering. In CVPR, pages         [17] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.           686
+ 630          4971–4980, 2018. 3                                                       Deep residual learning for image recognition. In CVPR,           687
+ 631      [2] Jochen Bröcker. Reliability, sufficiency, and the decomposi-            pages 770–778, 2016. 19                                          688
+ 632          tion of proper scores. Quarterly Journal of the Royal Mete-         [18] Wassily Hoeffding. A class of statistics with asymptotically     689
+ 633          orological Society, 135(643):1512–1519, 2009. 3                          normal distribution. The Annals of Mathematical Statistics,      690
+ 634      [3] Kaidi Cao, Colin Wei, Adrien Gaidon, Nikos Arechiga,                     19(3):293–325, 1948. 3, 4, 7                                     691
+ 635          and Tengyu Ma. Learning imbalanced datasets with label-             [19] Corentin Kervadec, Grigory Antipov, Moez Baccouche, and          692
+ 636          distribution-aware margin loss. In NeurIPS, 2019. 3, 11,                 Christian Wolf. Roses are red, violets are blue... but should    693
+ 637          19                                                                       vqa expect them to? In CVPR, pages 2775–2784, 2021. 2, 3         694
+ 638      [4] Chao Chen, Yibing Zhan, Baosheng Yu, Liu Liu, Yong Luo,             [20] Ranjay Krishna, Yuke Zhu, Oliver Groth, Justin Johnson,          695
+ 639          and Bo Du. Resistance training using prior bias: Toward                  Kenji Hata, Joshua Kravitz, Stephanie Chen, Yannis Kalan-        696
+ 640          unbiased scene graph generation. In AAAI, pages 212–220,                 tidis, Li-Jia Li, David A Shamma, et al. Visual genome:          697
+ 641          2022. 3                                                                  Connecting language and vision using crowdsourced dense          698
+ 642      [5] Tianshui Chen, Weihao Yu, Riquan Chen, and Liang Lin.                    image annotations. International Journal of Computer Vi-         699
+ 643          Knowledge-embedded routing network for scene graph gen-                  sion, 123(1):32–73, 2017. 2, 14                                  700
+ 644          eration. In CVPR, pages 6156–6164, 2019. 2                          [21] Ken Lang. Newsweeder: Learning to filter netnews. In             701
+ 645      [6] Meng-Jiun Chiou, Henghui Ding, Hanshu Yan, Changhu                       ICML, pages 331–339, 1995. 22                                    702
+ 646          Wang, Roger Zimmermann, and Jiashi Feng. Recovering                 [22] Lin Li, Long Chen, Yifeng Huang, Zhimeng Zhang,                  703
+ 647          the unbiased scene graphs from the biased ones. In ACM                   Songyang Zhang, and Jun Xiao. The devil is in the labels:        704
+ 648          International Conference on Multimedia, pages 1581–1590,                 Noisy label correction for robust scene graph generation. In     705
+ 649          2021. 3, 7                                                               CVPR, pages 18847–18856, 2022. 3                                 706
+ 650      [7] Carlos Cinelli and Chad Hazlett. Making sense of sensitiv-          [23] Rongjie Li, Songyang Zhang, Bo Wan, and Xuming He.               707
+ 651          ity: Extending omitted variable bias. Journal of the Royal               Bipartite graph network with adaptive message passing for        708
+ 652          Statistical Society: Series B, 82(1):39–67, 2020. 4, 13                  unbiased scene graph generation. In CVPR, pages 11104–           709
+ 653      [8] Yin Cui, Menglin Jia, Tsung-Yi Lin, Yang Song, and Serge                 11114, 2021. 2, 3                                                710
+ 654          Belongie. Class-balanced loss based on effective number of          [24] Rongjie Li, Songyang Zhang, Dahua Lin, Kai Chen, and             711
+ 655          samples. In CVPR, pages 9268–9277, 2019. 11, 19                          Xuming He. From pixels to graphs: Open-vocabulary scene          712
+ 656      [9] Morris H. DeGroot and Stephen E. Fienberg. The compari-                  graph generation with vision-language models. In CVPR,           713
+ 657          son and evaluation of forecasters. Journal of the Royal Sta-             2024. 3                                                          714
+ 658          tistical Society: Series D (The Statistician), 32(1-2):12–22,       [25] Xingchen Li, Long Chen, Jian Shao, Shaoning Xiao,                715
+ 659          1983. 3                                                                  Songyang Zhang, and Jun Xiao. Rethinking the evaluation          716
+ 660     [10] Elizabeth R. DeLong, David M. DeLong, and Daniel L.                      of unbiased scene graph generation. In BMVC, 2022. 2, 3          717
+ 661          Clarke-Pearson. Comparing the areas under two or more               [26] Zachary C Lipton, Yu-Xiang Wang, and Alexander Smola.            718
+ 662          correlated receiver operating characteristic curves: A non-              Detecting and correcting for label shift with black box pre-     719
+ 663          parametric approach. Biometrics, 44(3):837–845, 1988. 3,                 dictors. In ICML, pages 3122–3130, 2018. 4                       720
+ 664          13                                                                  [27] Cewu Lu, Ranjay Krishna, Michael Bernstein, and Li Fei-          721
+ 665     [11] Alakh Desai, Tz-Ying Wu, Subarna Tripathi, and Nuno Vas-                 Fei. Visual relationship detection with language priors. In      722
+ 666          concelos. Learning of visual relations: The devil is in the              ECCV, pages 852–869, 2016. 2                                     723
+ 667          tails. In ICCV, pages 15384–15393, 2021. 3                          [28] Aditya Krishna Menon, Sadeep Jayasumana, Ankit Singh             724
+ 668     [12] Francis X Diebold and Roberto S Mariano. Comparing pre-                  Rawat, Himanshu Jain, Andreas Veit, and Sanjiv Kumar.            725
+ 669          dictive accuracy. Journal of Business & Economic Statistics,             Long-tail learning via logit adjustment. In ICLR, 2021. 2,       726
+ 670          13(3):253–263, 1995. 3, 4                                                3, 4, 5, 20                                                      727
+ 671     [13] Xingning Dong, Tian Gan, Xuemeng Song, Jianlong Wu,                 [29] Allan H. Murphy. A new vector partition of the probabil-         728
+ 672          Yuan Cheng, and Liqiang Nie. Stacked hybrid-attention and                ity score. Journal of Applied Meteorology, 12(4):595–600,        729
+ 673          group collaborative learning for unbiased scene graph gener-             1973. 3                                                          730
+ 674          ation. In CVPR, pages 19405–19414, 2022. 3                          [30] Alexandre Perez-Lebel, Marine Le Morvan, and Gaël Varo-         731
+ 675     [14] Aaron Fisher, Cynthia Rudin, and Francesca Dominici. All                 quaux. Beyond calibration: Estimating the grouping loss          732
+ 676          models are wrong, but many are useful: Learning a variable’s             of modern neural networks. In International Conference on        733
+ 677          importance by studying an entire class of prediction models              Learning Representations, 2023. 3                                734
+ 678          simultaneously. Journal of Machine Learning Research, 20            [31] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya               735
+ 679          (177):1–81, 2019. 3, 2                                                   Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry,            736
+
+
+                                                                              9
+CVPR                                                                                                                                                     CVPR
+#*****                                                                                                                                                   #*****
+                                  CVPR 2027 Submission #*****. CONFIDENTIAL REVIEW COPY. DO NOT DISTRIBUTE.
+
+
+
+ 737          Amanda Askell, Pamela Mishkin, Jack Clark, Gretchen                     [47] Jing Yu, Yuan Chai, Yujing Wang, Yue Hu, and Qi Wu.            793
+ 738          Krueger, and Ilya Sutskever. Learning transferable visual                    CogTree: Cognition tree loss for unbiased scene graph gen-     794
+ 739          models from natural language supervision. In ICML, pages                     eration. In IJCAI, pages 1274–1280, 2021. 3                    795
+ 740          8748–8763, 2021. 2, 7, 16, 35                                           [48] Mert Yuksekgonul, Federico Bianchi, Pratyusha Kalluri,         796
+ 741     [32] Paul R. Rosenbaum. Observational Studies. Springer, New                      Dan Jurafsky, and James Zou. When and why vision-              797
+ 742          York, 2 edition, 2002. 5, 13                                                 language models behave like bags-of-words, and what to do      798
+ 743     [33] Marco Saerens, Patrice Latinne, and Christine Decaestecker.                  about it? In International Conference on Learning Repre-       799
+ 744          Adjusting the outputs of a classifier to new a priori probabili-             sentations, 2023. 35                                           800
+ 745          ties: A simple procedure. Neural Computation, 14(1):21–41,              [49] Rowan Zellers, Mark Yatskar, Sam Thomson, and Yejin            801
+ 746          2002. 4                                                                      Choi. Neural motifs: Scene graph parsing with global con-      802
+ 747     [34] Shiori Sagawa, Pang Wei Koh, Tatsunori B. Hashimoto, and                     text. In CVPR, pages 5831–5840, 2018. 2                        803
+ 748          Percy Liang. Distributionally robust neural networks for                [50] Ao Zhang, Yuan Yao, Qianyu Chen, Wei Ji, Zhiyuan Liu,          804
+ 749          group shifts: On the importance of regularization for worst-                 Maosong Sun, and Tat-Seng Chua. Fine-grained scene graph       805
+ 750          case generalization. In International Conference on Learn-                   generation with data transfer. In Computer Vision – ECCV       806
+ 751          ing Representations, 2020.                                                   2022, pages 409–424, 2022. 2, 3, 7                             807
+ 752     [35] Robert J. Serfling. Approximation Theorems of Mathemati-                [51] Chaofan Zheng, Xinyu Lyu, Lianli Gao, Bo Dai, and              808
+ 753          cal Statistics. John Wiley & Sons, New York, 1980. 3, 9,                     Jingkuan Song. Prototype-based embedding network for           809
+ 754          12                                                                           scene graph generation. In CVPR, pages 22783–22792,            810
+                                                                                           2023. 3                                                        811
+ 755     [36] Robik Shrestha, Kushal Kafle, and Christopher Kanan. A
+ 756          negative case analysis of visual grounding methods for VQA.             [52] Wenhao Zhou, Faqiang Liu, Hao Zheng, and Rong Zhao.            812
+ 757          In Proceedings of the 58th Annual Meeting of the Association                 Mitigating data bias and ensuring reliable evaluation of ai    813
+ 758          for Computational Linguistics, pages 8172–8181, 2020. 3                      models with shortcut hull learning. Nature Communications,     814
+                                                                                           16, 2025. 3                                                    815
+ 759     [37] Stefan Siegert. Variance estimation for brier score decompo-
+ 760          sition. Quarterly Journal of the Royal Meteorological Soci-
+ 761          ety, 140(682):1771–1777, 2014. 3
+ 762     [38] Carolin Strobl, Anne-Laure Boulesteix, Thomas Kneib,
+ 763          Thomas Augustin, and Achim Zeileis. Conditional variable
+ 764          importance for random forests. BMC Bioinformatics, 9:307,
+ 765          2008. 3, 2
+ 766     [39] Kaihua Tang, Hanwang Zhang, Baoyuan Wu, Wenhan Luo,
+ 767          and Wei Liu. Learning to compose dynamic tree structures
+ 768          for visual contexts. In CVPR, pages 6612–6621, 2019. 2
+ 769     [40] Kaihua Tang, Yulei Niu, Jianqiang Huang, Jiaxin Shi, and
+ 770          Hanwang Zhang. Unbiased scene graph generation from bi-
+ 771          ased training. In CVPR, pages 3716–3725, 2020. 2, 5
+ 772     [41] Damien Teney, Ehsan Abbasnejad, Kushal Kafle, Robik
+ 773          Shrestha, Christopher Kanan, and Anton van den Hengel.
+ 774          On the value of out-of-distribution testing: An example of
+ 775          Goodhart’s law. In Advances in Neural Information Process-
+ 776          ing Systems, 2020. 3
+ 777     [42] Yao Teng and Limin Wang. Structured sparse R-CNN for di-
+ 778          rect scene graph generation. In CVPR, pages 19415–19424,
+ 779          2022. 3, 7
+ 780     [43] Aad W. van der Vaart. Asymptotic Statistics. Cambridge
+ 781          University Press, Cambridge, UK, 1998. 9, 12
+ 782     [44] Danfei Xu, Yuke Zhu, Christopher B Choy, and Li Fei-Fei.
+ 783          Scene graph generation by iterative message passing. In
+ 784          CVPR, pages 3097–3106, 2017. 2, 14
+ 785     [45] Shaotian Yan, Chen Shen, Zhongming Jin, Jianqiang Huang,
+ 786          Rongxin Jiang, Yaowu Chen, and Xian-Sheng Hua. PCPL:
+ 787          Predicate-correlation perception learning for unbiased scene
+ 788          graph generation. In ACM International Conference on Mul-
+ 789          timedia, pages 265–273, 2020. 3
+ 790     [46] J. Frank Yates. External correspondence: Decompositions
+ 791          of the mean probability score. Organizational Behavior and
+ 792          Human Performance, 30(1):132–156, 1982. 3, 4, 14
+
+
+                                                                                 10
+
