@@ -91,7 +91,7 @@ $\bar c$ of $\bar\phi$ is a union of cells of $\phi$. Then
 \end{proposition}
 
 \begin{proposition}[Sensitivity bound for an unrecorded confounder]\label{prop:sensitivity}
-Suppose $H_x(y)\in[-M,M]$ for all $x,y$ (WAGER already requires a bounded score). Fix a
+Suppose $H_x(y)\in[-M,M]$ for all $x,y$ (the split already requires a bounded score). Fix a
 cell $c$ of $\phi$, write $a_y=\mathbb E[H_X(y)\mid\phi,Z]$, $b_y=\Pr(Y=y\mid\phi,Z)$
 (both conditional on $\phi=c$) for the two $K$-vectors on the right of
 Eq.~\eqref{eq:coarsen}, and let
@@ -138,7 +138,7 @@ Substituting both into Eq.~\eqref{eq:sensitivity-bound} gives the data-free boun
 \end{corollary}
 
 \subsection{The estimator}
-\begin{theorem}[Finite-sample WAGER identity]\label{thm:sample}
+\begin{theorem}[Finite-sample identity]\label{thm:sample}
 For every cell with $n_c\ge2$, without a distributional assumption,
 \begin{equation}
 \widehat{\Delta T}_c=\widehat{\Delta P}_c+\widehat{\Delta R}_c.

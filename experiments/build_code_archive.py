@@ -27,7 +27,8 @@ import zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = ROOT / "code.zip"
-PREFIX = "wager-code"
+PREFIX = "gainsplit-code"
+RENAME = [("WAGER", "GAINSPLIT"), ("Wager", "Gainsplit"), ("wager", "gainsplit")]   # the method's working name is scrubbed
 
 INCLUDE_DIRS = ["wager", "experiments", "tests"]
 INCLUDE_FILES = ["requirements.txt", "README.md", "algorithm.md", "LICENSE"]
@@ -47,6 +48,12 @@ ANON_PATTERNS = [
 ]
 
 
+def rename(text: str) -> str:
+    for a, b in RENAME:
+        text = text.replace(a, b)
+    return text
+
+
 def scrub(text: str) -> str:
     for pat, sub in ANON_PATTERNS:
         text = pat.sub(sub, text)
@@ -59,15 +66,17 @@ def main() -> None:
     anon = "--identified" not in sys.argv
 
     def add(src: pathlib.Path, arc: str, z: zipfile.ZipFile) -> bool:
+        if anon:
+            arc = rename(arc)
         rel = arc[len(PREFIX) + 1:]
         if anon and rel in ANON_SKIP:
             return False
         if anon and rel in ANON_REPLACE:
             z.writestr(arc, ANON_REPLACE[rel] + "\n")
             return True
-        if anon and src.suffix in {".py", ".md", ".txt", ".json"}:
+        if anon and src.suffix in {".py", ".md", ".txt", ".json", ".sh"}:
             body = src.read_text(encoding="utf-8", errors="replace")
-            cleaned = scrub(body)
+            cleaned = rename(scrub(body))
             if cleaned != body:
                 z.writestr(arc, cleaned)
                 return True
@@ -92,7 +101,7 @@ def main() -> None:
     mode = "anonymized" if anon else "identified"
     print(f"wrote {OUT} -- {n} files, {os.path.getsize(OUT) / 1024:.0f} KB ({mode})")
     print("verify with:  unzip -q code.zip -d /tmp/chk && "
-          "cd /tmp/chk/wager-code && python -m pytest tests -q")
+          f"cd /tmp/chk/{PREFIX} && python -m pytest tests -q")
 
 
 if __name__ == "__main__":

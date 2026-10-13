@@ -93,9 +93,12 @@ test~\cite{diebold1995comparing} (\cref{cor:dm}).
 probability \emph{movements} and labels, rescaling a model's confidence moves score between the
 two parts while changing no ranking (\cref{sec:simulation}), so models that differ in
 calibration are not compared on raw outputs. We split the images at random, fit each model a
-temperature by maximum likelihood on one half, and split the gain on the other. A temperature
-cannot undo a class-wise shift of the operating point, so we also report matching by a
-temperature and a per-class bias, which preserves every within-cell ranking too.
+recalibration by maximum likelihood on one half, and split the gain on the other. The family
+is fixed before any gain is read, by one criterion: it must be rich enough that a model
+differing from another by a constant shift of every within-cell log-odds, which changes no
+ranking, has no case-level part under it. A temperature alone fails this, a temperature with
+a per-class bias meets it exactly and still preserves every within-cell ranking, so the
+latter is the primary protocol and the temperature-only split is reported beside it.
 
 \paragraph{Splitting mean recall.}\label{sec:hitrate} Nothing in \cref{thm:population} or
 the estimator uses properness: both hold for any contrast $H_x(y)$ that can be evaluated at
@@ -114,13 +117,12 @@ log-prior~\cite{menon2021long}, and pair it with a threshold-free test, the
 \emph{within-cell AUC}: the probability that a case labelled $y$ has larger log-odds
 $\log q(y)-\log q(z)$ than one labelled $z$ in the same cell. Averaged with weight
 $n_c(y)n_c(z)$, the number of comparisons, it weights a cell by about $n_c^2$; with weight
-$n_c(y)n_c(z)/n_c$ it combines cells as the split does. We report both. A temperature, and any
-change constant within a cell, leaves either unchanged.
+$n_c(y)n_c(z)/n_c$ it combines cells as the split does; we take the latter as primary and
+report both. A temperature, and any change constant within a cell, leaves either unchanged.
 
 \paragraph{Choosing the grouping.}\label{sec:coarsening} The split is conditional on $\phi$.
 Merging cells changes it by an explicit between-cell covariance term of either sign
-(\cref{prop:coarsen}), so the finest grouping that the benchmark's construction defends is
-the conservative choice. A relevant variable left out of $\phi$ is the same term with the
-fully adjusted cell as the fine partition, and \cref{prop:sensitivity} bounds it by a single
-elicited correlation, in the spirit of the robustness value of Cinelli and
-Hazlett~\cite{cinelli2020making}.
+(\cref{prop:coarsen}), so the finest grouping the benchmark's construction defends is the
+conservative choice. A relevant variable left out of $\phi$ is the same term with the fully
+adjusted cell as the fine partition; \cref{prop:sensitivity} bounds it by one elicited
+correlation, after the robustness value of Cinelli and Hazlett~\cite{cinelli2020making}.

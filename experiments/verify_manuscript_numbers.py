@@ -681,6 +681,50 @@ CHECKS += [
     ("cvpr grp pos cells", "2_appendix.tex", "9{,}974", _gs["class pair x position"]["n_cells"], 0),
     ("cvpr grp size cells", "2_appendix.tex", "8{,}230", _gs["class pair x subject size"]["n_cells"], 0),
 ]
+_eq = load("sgg_equivalence.json")
+_eqa, _eqr = _eq["auc"]["TDE vs none"]["comparison"], _eq["auc"]["TDE vs none"]["relation"]
+_eqm = _eq["mR_case_TDE_vs_la1"]
+_hc = load("sim_hit_coverage.json")
+_rrj = load("sgg_rank_robustness.json")
+_rcp = {(r["new"], r["old"]): r for r in _rrj["pixel_recalibration"]}
+_rcT = {r["new"]: r for r in _rrj["recalibration"]}["TDE"]
+_clipP = _rcp[("MLP-VISUAL-S", "MLP-SPATIAL-S")]
+CHECKS += [
+    ("cvpr eq margin rel", "5_audit.tex", "$\\pm0.0063$", _eqr["margin"], 5e-5),
+    ("cvpr eq margin cmp", "5_audit.tex", "$\\pm0.0032$", _eqa["margin"], 5e-5),
+    ("cvpr eq ci90 lo", "5_audit.tex", "-0.0037", _eqr["ci90"][0], 5e-5),
+    ("cvpr eq ci90 hi", "5_audit.tex", "+0.0008", _eqr["ci90"][1], 5e-5),
+    ("cvpr eq mde cmp", "5_audit.tex", "$0.008$", _eqa["mde80"], 5e-4),
+    ("cvpr eq se rel", "5_robust.tex", "$0.0014$", _eqr["se"], 5e-5),
+    ("cvpr eq mde rel", "5_robust.tex", "$0.0038$", _eqr["mde80"], 5e-5),
+    ("cvpr eq se cmp", "5_robust.tex", "$0.0029$", _eqa["se"], 5e-5),
+    ("cvpr eq mde cmp4", "5_robust.tex", "$0.0082$", _eqa["mde80"], 5e-5),
+    ("cvpr eq ci90 cmp lo", "5_robust.tex", "-0.0022", _eqa["ci90"][0], 5e-5),
+    ("cvpr eq ci90 cmp hi", "5_robust.tex", "+0.0074", _eqa["ci90"][1], 5e-5),
+    ("cvpr eq mR se", "5_robust.tex", "$0.0021$", _eqm["se"], 5e-5),
+    ("cvpr eq mR margin", "5_robust.tex", "$\\pm0.0097$", _eqm["margin"], 5e-5),
+    ("cvpr eq mR ci90 lo", "5_robust.tex", "-0.0043", _eqm["ci90"][0], 5e-5),
+    ("cvpr eq mR ci90 hi", "5_robust.tex", "+0.0027", _eqm["ci90"][1], 5e-5),
+    ("cvpr eq iet lo", "5_robust.tex", "-0.0274", _eq["auc"]["ietrans vs none"]["relation"]["ci90"][0], 5e-5),
+    ("cvpr eq iet hi", "5_robust.tex", "-0.0196", _eq["auc"]["ietrans vs none"]["relation"]["ci90"][1], 5e-5),
+    ("cvpr clip Tb case", "6_pixels.tex", "0.00331", _clipP["temperature + class bias, brier"]["case"], 5e-6),
+    ("cvpr clip Tb lo", "6_pixels.tex", "+0.00185", _clipP["temperature + class bias, brier"]["case_ci"][0], 5e-6),
+    ("cvpr clip Tb hi", "6_pixels.tex", "+0.00477", _clipP["temperature + class bias, brier"]["case_ci"][1], 5e-6),
+    ("cvpr clip T case", "5_robust.tex", "+0.00472", _clipP["temperature, brier"]["case"], 5e-6),
+    ("cvpr clip sharedT case", "5_robust.tex", "+0.00604", _clipP["shared temperature, brier"]["case"], 5e-6),
+    ("cvpr Tb total", "5_audit.tex", "-0.00951", _rcT["temperature + class bias, brier"]["total"], 5e-6),
+    ("cvpr Tb group", "5_audit.tex", "-0.01396", _rcT["temperature + class bias, brier"]["group"], 5e-6),
+    ("cvpr hit cov case %", "2_appendix.tex", "$96.3\\%$", 100 * _hc["case"]["coverage"], 0.05),
+    ("cvpr hit cov share %", "2_appendix.tex", "$97.3\\%$", 100 * _hc["share"]["coverage"], 0.05),
+    ("cvpr share K100 %", "5_audit.tex", "$86\\%$", 100 * _rs["gc@100"]["mean_recall"]["group"] / _rs["gc@100"]["mean_recall"]["total"], 0.5),
+]
+_ok = (_eqr["equivalent"] and not _eqa["equivalent"] and _eqm["equivalent"]
+       and not _eq["auc"]["ietrans vs none"]["relation"]["equivalent"]
+       and _eq["auc"]["ietrans vs none"]["relation"]["ci90"][1] < -_eq["auc"]["ietrans vs none"]["relation"]["margin"]
+       and abs(_hc["case"]["coverage"] - 0.95) < 0.02 and _hc["share"]["coverage"] >= 0.95)
+if not _ok:
+    print("FAIL equivalence/coverage claims"); sys.exit(1)
+
 _wb = load("waterbirds_audit.json")
 _wbs, _wbl = _wb["splits"]["scene"]["brier"], _wb["splits"]["background"]["brier"]
 CHECKS += [

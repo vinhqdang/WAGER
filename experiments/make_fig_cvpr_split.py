@@ -42,32 +42,31 @@ def pick(rows, new, old):
     return next(r for r in rows if r["new"] == new and r["old"] == old)
 
 
-def sgg_matched_quadratic(sgg):
-    return next(r for r in sgg["comparisons"]
-                if r["score"] == "brier" and r.get("regime") == "calibration-matched"
-                and "prior_feature" not in r)
-
-
-def clip_matched(cons):
-    """The CLIP-vs-geometry pair with both models' confidence matched on held-out images --
-    the comparison the paper reads, since the two differ visibly in confidence. Re-keyed to
-    the field names the other rows use."""
-    r = next(r for r in cons["rows"] if r["name"] == "VISUAL vs SPATIAL cal-both (audit half)")
-    return {"total_gain": r["total"], "prior_gain": r["prior"],
-            "reasoning_gain": r["reasoning"], "reasoning_ci": r["reasoning_ci"]}
+def matched(rows, new, old, fam="temperature + class bias, brier"):
+    """A comparison's split under one recalibration family: the primary protocol is a
+    temperature and a per-class bias per model (Sec. 3), re-keyed to the field names the
+    other rows use."""
+    r = next(r for r in rows if r["new"] == new and r["old"] == old)[fam]
+    return {"total_gain": r["total"], "prior_gain": r["group"],
+            "reasoning_gain": r["case"], "reasoning_ci": r["case_ci"]}
 
 
 def main() -> None:
     vg = load("antisymmetric_results.json")["comparisons"]
     vgv = load("vg_visual_results.json")["comparisons"]
-    sgg = load("sgg_audit_motifs.json")
+    rr = load("sgg_rank_robustness.json")
 
     rows = [
         ("MLP-CLASS vs FREQ\n(class pair only)", pick(vg, "MLP-CLASS", "FREQ")),
         ("+box geometry vs MLP-CLASS", pick(vg, "MLP-SPATIAL", "MLP-CLASS")),
-        ("CLIP crops vs geometry\n(matched)", clip_matched(load("vg_prior_consequence.json"))),
-        ("TDE vs MOTIFS\n(released, matched)", sgg_matched_quadratic(sgg)),
+        ("CLIP crops vs geometry\n(matched)", matched(rr["pixel_recalibration"], "MLP-VISUAL-S", "MLP-SPATIAL-S")),
+        ("TDE vs MOTIFS\n(released, matched)", matched(rr["recalibration"], "TDE", "none")),
     ]
+    # the other two matching families for the two matched rows, drawn as hollow markers in (b)
+    alt = {2: [matched(rr["pixel_recalibration"], "MLP-VISUAL-S", "MLP-SPATIAL-S", f)["reasoning_gain"]
+               for f in ("temperature, brier", "shared temperature, brier")],
+           3: [matched(rr["recalibration"], "TDE", "none", f)["reasoning_gain"]
+               for f in ("temperature, brier", "shared temperature, brier")]}
     labels = [r[0] for r in rows]
     T = [r[1]["total_gain"] for r in rows]
     P = [r[1]["prior_gain"] for r in rows]
@@ -115,8 +114,13 @@ def main() -> None:
     # Two annotations carry meaning the reader would otherwise have to look up.
     b.annotate("exactly 0 (forced by Thm. 1)", (R[0], y[0]), xytext=(6, 0),
                textcoords="offset points", va="center", fontsize=6.6, color=MUTED)
-    b.annotate("CI straddles 0", (hi[3], y[3]), xytext=(6, 0),
-               textcoords="offset points", va="center", fontsize=6.6, color=MUTED)
+    for i, vals in alt.items():                       # temperature only; shared temperature
+        for v, mk in zip(vals, ("s", "^")):
+            if v > -0.004:
+                b.scatter([v], [y[i]], marker=mk, s=14, facecolors="white", edgecolors=MUTED,
+                          linewidths=0.7, zorder=2)
+    b.annotate("T only (square); shared T: -0.018, off scale", (hi[3], y[3]), xytext=(6, 0),
+               textcoords="offset points", va="center", fontsize=6.0, color=MUTED)
 
     for ax in (a, b):
         ax.set_ylim(-0.6, len(rows) - 0.4)

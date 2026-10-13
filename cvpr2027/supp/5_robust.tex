@@ -173,15 +173,33 @@ head--body ($-0.0250$) and body--body ($-0.0260$) pairs, both excluding zero.
 
 \paragraph{Recalibration family.} \Cref{tab:recalibration} repeats the matched split under
 three families, each fitted on the calibration half and each preserving every model's
-within-cell ranking: one temperature per model (the protocol of \cref{sec:sggaudit}), one
-temperature shared by the two models, and a temperature with a per-class bias per model. The
-third absorbs any global shift of the log-prior, so the logit-adjusted control becomes the
-baseline exactly (case-level part $0.00000$), which the first cannot achieve ($+0.00392$): the
-simulation of \cref{sec:simulation} shows the same for a synthetic class-wise offset, which a
-temperature leaves at $+0.0106$ and the third family removes. Under it TDE's case-level part
-is $+0.00445$, $[+0.00354,+0.00536]$ (quadratic) and $+0.02543$ (log), while IETrans+Rwt's loss
-is unchanged ($-0.01679$, $-0.06609$). IETrans+Rwt's case-level loss is negative under all six
-protocol-score combinations; TDE's sign is not.
+within-cell ranking: one temperature per model, one temperature shared by the two models, and
+a temperature with a per-class bias per model. The criterion of \cref{sec:matching} picks the
+third as primary: it absorbs any global shift of the log-prior, so the logit-adjusted control
+becomes the baseline exactly (case-level part $0.00000$), which the first cannot achieve
+($+0.00392$); the simulation of \cref{sec:simulation} shows the same for a synthetic
+class-wise offset, which a temperature leaves at $+0.0106$ and the third family removes. Under
+it TDE's case-level part is $+0.00445$, $[+0.00354,+0.00536]$ (quadratic) and $+0.02543$ (log),
+while IETrans+Rwt's loss is unchanged ($-0.01679$, $-0.06609$). IETrans+Rwt's case-level loss
+is negative under all six protocol-score combinations; TDE's sign is not. For the CLIP model
+against geometry (\cref{sec:vgvisual}) the three families give $+0.00472$, $+0.00604$ and
+$+0.00331$, $[+0.00185,+0.00477]$, all excluding zero.
+
+\paragraph{Equivalence margins.} A non-detection is bounded as follows
+(\texttt{sgg\_equivalence.py}). The image-bootstrap interval gives each AUC contrast a
+standard error; the minimal detectable change at $80\%$ power and $5\%$ size is $2.80$
+standard errors; and an equivalence margin declared before the audit, one tenth of the AUC
+that box geometry buys over the class pair under the same weighting ($+0.0626$ relation,
+$+0.0323$ comparison), is tested by two one-sided tests: equivalence holds when the $90\%$
+interval lies inside the margin. For TDE against the baseline the relation-weighted contrast
+has standard error $0.0014$, minimal detectable change $0.0038$, margin $\pm0.0063$ and
+$90\%$ interval $[-0.0037,+0.0008]$: equivalent. By comparison the standard error is $0.0029$,
+the minimal detectable change $0.0082$, the margin $\pm0.0032$ and the interval
+$[-0.0022,+0.0074]$: not equivalent, and not a detection. Against the control the figures are
+the same to the fourth decimal. IETrans+Rwt's relation-weighted loss, $[-0.0274,-0.0196]$, lies
+outside its margin on the negative side: a detected loss. TDE's mean-recall case-level part
+against the control, standard error $0.0021$, is equivalent to zero within a tenth of TDE's
+gain ($\pm0.0097$; $90\%$ interval $[-0.0043,+0.0027]$).
 
 \begin{table}[t]
 \centering

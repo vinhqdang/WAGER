@@ -18,11 +18,11 @@ recovering them took a rerun of the released checkpoint.
 field's metrics report the sum; scoring each prediction against another case's label from the
 same group separates them exactly. On two released Neural-Motifs checkpoints on Visual Genome
 the gains are almost entirely group-level: TDE's is matched by a ranking-preserving logit
-adjustment and leaves within-group ranking unchanged as far as we can detect, IETrans's lowers
-it on most measures; we audit no later method. We suggest that benchmarks whose labels lean on
-a feature every model sees report, beside the headline metric, the declared grouping with its
-coverage and cell sizes, both signed parts with intervals under both matching protocols (and,
-where they disagree, the within-group AUC rather than a sign), the AUC under both weightings,
-the parts along a path of label mixes, and, for a thresholded metric, the operating-point
-control; each model's within-group reliance (\cref{prop:reliance}) is a one-column summary a
-leaderboard can carry. Code and results are in the supplement.
+adjustment and its within-group ranking is equivalent to the baseline's within a margin fixed
+in advance; IETrans's lowers it on most measures; we audit no later method. We suggest that
+such benchmarks report, beside the headline metric, the declared grouping with its coverage
+and cell sizes, both signed parts with intervals under the pre-declared matching protocol and
+its alternatives, the within-group AUC under both weightings with an equivalence margin, the
+parts along a path of label mixes and, for a thresholded metric, the operating-point control;
+each model's within-group reliance (\cref{prop:reliance}) is a one-column leaderboard
+summary. Code and results accompany the supplement.

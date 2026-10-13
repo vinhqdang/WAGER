@@ -2,13 +2,14 @@
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.9\textwidth]{figures/fig2_where_gains_live.pdf}
+\includegraphics[width=0.84\textwidth]{figures/fig2_where_gains_live.pdf}
 \caption{\textbf{Where each proper-score gain lives} (quadratic score). (a) Total gain
 $\hdT$ (diamond) split exactly into group-level $\hdP$ and case-level $\hdR$. (b)
 $\hdR$ with its image-clustered 95\% interval. Class-pair-only models differ purely at
 group level (\cref{thm:population}); geometry and CLIP crops buy case-level gain, CLIP
-despite losing overall; TDE's change is group-level. CLIP and TDE rows are
-confidence-matched.}
+despite losing overall; TDE's is group-level, with a small case-level residue. CLIP and TDE
+rows are matched by a temperature and a per-class bias per model (hollow square: a
+temperature only; triangle: one temperature shared by both models).}
 \label{fig:where}
 \end{figure*}
 
@@ -34,27 +35,26 @@ discrimination. It reaches $mR@50=0.2343$ at $R@50=0.6437$.
 \centering
 \scriptsize
 \setlength\tabcolsep{0pt}
-\caption{\textbf{Mean recall@50 split} (graph constraint, micro-averaged over identified
-relations) against the MOTIFS baseline, except TDE$-$LA. LA: the logit-adjusted baseline;
-IETrans: the released IETrans+Rwt checkpoint, scored on the same relations against a
-separately trained baseline. Intervals 95\%; case-level image-clustered. $\Delta$AUC: change in
-within-cell AUC, weighted by comparison ($c$) or as the split weights cells ($r$); no
-calibration or group-level shift moves it (LA's residue is float32 rounding). AUC intervals:
-image bootstrap.}
+\caption{\textbf{Mean recall@50 split} (graph constraint, micro-pooled) against the MOTIFS
+baseline, except TDE$-$LA. LA: the logit-adjusted baseline; IETrans: the released
+IETrans+Rwt checkpoint against a separately trained baseline. Case-level intervals
+image-clustered. $\Delta$AUC: within-cell AUC change, weighted as the split weights cells
+($r$, primary) or by comparison ($c$), image bootstrap; no calibration or group-level shift
+moves it (LA's residue is float32 rounding).}
 \label{tab:sggaudit}
 \begin{tabular}{@{}l@{\hspace{2pt}}r@{\hspace{4pt}}r@{\hspace{1.5pt}}r@{\hspace{1.5pt}}r@{\hspace{1.5pt}}r@{}}
 \toprule
-& $\Delta mR$ & group & case [CI] & $\Delta\mathrm{AUC}_c$ & $\Delta\mathrm{AUC}_r$ \\
+& $\Delta mR$ & group & case [CI] & $\Delta\mathrm{AUC}_r$ & $\Delta\mathrm{AUC}_c$ \\
 \midrule
-TDE & $+.0972$ & $+.0841$ & $+.0130$ & $+.0026$ & $-.0015$ \\
-& & & {\tiny$[+.0093,\!+.0168]$} & {\tiny$[-.0028,\!+.0086]$} & {\tiny$[-.0036,\!+.0018]$} \\
-LA & $+.0941$ & $+.0802$ & $+.0139$ & $+.0001$ & $+.0003$ \\
-& & & {\tiny$[+.0101,\!+.0176]$} & {\tiny$[-.0000,\!+.0001]$} & {\tiny$[+.0001,\!+.0006]$} \\
-TDE$-$LA & $+.0031$ & $+.0039$ & $-.0008$ & $+.0026$ & $-.0018$ \\
-& & & {\tiny$[-.0050,\!+.0033]$} & {\tiny$[-.0029,\!+.0086]$} & {\tiny$[-.0039,\!+.0014]$} \\
+TDE & $+.0972$ & $+.0841$ & $+.0130$ & $-.0015$ & $+.0026$ \\
+& & & {\tiny$[+.0093,\!+.0168]$} & {\tiny$[-.0036,\!+.0018]$} & {\tiny$[-.0028,\!+.0086]$} \\
+LA & $+.0941$ & $+.0802$ & $+.0139$ & $+.0003$ & $+.0001$ \\
+& & & {\tiny$[+.0101,\!+.0176]$} & {\tiny$[+.0001,\!+.0006]$} & {\tiny$[-.0000,\!+.0001]$} \\
+TDE$-$LA & $+.0031$ & $+.0039$ & $-.0008$ & $-.0018$ & $+.0026$ \\
+& & & {\tiny$[-.0050,\!+.0033]$} & {\tiny$[-.0039,\!+.0014]$} & {\tiny$[-.0029,\!+.0086]$} \\
 \midrule
-IETrans & $+.2204$ & $+.2143$ & $+.0060$ & $-.0093$ & $-.0235$ \\
-& & & {\tiny$[-.0031,\!+.0151]$} & {\tiny$[-.0181,\!+.0004]$} & {\tiny$[-.0275,\!-.0182]$} \\
+IETrans & $+.2204$ & $+.2143$ & $+.0060$ & $-.0235$ & $-.0093$ \\
+& & & {\tiny$[-.0031,\!+.0151]$} & {\tiny$[-.0275,\!-.0182]$} & {\tiny$[-.0181,\!+.0004]$} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -64,16 +64,16 @@ $0.0972$ ($0.1017$ on the official per-image average). Of that, $+0.0841$ is gro
 and $+0.0130$ case-level, interval $[+0.0093,+0.0168]$ (\cref{tab:sggaudit}): $87\%$ of the
 gain, interval $[83\%,91\%]$, survives shuffling every label among the relations that share
 its object pair.
-It lives in the body of the distribution. Splitting predicates by training frequency (9
-head above $10{,}000$ instances, 26 body, 15 tail below $500$), the body gains $+0.1224$, of
-which $+0.1082$ is group-level; the head loses $0.0255$; the tail gains $0.0003$: of the 15 tail
-predicates the baseline recalls none and TDE one, \textsf{to}, at $0.016$. \Cref{fig:predicates} shows the mechanism one
+It lives in the body of the distribution: by training frequency (9 head predicates above
+$10{,}000$ instances, 26 body, 15 tail below $500$), the body gains $+0.1224$, of which
+$+0.1082$ is group-level, the head loses $0.0255$, and the tail gains $0.0003$ (the baseline
+recalls no tail predicate and TDE one, \textsf{to}, at $0.016$). \Cref{fig:predicates} shows the mechanism one
 predicate at a time. Recall of \textsf{parked on} rises from $0.000$ to $0.886$, almost all of
 it group-level: TDE now says \textsf{parked on} for (\textsf{car}, \textsf{street}). Recall of \textsf{on} falls by $0.558$ in the same way.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.88\linewidth]{figures/fig3_recall_by_predicate.pdf}
+\includegraphics[width=0.76\linewidth]{figures/fig3_recall_by_predicate.pdf}
 \caption{\textbf{Where TDE's mean recall went}, for every predicate whose recall@50 moved by
 at least $0.12$: group-level part (blue), case-level part (orange) with its image-clustered
 95\% interval, and the total under logit adjustment of the baseline (diamond), which
@@ -88,22 +88,25 @@ case-level part of a thresholded metric is not by itself evidence of new discrim
 When the boundary between \textsf{on} and \textsf{parked on} moves, the cases that cross it
 are those the baseline already scored as more \textsf{parked on}-like, and they are more
 often labelled so; the covariance is real, but bought with discrimination the baseline had. The direct test is the within-cell AUC, which no prior
-shift or recalibration can move: TDE's change is $+0.0026$, interval $[-0.0028,+0.0086]$,
-weighted by comparison, and $-0.0015$, $[-0.0036,+0.0018]$, weighted as the split weights
-cells. By predicate tier the comparison-weighted change is $+0.0068$, $[-0.0003,+0.0134]$,
-on the head--head pairs that carry $65\%$ of its weight and $-0.0051$, $[-0.0130,+0.0026]$, on
-the rest (\cref{app:rankrob}): a pattern of redistribution, not a detected one.
+shift or recalibration can move. Weighted as the split weights cells, the primary weighting,
+TDE's change is $-0.0015$, $[-0.0036,+0.0018]$; by comparison $+0.0026$, $[-0.0028,+0.0086]$.
+A null needs a margin, so we fixed one in advance: a tenth of what box geometry buys over the
+class pair under the same weighting (\cref{sec:vgvisual}), $\pm0.0063$ primary and
+$\pm0.0032$ by comparison. Under the primary weighting TDE's ranking is equivalent to the
+baseline's, the $90\%$ interval $[-0.0037,+0.0008]$ lying inside the margin; by comparison
+the interval does not fit and the result is a non-detection, with a minimal detectable
+change of $0.008$ at $80\%$ power (\cref{app:rankrob}). The mean-recall case-level part
+against the control is likewise equivalent to zero within a tenth of TDE's gain.
 
-\paragraph{The proper score depends on the protocol.} With each model's temperature fitted on
-held-out images ($T^*=2.50$ baseline, $0.92$ TDE), TDE's quadratic-score change is
-$-0.18264$, of which $-0.18258$ is group-level and $-0.00006$, interval $[-0.00120,+0.00109]$,
-case-level (\cref{fig:where}). But a temperature cannot undo a class-wise shift of the operating
-point, and the control shows one: its case-level part is $+0.0039$. Matching a temperature
-and a per-class bias for each model, which also preserves every within-cell ranking, makes
-the control identical to the baseline and TDE's case-level part $+0.00445$, interval
-$[+0.00354,+0.00536]$; one temperature shared by both models makes it $-0.0184$; the log
-score gives $+0.04396$ (\cref{app:rankrob,app:splits}). The sign depends on the protocol;
-merging synonymous predicates changes none of this (\cref{app:merge}).
+\paragraph{The proper score, matched.} Under the primary protocol (\cref{sec:matching}),
+which makes the control identical to the baseline, TDE's quadratic-score change is
+$-0.00951$: $-0.01396$ group-level and $+0.00445$, interval $[+0.00354,+0.00536]$, case-level
+($+0.02543$ in log score; \cref{fig:where}). A case-level gain with no change in within-cell
+ranking is confidence: within a pair, TDE is more certain where it is right. The protocol
+decides the sign, which is why one was fixed in advance: with a temperature alone the part is
+$-0.00006$, $[-0.00120,+0.00109]$, and with one temperature shared by both models $-0.0184$;
+over 20 calibration halves the primary part stays positive, and merging synonymous predicates
+changes none of this (\cref{app:rankrob,app:splits,app:merge}).
 
 \paragraph{What that licenses.} On this checkpoint the ten points of mean recall are a change in
 which predicates the model favours within each object pair. A one-line prior shift that ranks
@@ -111,23 +114,30 @@ the relations of every cell exactly as the baseline did reproduces the gain, its
 its tier profile at under a tenth of TDE's cost in $R@50$ ($0.0175$ against $0.2023$), and a
 better $F@50$, the harmonic mean of $R@50$ and $mR@50$ ($0.344$ against $0.322$). That a prior
 correction rivals debiasing is known~\cite{chiou2021recovering,teng2022structured}; the split
-shows which part of TDE's gain it reproduces. Under the graph constraint no measure we tried detects a change in
-within-cell ranking, and the proper-score case-level part has no protocol-free sign. Without the
-constraint, TDE's case-level part over the control is $+0.0072$ at $K=50$ and $+0.0148$,
-$[+0.0064,+0.0232]$, at $K=100$, and the group-level share of the $K=20$ gain is $77\%$.
-Group-level is not a lesser gain, since mean recall rewards moving rare predicates within a pair
-by design, and the share is not guaranteed by the metric: an oracle gains $+0.5068$ in quadratic
-score, all case-level ($+0.8041$ against $-0.2973$).
+shows which part of TDE's gain it reproduces. \Cref{tab:protocols} gives all six recall protocols: the share runs from $77\%$ at
+$K=20$ to $86\%$ at $K=100$ under the graph constraint; without it TDE's mean recall falls,
+and its case-level part over the control turns positive at $K=100$, $+0.0148$,
+$[+0.0064,+0.0232]$, where the control's own gain is largest. Group-level is not a lesser gain (mean recall rewards moving rare predicates within a pair by
+design), nor is the share forced by the metric: an oracle gains $+0.5068$ in quadratic score,
+all case-level ($+0.8041$ against $-0.2973$).
 
-\paragraph{Why.} Under the released SUM fusion, TDE's change from the baseline is three
-subtractions, and splitting along them answers why; the parts add up to TDE's exactly (\cref{app:tdepath}). Removing the
-frequency prior, constant within every cell, moves mean recall by $-0.0009$ and the
-within-cell AUC not at all. Removing the visual term adds $+0.0164$, case-level $+0.0016$,
-$[-0.0006,+0.0037]$. Subtracting the averaged context supplies $+0.0817$ of the $0.0972$.
-That term is, to $99.96\%$ of its energy, one vector shared by every relation in every image,
-correlated $+0.75$ with the log training prior. In PredCls, TDE's counterfactual is to first
-order a learned logit adjustment of the context branch, which is why the explicit one
-reproduces it.
+\begin{table}[t]
+\centering
+\scriptsize
+\caption{\textbf{The split under all six recall protocols}, micro-pooled mean recall with ($mR$)
+and without (ng-$mR$) the graph constraint at $K=20,50,100$; case-level intervals
+image-clustered.}
+\label{tab:protocols}
+\input{supp/tab_protocols_main}
+\end{table}
+
+\paragraph{Why.} Under the released SUM fusion TDE's change is three subtractions, and the
+split along them adds up exactly (\cref{app:tdepath}): removing the frequency prior moves mean
+recall by $-0.0009$; removing the visual term adds $+0.0164$, case-level $+0.0016$,
+$[-0.0006,+0.0037]$; subtracting the averaged context supplies $+0.0817$ of the $0.0972$. That
+term is, to $99.96\%$ of its energy, one vector shared by every relation in every image,
+correlated $+0.75$ with the log training prior: in PredCls TDE is to first order a learned
+logit adjustment of the context branch, which is why the explicit one reproduces it.
 
 \paragraph{A second method.} IETrans~\cite{zhang2022finegrained} relabels training data,
 moving general predicates to specific ones within the same object pair, and adds the

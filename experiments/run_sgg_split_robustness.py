@@ -22,6 +22,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "experiments"))
 from wager.antisymmetric import decompose_gain  # noqa: E402
 import run_sgg_audit_wager as AU  # noqa: E402
+from run_sgg_rank_robustness import apply_family, fit_family  # noqa: E402
 
 OUT = ROOT / "results/sgg_split_robustness.json"
 N_SPLITS = 20
@@ -58,6 +59,16 @@ def main():
                                        y[aud], phi[aud], groups=image[aud], score=sc)
                 row[f"{v} {sc}"] = {"total": g.total_gain, "group": g.prior_gain,
                                     "case": g.alignment_gain, "case_ci": list(g.alignment_ci)}
+        # the primary protocol: temperature and a per-class bias for each model
+        L = {v: np.log(np.clip(q, 1e-12, None)) for v, q in Q.items()}
+        fam = {v: fit_family(L[v][cal], y[cal], True) for v in Q}
+        M = {v: apply_family(L[v][aud], fam[v], True) for v in Q}
+        for v in NEW:
+            for sc in ("brier", "log"):
+                with np.errstate(all="ignore"):
+                    g = decompose_gain(M[v], M["none"], y[aud], phi[aud], groups=image[aud], score=sc)
+                row[f"{v} T+bias {sc}"] = {"total": g.total_gain, "group": g.prior_gain,
+                                           "case": g.alignment_gain, "case_ci": list(g.alignment_ci)}
         tc = fit_common(Q["TDE"][cal], Q["none"][cal], y[cal])
         row["T_common"] = tc
         for sc in ("brier", "log"):
@@ -76,8 +87,10 @@ def main():
     for k in [k for k in rows[0] if isinstance(rows[0][k], dict) and "case" in rows[0][k]]:
         c = np.array([r[k]["case"] for r in rows])
         sig = int(sum(r[k]["case_ci"][0] > 0 or r[k]["case_ci"][1] < 0 for r in rows))
+        se = float(np.mean([(r[k]["case_ci"][1] - r[k]["case_ci"][0]) / (2 * 1.959964) for r in rows]))
         summary[k] = {"mean": float(c.mean()), "sd": float(c.std(ddof=1)), "min": float(c.min()),
-                      "max": float(c.max()), "n_excluding_zero": sig,
+                      "max": float(c.max()), "n_excluding_zero": sig, "se_within": se,
+                      "halfwidth_combined": float(1.959964 * np.sqrt(se ** 2 + c.var(ddof=1))),
                       "n_positive": int((c > 0).sum())}
         print(f"{k:22s} mean {c.mean():+.5f} sd {c.std(ddof=1):.5f} range [{c.min():+.5f}, "
               f"{c.max():+.5f}]  CI excludes 0 in {sig}/{len(rows)}")

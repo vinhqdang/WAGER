@@ -143,7 +143,7 @@ Section~\ref{sec:vgvisual} exhibits the same structure on real models.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig3_new_simulation.png}
-\caption{\textbf{Controlled validation.} WAGER recovers injected within-cell signal
+\caption{\textbf{Controlled validation.} The split recovers injected within-cell signal
 monotonically (mean $\pm$ one standard deviation), produces approximately uniform null
 randomization $p$-values, and controls type-I error in 200 null runs.}
 \label{fig:simulation}
@@ -483,7 +483,7 @@ lookup changes. One randomization is $O(N)$ after the $O(NK)$ setup. The plus-on
 Carlo correction includes the observed assignment and prevents zero $p$-values.
 
 \begin{algorithm}[t]
-\caption{WAGER gain decomposition}\label{alg:wager}
+\caption{Gain decomposition by label transport}\label{alg:wager}
 \begin{algorithmic}[1]
 \Require frozen $q_1,q_0$; labels $y$; cells $\phi$; proper score $S$
 \Ensure $\widehat{\Delta T},\widehat{\Delta P},\widehat{\Delta R}$ and uncertainty
@@ -559,7 +559,7 @@ does not require retraining.
 \subsection{Compute environment for Sections~\ref{app:vgvisual-full}--\ref{app:lt}}\label{app:compute}
 
 Model training and feature extraction for both new experiments ran on a single NVIDIA
-T4 (15\,GB) GPU. The WAGER decomposition itself is pure NumPy and requires no
+T4 (15\,GB) GPU. The decomposition itself is pure NumPy and requires no
 accelerator: it consumes the resulting cached probability arrays, as in
 Section~\ref{sec:data}. All Python code runs under a pinned environment (Python 3.13).
 
@@ -721,6 +721,18 @@ of the estimator's standard deviation; from three cases up coverage is nominal, 
 VG150's own cell sizes it is $96.3\%$. On VG150 $1.0\%$ of audited relations sit in two-case
 cells; a grouping finer than the benchmark's would need a variance with the second-order term,
 or a delete-a-group jackknife over images (used in \cref{app:labelshift}).
+
+The mean-recall split scores a hit matrix, and its group-level share is a ratio whose
+interval comes from that jackknife; neither was covered above. A second simulation
+(\texttt{sim\_hit\_coverage.py}) draws cells with VG150's cell-size distribution
+($6{,}066$ relations in $191$ cells), groups relations into $867$ images that cut across
+cells, and gives each case per-label evidence $e_x(y)=\mathbb 1[y=y_x]\zeta_x+\varepsilon$
+with $\zeta_x\sim\mathcal N(1,1)$: the old model hits label $y$ with probability
+$\sigma(b_c(y)+\gamma e_x(y))$, the new one with $\sigma(b_c(y)+\delta_c(y)+\gamma(1+\beta)
+e_x(y)+u_{\mathrm{img}})$, so $\delta$ moves each cell's operating point, $\beta$ uses the
+evidence better and the image effect $u$ clusters the hits. With the design fixed and labels
+and hits redrawn, the image-clustered case-level interval covers $96.3\%$ and the
+jackknife share interval $97.3\%$ of 400 replicates, at a true share of $0.79$.
 
 \begin{table}[t]
 \centering
@@ -938,7 +950,7 @@ images respectively, and the cell throughout is
 $\phi=(\text{subject class},\text{object class})$, two real examples of which appear in
 Figure~\ref{fig:samples}. Of the 8,614 cells present in the test split, 6,346 contain at
 least two relations and are therefore identified; the remaining 2,268 are singletons,
-which WAGER excludes and reports rather than smoothing over, leaving 227,337 relations
+which the estimator excludes and reports rather than smoothing over, leaving 227,337 relations
 (99.0\%) under audit.
 
 The five predictors are deliberately constructed so that each exposes a different kind
@@ -950,7 +962,7 @@ of $\phi$ alone; MLP-SPATIAL extends those embeddings with 12 normalized box-geo
 features covering relative centre, scale, aspect, intersection, containment and IoU,
 while MLP-SPATIAL+ both widens the network and trains longer (Section~\ref{app:implementation} lists every architecture and schedule), so its increment over
 MLP-SPATIAL reflects capacity and optimization jointly rather than capacity alone. Each
-is trained once on the training split, and WAGER thereafter consumes nothing but their
+is trained once on the training split, and the split thereafter consumes nothing but their
 cached test distributions, scored quadratically with image-clustered intervals and 499
 within-cell cyclic randomizations, whose smallest attainable $p$-value is
 $1/500=.002$; table entries of $.002$ are at this granularity floor and should be read
@@ -1037,7 +1049,7 @@ decomposition exists to report.
 
 \begin{table*}[t]
 \centering
-\caption{WAGER decomposition on 227,337 identified VG150 PredCls relations. Gains use
+\caption{The split on 227,337 identified VG150 PredCls relations. Gains use
 the quadratic score. CI is image-cluster robust; $p$ is the 499-shift relation-level
 randomization diagnostic (granularity floor $.002$). ``--'' denotes an undefined share
 because total gain is negative. The MLP-CLASS row's zero-width interval is exact by
@@ -1425,7 +1437,7 @@ in the unit tests.
 
 \begin{table}[t]
 \centering
-\caption{WAGER decomposition on the 10,000-image balanced CIFAR-100-LT test split.
+\caption{The split on the 10,000-image balanced CIFAR-100-LT test split.
 Gains use the quadratic score; CI is the H\'ajek interval on $\widehat{\Delta R}$;
 $p$ is the 499-shift randomization diagnostic, one-sided for a positive covariance gain, so the
 value of $1.000$ on the CB rows records a covariance gain at the extreme negative end of
@@ -1547,7 +1559,7 @@ method whose finer-grained residual is not distinguishable from zero.
 
 \begin{table}[t]
 \centering
-\caption{WAGER decomposition on the 7,532-document balanced 20-Newsgroups-LT test
+\caption{The split on the 7,532-document balanced 20-Newsgroups-LT test
 split. Gains use the quadratic score; CI is the (unclustered) H\'ajek interval on
 $\widehat{\Delta R}$, documents being independent units; $p$ is the 499-shift
 randomization diagnostic, one-sided for a positive covariance gain.}

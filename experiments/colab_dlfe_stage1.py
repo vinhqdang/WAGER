@@ -94,8 +94,11 @@ def gdrive(fid, dest):
     log(f"gdown {dest} ({os.path.getsize(dest)/1e9:.2f} GB)")
 
 
+# No numpy<2 pin: the Colab runtime is now Python 3.13 (torch 2.11, numpy 2.1), for
+# which numpy 1.x has no wheel; the numpy-2 renames the codebase needs are patched
+# below instead.
 sh(["pip", "-q", "install", "gdown", "ipdb", "yacs", "ninja", "cython", "overrides", "h5py",
-    "networkx", "numpy<2"])
+    "networkx"])
 
 # ---- 1. code -----------------------------------------------------------------
 if not os.path.exists(f"{DLFE}/.git"):
@@ -211,6 +214,10 @@ SUBS = [
     (r"np\.object\b(?!\d|_)", "object"),
     (r"from collections import Iterable", "from collections.abc import Iterable"),
     (r"from collections import Sequence", "from collections.abc import Sequence"),
+    # torch >= 2.6 loads weights only by default; the checkpoint, the statistics
+    # cache and the GloVe cache hold plain python/numpy objects as well
+    (r'map_location=torch\.device\("cpu"\)\)(?!, weights_only)',
+     'map_location=torch.device("cpu"), weights_only=False)'),
 ]
 n = 0
 for base in (f"{DLFE}/maskrcnn_benchmark", f"{DLFE}/tools"):

@@ -346,3 +346,16 @@ Calibration status of every seat and of this package: `NOT_CALIBRATED`.
 | R3-20 "WAGER" name | **Open, for the authors.** The name appears in the supplement and the code archive; check whether it points to the public repository before submission. |
 
 Not done: coverage simulations for the mean-recall hit contrast and the share interval, and propagating calibration-half and checkpoint variability into the intervals (R1 W4).
+
+## Status after the second revision pass (2026-10-13)
+
+| item | status |
+|---|---|
+| R3-2 equivalence margin | **Done.** Margin fixed in advance (a tenth of the geometry-vs-class AUC gain under the same weighting; a tenth of TDE's gain for the mean-recall part). Under the primary (relation) weighting TDE's ranking is equivalent to the baseline's (90% CI [−0.0037, +0.0008] inside ±0.0063); by comparison it is a non-detection with MDE 0.008 at 80% power. Sec. 5, App. "Equivalence margins", `sgg_equivalence.py`. |
+| R3-3 six protocols in the main text | **Done.** Table of all six recall protocols in Sec. 5; abstract scopes the 87%. |
+| R3-4 primary calibration protocol | **Done.** Criterion stated ex ante in Sec. 3 (the family must absorb a constant within-cell log-odds shift): temperature + per-class bias is primary. Under it TDE's case-level part is +0.00445 [+0.00354, +0.00536], read as within-pair confidence since the AUC is unchanged. Fig. 2 shows the primary family with the two alternatives as hollow markers; the 20-halves study repeated under the primary family. |
+| R3-5 primary AUC weighting | **Done.** Relation weighting declared primary in Sec. 3; Table 1 column order and the CLIP reading follow it. |
+| R1 W4 coverage of mean-recall intervals | **Done.** `sim_hit_coverage.py`: image-clustered case-level interval of the hit contrast covers 96.3%, jackknife share interval 97.3%. Calibration-half variability: SD over 20 halves reported with a combined interval (App. on calibration halves). |
+| R1 W3 CIFAR/text DRW reading | **Caveated** in the supplement (temperature-only matching; LA control's covariance exceeds DRW's). |
+| R3-20 method name | **Done.** No occurrence of the working name in paper or supplement; the code archive ships the package under a neutral name. |
+| R3-6 breadth | **In progress.** A third released method (DLFE, with its own released baseline) is being audited. |

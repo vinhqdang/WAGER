@@ -170,7 +170,7 @@ def fit_common(qa, qb, y):
     return float(grid[int(np.argmin(nll))])
 
 
-def recalibration_rows(Q, y, phi, image, cal):
+def recalibration_rows(Q, y, phi, image, cal, pairs=(("TDE", "none"), ("la1", "none"), ("ietrans", "none"))):
     aud = ~cal
     L = {v: np.log(np.clip(q, EPS, None)) for v, q in Q.items()}
     fams = {}
@@ -180,16 +180,16 @@ def recalibration_rows(Q, y, phi, image, cal):
         p = fit_family(L[v][cal], y[cal], bias=True)
         fams.setdefault("temperature + class bias", {})[v] = apply_family(L[v], p, True)[aud]
     rows = []
-    for new in ("TDE", "la1", "ietrans"):
-        tc = fit_common(Q[new][cal], Q["none"][cal], y[cal])
+    for new, old in pairs:
+        tc = fit_common(Q[new][cal], Q[old][cal], y[cal])
         fams.setdefault("shared temperature", {})[new] = (AU.temp_scale(Q[new], tc)[aud],
-                                                         AU.temp_scale(Q["none"], tc)[aud])
-        row = {"new": new, "old": "none"}
+                                                         AU.temp_scale(Q[old], tc)[aud])
+        row = {"new": new, "old": old}
         for fam in ("temperature", "shared temperature", "temperature + class bias"):
             if fam == "shared temperature":
                 qn, qo = fams[fam][new]
             else:
-                qn, qo = fams[fam][new], fams[fam]["none"]
+                qn, qo = fams[fam][new], fams[fam][old]
             for sc in ("brier", "log"):
                 with np.errstate(all="ignore"):
                     g = decompose_gain(qn, qo, y[aud], phi[aud], groups=image[aud], score=sc)
@@ -231,9 +231,21 @@ def main():
     out["pixel_auc"] = auc_rows(P, [("MLP-VISUAL-S", "MLP-SPATIAL-S"),
                                     ("MLP-SPATIAL-S", "MLP-CLASS-S"),
                                     ("MLP-VISUAL-S", "MLP-CLASS-S")], py, pphi, pimage, ~pcal)
+    out["pixel_recalibration"] = recalibration_rows(P, py, pphi, pimage, pcal,
+                                                    pairs=(("MLP-VISUAL-S", "MLP-SPATIAL-S"),))
     OUT.write_text(json.dumps(out, indent=1))
     print(f"wrote {OUT.relative_to(ROOT)}")
 
 
+def add_pixel_recalibration():
+    """Append the pixel study's recalibration rows to an existing results file."""
+    out = json.loads(OUT.read_text())
+    P, py, pphi, pimage, pcal = pixel_data()
+    out["pixel_recalibration"] = recalibration_rows(P, py, pphi, pimage, pcal,
+                                                    pairs=(("MLP-VISUAL-S", "MLP-SPATIAL-S"),))
+    OUT.write_text(json.dumps(out, indent=1))
+    print(f"updated {OUT.relative_to(ROOT)}")
+
+
 if __name__ == "__main__":
-    main()
+    add_pixel_recalibration() if "--pixel-only" in sys.argv else main()

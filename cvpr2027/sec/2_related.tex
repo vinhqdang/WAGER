@@ -31,8 +31,7 @@ resolution term: it descends from the \emph{covariance} decomposition of the Bri
 due to Yates~\cite{yates1982external}, which a monotone recalibration moves while the
 classical resolution is invariant to it. The two coincide only when both models are
 calibrated within every group. Variance estimators exist for single-model
-decompositions~\cite{siegert2014variance}, but not for a contrast between two models
-scored on the same data. The grouping loss~\cite{perezlebel2023beyond} is the
+decompositions~\cite{siegert2014variance}, not for a contrast between two models. The grouping loss~\cite{perezlebel2023beyond} is the
 single-model relative of our case-level part: what calibration leaves behind because
 inputs sharing a confidence level differ; ours contrasts two models within groups
 declared in advance. Transporting labels within a group is a within-group permutation of
@@ -43,10 +42,9 @@ models' (\cref{prop:reliance}). What the split adds is the exact additive accoun
 paired gain, including thresholded metrics, and paired inference for it.
 
 \paragraph{Comparing two predictors.} Inference on a paired score difference is the
-Diebold--Mariano test~\cite{diebold1995comparing} and its conditional
-form~\cite{giacomini2006tests}; at a single group our total-gain interval is a clustered
-Diebold--Mariano test (\cref{cor:dm}), so the decomposition adds a split to what those tests
-already report. DeLong \etal~\cite{delong1988comparing} compare correlated ROC areas with a
-paired U-statistic, the same device we use for a group-conditional score gain. The
-case-level term is an order-two U-statistic~\cite{hoeffding1948class}, with a H\'ajek
-projection supplying its influence function~\cite{serfling1980approximation}.
+Diebold--Mariano test~\cite{diebold1995comparing,giacomini2006tests}; at a single group our
+total-gain interval is its clustered form (\cref{cor:dm}), so the decomposition adds a split
+to what it reports. DeLong \etal~\cite{delong1988comparing} compare correlated ROC areas with
+a paired U-statistic, the device we use for a group-conditional gain; the case-level term is
+an order-two U-statistic~\cite{hoeffding1948class} with a H\'ajek
+projection~\cite{serfling1980approximation} as its influence function.
