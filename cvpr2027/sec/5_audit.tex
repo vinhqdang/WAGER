@@ -116,7 +116,7 @@ changes none of this (\cref{app:rankrob,app:splits,app:merge}).
 which predicates the model favours within each object pair. A one-line prior shift that ranks
 the relations of every cell exactly as the baseline did reproduces the gain, its split and
 its tier profile at under a tenth of TDE's cost in $R@50$ ($0.0175$ against $0.2023$), and a
-better $F@50$, the harmonic mean of $R@50$ and $mR@50$ ($0.344$ against $0.322$). That a prior
+better $F@50$, the harmonic mean of $R@50$ and $mR@50$~\cite{zhang2022finegrained} ($0.344$ against $0.322$). That a prior
 correction rivals debiasing is known~\cite{chiou2021recovering,teng2022structured}; the split
 shows which part of TDE's gain it reproduces. \Cref{tab:protocols} gives all six recall protocols: the share runs from $77\%$ at
 $K=20$ to $86\%$ at $K=100$ under the graph constraint; without it TDE's mean recall falls,

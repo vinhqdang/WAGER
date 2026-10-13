@@ -270,3 +270,23 @@ Use `templates/revision_response_template.md` to respond to every item R4-1 to R
 We invite a substantially revised manuscript that addresses the ten required items and states a decision on each suggested item. The revised version will need another review. The audit is careful and candid; the revision is mostly about making the abstract and conclusion say what the evidence supports, plus two pieces of re-analysis (R4-7, R4-8).
 
 *Synthesis scope note: this letter synthesizes and arbitrates the five Phase 1 reports; it adds no new review comments. The recomputations above were used only to adjudicate claims the seats made.*
+
+## Status after the revision pass (2026-10-13)
+
+| item | status |
+|---|---|
+| R4-8 proper-score reading | **Done.** "Confidence, not ranking" removed. New check: removing TDE's frequency prior (AUC change +0.00006) gives +0.00817 [+0.00757, +0.00877] under temperature + per-class bias, so ranking is read from the within-cell AUC only (Sec. 5, App. Q). |
+| R4-6 margin | **Done.** Fixed-margin claim replaced by the largest change each 90% percentile interval excludes (0.0034 relation, 0.0077 comparison); 5/10/25% margin grid in the supplement; "fixed in advance" removed; the 90% intervals are now percentile intervals from the same bootstrap, nested in the 95% ones. |
+| R4-5 both weightings | **Done** in abstract, intro, Sec. 5 and conclusion. |
+| R4-1 scope | **Done.** Abstract names the two Neural-Motifs PredCls checkpoints; conclusion says "mean recall reports the sum" and "we audit no later method"; recommendations narrowed. |
+| R4-7 same-image pairs | **Done.** `cross_image_split` (transport only across images, image jackknife), reviewed; no sign or verdict changes (App. on calibration halves). |
+| R4-2 IETrans | **Done.** "Against a separately trained baseline" in abstract, intro, Sec. 5, conclusion; method-level wording removed. |
+| R4-3 grouping dependence | **Done.** 87% / 90% / 18% stated in Sec. 5 at the headline; abstract names the class-pair grouping. |
+| R4-4 qualifiers | **Done.** Abstract says graph-constrained, micro-pooled, @50; Sec. 5 gives TDE-minus-LA over all six protocols. |
+| R4-9 reframe / label mix | **Done (text).** Abstract states the case-level part grows under a uniform label mix; label-mix figure not moved into the body (page limit). |
+| R4-10 SGCls qualifier | **Done** (matched fraction and comparison-weighted AUC in Sec. 5). |
+| R4-11 seeds / second method | **In progress.** DLFE (released baseline + debiased pair) running on Colab; training seeds not possible for released checkpoints — stated as a limitation. |
+| R4-13 held-out calibration | **Limitation stated** (no validation outputs released). |
+| R4-20 related work | **Partly done.** FGPL cited; F@K attributed to IETrans. |
+| R4-12 DLFE | **In progress** (see R4-11). |
+| R4-14..R4-28 others | Not done in this pass unless listed above. |
