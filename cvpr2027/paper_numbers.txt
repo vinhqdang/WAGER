@@ -59,6 +59,12 @@ cvpr mR TDE, points
 cvpr mR base, points
 cvpr matched quad dR ci hi
 cvpr matched quad dR ci lo
+cvpr official TDE-LA case
+cvpr official TDE-LA lo
+cvpr official perm case
+cvpr official perm case hi
+cvpr official perm case lo
+cvpr official perm share %
 cvpr prior-removal Tb case
 cvpr prior-removal Tb hi
 cvpr prior-removal Tb lo

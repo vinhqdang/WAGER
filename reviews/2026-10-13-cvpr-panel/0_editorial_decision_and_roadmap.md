@@ -290,3 +290,19 @@ We invite a substantially revised manuscript that addresses the ten required ite
 | R4-20 related work | **Partly done.** FGPL cited; F@K attributed to IETrans. |
 | R4-12 DLFE | **In progress** (see R4-11). |
 | R4-14..R4-28 others | Not done in this pass unless listed above. |
+
+## Status after the should-fix pass (2026-10-13, later)
+
+| item | status |
+|---|---|
+| R4-13 held-out calibration | **Done as cross-fitting** (no validation outputs were released): halves swapped and averaged; TDE primary-protocol case part +0.00399 [+0.00334, +0.00463]; IETrans +Rwt −0.01723 [−0.01817, −0.01630]. Sec. 5 and supplement. |
+| R4-14 CLIP framing | **Done.** Called a controlled illustration, not an SGG system; ranking verdict stated per weighting. |
+| R4-15 confirmatory/exploratory | **Done.** Two primary quantities named in Sec. 5 (graph-constrained mR@50 split, relation-weighted AUC); everything else secondary, collected in a supplement table of every protocol/weighting/score. |
+| R4-16 predicate merge | Already surfaced in Sec. 5 (one sentence) with the synonym/coarse merges and single-annotation subset in the supplement. |
+| R4-17 density | **Partial** (abbreviations defined in captions; further moves blocked by the 8-page limit). |
+| R4-18 contributions and credit | **Done.** Decomposition first, credited to Yates; logit-adjustment result credited to [6, 42] where it first appears. |
+| R4-19 predicted-pair grouping | **Done (argument).** Matching requires both labels to equal the ground truth, so predicted-pair and ground-truth-pair grouping coincide on matched relations; unmatched relations have no predicted pair. |
+| R4-20 related work and typos | **Done** (FGPL, F@K source, "to, at 0.016" fixed). |
+| R4-21 minimal tier | **Done** (conclusion). |
+| R4-22 official per-image statistic | **Done.** Split by within-cell label shuffles: TDE 84% group-level, case +0.0168 [+0.0111, +0.0226]; TDE vs control +0.0026 [−0.0028, +0.0080]; a floor-weight shortcut reverses the sign (−0.0216) and is reported as such. |
+| R4-11 / R4-12 DLFE | **In progress** on Colab. |

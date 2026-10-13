@@ -54,6 +54,23 @@ are marked; all others are secondary.}
 \input{supp/tab_tde_summary}
 \end{table}
 
+\paragraph{The official per-image statistic.} The official mean recall averages recall within each
+image before averaging over images, so a relation's weight depends on which other labels share
+its image and the statistic is not a label-weighted hit rate; \cref{thm:population} does not
+apply to it directly. We split it by its definition instead (\texttt{run\_sgg\_image\_weighted.py}):
+the group-level part is the mean change in the official statistic when labels are shuffled
+uniformly within every cell (200 permutations; Monte-Carlo standard error $0.0001$), the
+case-level part the observed change minus it, with a delete-a-group jackknife over images. On
+the eligible relations TDE's official change at $K=50$ is $+0.1024$, of which $+0.0855$
+($84\%$) is group-level and $+0.0168$, $[+0.0111,+0.0226]$, case-level; the control's is $84\%$
+group-level, and TDE against the control has case-level part $+0.0026$, $[-0.0028,+0.0080]$.
+These agree with the micro-pooled split of \cref{sec:sggaudit} in sign and verdict. (A shuffle
+lets a relation keep its own label with probability $1/n_c$, which the analytic transport
+excludes; on the micro-pooled statistic this moves the group-level part by $+0.0010$.) A
+shortcut that instead gives each transported label the weight of a relation alone in its image
+reverses the case-level part ($-0.0216$): the per-image weights make the split sensitive to how
+a label is counted in an image it was not observed in, which is why we use the shuffle.
+
 \paragraph{Relations from the same image.} A third of the audited relations share an image, both
 boxes and the cell with another relation, so the model scores them identically; the
 estimator's unbiasedness assumes exchangeable cases within a cell. Such pairs are few among

@@ -780,6 +780,25 @@ CHECKS += [
 if not (_hv["n_positive"] == 20 and _hv["n_excluding_zero"] == 20):
     print("FAIL primary-protocol halves claim (positive and excluding zero in all 20)"); sys.exit(1)
 
+_iw = load("sgg_image_weighted.json")["comparisons"]
+_iwt, _iwl, _iwd = (_iw[k]["gc@50"] for k in ("TDE vs none", "la1 vs none", "TDE vs la1"))
+_pm = lambda r: r["permutation"]
+CHECKS += [
+    ("cvpr official perm share %", "5_audit.tex", "$84\\%$", 100 * _pm(_iwt)["share"], 0.5),
+    ("cvpr official perm case", "5_audit.tex", "+0.0168", _pm(_iwt)["case"], 5e-5),
+    ("cvpr official perm case lo", "5_audit.tex", "+0.0111", _pm(_iwt)["case_ci"][0], 5e-5),
+    ("cvpr official perm case hi", "5_audit.tex", "+0.0226", _pm(_iwt)["case_ci"][1], 5e-5),
+    ("cvpr official total", "5_robust.tex", "+0.1024", _iwt["official_change"], 5e-5),
+    ("cvpr official perm group", "5_robust.tex", "+0.0855", _pm(_iwt)["group"], 5e-5),
+    ("cvpr official perm mc se", "5_robust.tex", "$0.0001$", _pm(_iwt)["group_mc_se"], 5e-5),
+    ("cvpr official TDE-LA case", "5_robust.tex", "+0.0026", _pm(_iwd)["case"], 5e-5),
+    ("cvpr official TDE-LA lo", "5_robust.tex", "-0.0028", _pm(_iwd)["case_ci"][0], 5e-5),
+    ("cvpr official TDE-LA hi", "5_robust.tex", "+0.0080", _pm(_iwd)["case_ci"][1], 5e-5),
+    ("cvpr official floor case", "5_robust.tex", "-0.0216", _iwt["case"], 5e-5),
+]
+if round(100 * _pm(_iwl)["share"]) != 84:
+    print("FAIL control official share 84%"); sys.exit(1)
+
 _wb = load("waterbirds_audit.json")
 _wbs, _wbl = _wb["splits"]["scene"]["brier"], _wb["splits"]["background"]["brier"]
 CHECKS += [

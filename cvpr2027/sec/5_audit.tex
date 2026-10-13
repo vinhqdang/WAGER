@@ -66,8 +66,9 @@ $0.0972$ ($0.1017$ on the official per-image average). Of that, $+0.0841$ is gro
 and $+0.0130$ case-level, interval $[+0.0093,+0.0168]$ (\cref{tab:sggaudit}): $87\%$ of the
 gain, interval $[83\%,91\%]$, survives shuffling every label among the relations that share
 its object pair. With cells refined by the object's position or the subject's size the share is
-$90\%$, with the subject class alone $18\%$ (\cref{app:partition}); transporting only between
-relations of different images moves the case-level part to $+0.0140$ (\cref{app:splits}).
+$90\%$, with the subject class alone $18\%$ (\cref{app:partition}); transport across images
+only gives $+0.0140$, and the official per-image statistic, split by shuffling labels within
+cells, is $84\%$ group-level ($+0.0168$, $[+0.0111,+0.0226]$; \cref{app:splits}).
 It lives in the body of the distribution: by training frequency (9 head predicates above
 $10{,}000$ instances, 26 body, 15 tail below $500$), the body gains $+0.1224$, of which
 $+0.1082$ is group-level, the head loses $0.0255$, and the tail gains $0.0003$ (the baseline
