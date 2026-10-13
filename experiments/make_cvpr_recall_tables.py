@@ -78,9 +78,9 @@ def protocols_main():
         for K in (20, 50, 100):
             m, n = a[f"{mode}@{K}"]["mean_recall"], b[f"{mode}@{K}"]["mean_recall"]
             lines.append(f"{name}@{K} & ${f4(m['total'])}$ & ${f4(m['group'])}$ & ${f4(m['case'])}$ & "
-                         f"{{\tiny$[{f4(m['case_ci'][0])},\!{f4(m['case_ci'][1])}]$}} & "
+                         rf"{{\tiny$[{f4(m['case_ci'][0])},\!{f4(m['case_ci'][1])}]$}} & "
                          f"${f4(n['total'])}$ & ${f4(n['case'])}$ & "
-                         f"{{\tiny$[{f4(n['case_ci'][0])},\!{f4(n['case_ci'][1])}]$}} \\\\")
+                         rf"{{\tiny$[{f4(n['case_ci'][0])},\!{f4(n['case_ci'][1])}]$}} \\")
     lines += [r"\bottomrule", r"\end{tabular}"]
     return "\n".join(lines)
 
