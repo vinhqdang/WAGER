@@ -63,7 +63,9 @@ IETrans & $+.2204$ & $+.2143$ & $+.0060$ & $-.0235$ & $-.0093$ \\
 $0.0972$ ($0.1017$ on the official per-image average). Of that, $+0.0841$ is group-level
 and $+0.0130$ case-level, interval $[+0.0093,+0.0168]$ (\cref{tab:sggaudit}): $87\%$ of the
 gain, interval $[83\%,91\%]$, survives shuffling every label among the relations that share
-its object pair.
+its object pair. With cells refined by the object's position or the subject's size the share is
+$90\%$, with the subject class alone $18\%$ (\cref{app:partition}); transporting only between
+relations of different images moves the case-level part to $+0.0140$ (\cref{app:splits}).
 It lives in the body of the distribution: by training frequency (9 head predicates above
 $10{,}000$ instances, 26 body, 15 tail below $500$), the body gains $+0.1224$, of which
 $+0.1082$ is group-level, the head loses $0.0255$, and the tail gains $0.0003$ (the baseline
@@ -90,20 +92,22 @@ are those the baseline already scored as more \textsf{parked on}-like, and they 
 often labelled so; the covariance is real, but bought with discrimination the baseline had. The direct test is the within-cell AUC, which no prior
 shift or recalibration can move. Weighted as the split weights cells, the primary weighting,
 TDE's change is $-0.0015$, $[-0.0036,+0.0018]$; by comparison $+0.0026$, $[-0.0028,+0.0086]$.
-A null needs a margin, so we fixed one in advance: a tenth of what box geometry buys over the
-class pair under the same weighting (\cref{sec:vgvisual}), $\pm0.0063$ primary and
-$\pm0.0032$ by comparison. Under the primary weighting TDE's ranking is equivalent to the
-baseline's, the $90\%$ interval $[-0.0037,+0.0008]$ lying inside the margin; by comparison
-the interval does not fit and the result is a non-detection, with a minimal detectable
-change of $0.008$ at $80\%$ power (\cref{app:rankrob}). The mean-recall case-level part
-against the control is likewise equivalent to zero within a tenth of TDE's gain.
+A null needs a bound: the $90\%$ bootstrap intervals exclude a change larger than $0.0034$
+under the primary weighting ($[-0.0034,+0.0015]$) and larger than $0.0077$ by comparison
+($[-0.0022,+0.0077]$). For scale, box geometry buys $0.063$ and $0.032$ over the class pair
+(\cref{sec:vgvisual}), so TDE's ranking matches the baseline's within a tenth of that under the
+primary weighting and within a quarter by comparison (\cref{app:rankrob}). Against the control
+the mean-recall case-level part excludes only changes above $0.0043$, a third of TDE's own,
+too wide to call it zero.
 
 \paragraph{The proper score, matched.} Under the primary protocol (\cref{sec:matching}),
 which makes the control identical to the baseline, TDE's quadratic-score change is
 $-0.00951$: $-0.01396$ group-level and $+0.00445$, interval $[+0.00354,+0.00536]$, case-level
-($+0.02543$ in log score; \cref{fig:where}). A case-level gain with no change in within-cell
-ranking is confidence: within a pair, TDE is more certain where it is right. The protocol
-decides the sign, which is why one was fixed in advance: with a temperature alone the part is
+($+0.02543$ in log score; \cref{fig:where}). That part is not a ranking measure: removing
+TDE's frequency prior, which leaves every within-cell ranking as it was (AUC change
+$+0.0001$), gives $+0.00817$, $[+0.00757,+0.00877]$, under the same protocol, since a per-class
+bias cannot absorb a shift that differs from pair to pair; ranking is read from the AUC
+alone. The protocol also decides the sign: with a temperature alone the part is
 $-0.00006$, $[-0.00120,+0.00109]$, and with one temperature shared by both models $-0.0184$;
 over 20 calibration halves the primary part stays positive, and merging synonymous predicates
 changes none of this (\cref{app:rankrob,app:splits,app:merge}).
@@ -117,7 +121,9 @@ correction rivals debiasing is known~\cite{chiou2021recovering,teng2022structure
 shows which part of TDE's gain it reproduces. \Cref{tab:protocols} gives all six recall protocols: the share runs from $77\%$ at
 $K=20$ to $86\%$ at $K=100$ under the graph constraint; without it TDE's mean recall falls,
 and its case-level part over the control turns positive at $K=100$, $+0.0148$,
-$[+0.0064,+0.0232]$, where the control's own gain is largest. Group-level is not a lesser gain (mean recall rewards moving rare predicates within a pair by
+$[+0.0064,+0.0232]$. The control's match of TDE's gain is specific to $K=50$ under the
+constraint: TDE leads it by $+0.0300$ at $K=100$ and trails it by $0.0234$ at $K=20$ and by
+$0.08$--$0.15$ without the constraint. Group-level is not a lesser gain (mean recall rewards moving rare predicates within a pair by
 design), nor is the share forced by the metric: an oracle gains $+0.5068$ in quadratic score,
 all case-level ($+0.8041$ against $-0.2973$).
 
@@ -139,25 +145,18 @@ term is, to $99.96\%$ of its energy, one vector shared by every relation in ever
 correlated $+0.75$ with the log training prior: in PredCls TDE is to first order a learned
 logit adjustment of the context branch, which is why the explicit one reproduces it.
 
-\paragraph{A second method.} IETrans~\cite{zhang2022finegrained} relabels training data,
-moving general predicates to specific ones within the same object pair, and adds the
-training log-prior at test time. Its released Neural-Motifs PredCls checkpoint is the
-IETrans+Rwt variant, trained with a reweighted loss as well; we ran it once with the
-authors' evaluation command and re-scored it the same way (\cref{app:ietrans}). It reaches
-$mR@50=0.3587$ ($0.3576$ on the authors' test set, which drops duplicate relations): $+0.2204$
-over the baseline, of which $+0.2143$ is group-level and $+0.0060$ case-level, interval
-$[-0.0031,+0.0151]$. Its
-within-cell discrimination falls on the matched scores and the relation-weighted AUC: matched case-level parts $-0.0162$
-(quadratic) and $-0.0544$ (log), $-0.0168$ with a per-class bias as well, and the AUC
-change weighted as the split weights cells is $-0.0235$, interval $[-0.0275,-0.0182]$; weighted by comparison it is $-0.0093$,
-$[-0.0181,+0.0004]$, and the mean-recall case-level interval above includes zero. Both methods' gains are group-level; with TDE no change in within-cell ranking is detected,
-while IETrans+Rwt loses some. No IETrans baseline was released, so this compares two
+\paragraph{A second method.} IETrans~\cite{zhang2022finegrained} relabels training data from
+general to specific predicates within an object pair and adds the training log-prior at test
+time; its released Neural-Motifs PredCls checkpoint is the IETrans+Rwt variant, also trained
+with a reweighted loss, re-scored the same way (\cref{app:ietrans}). It reaches $mR@50=0.3587$:
+$+0.2204$ over the baseline, $+0.2143$ group-level and $+0.0060$, $[-0.0031,+0.0151]$,
+case-level. Its relation-weighted AUC falls by $-0.0235$, $[-0.0275,-0.0182]$ (by comparison
+$-0.0093$, $[-0.0181,+0.0004]$). No IETrans baseline was released, so this compares two
 separately trained models and does not isolate the effect of relabelling.
 
-\paragraph{Beyond PredCls.} The same release holds SGCls and SGDet checkpoints, where object
-classes (and in SGDet boxes) are predicted. One TDE pass still yields all three models, which
-share every object prediction, so the ground-truth pair remains a common grouping; we replay
-the evaluator inside the inference loop and reproduce the released recalls (\cref{app:det}). In
+\paragraph{Beyond PredCls.} The release also holds SGCls and SGDet checkpoints. One TDE pass
+yields all three models with shared object predictions, so the ground-truth pair remains a
+common grouping; a replayed evaluator reproduces the released recalls (\cref{app:det}). In
 SGCls TDE raises $mR@50$ by $+0.0517$, $99\%$ of it group-level; the control gains $+0.0518$ at
 $R@50=0.384$ against TDE's $0.263$; and TDE's within-cell ranking gets worse, by $-0.0128$ of
 relation-weighted AUC, interval $[-0.0171,-0.0074]$ ($-0.0047$, $[-0.0122,+0.0031]$, by

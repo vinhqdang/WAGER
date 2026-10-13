@@ -95,8 +95,8 @@ two parts while changing no ranking (\cref{sec:simulation}), so models that diff
 calibration are not compared on raw outputs. We split the images at random, fit each model a
 recalibration by maximum likelihood on one half, and split the gain on the other. The family
 is fixed before any gain is read, by one criterion: it must be rich enough that a model
-differing from another by a constant shift of every within-cell log-odds, which changes no
-ranking, has no case-level part under it. A temperature alone fails this, a temperature with
+differing from another by a shift of each label's log-odds that is the same in every cell,
+which changes no ranking, has no case-level part under it. A temperature alone fails this, a temperature with
 a per-class bias meets it exactly and still preserves every within-cell ranking, so the
 latter is the primary protocol and the temperature-only split is reported beside it.
 

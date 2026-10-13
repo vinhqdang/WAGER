@@ -1,6 +1,6 @@
 \section{Limitations and conclusion}\label{sec:discussion}
 
-\paragraph{Limitations.} Five bound what the split can say. \emph{It is conditional on the grouping}:
+\paragraph{Limitations.} Six bound what the split can say. \emph{It is conditional on the grouping}:
 two equally fine partitions of the same cases can disagree about whether a gain is case-level
 (\cref{app:partition}), so declaring $\phi$ is a modelling decision the benchmark should make
 before a leaderboard opens: refining the class pair by position or size leaves the share at
@@ -12,17 +12,16 @@ within-cell AUC, invariant to the first two, gives up exact additivity. \emph{It
 assumes cells that are not tiny}: with every cell holding two cases it covers $81.5\%$, from
 three up it is nominal (\cref{app:clt}), and $1.0\%$ of audited relations sit in two-case
 cells. And \emph{it needs scores for every label}, which most benchmarks do not archive;
-recovering them took a rerun of the released checkpoint.
+recovering them took a rerun of the released checkpoint. \emph{Each released model is one
+training run}: the intervals cover test sampling, not training variability, and the matching is
+fitted on half of the test images, as no validation outputs were released.
 
-\paragraph{Conclusion.} A ten-point mean-recall gain is two achievements summed, and the
-field's metrics report the sum; scoring each prediction against another case's label from the
+\paragraph{Conclusion.} A ten-point mean-recall gain is two achievements summed, and mean
+recall reports the sum; scoring each prediction against another case's label from the
 same group separates them exactly. On two released Neural-Motifs checkpoints on Visual Genome
 the gains are almost entirely group-level: TDE's is matched by a ranking-preserving logit
-adjustment and its within-group ranking is equivalent to the baseline's within a margin fixed
-in advance; IETrans's lowers it on most measures; we audit no later method. We suggest that
-such benchmarks report, beside the headline metric, the declared grouping with its coverage
-and cell sizes, both signed parts with intervals under the pre-declared matching protocol and
-its alternatives, the within-group AUC under both weightings with an equivalence margin, the
-parts along a path of label mixes and, for a thresholded metric, the operating-point control;
-each model's within-group reliance (\cref{prop:reliance}) is a one-column leaderboard
-summary; code and results accompany the supplement.
+adjustment and its within-group ranking moves by less than $0.0034$ under the split's
+weighting; IETrans's, against a separately trained baseline, lowers it; we audit no later method. For such benchmarks we
+suggest reporting, beside the headline metric, the declared grouping with its cell sizes, both
+parts with intervals under the matching protocols, the within-group AUC under both weightings
+with the change each excludes, and, for a thresholded metric, the operating-point control.

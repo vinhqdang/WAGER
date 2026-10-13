@@ -45,6 +45,7 @@ ANON_PATTERNS = [
     (re.compile(r"(?i)vinh\.dq4@buv\.edu\.vn"), "anonymous@example.org"),
     (re.compile(r"(?i)https://github\.com/vinhqdang/WAGER"), "[repository URL withheld for review]"),
     (re.compile(r"(?i)0000-0002-3877-8024"), "[ORCID withheld for review]"),
+    (re.compile(r"\s*\((?:REV|R)\d*-\d+\)"), ""),              # internal review-round tags, e.g. " (R2-9)"
 ]
 
 

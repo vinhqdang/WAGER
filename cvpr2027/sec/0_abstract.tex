@@ -7,14 +7,13 @@ them, and the metric credits both alike. Scoring each prediction against the lab
 another relation from the same pair keeps the pair's predicate frequencies but breaks the
 link between each relation and its own label. This splits the difference between two frozen
 models, in a proper score or in mean recall itself, exactly into a group-level part and a
-case-level covariance, in $O(NK)$ time with image-clustered intervals. On TDE's released
-checkpoint, 87\% of the (graph-constrained, micro-pooled) mean-recall gain (interval 83--91\%) is group-level, and a logit
-adjustment that changes no ranking within any pair recovers nine of the ten points at under
-a tenth of TDE's cost in recall. TDE's ranking within pairs is equivalent to the baseline's within a margin fixed in advance,
-a tenth of what box geometry buys, and under the pre-declared matching protocol its
-case-level part of a proper score, $+0.0045$, is confidence within pairs, not ranking. In
-SGCls the gain is 99\% group-level and TDE's ranking within pairs gets worse.
-A second released checkpoint, IETrans (no baseline released), gains 21 points, 97\% group-level;
-its within-pair discrimination falls on the matched scores and the relation-weighted AUC, though
-not detectably on the comparison-weighted one. Both are Neural-Motifs checkpoints on Visual Genome.
+case-level covariance, in $O(NK)$ time with image-clustered intervals. We audit two released
+Neural-Motifs checkpoints in PredCls. For TDE, 87\% of the mean-recall@50 gain (graph-constrained,
+micro-pooled; interval 83--91\%) is group-level when cells are subject--object class pairs, and
+a logit adjustment that changes no ranking within any pair recovers $+0.094$ of its $+0.097$ at
+under a tenth of TDE's cost in recall. The within-pair AUC excludes a change in TDE's ranking
+larger than $0.0034$ with cells weighted as in the split, but only one larger than $0.0077$ when
+every comparison counts once, and TDE's case-level part grows when the label mix is made
+uniform within pairs. IETrans, against a separately trained baseline, gains 21 points, 97\%
+group-level, and its within-pair ranking falls. SGCls and SGDet replications of TDE agree.
 \end{abstract}

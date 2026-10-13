@@ -20,19 +20,12 @@ intervals.
 
 A larger case-level part is not the same as better ranking, and here the two disagree. With
 each model's prior matched within cells, the CLIP model still ranks the correct predicate
-first less often than the geometry model: top-1 accuracy $2.17$ points lower, MRR $1.67$
-lower, recall@5 $1.07$ lower. So the CLIP model carries more case-level covariance without being the better ranker. The
-within-cell AUC, which no calibration or prior shift can move, does not favour it either:
-under the primary weighting geometry ranks better, $-0.0067$, $[-0.0120,-0.0019]$; by
-comparison the sign reverses, $+0.0085$ ($0.5408$ against $0.5323$) with interval
-$[-0.0062,+0.0214]$. Both models clear the class-only model's $0.5$ (by $+0.0408$ and
-$+0.0323$, comparison-weighted). The CLIP model's case-level advantage is real covariance;
-under the primary weighting it is not better ranking. (It also reads a wider input: two pipelines, not encoders alone.)
-
-\paragraph{Seeds.} Over five training seeds (\cref{app:vgseeds}) the CLIP model's
-temperature-matched case-level advantage stays between $+0.00413$ and $+0.00474$, every
-interval excluding zero, its accuracy stays below geometry's, and its comparison-weighted AUC
-difference is positive in all five but excludes zero in one..
+first less often (top-1 accuracy $2.17$ points lower, MRR $1.67$ lower), and under the primary
+weighting the within-cell AUC favours geometry, $-0.0067$, $[-0.0120,-0.0019]$; by comparison
+the sign reverses, $+0.0085$, $[-0.0062,+0.0214]$. Over five training seeds
+(\cref{app:vgseeds}) the CLIP model's temperature-matched advantage stays between $+0.00413$ and
+$+0.00474$, its accuracy below geometry's. (It also reads a wider input: two pipelines, not
+encoders alone.)
 
 \paragraph{Under a label shift.} A label shift moves group-level parts and only reweights
 case-level ones (\cref{sec:method}). Along a path from the benchmark's predicate mix to

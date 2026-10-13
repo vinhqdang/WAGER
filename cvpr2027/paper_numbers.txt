@@ -18,7 +18,6 @@ cvpr CLIP matched ci lo
 cvpr CLIP matched dP
 cvpr CLIP matched dR
 cvpr CLIP prior-matched MRR gap, points
-cvpr CLIP prior-matched R@5 gap, points
 cvpr CLIP prior-matched acc gap, points
 cvpr CLIP-class dR
 cvpr CLIP-geometry dR ci hi
@@ -38,11 +37,16 @@ cvpr base ng-mR@50
 cvpr clip Tb case
 cvpr clip Tb hi
 cvpr clip Tb lo
-cvpr eq ci90 hi
-cvpr eq ci90 lo
-cvpr eq margin cmp
-cvpr eq margin rel
-cvpr eq mde cmp
+cvpr cross TDE mR case
+cvpr cross TDE mR sec5
+cvpr cross TDE-la1 hi
+cvpr eq ci90 cmp hi
+cvpr eq ci90 cmp lo
+cvpr eq ci90 rel hi
+cvpr eq ci90 rel lo
+cvpr eq largest cmp
+cvpr eq largest rel
+cvpr eq mR largest
 cvpr geometry accuracy
 cvpr geometry-class dR
 cvpr grp pos share %
@@ -55,6 +59,11 @@ cvpr mR TDE, points
 cvpr mR base, points
 cvpr matched quad dR ci hi
 cvpr matched quad dR ci lo
+cvpr prior-removal Tb case
+cvpr prior-removal Tb hi
+cvpr prior-removal Tb lo
+cvpr prior-removal intro
+cvpr prior-removal sec5 AUC
 cvpr review ietrans auc c
 cvpr review ietrans auc c hi
 cvpr review ietrans auc c lo
@@ -75,6 +84,8 @@ cvpr sim calib matched sd
 cvpr sim prior-only sd
 cvpr sim shortcut sd
 cvpr sim type-I
+cvpr split gc100 total
+cvpr split gc20 total
 cvpr train subsample
 det sgcls LA R@50
 det sgcls LA dmR
@@ -85,7 +96,6 @@ det sgcls auc cmp lo
 det sgcls auc rel
 det sgcls auc rel hi
 det sgcls auc rel lo
-det sgcls case
 det sgcls dmR
 det sgcls matched %
 det sgcls share %
@@ -105,12 +115,8 @@ iet case lo
 iet dmR
 iet group
 iet group share
-iet log case
-iet mR@50 own test
-iet mR@50 own test = official run
 iet mR@50 standard
 iet points
-iet quad case
 merge LA auc max
 path avg AUC
 path avg dmR
@@ -124,6 +130,7 @@ path vis case lo
 path vis dmR
 ps TDE-LA quad case
 rankrob CLIP-geo aud cmp
+rankrob CLIP-geo aud cmp lo
 rankrob CLIP-geo rel
 rankrob CLIP-geo rel hi
 rankrob CLIP-geo rel lo
@@ -148,7 +155,6 @@ rankrob recal TDE tb
 rankrob recal TDE tb hi
 rankrob recal TDE tb lo
 rankrob recal TDE tb log
-rankrob recal iet tb
 rankrob small VG %
 rankrob small n2 %
 rankrob tier hh lo
@@ -203,6 +209,7 @@ sgg n images
 sgg tde mR@50
 shift CLIP-geo case
 shift CLIP-geo total
+shift TDE auc hi
 shift TDE auc original
 shift TDE case
 shift TDE case hi
@@ -217,11 +224,7 @@ sim prior-only dR
 sim shortcut dR
 splits share TDE lo
 splits share TDE lo %
-vrank CLIP auc
-vrank CLIP vs class
 vrank diff
 vrank diff hi
 vrank diff lo
-vrank geometry auc
-vrank geometry vs class
 zs wb auc diff

@@ -441,7 +441,7 @@ CHECKS += [
     ("iet case lo", "5_audit.tex", "-0.0031", _ie["mean_recall"]["case_ci"][0], 5e-5),
     ("iet case hi", "5_audit.tex", "+0.0151", _ie["mean_recall"]["case_ci"][1], 5e-5),
     ("iet quad case", "5_audit.tex", "-0.0162", _iq["reasoning_gain"], 5e-5),
-    ("iet log case", "5_audit.tex", "-0.0544", _il["reasoning_gain"], 5e-5),
+    ("iet log case", "5_audit.tex", "-0.05435", _il["reasoning_gain"], 5e-5),
     ("iet auc", "5_audit.tex", "-.0093", _ia["difference"], 5e-5),
     ("iet auc lo", "5_audit.tex", "-.0181", _ia["ci"][0], 5e-5),
     ("iet auc hi", "5_audit.tex", "+.0004", _ia["ci"][1], 5e-5),
@@ -464,14 +464,12 @@ _vr = load("vg_visual_rank.json")
 _vrr = {(r["new"], r["old"]): r for r in _vr["rows"]}
 _vs = _vrr[("MLP-VISUAL-S", "MLP-SPATIAL-S")]
 CHECKS += [
-    ("vrank CLIP auc", "6_pixels.tex", "0.5408", _vs["auc_new"], 5e-5),
-    ("vrank geometry auc", "6_pixels.tex", "0.5323", _vs["auc_old"], 5e-5),
     ("vrank diff", "6_pixels.tex", "+0.0085", _vs["difference"], 5e-5),
     ("vrank diff lo", "6_pixels.tex", "-0.0062", _vs["ci"][0], 5e-5),
     ("vrank diff hi", "6_pixels.tex", "+0.0214", _vs["ci"][1], 5e-5),
-    ("vrank CLIP vs class", "6_pixels.tex", "+0.0408",
+    ("vrank CLIP vs class", "5_robust.tex", "+.0408",
      _vrr[("MLP-VISUAL-S", "MLP-CLASS-S")]["difference"], 5e-5),
-    ("vrank geometry vs class", "6_pixels.tex", "+0.0323",
+    ("vrank geometry vs class", "5_robust.tex", "+.0323",
      _vrr[("MLP-SPATIAL-S", "MLP-CLASS-S")]["difference"], 5e-5),
 ]
 if not (_vs["ci"][0] < 0 < _vs["ci"][1]) or abs(_vr["auc_class_only"] - 0.5) > 1e-12:
@@ -681,7 +679,10 @@ CHECKS += [
     ("cvpr grp size cells", "2_appendix.tex", "8{,}230", _gs["class pair x subject size"]["n_cells"], 0),
 ]
 _eq = load("sgg_equivalence.json")
-_eqa, _eqr = _eq["auc"]["TDE vs none"]["comparison"], _eq["auc"]["TDE vs none"]["relation"]
+_eqr = _eq["auc"]["TDE vs none"]["relation"]
+_eqa = _eq["auc"]["TDE vs none"]["comparison"]
+_eqlr = _eq["auc"]["TDE vs la1"]["relation"]
+_eqir = _eq["auc"]["ietrans vs none"]["relation"]
 _eqm = _eq["mR_case_TDE_vs_la1"]
 _hc = load("sim_hit_coverage.json")
 _rrj = load("sgg_rank_robustness.json")
@@ -689,23 +690,22 @@ _rcp = {(r["new"], r["old"]): r for r in _rrj["pixel_recalibration"]}
 _rcT = {r["new"]: r for r in _rrj["recalibration"]}["TDE"]
 _clipP = _rcp[("MLP-VISUAL-S", "MLP-SPATIAL-S")]
 CHECKS += [
-    ("cvpr eq margin rel", "5_audit.tex", "$\\pm0.0063$", _eqr["margin"], 5e-5),
-    ("cvpr eq margin cmp", "5_audit.tex", "$\\pm0.0032$", _eqa["margin"], 5e-5),
-    ("cvpr eq ci90 lo", "5_audit.tex", "-0.0037", _eqr["ci90"][0], 5e-5),
-    ("cvpr eq ci90 hi", "5_audit.tex", "+0.0008", _eqr["ci90"][1], 5e-5),
-    ("cvpr eq mde cmp", "5_audit.tex", "$0.008$", _eqa["mde80"], 5e-4),
-    ("cvpr eq se rel", "5_robust.tex", "$0.0014$", _eqr["se"], 5e-5),
-    ("cvpr eq mde rel", "5_robust.tex", "$0.0038$", _eqr["mde80"], 5e-5),
-    ("cvpr eq se cmp", "5_robust.tex", "$0.0029$", _eqa["se"], 5e-5),
-    ("cvpr eq mde cmp4", "5_robust.tex", "$0.0082$", _eqa["mde80"], 5e-5),
-    ("cvpr eq ci90 cmp lo", "5_robust.tex", "-0.0022", _eqa["ci90"][0], 5e-5),
-    ("cvpr eq ci90 cmp hi", "5_robust.tex", "+0.0074", _eqa["ci90"][1], 5e-5),
-    ("cvpr eq mR se", "5_robust.tex", "$0.0021$", _eqm["se"], 5e-5),
-    ("cvpr eq mR margin", "5_robust.tex", "$\\pm0.0097$", _eqm["margin"], 5e-5),
+    # Equivalence bounds (Sec. 5, supp 5_robust): largest change each 90% interval excludes
+    ("cvpr eq largest rel", "5_audit.tex", "0.0034", _eqr["largest_change_excluded"], 5e-5),
+    ("cvpr eq largest cmp", "5_audit.tex", "0.0077", _eqa["largest_change_excluded"], 5e-5),
+    ("cvpr eq ci90 rel lo", "5_audit.tex", "-0.0034", _eqr["ci90"][0], 5e-5),
+    ("cvpr eq ci90 rel hi", "5_audit.tex", "+0.0015", _eqr["ci90"][1], 5e-5),
+    ("cvpr eq ci90 cmp lo", "5_audit.tex", "-0.0022", _eqa["ci90"][0], 5e-5),
+    ("cvpr eq ci90 cmp hi", "5_audit.tex", "+0.0077", _eqa["ci90"][1], 5e-5),
+    ("cvpr eq ref rel", "5_robust.tex", "0.0626", _eqr["reference_gain"], 5e-5),
+    ("cvpr eq ref cmp", "5_robust.tex", "0.0323", _eqa["reference_gain"], 5e-5),
+    ("cvpr eq la1 rel lo", "5_robust.tex", "-0.0037", _eqlr["ci90"][0], 5e-5),
+    ("cvpr eq la1 rel hi", "5_robust.tex", "+0.0012", _eqlr["ci90"][1], 5e-5),
+    ("cvpr eq iet rel lo", "5_robust.tex", "-0.0266", _eqir["ci90"][0], 5e-5),
+    ("cvpr eq iet rel hi", "5_robust.tex", "-0.0192", _eqir["ci90"][1], 5e-5),
+    ("cvpr eq mR largest", "5_robust.tex", "$0.0043$", _eqm["largest_change_excluded"], 5e-5),
     ("cvpr eq mR ci90 lo", "5_robust.tex", "-0.0043", _eqm["ci90"][0], 5e-5),
     ("cvpr eq mR ci90 hi", "5_robust.tex", "+0.0027", _eqm["ci90"][1], 5e-5),
-    ("cvpr eq iet lo", "5_robust.tex", "-0.0274", _eq["auc"]["ietrans vs none"]["relation"]["ci90"][0], 5e-5),
-    ("cvpr eq iet hi", "5_robust.tex", "-0.0196", _eq["auc"]["ietrans vs none"]["relation"]["ci90"][1], 5e-5),
     ("cvpr clip Tb case", "6_pixels.tex", "0.00331", _clipP["temperature + class bias, brier"]["case"], 5e-6),
     ("cvpr clip Tb lo", "6_pixels.tex", "+0.00185", _clipP["temperature + class bias, brier"]["case_ci"][0], 5e-6),
     ("cvpr clip Tb hi", "6_pixels.tex", "+0.00477", _clipP["temperature + class bias, brier"]["case_ci"][1], 5e-6),
@@ -717,12 +717,58 @@ CHECKS += [
     ("cvpr hit cov share %", "2_appendix.tex", "$97.3\\%$", 100 * _hc["share"]["coverage"], 0.05),
     ("cvpr share K100 %", "5_audit.tex", "$86\\%$", 100 * _rs["gc@100"]["mean_recall"]["group"] / _rs["gc@100"]["mean_recall"]["total"], 0.5),
 ]
-_ok = (_eqr["equivalent"] and not _eqa["equivalent"] and _eqm["equivalent"]
-       and not _eq["auc"]["ietrans vs none"]["relation"]["equivalent"]
-       and _eq["auc"]["ietrans vs none"]["relation"]["ci90"][1] < -_eq["auc"]["ietrans vs none"]["relation"]["margin"]
+_ok = (_eqr["tost"]["10%"]["equivalent"] and _eqr["tost"]["25%"]["equivalent"]
+       and not _eqr["tost"]["5%"]["equivalent"]
+       and _eqa["tost"]["25%"]["equivalent"] and not _eqa["tost"]["10%"]["equivalent"]
+       and not _eqa["tost"]["5%"]["equivalent"]
+       and not _eqm["tost"]["25%"]["equivalent"]
+       and not any(v["equivalent"] for v in _eqir["tost"].values())
+       and _eqir["ci90"][1] < -_eqir["tost"]["25%"]["margin"]
        and abs(_hc["case"]["coverage"] - 0.95) < 0.02 and _hc["share"]["coverage"] >= 0.95)
 if not _ok:
     print("FAIL equivalence/coverage claims"); sys.exit(1)
+
+_xi = load("sgg_cross_image.json")
+_xmr = {(r["new"], r["old"]): r["cross_image"] for r in _xi["mean_recall_rows"]}
+_xps = {(r["family"], r["new"], r["old"], r["score"]): r["cross_image"] for r in _xi["proper_score_rows"]}
+_xTb = _xps[("temperature + class bias", "TDE", "none", "brier")]
+_xIb = _xps[("temperature + class bias", "ietrans", "none", "brier")]
+_pr = _rrj["prior_removal_recalibration"][0]
+_pa = _rrj["prior_removal_auc"][0]
+CHECKS += [
+    # Cross-image protocol (supp 5_robust; Sec. 5 headline)
+    ("cvpr cross TDE mR case", "5_robust.tex", "+0.0140", _xmr[("TDE", "none")]["case"], 5e-5),
+    ("cvpr cross TDE mR lo", "5_robust.tex", "+0.0096", _xmr[("TDE", "none")]["case_ci"][0], 5e-5),
+    ("cvpr cross TDE mR hi", "5_robust.tex", "+0.0183", _xmr[("TDE", "none")]["case_ci"][1], 5e-5),
+    ("cvpr cross TDE mR sec5", "5_audit.tex", "+0.0140", _xmr[("TDE", "none")]["case"], 5e-5),
+    ("cvpr cross la1 mR case", "5_robust.tex", "+0.0152", _xmr[("la1", "none")]["case"], 5e-5),
+    ("cvpr cross TDE-la1 case", "5_robust.tex", "-0.0013", _xmr[("TDE", "la1")]["case"], 5e-5),
+    ("cvpr cross TDE-la1 lo", "5_robust.tex", "-0.0060", _xmr[("TDE", "la1")]["case_ci"][0], 5e-5),
+    ("cvpr cross TDE-la1 hi", "5_robust.tex", "+0.0035", _xmr[("TDE", "la1")]["case_ci"][1], 5e-5),
+    ("cvpr cross Tb TDE", "5_robust.tex", "+0.00492", _xTb["case"], 5e-6),
+    ("cvpr cross Tb TDE lo", "5_robust.tex", "+0.00387", _xTb["case_ci"][0], 5e-6),
+    ("cvpr cross Tb TDE hi", "5_robust.tex", "+0.00596", _xTb["case_ci"][1], 5e-6),
+    ("cvpr cross Tb ietrans", "5_robust.tex", "-0.01863", _xIb["case"], 5e-6),
+    ("cvpr same-image audit %", "5_robust.tex", "$0.9\\%$", 100 * _xTb["frac_pairs_within_image"], 0.05),
+    ("cvpr same-image mR %", "5_robust.tex", "$0.5\\%$", 100 * _xmr[("TDE", "none")]["frac_pairs_within_image"], 0.05),
+    # Recall split, TDE vs LA1 (Sec. 5)
+    ("cvpr split gc100 total", "5_audit.tex", "+0.0300", _rsl["gc@100"]["mean_recall"]["total"], 5e-5),
+    ("cvpr split gc20 total", "5_audit.tex", "0.0234", _rsl["gc@20"]["mean_recall"]["total"], 5e-5),
+    # Prior removal (Sec. 5 intro/supp 5_robust)
+    ("cvpr prior-removal Tb case", "5_audit.tex", "+0.00817", _pr["temperature + class bias, brier"]["case"], 5e-6),
+    ("cvpr prior-removal Tb lo", "5_audit.tex", "+0.00757", _pr["temperature + class bias, brier"]["case_ci"][0], 5e-6),
+    ("cvpr prior-removal Tb hi", "5_audit.tex", "+0.00877", _pr["temperature + class bias, brier"]["case_ci"][1], 5e-6),
+    ("cvpr prior-removal T case", "5_audit.tex", "+0.00915", _pr["temperature, brier"]["case"], 5e-6),
+    ("cvpr prior-removal sharedT case", "5_audit.tex", "+0.00161", _pr["shared temperature, brier"]["case"], 5e-6),
+    ("cvpr prior-removal AUC cmp", "5_robust.tex", "+0.00006", _pa["all, comparison"]["difference"], 5e-6),
+    ("cvpr prior-removal AUC lo", "5_robust.tex", "-0.00004", _pa["all, comparison"]["ci"][0], 5e-6),
+    ("cvpr prior-removal AUC hi", "5_robust.tex", "+0.00015", _pa["all, comparison"]["ci"][1], 5e-6),
+    ("cvpr prior-removal intro", "1_intro.tex", "+0.0082", _pr["temperature + class bias, brier"]["case"], 5e-5),
+    ("cvpr prior-removal sec5 AUC", "5_audit.tex", "+0.0001", _pa["all, comparison"]["difference"], 5e-5),
+]
+# Verdict on the mean-recall split: ng totals at K=20,50,100 all in [-0.16,-0.07]
+if not all(-0.16 <= _rsl[k]["mean_recall"]["total"] <= -0.07 for k in ("ng@20", "ng@50", "ng@100")):
+    print("FAIL no-graph-constraint totals outside [-0.16,-0.07]"); sys.exit(1)
 
 _hv = load("sgg_split_robustness.json")["summary"]["TDE T+bias brier"]
 CHECKS += [
@@ -805,7 +851,7 @@ CHECKS += [
     ("rankrob recal TDE tb hi", "5_audit.tex", "+0.00536", _rc["TDE"]["temperature + class bias, brier"]["case_ci"][1], 1e-5),
     ("rankrob recal TDE shared", "5_audit.tex", "-0.0184", _rc["TDE"]["shared temperature, brier"]["case"], 5e-5),
     ("rankrob recal TDE tb log", "5_robust.tex", "+0.02543", _rc["TDE"]["temperature + class bias, log"]["case"], 1e-5),
-    ("rankrob recal iet tb", "5_audit.tex", "-0.0168", _rc["ietrans"]["temperature + class bias, brier"]["case"], 5e-5),
+    ("rankrob recal iet tb", "5_robust.tex", "-0.01679", _rc["ietrans"]["temperature + class bias, brier"]["case"], 5e-5),
     ("rankrob recal iet tb log", "5_robust.tex", "-0.06609", _rc["ietrans"]["temperature + class bias, log"]["case"], 1e-5),
     ("rankrob recal LA temp", "5_robust.tex", "+0.00392", _rc["la1"]["temperature, brier"]["case"], 1e-5),
     ("rankrob F@50 LA", "5_audit.tex", "0.344", _fk["la1"], 5e-4),

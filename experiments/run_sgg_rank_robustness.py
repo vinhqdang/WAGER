@@ -42,7 +42,7 @@ EPS = 1e-12
 HEAD_MIN, TAIL_MAX = 10_000, 500
 
 
-def sgg_data():
+def sgg_data(extra=()):
     meta = np.load(DDIR / "meta.npz")
     drop = json.loads((DDIR / "missing_pairs.json").read_text())["rows"]
     keep = np.ones(len(meta["pred"]), dtype=bool)
@@ -52,7 +52,7 @@ def sgg_data():
     image = meta["image_index"].astype(np.int64)[keep]
 
     raw = {v: load_variant(v)["probs"][keep][:, 1:].astype(np.float64)
-           for v in ("none", "TDE", "la1", "ietrans")}
+           for v in ("none", "TDE", "la1", "ietrans") + tuple(extra)}
     Q = {v: p / p.sum(1, keepdims=True) for v, p in raw.items()}
     rng = np.random.default_rng(20260811)                 # the audit's calibration split
     imgs = np.unique(image)
@@ -247,5 +247,23 @@ def add_pixel_recalibration():
     print(f"updated {OUT.relative_to(ROOT)}")
 
 
+def add_prior_removal():
+    """Frequency-prior removal under the primary matching protocol: the MOTIFS baseline
+    with its frequency branch removed (vis_ctx) against the baseline (none). Adds the
+    recalibration split and the within-cell AUC change to the results file."""
+    out = json.loads(OUT.read_text())
+    Q, raw, y, phi, image, cal = sgg_data(extra=("vis_ctx",))
+    out["prior_removal_recalibration"] = recalibration_rows(Q, y, phi, image, cal,
+                                                            pairs=(("vis_ctx", "none"),))
+    out["prior_removal_auc"] = auc_rows(raw, [("vis_ctx", "none")], y, phi, image, ~cal)
+    OUT.write_text(json.dumps(out, indent=1))
+    print(f"updated {OUT.relative_to(ROOT)}")
+
+
 if __name__ == "__main__":
-    add_pixel_recalibration() if "--pixel-only" in sys.argv else main()
+    if "--pixel-only" in sys.argv:
+        add_pixel_recalibration()
+    elif "--prior-removal" in sys.argv:
+        add_prior_removal()
+    else:
+        main()

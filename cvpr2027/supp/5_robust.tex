@@ -31,6 +31,18 @@ negative under both scores in every half (quadratic $-0.02035$ to $-0.01738$, lo
 $-0.08727$). The sign of TDE's part is therefore set by the protocol, and the primary one
 was fixed by the criterion of \cref{sec:matching} before these runs.
 
+\paragraph{Relations from the same image.} A third of the audited relations share an image, both
+boxes and the cell with another relation, so the model scores them identically; the
+estimator's unbiasedness assumes exchangeable cases within a cell. Such pairs are few among
+the within-cell comparisons ($0.9\%$ on the audit half, $0.5\%$ for mean recall), but to remove
+them we restrict transport to relations of other images
+(\texttt{cross\_image\_split}, with a delete-a-group jackknife over images;
+\texttt{run\_sgg\_cross\_image.py}). TDE's case-level part of $mR@50$ moves from $+0.0130$ to
+$+0.0140$, $[+0.0096,+0.0183]$; the control's from $+0.0139$ to $+0.0152$; TDE against the control
+from $-0.0008$ to $-0.0013$, $[-0.0060,+0.0035]$. Under the primary matching TDE's quadratic part
+moves from $+0.00445$ to $+0.00492$, $[+0.00387,+0.00596]$, and IETrans+Rwt's from $-0.01679$ to
+$-0.01863$. No sign or verdict changes; the intervals widen slightly.
+
 \begin{table}[t]
 \centering
 \footnotesize
@@ -189,21 +201,31 @@ is negative under all six protocol-score combinations; TDE's sign is not. For th
 against geometry (\cref{sec:vgvisual}) the three families give $+0.00472$, $+0.00604$ and
 $+0.00331$, $[+0.00185,+0.00477]$, all excluding zero.
 
-\paragraph{Equivalence margins.} A non-detection is bounded as follows
-(\texttt{sgg\_equivalence.py}). The image-bootstrap interval gives each AUC contrast a
-standard error; the minimal detectable change at $80\%$ power and $5\%$ size is $2.80$
-standard errors; and an equivalence margin declared before the audit, one tenth of the AUC
-that box geometry buys over the class pair under the same weighting ($+0.0626$ relation,
-$+0.0323$ comparison), is tested by two one-sided tests: equivalence holds when the $90\%$
-interval lies inside the margin. For TDE against the baseline the relation-weighted contrast
-has standard error $0.0014$, minimal detectable change $0.0038$, margin $\pm0.0063$ and
-$90\%$ interval $[-0.0037,+0.0008]$: equivalent. By comparison the standard error is $0.0029$,
-the minimal detectable change $0.0082$, the margin $\pm0.0032$ and the interval
-$[-0.0022,+0.0074]$: not equivalent, and not a detection. Against the control the figures are
-the same to the fourth decimal. IETrans+Rwt's relation-weighted loss, $[-0.0274,-0.0196]$, lies
-outside its margin on the negative side: a detected loss. TDE's mean-recall case-level part
-against the control, standard error $0.0021$, is equivalent to zero within a tenth of TDE's
-gain ($\pm0.0097$; $90\%$ interval $[-0.0043,+0.0027]$).
+\paragraph{Bounds on the ranking nulls.} A non-detection is bounded by the largest change its
+interval excludes (\texttt{sgg\_equivalence.py}). We use $90\%$ percentile intervals from the
+same image bootstrap as the $95\%$ ones (200 replicates, seed 0, which reproduce the stored
+$95\%$ intervals exactly), so that the two one-sided tests at $5\%$ have a margin to compare
+against. For TDE against the baseline the relation-weighted interval is $[-0.0034,+0.0015]$
+and the comparison-weighted one $[-0.0022,+0.0077]$; against the control $[-0.0037,+0.0012]$
+and $[-0.0022,+0.0077]$. As a scale we take the AUC that box geometry buys over the class pair
+under the same weighting ($0.0626$ relation, $0.0323$ comparison): with margins at $5\%$, $10\%$
+and $25\%$ of it, TDE's ranking is equivalent to the baseline's at $10\%$ and $25\%$ under the
+relation weighting and only at $25\%$ by comparison. IETrans+Rwt's relation-weighted
+interval, $[-0.0266,-0.0192]$, lies outside every margin on the negative side: a detected loss.
+TDE's mean-recall case-level part against the control has $90\%$ interval $[-0.0043,+0.0027]$;
+measured against TDE's own case-level part over the baseline ($+0.0130$) it is not equivalent
+to zero even at a $25\%$ margin. No margin was registered before the audit; the grid shows
+how the verdict depends on it.
+
+\paragraph{The frequency prior under the primary protocol.} The baseline with its frequency
+branch removed differs from it by a log-prior shift indexed by the subject--object pair, which
+leaves every within-cell ranking unchanged (AUC change $+0.00006$, $[-0.00004,+0.00015]$, by
+comparison). Its quadratic case-level part against the baseline is nevertheless $+0.00915$
+under a temperature, $+0.00161$ under a shared temperature and $+0.00817$,
+$[+0.00757,+0.00877]$, under a temperature with a per-class bias: a per-class bias absorbs a
+shift common to all pairs, not one that differs between them. A proper score's case-level part
+therefore mixes ranking with how each model's confidence varies across pairs, and the paper
+reads ranking from the within-cell AUC only.
 
 \begin{table}[t]
 \centering
