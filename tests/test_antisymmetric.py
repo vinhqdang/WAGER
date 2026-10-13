@@ -521,3 +521,75 @@ def test_case_level_part_is_a_difference_of_per_model_reliances():
         return tot / n_id
     g = decompose_gain(q1, q0, y, phi, score="brier")
     assert g.alignment_gain == pytest.approx(rho(q1) - rho(q0), abs=1e-10)
+
+
+from wager.antisymmetric import cross_image_split  # noqa: E402
+
+
+def _brute_cross_image(h, y, phi, image):
+    """Enumerate ordered cross-image pairs explicitly, cell by cell."""
+    n = len(y)
+    per_cell = {}
+    for c in np.unique(phi):
+        members = np.flatnonzero(phi == c)
+        pairs = [(i, j) for i in members for j in members if i != j and image[i] != image[j]]
+        if not pairs:
+            continue
+        t = np.mean([h[i, y[i]] for i, _ in pairs])
+        p = np.mean([h[i, y[j]] for i, j in pairs])
+        per_cell[c] = (len(members), t, p)
+    w = np.array([v[0] for v in per_cell.values()], dtype=float)
+    t = np.array([v[1] for v in per_cell.values()])
+    p = np.array([v[2] for v in per_cell.values()])
+    total = float(np.sum(w * t) / w.sum())
+    group = float(np.sum(w * p) / w.sum())
+    return total, group, total - group, len(per_cell)
+
+
+def test_cross_image_split_matches_brute_force_pair_enumeration():
+    rng = np.random.default_rng(31)
+    n, k = 60, 4
+    h = rng.normal(size=(n, k))
+    y = rng.integers(0, k, size=n)
+    phi = rng.integers(0, 6, size=n)
+    image = rng.integers(0, 15, size=n)
+    r = cross_image_split(h, y, phi, image)
+    total, group, case, n_cells = _brute_cross_image(h, y, phi, image)
+    assert r["total"] == pytest.approx(total, abs=1e-12)
+    assert r["group"] == pytest.approx(group, abs=1e-12)
+    assert r["case"] == pytest.approx(case, abs=1e-12)
+    assert r["n_eligible_cells"] == n_cells
+
+
+def test_cross_image_split_equals_standard_split_when_every_case_is_its_own_image():
+    rng = np.random.default_rng(32)
+    n, k = 80, 5
+    h = rng.normal(size=(n, k))
+    y = rng.integers(0, k, size=n)
+    phi = rng.integers(0, 10, size=n)
+    r = cross_image_split(h, y, phi, np.arange(n))
+    std = decompose_gain_matrix(h, y, phi, score="custom")
+    assert r["case"] == pytest.approx(std.alignment_gain, abs=1e-12)
+    assert r["total"] == pytest.approx(std.total_gain, abs=1e-12)
+    assert r["frac_pairs_within_image"] == 0.0
+
+
+def test_cross_image_total_is_group_plus_case_and_cells_without_cross_pairs_are_dropped():
+    rng = np.random.default_rng(33)
+    n, k = 60, 4
+    h = rng.normal(size=(n, k))
+    y = rng.integers(0, k, size=n)
+    phi = rng.integers(0, 6, size=n)
+    image = rng.integers(0, 15, size=n)
+    # cell 99 holds two cases from one image only: no cross-image pair, so it is ineligible
+    phi = np.concatenate([phi, [99, 99]])
+    image = np.concatenate([image, [3, 3]])
+    h = np.vstack([h, rng.normal(size=(2, k))])
+    y = np.concatenate([y, [0, 1]])
+    r = cross_image_split(h, y, phi, image)
+    assert r["total"] == pytest.approx(r["group"] + r["case"], abs=1e-12)
+    total, group, case, n_cells = _brute_cross_image(h, y, phi, image)
+    assert r["n_eligible_cells"] == n_cells == 6
+    assert r["case"] == pytest.approx(case, abs=1e-12)
+    lo, hi = r["case_ci"]
+    assert lo < r["case"] < hi

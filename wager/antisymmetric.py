@@ -381,3 +381,133 @@ def cyclic_randomization_test(
     p = (1.0 + float(np.sum(stats >= observed_stat))) / (n_randomizations + 1.0)
     return p, stats
 
+
+
+def _cross_core(h: np.ndarray, y: np.ndarray, cell: np.ndarray, img: np.ndarray):
+    """Cross-image case part on integer-coded cells and images.
+
+    Returns (total, group, case, n_eligible_cells, n_cases_in_eligible_cells).
+    Values are NaN when no cell has cases from two different images.
+    """
+    n, k = h.shape
+    nan = float("nan")
+    if n == 0:
+        return nan, nan, nan, 0, 0
+    n_cells = int(cell.max()) + 1
+    n_img = int(img.max()) + 1
+    obs = h[np.arange(n), y]
+
+    # (cell, image) blocks: counts of cases and of each label inside every block.
+    ukey, kidx = np.unique(cell * n_img + img, return_inverse=True)
+    kidx = kidx.reshape(-1)
+    n_cg = np.bincount(kidx).astype(np.float64)
+    m_cgy = np.bincount(kidx * k + y, minlength=len(ukey) * k).reshape(len(ukey), k)
+    n_c = np.bincount(cell, minlength=n_cells).astype(np.float64)
+    m_cy = np.bincount(cell * k + y, minlength=n_cells * k).reshape(n_cells, k)
+
+    d = n_c[cell] - n_cg[kidx]                              # cross partners of each case
+    s = np.einsum("nk,nk->n", m_cy[cell] - m_cgy[kidx], h)  # S_i = sum_j H[i, y_j], cross j
+    d_sum = np.bincount(cell, weights=d, minlength=n_cells)  # D_c
+    t_num = np.bincount(cell, weights=d * obs, minlength=n_cells)
+    p_num = np.bincount(cell, weights=s, minlength=n_cells)
+
+    elig = d_sum > 0
+    if not np.any(elig):
+        return nan, nan, nan, 0, 0
+    w = n_c[elig]
+    ws = float(w.sum())
+    t_c = t_num[elig] / d_sum[elig]
+    p_c = p_num[elig] / d_sum[elig]
+    total = float(np.dot(w, t_c) / ws)
+    group = float(np.dot(w, p_c) / ws)
+    case = float(np.dot(w, t_c - p_c) / ws)
+    return total, group, case, int(elig.sum()), int(ws)
+
+
+def cross_image_split(
+    h: np.ndarray,
+    y: np.ndarray,
+    phi: np.ndarray,
+    image: np.ndarray,
+    *,
+    n_jack: int = 100,
+    seed: int = 0,
+    alpha: float = 0.05,
+) -> dict:
+    """Within-cell split that uses only pairs of cases from different images.
+
+    Same contrast matrix and labels as ``decompose_gain_matrix``, but for case
+    ``i`` the transport and the U-statistic are built from the cases ``j`` in
+    the same cell whose image differs from ``i``'s.  Per cell ``c`` with
+    ``D_c > 0`` (cross-image ordered pairs), let
+
+        T_c = sum_i d_i h[i, y_i] / D_c,     P_c = sum_i S_i / D_c,
+
+    where ``d_i`` counts the cross-image partners of ``i`` and
+    ``S_i = sum_y (m_{c,y} - m_{c,g(i),y}) h[i, y]``.  Then ``R_c = T_c - P_c``
+    is the mean over ordered cross-image pairs of ``h[i,y_i] - h[i,y_j]``.
+    Cells are averaged with weight ``n_c`` over the eligible cells.
+
+    The case part gets a delete-a-group jackknife over images: images are
+    assigned to ``n_jack`` groups by ``permutation(n_images) % n_jack`` and the
+    case part is recomputed with each group left out.
+    """
+    if not 0 < alpha < 1:
+        raise ValueError("alpha must be in (0,1)")
+    if n_jack < 2:
+        raise ValueError("n_jack must be at least 2")
+    h = np.asarray(h, dtype=np.float64)
+    if h.ndim != 2 or not np.all(np.isfinite(h)):
+        raise ValueError("h must be a finite 2-D matrix")
+    n, k = h.shape
+    y = np.asarray(y, dtype=np.int64)
+    phi = np.asarray(phi)
+    image = np.asarray(image)
+    if y.shape != (n,) or phi.shape != (n,) or image.shape != (n,):
+        raise ValueError("y, phi and image must be length-N vectors")
+    if np.any((y < 0) | (y >= k)):
+        raise ValueError("y contains a label outside the prediction vocabulary")
+
+    _, cell = np.unique(phi, return_inverse=True)
+    _, img = np.unique(image, return_inverse=True)
+    cell = cell.reshape(-1).astype(np.int64)
+    img = img.reshape(-1).astype(np.int64)
+    n_images = int(img.max()) + 1
+
+    total, group, case, n_elig, n_cases = _cross_core(h, y, cell, img)
+    if n_elig == 0:
+        raise ValueError("no prior-feature cell contains cases from two different images")
+
+    # Within-image share of ordered within-cell pairs, over cells with n_c >= 2.
+    n_c_full = np.bincount(cell).astype(np.float64)
+    _, cnt_cg = np.unique(cell * n_images + img, return_counts=True)
+    within_num = float(np.sum(cnt_cg * (cnt_cg - 1.0)))
+    within_den = float(np.sum(n_c_full * (n_c_full - 1.0)))
+    frac_within = within_num / within_den if within_den > 0 else float("nan")
+
+    # Delete-a-group jackknife over images.
+    grp = np.random.default_rng(seed).permutation(n_images) % n_jack
+    case_grp = grp[img]
+    present = np.unique(grp)
+    thetas = np.empty(len(present), dtype=np.float64)
+    for t, g in enumerate(present):
+        keep = case_grp != g
+        thetas[t] = _cross_core(h[keep], y[keep], cell[keep], img[keep])[2]
+    big_g = len(present)
+    theta_bar = float(thetas.mean())
+    se = float(np.sqrt((big_g - 1.0) / big_g * np.sum((thetas - theta_bar) ** 2)))
+    z = NormalDist().inv_cdf(1.0 - alpha / 2.0)
+
+    return {
+        "total": total,
+        "group": group,
+        "case": case,
+        "case_ci": (case - z * se, case + z * se),
+        "case_se": se,
+        "n_eligible_cells": n_elig,
+        "n_cases_in_eligible_cells": n_cases,
+        "frac_pairs_within_image": frac_within,
+        "n_images": n_images,
+        "n_jack_groups": big_g,
+        "alpha": alpha,
+    }
