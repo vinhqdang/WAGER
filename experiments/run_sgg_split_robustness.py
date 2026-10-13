@@ -44,7 +44,12 @@ def main():
     Q = {"none": base["q"], **{v: AU.load(v)["q"] for v in NEW}}
     imgs = np.unique(image)
     rows = []
+    if OUT.exists() and "rows" in json.loads(OUT.read_text()):
+        rows = json.loads(OUT.read_text())["rows"]
+    done = {r["split"] for r in rows}
     for s in range(N_SPLITS):
+        if s in done:
+            continue
         rng = np.random.default_rng(1000 + s)
         cal_imgs = set(imgs[rng.permutation(len(imgs))[: len(imgs) // 2]].tolist())
         cal = np.array([i in cal_imgs for i in image])
