@@ -358,7 +358,7 @@ CHECKS += [
     ("rec body group", "5_audit.tex", "+0.1082", sp["gc@50"]["mean_recall_body"]["group"], 5e-5),
     ("rec head loss", "5_audit.tex", "0.0255", -sp["gc@50"]["mean_recall_head"]["total"], 5e-5),
     ("rec tail gain", "5_audit.tex", "0.0003", sp["gc@50"]["mean_recall_tail"]["total"], 5e-5),
-    ("rec tail predicates TDE recalls", "5_audit.tex", "TDE one", "counted below", 0),
+    ("rec tail predicates TDE recalls", "5_audit.tex", "TDE recalls the predicate", "counted below", 0),
     ("rec tail baseline recalls none", "5_audit.tex", "recalls no tail predicate", "counted below", 0),
     ("rec tail 'to' recall", "5_audit.tex", "0.016",
      sp["gc@50"]["official_per_predicate_TDE"][_names.index("to") - 1], 5e-4),

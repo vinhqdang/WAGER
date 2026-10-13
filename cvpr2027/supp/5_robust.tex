@@ -31,6 +31,29 @@ negative under both scores in every half (quadratic $-0.02035$ to $-0.01738$, lo
 $-0.08727$). The sign of TDE's part is therefore set by the protocol, and the primary one
 was fixed by the criterion of \cref{sec:matching} before these runs.
 
+\paragraph{Cross-fitting.} The matching is fitted on one half of the test images and the gain
+split on the other; no validation outputs were released, so no held-out split is available.
+Swapping the halves and averaging the two folds (\texttt{run\_sgg\_crossfit.py}; standard error
+$\tfrac12\sqrt{s_A^2+s_B^2}$, the folds sharing no image) gives, under the primary protocol, TDE's
+quadratic case-level part $+0.00399$, $[+0.00334,+0.00463]$ (folds $+0.00445$ and $+0.00352$), and
+IETrans+Rwt's $-0.01723$, $[-0.01817,-0.01630]$. Under a temperature alone the folds disagree for
+TDE ($-0.00006$ and $-0.00150$, cross-fitted $-0.00078$, $[-0.00159,+0.00003]$), which is the
+protocol dependence of \cref{sec:sggaudit} again. \Cref{tab:tdesummary} collects every TDE
+quantity under every protocol, weighting and score, with the two primary ones marked.
+
+\begin{table}[t]
+\centering
+\scriptsize
+\setlength\tabcolsep{3pt}
+\caption{\textbf{TDE against the baseline under every protocol}: mean-recall case-level parts
+(graph-constrained mR and unconstrained ng-mR at $K=20,50,100$; against the baseline and against
+the logit-adjusted control LA), proper-score case-level parts under three matching families
+(and cross-fitted), and the within-cell AUC change under both weightings. Primary quantities
+are marked; all others are secondary.}
+\label{tab:tdesummary}
+\input{supp/tab_tde_summary}
+\end{table}
+
 \paragraph{Relations from the same image.} A third of the audited relations share an image, both
 boxes and the cell with another relation, so the model scores them identically; the
 estimator's unbiasedness assumes exchangeable cases within a cell. Such pairs are few among
@@ -276,7 +299,11 @@ replayed TDE recalls equal the codebase's evaluator in both protocols to its pri
 precision, for $R$, $mR$, ng-$R$ and ng-$mR$ at $K=20,50,100$; on the full test set they
 reproduce the released numbers (\cref{tab:detrecall}).
 
-The grouping is the ground-truth subject--object class pair, as in PredCls. A relation whose
+The grouping is the ground-truth subject--object class pair, as in PredCls. Grouping by the
+predicted pair instead changes nothing that can be computed: a ground-truth relation is
+matched only by a predicted pair whose two labels equal its own, so for every matched relation
+the predicted pair is the ground-truth pair, and an unmatched relation has no predicted pair
+to group by. A relation whose
 objects the model fails to recognise is a miss for all three models under every predicate
 label, so it adds to neither part; the AUC and the proper score use the relations with a
 matched pair ($58\%$ in SGCls).

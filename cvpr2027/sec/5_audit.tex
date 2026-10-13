@@ -59,7 +59,9 @@ IETrans & $+.2204$ & $+.2143$ & $+.0060$ & $-.0235$ & $-.0093$ \\
 \end{tabular}
 \end{table}
 
-\paragraph{Mean recall, split.} Pooled over identified relations, mean recall@50 rises by
+\paragraph{Mean recall, split.} Two quantities are primary: the graph-constrained $mR@50$ split
+and the relation-weighted within-cell AUC; every other protocol, score and weighting is
+secondary and collected in \cref{tab:tdesummary}. Pooled over identified relations, mean recall@50 rises by
 $0.0972$ ($0.1017$ on the official per-image average). Of that, $+0.0841$ is group-level
 and $+0.0130$ case-level, interval $[+0.0093,+0.0168]$ (\cref{tab:sggaudit}): $87\%$ of the
 gain, interval $[83\%,91\%]$, survives shuffling every label among the relations that share
@@ -69,7 +71,7 @@ relations of different images moves the case-level part to $+0.0140$ (\cref{app:
 It lives in the body of the distribution: by training frequency (9 head predicates above
 $10{,}000$ instances, 26 body, 15 tail below $500$), the body gains $+0.1224$, of which
 $+0.1082$ is group-level, the head loses $0.0255$, and the tail gains $0.0003$ (the baseline
-recalls no tail predicate and TDE one, \textsf{to}, at $0.016$). \Cref{fig:predicates} shows the mechanism one
+recalls no tail predicate; TDE recalls the predicate \textsf{to} at $0.016$). \Cref{fig:predicates} shows the mechanism one
 predicate at a time. Recall of \textsf{parked on} rises from $0.000$ to $0.886$, almost all of
 it group-level: TDE now says \textsf{parked on} for (\textsf{car}, \textsf{street}). Recall of \textsf{on} falls by $0.558$ in the same way.
 
@@ -103,7 +105,8 @@ too wide to call it zero.
 \paragraph{The proper score, matched.} Under the primary protocol (\cref{sec:matching}),
 which makes the control identical to the baseline, TDE's quadratic-score change is
 $-0.00951$: $-0.01396$ group-level and $+0.00445$, interval $[+0.00354,+0.00536]$, case-level
-($+0.02543$ in log score; \cref{fig:where}). That part is not a ranking measure: removing
+($+0.02543$ in log score; \cref{fig:where}; cross-fitted over the two halves $+0.00399$,
+$[+0.00334,+0.00463]$). That part is not a ranking measure: removing
 TDE's frequency prior, which leaves every within-cell ranking as it was (AUC change
 $+0.0001$), gives $+0.00817$, $[+0.00757,+0.00877]$, under the same protocol, since a per-class
 bias cannot absorb a shift that differs from pair to pair; ranking is read from the AUC
