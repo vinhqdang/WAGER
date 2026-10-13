@@ -504,11 +504,11 @@ $\widehat{\Delta R}\gets\operatorname{mean}R_i$
 
 \section{Implementation and reproducibility}\label{app:implementation}
 
-The NumPy implementation is in \texttt{wager/antisymmetric.py}. The primary routine
+The NumPy implementation is in \texttt{gainsplit/antisymmetric.py}. The primary routine
 \texttt{decompose\_gain} validates probability matrices, forms score contrasts, excludes
 singleton cells, computes all three components, verifies the identity numerically, and
 returns per-instance transported/covariance values plus intervals. The Visual Genome
-driver is \texttt{experiments/\allowbreak run\_sgg\_wager.py}; controlled validation and sensitivity
+driver is \texttt{experiments/\allowbreak run\_sgg\_gainsplit.py}; controlled validation and sensitivity
 checks are in \texttt{experiments/\allowbreak antisymmetric\_simulation.py} and
 \texttt{experiments/\allowbreak antisymmetric\_ablations.py}. All random seeds are fixed. Unit tests
 cover the decomposition identity, quadratic covariance identity, cell-constant null,
