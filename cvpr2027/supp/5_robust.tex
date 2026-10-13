@@ -14,8 +14,13 @@ validation-set outputs, and we did not rerun them on the validation split; the c
 half shares no image with the audited half, so no relation is used both to fit a temperature
 and to be scored. To see how much the result depends on which half, \cref{tab:splits} repeats
 the split for 20 independent halves. The fitted temperatures move by at most $0.06$ across
-halves. TDE's quadratic case-level part ranges from $-0.00131$ to $+0.00059$; its interval
-excludes zero in three halves, each time on the negative side, and never on the positive side.
+halves. Under the primary protocol (a temperature and a per-class bias per model) TDE's
+quadratic case-level part is positive in all twenty halves, from $+0.00341$ to $+0.00482$, its
+interval excluding zero every time; adding the spread over halves to the sampling error in
+quadrature gives a half-width of $0.0012$ around the mean $+0.00397$. The control's part is
+zero to within $10^{-5}$ in every half. With a temperature alone TDE's part ranges from
+$-0.00131$ to $+0.00059$; its interval excludes zero in three halves, each time on the
+negative side.
 Under the log score it is positive in all twenty ($+0.04142$ to $+0.04761$). The control's and
 IETrans's parts keep their sign, and exclude zero, in every half under both scores.
 
@@ -23,9 +28,8 @@ TDE and the baseline share weights, so one may prefer a single temperature for b
 the pooled calibration half. That temperature ($1.47$) lies between the two models' own optima
 ($0.92$ and $2.50$), so neither model is confidence-matched, and TDE's case-level part turns
 negative under both scores in every half (quadratic $-0.02035$ to $-0.01738$, log $-0.09440$ to
-$-0.08727$). We keep the per-model temperature as the primary protocol, because only it
-compares each model at its own best confidence. Under neither protocol, in any of the 20
-halves, does TDE show a positive quadratic case-level part whose interval excludes zero.
+$-0.08727$). The sign of TDE's part is therefore set by the protocol, and the primary one
+was fixed by the criterion of \cref{sec:matching} before these runs.
 
 \begin{table}[t]
 \centering

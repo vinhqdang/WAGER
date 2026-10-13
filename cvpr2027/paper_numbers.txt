@@ -21,7 +21,6 @@ cvpr CLIP prior-matched MRR gap, points
 cvpr CLIP prior-matched R@5 gap, points
 cvpr CLIP prior-matched acc gap, points
 cvpr CLIP-class dR
-cvpr CLIP-geometry dP
 cvpr CLIP-geometry dR ci hi
 cvpr CLIP-geometry dR ci lo
 cvpr CLIP-geometry p
@@ -29,25 +28,33 @@ cvpr SPATIAL-CLASS dP
 cvpr SPATIAL-CLASS dR ci hi
 cvpr SPATIAL-CLASS dR ci lo
 cvpr SPATIAL-CLASS dT
-cvpr T* TDE
-cvpr T* baseline
 cvpr TDE R@50
 cvpr TDE ng-mR@50
+cvpr Tb group
+cvpr Tb total
 cvpr VG coverage
 cvpr VG identified cells
 cvpr base ng-mR@50
+cvpr clip Tb case
+cvpr clip Tb hi
+cvpr clip Tb lo
+cvpr eq ci90 hi
+cvpr eq ci90 lo
+cvpr eq margin cmp
+cvpr eq margin rel
+cvpr eq mde cmp
 cvpr geometry accuracy
 cvpr geometry-class dR
 cvpr grp pos share %
 cvpr grp size lo
 cvpr grp subj share %
+cvpr hit cov case %
 cvpr identified cells
 cvpr identified share of relations
 cvpr mR TDE, points
 cvpr mR base, points
 cvpr matched quad dR ci hi
 cvpr matched quad dR ci lo
-cvpr matched quad dT
 cvpr review ietrans auc c
 cvpr review ietrans auc c hi
 cvpr review ietrans auc c lo
@@ -63,8 +70,8 @@ cvpr review oracle total
 cvpr review share K20 %
 cvpr review tde auc bound
 cvpr robustness value
+cvpr share K100 %
 cvpr sim calib matched sd
-cvpr sim null mean x1e5
 cvpr sim prior-only sd
 cvpr sim shortcut sd
 cvpr sim type-I
@@ -78,6 +85,7 @@ det sgcls auc cmp lo
 det sgcls auc rel
 det sgcls auc rel hi
 det sgcls auc rel lo
+det sgcls case
 det sgcls dmR
 det sgcls matched %
 det sgcls share %
@@ -85,7 +93,6 @@ det sgdet LA dmR
 det sgdet TDE dmR
 det sgdet TDE-LA case
 det sgdet auc rel
-det sgdet auc rel lo
 det sgdet case
 det sgdet n images
 det sgdet share %
@@ -115,9 +122,7 @@ path vis case
 path vis case hi
 path vis case lo
 path vis dmR
-ps LA quad case
 ps TDE-LA quad case
-ps matched quad dP
 rankrob CLIP-geo aud cmp
 rankrob CLIP-geo rel
 rankrob CLIP-geo rel hi
@@ -142,16 +147,12 @@ rankrob recal TDE shared
 rankrob recal TDE tb
 rankrob recal TDE tb hi
 rankrob recal TDE tb lo
+rankrob recal TDE tb log
 rankrob recal iet tb
 rankrob small VG %
 rankrob small n2 %
-rankrob tier hh
-rankrob tier hh hi
 rankrob tier hh lo
-rankrob tier hh weight %
-rankrob tier rest
 rankrob tier rest hi
-rankrob tier rest lo
 rankrob two-case share %
 rec LA R@50
 rec LA case
@@ -196,9 +197,7 @@ seeds CLIP case min
 sens class-pair dR
 sgg base R@50
 sgg base mR@50
-sgg cal dP
 sgg cal dR
-sgg cal log dR
 sgg n cells
 sgg n images
 sgg tde mR@50

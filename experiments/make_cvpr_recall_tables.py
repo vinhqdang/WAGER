@@ -291,7 +291,7 @@ def split_robustness():
                                                            "" if v == "TDE common-T" else " ($T$)")
             lines.append(f"{lab if j == 0 else ''} & {'quadratic' if sc == 'brier' else 'log'} & "
                          f"${f5(m['mean'])}$ & ${m['sd']:.5f}$ & ${f5(m['min'])}$ & ${f5(m['max'])}$ & "
-                         f"{m['n_excluding_zero']}/{n} \\\\")
+                         f"{'--' if max(abs(m['min']), abs(m['max'])) < 1e-5 else str(m['n_excluding_zero']) + '/' + str(n)} \\\\")
         if k < len(keys) - 1:
             lines.append(r"\midrule")
     lines += [r"\bottomrule", r"\end{tabular}"]

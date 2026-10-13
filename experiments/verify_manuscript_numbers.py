@@ -251,7 +251,6 @@ CHECKS += [
      vg_rows["MLP-SPATIAL|MLP-CLASS"]["coverage"] * 100, 0.05),
     # Simulation (Sec. 4)
     ("cvpr sim type-I", "4_validation.tex", "0.030", sim["null_type1_alpha_005"], 5e-4),
-    ("cvpr sim null mean x1e5", "4_validation.tex", "-8.97", sim["null_reasoning_mean"] * 1e5, 5e-3),
     ("cvpr sim prior-only sd", "4_validation.tex", "0.0035", sim["prior_only"]["reasoning_sd"], 5e-5),
     ("cvpr sim shortcut sd", "4_validation.tex", "0.004", sim["hidden_shortcut"]["reasoning_sd"], 5e-4),
     ("cvpr sim calib matched sd", "4_validation.tex", "0.0017",
@@ -352,7 +351,7 @@ CHECKS += [
     ("rec TDE case lo", "5_audit.tex", "+0.0093", m50["case_ci"][0], 5e-5),
     ("rec TDE case hi", "5_audit.tex", "+0.0168", m50["case_ci"][1], 5e-5),
     ("rec TDE group share, %", "5_audit.tex", "87", 100 * m50["group"] / m50["total"], 0.5),
-    ("rec n head", "5_audit.tex", "head above", "counted below", 0),
+    ("rec n head", "5_audit.tex", "head predicates above", "counted below", 0),
     ("rec n body", "5_audit.tex", "26 body", "counted below", 0),
     ("rec n tail", "5_audit.tex", "15 tail", "counted below", 0),
     ("rec body total", "5_audit.tex", "+0.1224", sp["gc@50"]["mean_recall_body"]["total"], 5e-5),
@@ -360,7 +359,7 @@ CHECKS += [
     ("rec head loss", "5_audit.tex", "0.0255", -sp["gc@50"]["mean_recall_head"]["total"], 5e-5),
     ("rec tail gain", "5_audit.tex", "0.0003", sp["gc@50"]["mean_recall_tail"]["total"], 5e-5),
     ("rec tail predicates TDE recalls", "5_audit.tex", "TDE one", "counted below", 0),
-    ("rec tail baseline recalls none", "5_audit.tex", "baseline recalls none", "counted below", 0),
+    ("rec tail baseline recalls none", "5_audit.tex", "recalls no tail predicate", "counted below", 0),
     ("rec tail 'to' recall", "5_audit.tex", "0.016",
      sp["gc@50"]["official_per_predicate_TDE"][_names.index("to") - 1], 5e-4),
     ("rec parked on after", "5_audit.tex", "0.886",
@@ -724,6 +723,16 @@ _ok = (_eqr["equivalent"] and not _eqa["equivalent"] and _eqm["equivalent"]
        and abs(_hc["case"]["coverage"] - 0.95) < 0.02 and _hc["share"]["coverage"] >= 0.95)
 if not _ok:
     print("FAIL equivalence/coverage claims"); sys.exit(1)
+
+_hv = load("sgg_split_robustness.json")["summary"]["TDE T+bias brier"]
+CHECKS += [
+    ("splits Tb min", "5_robust.tex", "+0.00341", _hv["min"], 5e-6),
+    ("splits Tb max", "5_robust.tex", "+0.00482", _hv["max"], 5e-6),
+    ("splits Tb mean", "5_robust.tex", "+0.00397", _hv["mean"], 5e-6),
+    ("splits Tb halfwidth", "5_robust.tex", "$0.0012$", _hv["halfwidth_combined"], 5e-5),
+]
+if not (_hv["n_positive"] == 20 and _hv["n_excluding_zero"] == 20):
+    print("FAIL primary-protocol halves claim (positive and excluding zero in all 20)"); sys.exit(1)
 
 _wb = load("waterbirds_audit.json")
 _wbs, _wbl = _wb["splits"]["scene"]["brier"], _wb["splits"]["background"]["brier"]
@@ -1091,7 +1100,7 @@ for label, fname, literal, actual, tol in CHECKS:
         ok_val = True
     else:
         try:
-            quoted = float(literal.replace("{,}", "").replace(",", "")
+            quoted = float(literal.replace("\\pm", "").replace("{,}", "").replace(",", "")
                            .replace("+", "").replace("$", "").replace("\\%", ""))
             ok_val = abs(abs(quoted) - abs(float(actual))) <= tol
         except ValueError:
