@@ -1,0 +1,156 @@
+{
+ "source": "colab_dlfe_stage2.py official PredCls evaluation of the released checkpoints (coldmanck/recovering-unbiased-scene-graphs), replayed from the per-relation ranks of colab_sgg_rank.py",
+ "models": {
+  "dlfe": {
+   "name": "MOTIFS-DLFE",
+   "checkpoint": "/content/dlfe_ckpt/output/motif-precls-exmp-balanced_norm/model_0020000.pth",
+   "recalls": {
+    "R@20": {
+     "replayed": 0.45674870487013997,
+     "evaluator_printed": 0.4567,
+     "evaluator_stored": 0.45674870487013997
+    },
+    "mR@20": {
+     "replayed": 0.22012504910635092,
+     "evaluator_printed": 0.2201,
+     "evaluator_stored": 0.22012504910635086
+    },
+    "R@50": {
+     "replayed": 0.5164626573653524,
+     "evaluator_printed": 0.5165,
+     "evaluator_stored": 0.5164626573653524
+    },
+    "mR@50": {
+     "replayed": 0.2686011823957149,
+     "evaluator_printed": 0.2686,
+     "evaluator_stored": 0.2686011823957149
+    },
+    "R@100": {
+     "replayed": 0.533019450182127,
+     "evaluator_printed": 0.533,
+     "evaluator_stored": 0.533019450182127
+    },
+    "mR@100": {
+     "replayed": 0.28747053888915663,
+     "evaluator_printed": 0.2875,
+     "evaluator_stored": 0.28747053888915663
+    },
+    "ng-R@20": {
+     "replayed": 0.582526115639691,
+     "evaluator_printed": 0.5825,
+     "evaluator_stored": 0.582526115639691
+    },
+    "ng-mR@20": {
+     "replayed": 0.29781759314831185,
+     "evaluator_printed": 0.2978,
+     "evaluator_stored": 0.29781759314831185
+    },
+    "ng-R@50": {
+     "replayed": 0.7453004317162822,
+     "evaluator_printed": 0.7453,
+     "evaluator_stored": 0.7453004317162824
+    },
+    "ng-mR@50": {
+     "replayed": 0.4518624910920837,
+     "evaluator_printed": 0.4519,
+     "evaluator_stored": 0.4518624910920836
+    },
+    "ng-R@100": {
+     "replayed": 0.8286234247199504,
+     "evaluator_printed": 0.8286,
+     "evaluator_stored": 0.8286234247199504
+    },
+    "ng-mR@100": {
+     "replayed": 0.5688441342324779,
+     "evaluator_printed": 0.5688,
+     "evaluator_stored": 0.5688441342324779
+    }
+   },
+   "printed_lines": [
+    "SGG eval:     R @ 20: 0.4567;     R @ 50: 0.5165;     R @ 100: 0.5330;  for mode=predcls, type=Recall(Main).",
+    "SGG eval:  ng-R @ 20: 0.5825;  ng-R @ 50: 0.7453;  ng-R @ 100: 0.8286;  for mode=predcls, type=No Graph Constraint Recall(Main).",
+    "SGG eval:    zR @ 20: 0.0029;    zR @ 50: 0.0055;    zR @ 100: 0.0083;  for mode=predcls, type=Zero Shot Recall.",
+    "SGG eval: ng-zR @ 20: 0.0077; ng-zR @ 50: 0.0273; ng-zR @ 100: 0.0716;  for mode=predcls, type=No Graph Constraint Zero Shot Recall.",
+    "SGG eval:    mR @ 20: 0.2201;    mR @ 50: 0.2686;    mR @ 100: 0.2875;  for mode=predcls, type=Mean Recall.",
+    "SGG eval: ng-mR @ 20: 0.2978; ng-mR @ 50: 0.4519; ng-mR @ 100: 0.5688;  for mode=predcls, type=No Graph Constraint Mean Recall.",
+    "SGG eval:     A @ 20: 0.5430;     A @ 50: 0.5453;     A @ 100: 0.5453;  for mode=predcls, type=TopK Accuracy."
+   ]
+  },
+  "dlfe_base": {
+   "name": "MOTIFS (DLFE release baseline)",
+   "checkpoint": "/content/dlfe_ckpt/output/motif-precls-exmp/model_0022000.pth",
+   "recalls": {
+    "R@20": {
+     "replayed": 0.5904681369108494,
+     "evaluator_printed": 0.5905,
+     "evaluator_stored": 0.5904681369108495
+    },
+    "mR@20": {
+     "replayed": 0.13003821928254303,
+     "evaluator_printed": 0.13,
+     "evaluator_stored": 0.130038219282543
+    },
+    "R@50": {
+     "replayed": 0.6548859908311065,
+     "evaluator_printed": 0.6549,
+     "evaluator_stored": 0.6548859908311065
+    },
+    "mR@50": {
+     "replayed": 0.16474922556959157,
+     "evaluator_printed": 0.1647,
+     "evaluator_stored": 0.16474922556959154
+    },
+    "R@100": {
+     "replayed": 0.6720685276893363,
+     "evaluator_printed": 0.6721,
+     "evaluator_stored": 0.6720685276893362
+    },
+    "mR@100": {
+     "replayed": 0.17755339476115067,
+     "evaluator_printed": 0.1776,
+     "evaluator_stored": 0.17755339476115067
+    },
+    "ng-R@20": {
+     "replayed": 0.6733209316975113,
+     "evaluator_printed": 0.6733,
+     "evaluator_stored": 0.6733209316975112
+    },
+    "ng-mR@20": {
+     "replayed": 0.19859339745266863,
+     "evaluator_printed": 0.1986,
+     "evaluator_stored": 0.19859339745266863
+    },
+    "ng-R@50": {
+     "replayed": 0.8183613283824623,
+     "evaluator_printed": 0.8184,
+     "evaluator_stored": 0.8183613283824623
+    },
+    "ng-mR@50": {
+     "replayed": 0.32757790999959474,
+     "evaluator_printed": 0.3276,
+     "evaluator_stored": 0.32757790999959474
+    },
+    "ng-R@100": {
+     "replayed": 0.8892852249814314,
+     "evaluator_printed": 0.8893,
+     "evaluator_stored": 0.8892852249814314
+    },
+    "ng-mR@100": {
+     "replayed": 0.4472416410040158,
+     "evaluator_printed": 0.4472,
+     "evaluator_stored": 0.4472416410040158
+    }
+   },
+   "printed_lines": [
+    "SGG eval:     R @ 20: 0.5905;     R @ 50: 0.6549;     R @ 100: 0.6721;  for mode=predcls, type=Recall(Main).",
+    "SGG eval:  ng-R @ 20: 0.6733;  ng-R @ 50: 0.8184;  ng-R @ 100: 0.8893;  for mode=predcls, type=No Graph Constraint Recall(Main).",
+    "SGG eval:    zR @ 20: 0.0126;    zR @ 50: 0.0334;    zR @ 100: 0.0536;  for mode=predcls, type=Zero Shot Recall.",
+    "SGG eval: ng-zR @ 20: 0.0162; ng-zR @ 50: 0.0627; ng-zR @ 100: 0.1530;  for mode=predcls, type=No Graph Constraint Zero Shot Recall.",
+    "SGG eval:    mR @ 20: 0.1300;    mR @ 50: 0.1647;    mR @ 100: 0.1776;  for mode=predcls, type=Mean Recall.",
+    "SGG eval: ng-mR @ 20: 0.1986; ng-mR @ 50: 0.3276; ng-mR @ 100: 0.4472;  for mode=predcls, type=No Graph Constraint Mean Recall.",
+    "SGG eval:     A @ 20: 0.6900;     A @ 50: 0.6927;     A @ 100: 0.6927;  for mode=predcls, type=TopK Accuracy."
+   ]
+  }
+ },
+ "max_abs_difference_replayed_vs_stored": 1.1102230246251565e-16
+}
