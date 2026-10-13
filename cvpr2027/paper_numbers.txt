@@ -40,6 +40,18 @@ cvpr clip Tb lo
 cvpr cross TDE mR case
 cvpr cross TDE mR sec5
 cvpr cross TDE-la1 hi
+cvpr dlfe auc c
+cvpr dlfe auc c hi
+cvpr dlfe auc c lo
+cvpr dlfe auc r
+cvpr dlfe auc r hi
+cvpr dlfe auc r lo
+cvpr dlfe case
+cvpr dlfe case hi
+cvpr dlfe case lo
+cvpr dlfe group
+cvpr dlfe share %
+cvpr dlfe total
 cvpr eq ci90 cmp hi
 cvpr eq ci90 cmp lo
 cvpr eq ci90 rel hi
@@ -49,6 +61,7 @@ cvpr eq largest rel
 cvpr eq mR largest
 cvpr geometry accuracy
 cvpr geometry-class dR
+cvpr grp pos lo
 cvpr grp pos share %
 cvpr grp size lo
 cvpr grp subj share %

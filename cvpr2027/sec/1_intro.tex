@@ -46,9 +46,11 @@ change in TDE's ranking larger than $0.0034$ under the split's weighting and lar
 $0.0077$ when every comparison counts once. A proper score's case-level part is no ranking
 measure: TDE's is $+0.0045$ under the pre-declared matching protocol, but removing the
 frequency prior, which ranks every pair as before, gives $+0.0082$, and the part changes sign
-with the protocol and the label mix. IETrans~\cite{zhang2022finegrained}, which relabels
-training data within object pairs, gains 21 points against a separately trained baseline,
-$97\%$ group-level, and its relation-weighted AUC falls. The converse appears in a controlled illustration on real pixels, not an SGG system
+with the protocol and the label mix. DLFE~\cite{chiou2021recovering}, released with its own
+baseline, gains 11 points, $94\%$ group-level, with no detected change in within-pair ranking;
+IETrans~\cite{zhang2022finegrained}, which relabels training data within object pairs, gains 21
+points against a separately trained baseline, $97\%$ group-level, and its relation-weighted AUC
+falls. The converse appears in a controlled illustration on real pixels, not an SGG system
 (\cref{sec:vgvisual}): a predictor reading frozen CLIP~\cite{radford2021learning} crops, ranked
 last by every aggregate, carries $+0.0033$ more case-level covariance than a geometry model,
 yet ranks worse under the relation-weighted AUC (better, not significantly, by comparison).
@@ -60,7 +62,7 @@ label-weighted hit rates such as mean recall, with cluster-robust inference, an
 operating-point control and a threshold-free AUC. (ii) Validation that the case-level part is
 zero when it should be, covers at the nominal rate under image clustering, and separates
 calibration, prior and shortcut effects, with protocols for the confounds it does not. (iii)
-Audits of two released debiasing checkpoints that split their mean-recall gains exactly,
+Audits of three released debiasing checkpoints that split their mean-recall gains exactly,
 with the mechanism behind TDE's.
 
 \paragraph{What is not claimed.} The scene-graph audits are PredCls, where every model sees

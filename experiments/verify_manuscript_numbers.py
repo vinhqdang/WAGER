@@ -799,6 +799,38 @@ CHECKS += [
 if round(100 * _pm(_iwl)["share"]) != 84:
     print("FAIL control official share 84%"); sys.exit(1)
 
+_dl = load("sgg_dlfe_audit.json")
+_dlm = load("sgg_recall_split_dlfe_vs_dlfe_base.json")["results"]["gc@50"]["mean_recall"]
+_dla = next(r for r in _dl["auc"] if r["new"] == "dlfe" and r["old"] == "dlfe_base")
+_dlq = next(r for r in _dl["matched_split"] if r["new"] == "dlfe" and r["old"] == "dlfe_base")
+_dlo = load("dlfe_official_recall.json")["models"]
+CHECKS += [
+    ("cvpr dlfe total", "5_audit.tex", "+0.1112", _dlm["total"], 5e-5),
+    ("cvpr dlfe group", "5_audit.tex", "+0.1046", _dlm["group"], 5e-5),
+    ("cvpr dlfe case", "5_audit.tex", "+0.0065", _dlm["case"], 5e-5),
+    ("cvpr dlfe case lo", "5_audit.tex", "+0.0010", _dlm["case_ci"][0], 5e-5),
+    ("cvpr dlfe case hi", "5_audit.tex", "+0.0120", _dlm["case_ci"][1], 5e-5),
+    ("cvpr dlfe share %", "0_abstract.tex", "94\\%", 100 * _dlm["group"] / _dlm["total"], 0.5),
+    ("cvpr dlfe auc r", "5_audit.tex", "+0.0029", _dla["all, relation"]["difference"], 5e-5),
+    ("cvpr dlfe auc r lo", "5_audit.tex", "-0.0004", _dla["all, relation"]["ci"][0], 5e-5),
+    ("cvpr dlfe auc r hi", "5_audit.tex", "+0.0056", _dla["all, relation"]["ci"][1], 5e-5),
+    ("cvpr dlfe auc c", "5_audit.tex", "+.0018", _dla["all, comparison"]["difference"], 5e-5),
+    ("cvpr dlfe auc c lo", "5_audit.tex", "-.0041", _dla["all, comparison"]["ci"][0], 5e-5),
+    ("cvpr dlfe auc c hi", "5_audit.tex", "+.0064", _dla["all, comparison"]["ci"][1], 5e-5),
+    ("cvpr dlfe mR official", "5_robust.tex", "0.2686", _dlo["dlfe"]["recalls"]["mR@50"]["evaluator_stored"], 5e-5),
+    ("cvpr dlfe base mR official", "5_robust.tex", "0.1647", _dlo["base"]["recalls"]["mR@50"]["evaluator_stored"] if "base" in _dlo else _dlo["dlfe_base"]["recalls"]["mR@50"]["evaluator_stored"], 5e-5),
+    ("cvpr dlfe R official", "5_robust.tex", "0.5165", _dlo["dlfe"]["recalls"]["R@50"]["evaluator_stored"], 5e-5),
+    ("cvpr dlfe tb case", "5_robust.tex", "+0.00249", _dlq["temperature + class bias, brier"]["case"], 5e-6),
+    ("cvpr dlfe tb lo", "5_robust.tex", "+0.00191", _dlq["temperature + class bias, brier"]["case_ci"][0], 5e-6),
+    ("cvpr dlfe tb hi", "5_robust.tex", "+0.00307", _dlq["temperature + class bias, brier"]["case_ci"][1], 5e-6),
+    ("cvpr dlfe top1", "5_robust.tex", "0.543", _dl["top1_accuracy"]["dlfe"], 5e-4),
+    ("cvpr dlfe base top1", "5_robust.tex", "0.692", _dl["top1_accuracy"]["dlfe_base"], 5e-4),
+]
+_soft = _dl["checks"]["auc_dlfe_vs_dlfe_soft"][0]
+if not (_soft["all, relation"]["difference"] == 0 and _soft["all, comparison"]["difference"] == 0
+        and _dla["all, relation"]["ci"][0] < 0 < _dla["all, relation"]["ci"][1]):
+    print("FAIL DLFE claims (correction ranking-preserving; no detected AUC change)"); sys.exit(1)
+
 _wb = load("waterbirds_audit.json")
 _wbs, _wbl = _wb["splits"]["scene"]["brier"], _wb["splits"]["background"]["brier"]
 CHECKS += [

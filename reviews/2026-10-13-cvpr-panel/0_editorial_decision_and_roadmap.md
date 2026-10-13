@@ -306,3 +306,7 @@ We invite a substantially revised manuscript that addresses the ten required ite
 | R4-21 minimal tier | **Done** (conclusion). |
 | R4-22 official per-image statistic | **Done.** Split by within-cell label shuffles: TDE 84% group-level, case +0.0168 [+0.0111, +0.0226]; TDE vs control +0.0026 [−0.0028, +0.0080]; a floor-weight shortcut reverses the sign (−0.0216) and is reported as such. |
 | R4-11 / R4-12 DLFE | **In progress** on Colab. |
+
+## DLFE (R4-11 / R4-12), 2026-10-13
+
+**Done.** The released MOTIFS-DLFE checkpoint and the MOTIFS baseline it was trained against (one recipe, so the comparison is controlled) were re-run on Colab and re-scored on the same 183,642 relations; replayed recall equals the evaluator's to float precision. DLFE vs its baseline: mR@50 +0.1112 = +0.1046 group-level (94%) + +0.0065 [+0.0010, +0.0120] case-level; within-cell AUC +0.0029 [−0.0004, +0.0056] relation-weighted, +0.0018 [−0.0041, +0.0064] by comparison. The test-time correction is exactly ranking-preserving (AUC change 0 vs the uncorrected network). Added to abstract, intro, Sec. 5 and Table 1, and a supplement subsection. The audit now covers three released checkpoints; seeds remain impossible for released checkpoints (stated as a limitation).

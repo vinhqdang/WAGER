@@ -298,6 +298,31 @@ image-clustered intervals. Every family preserves each model's within-cell ranki
 \input{supp/tab_recalibration}
 \end{table}
 
+\subsection{A controlled pair: DLFE and its baseline}\label{app:dlfe}
+
+DLFE~\cite{chiou2021recovering} is trained like the MOTIFS baseline and, at test time, divides
+each predicate probability by that predicate's label frequency estimated during training
+(stored in the checkpoint), a per-predicate rescaling that is the same for every relation. Its
+authors release both the DLFE checkpoint and the MOTIFS baseline it was trained against, so
+unlike IETrans the comparison is between two models from one recipe. We ran each once with the
+authors' fork of the benchmark code, dumped the matrix the evaluator ranks (after the
+correction for DLFE), and re-scored every ground-truth relation as in \cref{app:recall}
+(\texttt{colab\_dlfe\_stage1.py}, \texttt{colab\_dlfe\_stage2.py},
+\texttt{expand\_dlfe\_to\_standard.py}, \texttt{run\_sgg\_dlfe\_audit.py}). Both runs score the
+same $183{,}642$ relations as the TDE audit, and the replayed recalls equal the evaluator's to
+float precision: DLFE $R@50=0.5165$, $mR@50=0.2686$; its baseline $0.6549$ and $0.1647$.
+
+Against its own baseline DLFE's $mR@50$ gain is $+0.1112$: $+0.1046$ group-level ($94\%$) and
+$+0.0065$, $[+0.0010,+0.0120]$, case-level. The within-cell AUC moves by $+0.0029$,
+$[-0.0004,+0.0056]$, relation-weighted, and $+0.0018$, $[-0.0041,+0.0064]$, by comparison. The
+correction is exactly ranking-preserving: against the same network before the correction the
+AUC change is $0$ under both weightings and, under the primary matching protocol, so is the
+case-level part. Under that protocol DLFE's quadratic case-level part against its baseline is
+$+0.00249$, $[+0.00191,+0.00307]$, which by \cref{sec:sggaudit} is not a ranking measure.
+DLFE's top-1 predicate accuracy is $0.543$ against $0.692$ for its baseline. The pattern is
+TDE's: a large group-level gain bought with recall, with no detected change in within-pair
+ranking.
+
 \subsection{Beyond PredCls: SGCls and SGDet}\label{app:det}
 
 The causal MOTIFS-SUM release includes SGCls and SGDet checkpoints alongside the PredCls one.

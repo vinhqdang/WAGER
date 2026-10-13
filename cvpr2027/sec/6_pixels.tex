@@ -38,8 +38,6 @@ $+0.00723$, while the AUC separates it from the baseline at neither end: TDE gai
 discrimination between some predicate pairs and loses it between others, and the benchmark's
 mix weights the two to zero.
 
-\paragraph{Beyond scene graphs.}\label{sec:further} Nothing in \cref{sec:method} is specific
-to relations; the supplementary applies the estimator to long-tailed image classification
-(CIFAR-100-LT, across seeds and imbalance ratios), to long-tailed text classification and to
-Waterbirds, where the cell is the background scene. The fine class label cannot serve as a
-cell: it forces the case-level part to zero by construction, an artefact that reads like a null.
+\paragraph{Beyond scene graphs.}\label{sec:further} The supplement applies the split to
+CIFAR-100-LT, long-tailed text and Waterbirds (cells: background scenes); there the fine class
+label cannot serve as a cell, since it forces the case-level part to zero.

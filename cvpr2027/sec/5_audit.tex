@@ -36,8 +36,8 @@ discrimination. It reaches $mR@50=0.2343$ at $R@50=0.6437$.
 \scriptsize
 \setlength\tabcolsep{0pt}
 \caption{\textbf{Mean recall@50 split} (graph constraint, micro-pooled) against the MOTIFS
-baseline, except TDE$-$LA. LA: the logit-adjusted baseline; IETrans: the released
-IETrans+Rwt checkpoint against a separately trained baseline. Case-level intervals
+baseline, except TDE$-$LA. LA: the logit-adjusted baseline; DLFE: against its own released
+baseline; IETrans: the released IETrans+Rwt checkpoint against a separately trained baseline. Case-level intervals
 image-clustered. $\Delta$AUC: within-cell AUC change, weighted as the split weights cells
 ($r$, primary) or by comparison ($c$), image bootstrap; no calibration or group-level shift
 moves it (LA's residue is float32 rounding).}
@@ -53,6 +53,8 @@ LA & $+.0941$ & $+.0802$ & $+.0139$ & $+.0003$ & $+.0001$ \\
 TDE$-$LA & $+.0031$ & $+.0039$ & $-.0008$ & $-.0018$ & $+.0026$ \\
 & & & {\tiny$[-.0050,\!+.0033]$} & {\tiny$[-.0039,\!+.0014]$} & {\tiny$[-.0029,\!+.0086]$} \\
 \midrule
+DLFE & $+.1112$ & $+.1046$ & $+.0065$ & $+.0029$ & $+.0018$ \\
+& & & {\tiny$[+.0010,\!+.0120]$} & {\tiny$[-.0004,\!+.0056]$} & {\tiny$[-.0041,\!+.0064]$} \\
 IETrans & $+.2204$ & $+.2143$ & $+.0060$ & $-.0235$ & $-.0093$ \\
 & & & {\tiny$[-.0031,\!+.0151]$} & {\tiny$[-.0275,\!-.0182]$} & {\tiny$[-.0181,\!+.0004]$} \\
 \bottomrule
@@ -149,7 +151,11 @@ term is, to $99.96\%$ of its energy, one vector shared by every relation in ever
 correlated $+0.75$ with the log training prior: in PredCls TDE is to first order a learned
 logit adjustment of the context branch, which is why the explicit one reproduces it.
 
-\paragraph{A second method.} IETrans~\cite{zhang2022finegrained} relabels training data from
+\paragraph{Two more methods.} DLFE~\cite{chiou2021recovering} divides predicate
+probabilities by estimated label frequencies, a per-predicate log-odds shift, and is released
+with the baseline it was trained against, so this comparison is controlled (\cref{app:dlfe}).
+Its $mR@50$ gain, $+0.1112$, is $+0.1046$ group-level and $+0.0065$, $[+0.0010,+0.0120]$,
+case-level; the relation-weighted AUC moves by $+0.0029$, $[-0.0004,+0.0056]$. IETrans~\cite{zhang2022finegrained} relabels training data from
 general to specific predicates within an object pair and adds the training log-prior at test
 time; its released Neural-Motifs PredCls checkpoint is the IETrans+Rwt variant, also trained
 with a reweighted loss, re-scored the same way (\cref{app:ietrans}). It reaches $mR@50=0.3587$:
