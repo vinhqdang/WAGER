@@ -1,0 +1,36 @@
+{
+ "model": "dlfe",
+ "checkpoint": "/content/dlfe_ckpt/output/motif-precls-exmp-balanced_norm/model_0020000.pth",
+ "printed": [
+  "SGG eval:     R @ 20: 0.4567;     R @ 50: 0.5165;     R @ 100: 0.5330;  for mode=predcls, type=Recall(Main).",
+  "SGG eval:  ng-R @ 20: 0.5825;  ng-R @ 50: 0.7453;  ng-R @ 100: 0.8286;  for mode=predcls, type=No Graph Constraint Recall(Main).",
+  "SGG eval:    zR @ 20: 0.0029;    zR @ 50: 0.0055;    zR @ 100: 0.0083;  for mode=predcls, type=Zero Shot Recall.",
+  "SGG eval: ng-zR @ 20: 0.0077; ng-zR @ 50: 0.0273; ng-zR @ 100: 0.0716;  for mode=predcls, type=No Graph Constraint Zero Shot Recall.",
+  "SGG eval:    mR @ 20: 0.2201;    mR @ 50: 0.2686;    mR @ 100: 0.2875;  for mode=predcls, type=Mean Recall.",
+  "SGG eval: ng-mR @ 20: 0.2978; ng-mR @ 50: 0.4519; ng-mR @ 100: 0.5688;  for mode=predcls, type=No Graph Constraint Mean Recall.",
+  "SGG eval:     A @ 20: 0.5430;     A @ 50: 0.5453;     A @ 100: 0.5453;  for mode=predcls, type=TopK Accuracy."
+ ],
+ "values": {
+  "R@20": 0.4567,
+  "R@50": 0.5165,
+  "R@100": 0.533,
+  "ng-R@20": 0.5825,
+  "ng-R@50": 0.7453,
+  "ng-R@100": 0.8286,
+  "zR@20": 0.0029,
+  "zR@50": 0.0055,
+  "zR@100": 0.0083,
+  "ng-zR@20": 0.0077,
+  "ng-zR@50": 0.0273,
+  "ng-zR@100": 0.0716,
+  "mR@20": 0.2201,
+  "mR@50": 0.2686,
+  "mR@100": 0.2875,
+  "ng-mR@20": 0.2978,
+  "ng-mR@50": 0.4519,
+  "ng-mR@100": 0.5688,
+  "A@20": 0.543,
+  "A@50": 0.5453,
+  "A@100": 0.5453
+ }
+}
