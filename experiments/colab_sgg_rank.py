@@ -4,7 +4,9 @@ Input (on the Colab VM, written by colab_sgg_stage2.py):
   /content/branch_dump/chunk_*.npz     per-pair vis, ctx(post), ctx(avg), frq and
                                        the returned (TDE) logits, all test images
   <out dir>/inference/<test>/eval_results.pytorch   official evaluation of the run
-(WAGER_RANK_MODE=tde: TDE pass of the causal MOTIFS checkpoint; =ietrans: IETrans)
+(WAGER_RANK_MODE=tde: TDE pass of the causal MOTIFS checkpoint; =ietrans: IETrans;
+ =dlfe / =dlfe_base: the MOTIFS-DLFE and MOTIFS baseline checkpoints of Chiou et
+ al., whose dump holds the evaluator's score matrix itself, colab_dlfe_stage2.py)
 
 For every variant (baseline, TDE, single branches, branch pairs) and every
 ground-truth relation r = (s, o, y) this records, for each of the 50 predicates
@@ -76,6 +78,38 @@ MODES = {
             "ietrans_ctx": lambda b: b["ctx"],
         },
     },
+    # released MOTIFS-DLFE / MOTIFS baseline checkpoints (colab_dlfe_stage2.py): the
+    # dump holds probabilities, not logits -- `out` is the post-processor's
+    # rel_class_prob (softmax / label frequency for DLFE, softmax for the baseline)
+    "dlfe": {
+        "code": f"{ROOT}/dlfe",
+        "eval": f"{ROOT}/out_dlfe_predcls/inference/VG_stanford_filtered_with_attribute_test",
+        "dump": f"{ROOT}/dump_dlfe", "out": f"{ROOT}/wager_dlfe_raw/dlfe",
+        "keys": ("pairs", "soft", "out"),
+        "official": "dlfe",
+        "to_prob": lambda x: x,
+        "identity": lambda b: b["soft"] / (b["_lp"] + 1e-5).astype(np.float32),
+        "la_base": None,
+        "h5": "datasets/vg/VG-SGG-with-attri.h5",
+        "variants": {
+            "dlfe": lambda b: b["out"],
+            "dlfe_soft": lambda b: b["soft"],      # the same model before the correction
+        },
+    },
+    "dlfe_base": {
+        "code": f"{ROOT}/dlfe",
+        "eval": f"{ROOT}/out_base_predcls/inference/VG_stanford_filtered_with_attribute_test",
+        "dump": f"{ROOT}/dump_base", "out": f"{ROOT}/wager_dlfe_raw/base",
+        "keys": ("pairs", "soft", "out"),
+        "official": "dlfe_base",
+        "to_prob": lambda x: x,
+        "identity": lambda b: b["soft"],
+        "la_base": None,
+        "h5": "datasets/vg/VG-SGG-with-attri.h5",
+        "variants": {
+            "dlfe_base": lambda b: b["out"],
+        },
+    },
 }
 CFG = MODES[MODE]
 SGG = CFG["code"]
@@ -84,6 +118,7 @@ sys.path.insert(0, SGG)
 
 EVAL, DUMP, OUT = CFG["eval"], CFG["dump"], CFG["out"]
 OFFICIAL = CFG["official"]
+TO_PROB = CFG.get("to_prob", None)          # None: variant functions return logits
 KS = (20, 50, 100)
 BIG = 255
 T0 = time.time()
@@ -120,6 +155,12 @@ def log(m):
 def softmax(x):
     import torch
     return torch.softmax(torch.from_numpy(np.ascontiguousarray(x)), -1).numpy()
+
+
+def to_prob(x):
+    """Probabilities from what a variant function returns (logits unless the mode
+    says its dump already holds the evaluator's probabilities)."""
+    return softmax(x) if TO_PROB is None else TO_PROB(x)
 
 
 def ranks_for_variant(prob, order):
@@ -205,6 +246,8 @@ def main():
             seen.add(img)
             sl = slice(offs[j], offs[j + 1])
             b = {k: v[sl] for k, v in arrs.items()}
+            if "lp" in c.files:
+                b["_lp"] = c["lp"]              # per-chunk label-frequency vector
             gt, pr = gts[img], preds[img]
             rel = gt.get_field("relation_tuple").numpy().astype(np.int64)
             if len(rel) == 0:
@@ -225,7 +268,7 @@ def main():
                 continue
             pos_of = {int(k): i for i, k in enumerate(key)}
             off_order = np.asarray([pos_of[int(k)] for k in okey])
-            p_tde = softmax(b["out"])
+            p_tde = to_prob(b["out"])
             chk["official_score_maxdiff"] = max(
                 chk["official_score_maxdiff"],
                 float(np.abs(p_tde[off_order] - off_scores).max()))
@@ -244,7 +287,7 @@ def main():
                 if v == OFFICIAL:
                     p, order = p_off, off_order     # the evaluated order
                 else:
-                    p = softmax(f(b))
+                    p = to_prob(f(b))
                     ms = torch.from_numpy(p[:, 1:].max(1))
                     order = torch.sort(ms, descending=True)[1].numpy()
                     srt = p[order][:, 1:].max(1)[:101]
