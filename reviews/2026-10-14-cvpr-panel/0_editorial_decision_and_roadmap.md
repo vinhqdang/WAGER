@@ -306,3 +306,65 @@ Use `templates/revision_response_template.md` to respond to every item R6-1 to R
 We invite a revised manuscript that addresses the six required items and states a decision on each suggested item. The audit is careful and candid. The revision is mostly a matter of making the abstract and Sec. 5 say what the evidence supports about three things: which AUC changes exceed the difference between two separately trained baselines (R6-1), what the TDE bounds do and do not establish (R6-2), and what the case-level part of mean recall does and does not measure (R6-4). A further review will be needed after the revision.
 
 *Synthesis scope note: this letter synthesizes and arbitrates the five Phase 1 reports; it adds no new review comments beyond the verification of claims the seats made (the baseline-to-baseline AUC check is a reproduction of R1's finding, extended by the pair weighting and the implications section, which is the synthesizer's reading and is labelled as such). Effort and feasibility figures are the synthesizer's estimates.*
+
+
+## Attachment: Acronym Check (advisory, #849)
+
+```
+### Acronym check (advisory; no reply needed)
+Coverage: body (partial)
+Not in this input: English abstract, Chinese abstract.
+Not checked:
+- Body, line 303: FREQ (the initials before its parentheses do not spell it)
+
+| Scope | Line | Rule | Acronym | Uses |
+|---|---|---|---|---|
+| Body | 1 | Not defined | CVPR | 48 |
+| Body | 3 | Not defined | COPY | 10 |
+| Body | 3 | Not defined | DO | 10 |
+| Body | 3 | Not defined | NOT | 10 |
+| Body | 3 | Not defined | REVIEW | 10 |
+| Body | 13 | Not defined | ID | 1 |
+| Body | 28 | Defined after first use | TDE | 52 |
+| Body | 40 | Not defined | AUC | 27 |
+| Body | 46 | Not defined | DLFE | 7 |
+| Body | 46 | Not defined | IETran | 11 |
+| Body | 48 | Not defined | PE | 5 |
+| Body | 77 | Defined again | TDE | 52 |
+| Body | 78 | Not defined | MOTIFS | 7 |
+| Body | 79 | Not defined | VG150 | 5 |
+| Body | 91 | Not defined | SGCl | 3 |
+| Body | 92 | Not defined | SGDet | 3 |
+| Body | 131 | Not defined | CNN | 2 |
+| Body | 132 | Not defined | RTPB | 1 |
+| Body | 136 | Not defined | HX | 4 |
+| Body | 136 | Not defined | VQA | 2 |
+| Body | 137 | Not defined | EH | 1 |
+| Body | 137 | Not defined | EY | 1 |
+| Body | 179 | Not defined | ROC | 1 |
+| Body | 284 | Not defined | LA | 6 |
+| Body | 298 | Not defined | AUCc | 1 |
+| Body | 298 | Not defined | AUCr | 1 |
+| Body | 303 | Not defined | MLP | 10 |
+| Body | 305 | Not defined | CLASS | 6 |
+| Body | 327 | Not defined | SGG | 1 |
+| Body | 330 | Not defined | SUM | 1 |
+| Body | 368 | Not defined | CLIP | 9 |
+| Body | 514 | Not defined | MO | 1 |
+| Body | 515 | Not defined | TIFS | 1 |
+| Body | 528 | Not defined | ERM | 1 |
+| Body | 534 | Not defined | CIFAR | 1 |
+| Body | 534 | Not defined | LT | 1 |
+| Body | 540 | Not defined | ViT | 1 |
+| Body | 566 | Not defined | MRR | 1 |
+| Body | 588 | Not defined | AAAI | 1 |
+| Body | 595 | Not defined | ACM | 2 |
+| Body | 596 | Not defined | ICML | 3 |
+| Body | 620 | Not defined | BMVC | 1 |
+| Body | 624 | Not defined | ICCV | 2 |
+| Body | 631 | Not defined | ECCV | 2 |
+| Body | 638 | Not defined | ICLR | 1 |
+| Body | 653 | Not defined | PCPL | 1 |
+| Body | 662 | Not defined | IJCAI | 1 |
+| Body | 690 | Not defined | BMC | 1 |
+```
