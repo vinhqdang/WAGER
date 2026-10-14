@@ -378,7 +378,10 @@ the predicted pair is the ground-truth pair, and an unmatched relation has no pr
 to group by. A relation whose
 objects the model fails to recognise is a miss for all three models under every predicate
 label, so it adds to neither part; the AUC and the proper score use the relations with a
-matched pair ($58\%$ in SGCls).
+matched pair ($58\%$ in SGCls, $65\%$ in SGDet). That selection favours relations whose
+objects are easy to recognise, so the AUC and proper-score results describe TDE on that
+subset; the mean-recall split, which counts an unmatched relation as a miss for all three
+models, does not depend on it.
 
 \Cref{tab:det} gives the result. In SGCls TDE raises $mR@50$ by $+0.0517$, of which $+0.0510$
 is group-level ($99\%$) and $+0.0008$, interval $[-0.0024,+0.0040]$, case-level. The

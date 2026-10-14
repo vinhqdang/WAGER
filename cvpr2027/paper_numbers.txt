@@ -105,6 +105,7 @@ cvpr review oracle total
 cvpr review share K20 %
 cvpr review tde auc bound
 cvpr robustness value
+cvpr sgdet matched %
 cvpr share K100 %
 cvpr sim calib matched sd
 cvpr sim prior-only sd
@@ -120,6 +121,16 @@ cvpr t1 subj group
 cvpr t1 subj total
 cvpr temp p TDE
 cvpr train subsample
+cvpr wb auc
+cvpr wb auc hi
+cvpr wb auc lo
+cvpr wb case
+cvpr wb case hi
+cvpr wb case lo
+cvpr wb group
+cvpr wb total
+cvpr wb wga erm
+cvpr wb wga grw
 det sgcls LA R@50
 det sgcls LA dmR
 det sgcls TDE R@50
@@ -127,6 +138,7 @@ det sgcls auc cmp hi
 det sgcls auc rel
 det sgcls auc rel hi
 det sgcls auc rel lo
+det sgcls case
 det sgcls dmR
 det sgcls matched %
 det sgcls share %

@@ -760,6 +760,24 @@ if not (all(abs(_la0[k]["difference"]) < 1e-6 for k in ("all, relation", "all, c
         and all(abs(_lw["auc"]["la1 vs none"][w]["difference"]) < 1e-6
                 for w in ("relation", "comparison", "pair", "predicate"))):
     print("FAIL logit-adjusted control: AUC change not zero to 1e-6"); sys.exit(1)
+_wb = load("waterbirds_audit.json")
+_wbs = _wb["splits"]["scene"]["brier"]["GRW vs ERM"]
+_wba = _wb["auc"]["scene"]["GRW minus ERM, relation"]
+_sgd = load("sgg_sgdet_audit.json")
+CHECKS += [
+    # R5-15: the Waterbirds contrast in the body; R5-19: SGDet matched fraction
+    ("cvpr wb wga erm", "6_pixels.tex", "$0.643$", _wb["worst_group_accuracy"]["ERM"], 5e-4),
+    ("cvpr wb wga grw", "6_pixels.tex", "$0.854$", _wb["worst_group_accuracy"]["GRW"], 5e-4),
+    ("cvpr wb total", "6_pixels.tex", "+0.0637", _wbs["total"], 5e-5),
+    ("cvpr wb group", "6_pixels.tex", "-0.0277", _wbs["group"], 5e-5),
+    ("cvpr wb case", "6_pixels.tex", "+0.0914", _wbs["case"], 5e-5),
+    ("cvpr wb case lo", "6_pixels.tex", "+0.0849", _wbs["case_ci"][0], 5e-5),
+    ("cvpr wb case hi", "6_pixels.tex", "+0.0979", _wbs["case_ci"][1], 5e-5),
+    ("cvpr wb auc", "6_pixels.tex", "+0.0031", _wba["difference"], 5e-5),
+    ("cvpr wb auc lo", "6_pixels.tex", "+0.0008", _wba["ci"][0], 5e-5),
+    ("cvpr wb auc hi", "6_pixels.tex", "+0.0056", _wba["ci"][1], 5e-5),
+    ("cvpr sgdet matched %", "5_audit.tex", "$65\\%$", 100 * _sgd["matched_fraction"], 0.5),
+]
 _ok = (_eqr["tost"]["10%"]["equivalent"] and _eqr["tost"]["25%"]["equivalent"]
        and not _eqr["tost"]["5%"]["equivalent"]
        and _eqa["tost"]["25%"]["equivalent"] and not _eqa["tost"]["10%"]["equivalent"]

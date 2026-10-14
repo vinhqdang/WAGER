@@ -34,21 +34,18 @@ image-clustered intervals.
 
 \paragraph{What it finds.} We re-ran TDE's released checkpoint, replayed the official
 evaluator exactly so that recall can be computed under any labelling, and split mean recall
-itself (\cref{sec:sggaudit}). With subject--object class pairs as cells, $87\%$ of the ten
-points is group-level. A thresholded metric also earns case-level credit when its operating
-point moves, so we read the remainder against a control: subtracting the training predicate
-prior from the baseline's logits~\cite{menon2021long}, a correction known to rival
-debiasing~\cite{chiou2021recovering,teng2022structured} that changes no ranking within any
-group, recovers $+0.0941$ of the $+0.0972$ with the same split, at $K=50$ under the graph
-constraint (\cref{tab:protocols} gives the other protocols, where the two diverge). The
-within-group AUC bounds the change in TDE's ranking under three weightings
-(\cref{sec:sggaudit}). TDE is motivated as removing the harmful part of the training bias while keeping the
-good context~\cite{tang2020unbiased}; on this checkpoint its gain is a change in which
-predicates are favoured within each pair. DLFE~\cite{chiou2021recovering}
-and IETrans~\cite{zhang2022finegrained}, two other released prior-correcting checkpoints,
-show the same pattern (\cref{tab:sggaudit}). On real pixels (\cref{sec:vgvisual}),
-a frozen-CLIP~\cite{radford2021learning} predictor ranked last by every aggregate carries more
-case-level covariance than a geometry model.
+itself (\cref{sec:sggaudit}). With class pairs as cells, $87\%$ of the ten points is
+group-level. Because a thresholded metric also earns case-level credit when its operating
+point moves, we read the remainder against a control: subtracting the training predicate
+prior from the baseline's logits~\cite{menon2021long}, known to rival
+debiasing~\cite{chiou2021recovering,teng2022structured}, changes no ranking within any group
+and recovers $+0.0941$ of the $+0.0972$ with the same split at $K=50$ under the graph
+constraint (\cref{tab:protocols} gives the protocols where the two diverge). TDE is motivated
+as removing the harmful part of the training bias while keeping the good
+context~\cite{tang2020unbiased}; on this checkpoint its gain is a change in which predicates
+are favoured within each pair, and DLFE~\cite{chiou2021recovering} and
+IETrans~\cite{zhang2022finegrained} show the same pattern. Debiasing can buy case-level gain:
+on Waterbirds group reweighting does (\cref{sec:further}).
 
 \paragraph{Contributions.} (i) An exact, model-free decomposition of the difference between
 two frozen models into a group-level part and a within-group covariance, the paired-gain form

@@ -29,7 +29,8 @@ baseline's logits minus $\tau\log\pi(y)$, the training predicate prior, with
 $\tau=1$~\cite{menon2021long}. Within a cell this adds the same constant to every
 log-odds $\log q(y)-\log q(z)$, so it changes no within-cell ranking: whatever case-level
 part it shows is existing discrimination spent at a new operating point, not new
-discrimination. It reaches $mR@50=0.2343$ at $R@50=0.6437$.
+discrimination. It reaches $mR@50=0.2343$ at $R@50=0.6437$. (It is not the inverse-frequency
+scaling of logits that barely moves SGG mean recall~\cite{liu2025causal}.)
 
 \begin{table}[t]
 \centering
@@ -78,7 +79,8 @@ image-clustered; proper scores are matched by a temperature and a per-class bias
 fitted on half the test images; the AUC is relation-weighted. These two primary quantities
 and the protocol were declared after the TDE and IETrans results were seen and before the DLFE
 outputs existed, so for TDE and IETrans they are a post-hoc choice; every other protocol,
-score and weighting is collected in \cref{tab:tdesummary}.
+score and weighting is collected in \cref{tab:tdesummary}, where, with that many
+configurations, one secondary interval excluding zero is not read as a finding.
 
 \paragraph{Mean recall, split.} Pooled over identified relations, mean recall@50 rises by
 $0.0972$ ($0.1017$ on the official per-image average). Of that, $+0.0841$ is group-level
@@ -203,4 +205,5 @@ models shared object predictions, so the ground-truth pair remains a common grou
 (\cref{app:det}). In SGCls, where $58\%$ of relations have a matched pair, TDE raises $mR@50$
 by $+0.0517$, $99\%$ group-level; the control gains $+0.0518$ at $R@50=0.384$ against TDE's
 $0.263$; TDE's relation-weighted AUC falls by $-0.0128$, $[-0.0171,-0.0074]$. In SGDet the
-control again gains more than TDE ($+0.0418$ against $+0.0310$) at nearly twice its $R@50$.
+control again gains more than TDE ($+0.0418$ against $+0.0310$) at nearly twice its $R@50$
+($65\%$ of relations matched; selection effects in \cref{app:det}).

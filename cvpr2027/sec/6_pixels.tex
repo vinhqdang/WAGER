@@ -34,6 +34,11 @@ case-level parts that excluded zero keep their sign and grow; TDE's rises from $
 $+0.01430$, $[+0.01116,+0.01744]$, while the AUC separates it from the baseline at neither end:
 TDE gains discrimination between some predicate pairs and loses it between others.
 
-\paragraph{Beyond scene graphs.}\label{sec:further} The supplement applies the split to
-CIFAR-100-LT, long-tailed text and Waterbirds (cells: background scenes); there the fine class
-label cannot serve as a cell, since it forces the case-level part to zero.
+\paragraph{A debiasing gain that is case-level.}\label{sec:further} On
+Waterbirds~\cite{sagawa2020distributionally}, with the background scene as the cell and linear
+probes on frozen CLIP features (\cref{app:waterbirds}), group reweighting against ERM raises
+worst-group accuracy from $0.643$ to $0.854$ and the quadratic score by $+0.0637$: a
+group-level loss of $-0.0277$ and a case-level gain of $+0.0914$, $[+0.0849,+0.0979]$, with the
+within-scene AUC up by $+0.0031$, $[+0.0008,+0.0056]$. Here debiasing buys what TDE does not,
+better discrimination inside each group. The supplement also splits CIFAR-100-LT and
+long-tailed text, where the fine label cannot be the cell: it forces the case-level part to zero.
