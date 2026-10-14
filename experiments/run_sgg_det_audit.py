@@ -99,6 +99,25 @@ def mr_split(hn, ho, y, phi, image):
             "case_ci": list(g.alignment_ci), "share_group": g.prior_gain / g.total_gain}
 
 
+def auc_block(V, y, phi, image, matched):
+    """Within-cell AUC contrasts on the matched relations (image bootstrap, 200 draws)."""
+    m = matched
+    Q = {v: V[v]["probs"][m][:, 1:].astype(np.float64) for v in VARIANTS}
+    Q = {v: q / q.sum(1, keepdims=True) for v, q in Q.items()}
+    ym, phim, imgm = y[m] - 1, phi[m], image[m]
+    out = {}
+    for a, b in (("TDE", "none"), ("la1", "none"), ("TDE", "la1")):
+        out[f"{a} vs {b}"] = {}
+        for wt in ("comparison", "relation"):
+            r = within_cell_auc_contrast(Q[a], Q[b], ym, phim, imgm, n_boot=200, weighting=wt)
+            out[f"{a} vs {b}"][wt] = {"difference": r.difference, "ci": list(r.ci),
+                                      "auc_new": r.auc_new, "auc_old": r.auc_old}
+        print(f"  AUC {a} vs {b}: " + "  ".join(
+            f"{wt} {x['difference']:+.4f} [{x['ci'][0]:+.4f},{x['ci'][1]:+.4f}]"
+            for wt, x in out[f"{a} vs {b}"].items()), flush=True)
+    return out
+
+
 def main(proto):
     d, n_img = merge(proto)
     meta = np.load(d / "meta.npz")
@@ -124,19 +143,8 @@ def main(proto):
               f"[{r['case_ci'][0]:+.4f},{r['case_ci'][1]:+.4f}]  share {r['share_group']:.3f}", flush=True)
 
     m = matched
-    Q = {v: V[v]["probs"][m][:, 1:].astype(np.float64) for v in VARIANTS}
-    Q = {v: q / q.sum(1, keepdims=True) for v, q in Q.items()}
     ym, phim, imgm = y[m] - 1, phi[m], image[m]
-    out["auc"] = {}
-    for a, b in (("TDE", "none"), ("la1", "none"), ("TDE", "la1")):
-        out["auc"][f"{a} vs {b}"] = {}
-        for wt in ("comparison", "relation"):
-            r = within_cell_auc_contrast(Q[a], Q[b], ym, phim, imgm, n_boot=200, weighting=wt)
-            out["auc"][f"{a} vs {b}"][wt] = {"difference": r.difference, "ci": list(r.ci),
-                                            "auc_new": r.auc_new, "auc_old": r.auc_old}
-        print(f"  AUC {a} vs {b}: " + "  ".join(
-            f"{wt} {x['difference']:+.4f} [{x['ci'][0]:+.4f},{x['ci'][1]:+.4f}]"
-            for wt, x in out["auc"][f"{a} vs {b}"].items()), flush=True)
+    out["auc"] = auc_block(V, y, phi, image, matched)
 
     rng = np.random.default_rng(20260811)
     imgs = np.unique(imgm)
@@ -156,5 +164,24 @@ def main(proto):
     print(f"wrote results/sgg_{proto}_audit.json")
 
 
+def refresh_auc(proto):
+    """Recompute only the AUC entry of results/sgg_<proto>_audit.json from the merged
+    files already on disk (no merge, so nothing under data/ is written)."""
+    d = ROOT / f"data/vg_motifs/wager_{proto}"
+    meta = np.load(d / "meta.npz")
+    V = {v: np.load(d / f"variant_{v}.npz") for v in VARIANTS}
+    y = meta["pred"].astype(np.int64)
+    image = meta["image_index"].astype(np.int64)
+    phi = meta["subj"].astype(np.int64) * N_OBJ + meta["obj"].astype(np.int64)
+    out_path = ROOT / f"results/sgg_{proto}_audit.json"
+    out = json.loads(out_path.read_text())
+    out["auc"] = auc_block(V, y, phi, image, meta["matched"].astype(bool))
+    out_path.write_text(json.dumps(out, indent=1))
+    print(f"refreshed AUC entry in results/sgg_{proto}_audit.json")
+
+
 if __name__ == "__main__":
-    main(sys.argv[1])
+    if "--auc-only" in sys.argv:
+        refresh_auc(sys.argv[1])
+    else:
+        main(sys.argv[1])

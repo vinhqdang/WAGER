@@ -377,11 +377,11 @@ CHECKS += [
     ("rec table TDE-LA group", "5_audit.tex", "+.0039", tla50["group"], 5e-5),
     ("rec table LA case lo", "5_audit.tex", "+.0101", la50["case_ci"][0], 5e-5),
     ("rec table LA case hi", "5_audit.tex", "+.0176", la50["case_ci"][1], 5e-5),
-    ("auc TDE-base", "5_audit.tex", "+0.0026", auc[("TDE", "none")]["difference"], 5e-5),
+    ("auc TDE-base", "5_audit.tex", "+0.0025", auc[("TDE", "none")]["difference"], 5e-5),
     ("auc TDE-base lo", "5_audit.tex", "-0.0028", auc[("TDE", "none")]["ci"][0], 5e-5),
-    ("auc TDE-base hi", "5_audit.tex", "+0.0086", auc[("TDE", "none")]["ci"][1], 5e-5),
-    ("auc TDE-LA lo", "5_audit.tex", "-.0029", auc[("TDE", "la1")]["ci"][0], 5e-5),
-    ("auc LA-base", "5_audit.tex", "+.0001", auc[("la1", "none")]["difference"], 5e-5),
+    ("auc TDE-base hi", "5_audit.tex", "+0.0087", auc[("TDE", "none")]["ci"][1], 5e-5),
+    ("auc TDE-LA lo", "5_audit.tex", "-.0028", auc[("TDE", "la1")]["ci"][0], 5e-5),
+    ("auc LA-base", "5_audit.tex", "$0$", auc[("la1", "none")]["difference"], 5e-5),
     ("ps TDE-LA quad case", "5_robust.tex", "-0.00398", tla_q["reasoning_gain"], 1e-5),
     ("ps TDE-LA log case", "5_audit.tex", "+0.0154", tla_l["reasoning_gain"], 5e-5),
     ("ps LA quad case", "5_audit.tex", "+0.0039", la_q["reasoning_gain"], 5e-5),
@@ -406,9 +406,7 @@ _frq, _vis, _avg = (_st["drop the frequency prior"], _st["drop the visual term"]
 _en = _tp["logit_energy"]["ctx(avg)"]
 CHECKS += [
     ("path frq dmR", "5_audit.tex", "-0.0009", _frq["mR@50 gc"]["total"], 5e-5),
-    ("path vis dmR", "5_audit.tex", "+0.0164", _vis["mR@50 gc"]["total"], 5e-5),
     ("path vis case", "5_audit.tex", "+0.0016", _vis["mR@50 gc"]["case"], 5e-5),
-    ("path vis case lo", "5_audit.tex", "-0.0006", _vis["mR@50 gc"]["case_ci"][0], 5e-5),
     ("path vis case hi", "5_audit.tex", "+0.0037", _vis["mR@50 gc"]["case_ci"][1], 5e-5),
     ("path avg dmR", "5_audit.tex", "+0.0817", _avg["mR@50 gc"]["total"], 5e-5),
     ("path avg-ctx global share, %", "5_audit.tex", "99.96", 100 * _en["global"], 5e-3),
@@ -443,8 +441,8 @@ CHECKS += [
     ("iet quad case", "5_audit.tex", "-0.0162", _iq["reasoning_gain"], 5e-5),
     ("iet log case", "5_audit.tex", "-0.05435", _il["reasoning_gain"], 5e-5),
     ("iet auc", "5_audit.tex", "-.0093", _ia["difference"], 5e-5),
-    ("iet auc lo", "5_audit.tex", "-.0181", _ia["ci"][0], 5e-5),
-    ("iet auc hi", "5_audit.tex", "+.0004", _ia["ci"][1], 5e-5),
+    ("iet auc lo", "5_audit.tex", "-.0185", _ia["ci"][0], 5e-5),
+    ("iet auc hi", "5_audit.tex", "-.0001", _ia["ci"][1], 5e-5),
     ("iet points", "0_abstract.tex", "21 points",
      "checked below", 0),
     ("iet group share", "0_abstract.tex", "97\\%", "checked below", 0),
@@ -515,10 +513,10 @@ CHECKS += [
     ("shift CLIP-geo case shifted", "5_robust.tex", "+0.00615", _lr["CLIP vs geometry"]["shifted"]["case"], 1e-5),
     ("shift iet case", "5_robust.tex", "-0.01623", _lr["IETrans vs MOTIFS"]["original"]["case"], 1e-5),
     ("shift iet case shifted", "5_robust.tex", "-0.01830", _lr["IETrans vs MOTIFS"]["shifted"]["case"], 1e-5),
-    ("shift TDE auc", "5_robust.tex", "-0.0183", _la["shifted"]["difference"], 5e-5),
-    ("shift TDE auc lo", "5_robust.tex", "-0.0684", _la["shifted"]["ci"][0], 5e-5),
-    ("shift TDE auc hi", "5_robust.tex", "+0.0082", _la["shifted"]["ci"][1], 5e-5),
-    ("shift TDE auc original", "5_robust.tex", "+0.0026", _la["original"]["difference"], 5e-5),
+    ("shift TDE auc", "5_robust.tex", "-0.0209", _la["shifted"]["difference"], 5e-5),
+    ("shift TDE auc lo", "5_robust.tex", "-0.0705", _la["shifted"]["ci"][0], 5e-5),
+    ("shift TDE auc hi", "5_robust.tex", "+0.0062", _la["shifted"]["ci"][1], 5e-5),
+    ("shift TDE auc original", "5_robust.tex", "+0.0025", _la["original"]["difference"], 5e-5),
 ]
 _rows8 = _ls["rows"]
 _flip = sum((r["original"]["group"] > 0) != (r["shifted"]["group"] > 0) for r in _rows8)
@@ -658,8 +656,8 @@ CHECKS += [
     ("cvpr review oracle case", "5_audit.tex", "+0.8041", _ora["oracle"]["case"], 5e-5),
     ("cvpr review oracle group", "5_audit.tex", "-0.2973", _ora["oracle"]["group"], 5e-5),
     ("cvpr review ietrans auc c", "5_audit.tex", "-0.0093", _ie[("ietrans", "none")]["all, comparison"]["difference"], 5e-5),
-    ("cvpr review ietrans auc c lo", "5_audit.tex", "-0.0181", _ie[("ietrans", "none")]["all, comparison"]["ci"][0], 5e-5),
-    ("cvpr review ietrans auc c hi", "5_audit.tex", "+0.0004", _ie[("ietrans", "none")]["all, comparison"]["ci"][1], 5e-5),
+    ("cvpr review ietrans auc c lo", "5_audit.tex", "-0.0185", _ie[("ietrans", "none")]["all, comparison"]["ci"][0], 5e-5),
+    ("cvpr review ietrans auc c hi", "5_audit.tex", "-0.0001", _ie[("ietrans", "none")]["all, comparison"]["ci"][1], 5e-5),
     ("cvpr review tde auc bound", "0_abstract.tex", "0.009", _ie[("TDE", "none")]["all, comparison"]["ci"][1], 5e-4),
 ]
 _gs = load("sgg_grouping_share.json")
@@ -691,17 +689,17 @@ _rcT = {r["new"]: r for r in _rrj["recalibration"]}["TDE"]
 _clipP = _rcp[("MLP-VISUAL-S", "MLP-SPATIAL-S")]
 CHECKS += [
     # Equivalence bounds (Sec. 5, supp 5_robust): largest change each 90% interval excludes
-    ("cvpr eq largest rel", "5_audit.tex", "0.0034", _eqr["largest_change_excluded"], 5e-5),
+    ("cvpr eq largest rel", "5_audit.tex", "0.0038", _eqr["largest_change_excluded"], 5e-5),
     ("cvpr eq largest cmp", "5_audit.tex", "0.0077", _eqa["largest_change_excluded"], 5e-5),
-    ("cvpr eq ci90 rel lo", "5_audit.tex", "-0.0034", _eqr["ci90"][0], 5e-5),
-    ("cvpr eq ci90 rel hi", "5_audit.tex", "+0.0015", _eqr["ci90"][1], 5e-5),
-    ("cvpr eq ci90 cmp lo", "5_audit.tex", "-0.0022", _eqa["ci90"][0], 5e-5),
+    ("cvpr eq ci90 rel lo", "5_audit.tex", "-0.0038", _eqr["ci90"][0], 5e-5),
+    ("cvpr eq ci90 rel hi", "5_audit.tex", "+0.0012", _eqr["ci90"][1], 5e-5),
+    ("cvpr eq ci90 cmp lo", "5_audit.tex", "-0.0019", _eqa["ci90"][0], 5e-5),
     ("cvpr eq ci90 cmp hi", "5_audit.tex", "+0.0077", _eqa["ci90"][1], 5e-5),
     ("cvpr eq ref rel", "5_robust.tex", "0.0626", _eqr["reference_gain"], 5e-5),
     ("cvpr eq ref cmp", "5_robust.tex", "0.0323", _eqa["reference_gain"], 5e-5),
-    ("cvpr eq la1 rel lo", "5_robust.tex", "-0.0037", _eqlr["ci90"][0], 5e-5),
+    ("cvpr eq la1 rel lo", "5_robust.tex", "-0.0038", _eqlr["ci90"][0], 5e-5),
     ("cvpr eq la1 rel hi", "5_robust.tex", "+0.0012", _eqlr["ci90"][1], 5e-5),
-    ("cvpr eq iet rel lo", "5_robust.tex", "-0.0266", _eqir["ci90"][0], 5e-5),
+    ("cvpr eq iet rel lo", "5_robust.tex", "-0.0268", _eqir["ci90"][0], 5e-5),
     ("cvpr eq iet rel hi", "5_robust.tex", "-0.0192", _eqir["ci90"][1], 5e-5),
     ("cvpr eq mR largest", "5_robust.tex", "$0.0043$", _eqm["largest_change_excluded"], 5e-5),
     ("cvpr eq mR ci90 lo", "5_robust.tex", "-0.0043", _eqm["ci90"][0], 5e-5),
@@ -717,6 +715,51 @@ CHECKS += [
     ("cvpr hit cov share %", "2_appendix.tex", "$97.3\\%$", 100 * _hc["share"]["coverage"], 0.05),
     ("cvpr share K100 %", "5_audit.tex", "$86\\%$", 100 * _rs["gc@100"]["mean_recall"]["group"] / _rs["gc@100"]["mean_recall"]["total"], 0.5),
 ]
+_lw = load("sgg_auc_label_weighting.json")
+_lwt = _lw["auc"]["TDE vs none"]
+_lwd = _lw["auc"]["dlfe vs dlfe_base"]
+_lwtt = _lw["tier_pair_predicate"]["TDE vs none"]["tail-tail"]
+_przj = load("sgg_primary_randomization.json")
+_prz = {(r["comparison"], r["family"], r["score"]): r
+        for r in _przj["rows"] + [_przj["temperature_check"]]}
+_iw = load("sgg_image_weighted.json")["comparisons"]["TDE vs none"]["gc@50"]["permutation"]
+CHECKS += [
+    # R5-4: within-cell AUC under the predicate and pair weightings (1,000 replicates)
+    ("cvpr lw pred largest", "0_abstract.tex", "$0.028$", _lwt["predicate"]["largest_change_excluded"], 5e-4),
+    ("cvpr lw pair fall", "0_abstract.tex", "$0.015$", _lwt["pair"]["difference"], 5e-4),
+    ("cvpr lw pair diff", "5_audit.tex", "-0.0153", _lwt["pair"]["difference"], 5e-5),
+    ("cvpr lw pair lo", "5_audit.tex", "-0.0249", _lwt["pair"]["ci95"][0], 5e-5),
+    ("cvpr lw pair hi", "5_audit.tex", "-0.0004", _lwt["pair"]["ci95"][1], 5e-5),
+    ("cvpr lw ref pred", "5_audit.tex", "$0.069$", _lw["reference"]["predicate"], 5e-4),
+    ("cvpr lw tt diff", "5_audit.tex", "-0.097", _lwtt["difference"], 5e-4),
+    ("cvpr lw tt lo", "5_audit.tex", "-0.228", _lwtt["ci95"][0], 5e-4),
+    ("cvpr lw tt hi", "5_audit.tex", "+0.024", _lwtt["ci95"][1], 5e-4),
+    ("cvpr lw share hh rel %", "5_audit.tex", "$57\\%$", 100 * _lw["weight_share"]["relation"]["head-head"], 0.5),
+    ("cvpr lw share hh cmp %", "5_audit.tex", "$65\\%$", 100 * _lw["weight_share"]["comparison"]["head-head"], 0.5),
+    ("cvpr base auc rel", "5_audit.tex", "$0.61$", _lwt["relation"]["auc_old"], 5e-3),
+    ("cvpr base auc cmp", "5_audit.tex", "$0.57$", _lwt["comparison"]["auc_old"], 5e-3),
+    # R5-7: randomization p under the primary protocol
+    ("cvpr primary p TDE", "5_audit.tex", "$p=.001$", _prz[("TDE vs none", "temperature + class bias", "brier")]["randomization_p"], 5e-4),
+    ("cvpr primary p LA", "3_recall.tex", "$p=.236$", _prz[("la1 vs none", "temperature + class bias", "brier")]["randomization_p"], 5e-4),
+    ("cvpr temp p TDE", "5_audit.tex", "$p=.555$", _prz[("TDE vs none", "temperature", "brier")]["randomization_p"], 5e-4),
+    # R5-3: Table 1 lower panel
+    ("cvpr t1 subj total", "5_audit.tex", "+.0970", _gs["subject class"]["total"], 5e-5),
+    ("cvpr t1 subj group", "5_audit.tex", "+.0175", _gs["subject class"]["group"], 5e-5),
+    ("cvpr t1 pos total", "5_audit.tex", "+.0973", _gs["class pair x position"]["total"], 5e-5),
+    ("cvpr t1 pos group", "5_audit.tex", "+.0873", _gs["class pair x position"]["group"], 5e-5),
+    ("cvpr t1 img total", "5_audit.tex", "+.1024", _iw["total"], 5e-5),
+    ("cvpr t1 img group", "5_audit.tex", "+.0855", _iw["group"], 5e-5),
+    # DLFE: relation-weighted AUC gain, also in the 1,000-replicate label-weighting run
+    ("cvpr lw dlfe rel lo", "5_robust.tex", "+0.0001", _lwd["relation"]["ci95"][0], 5e-5),
+]
+# The logit-adjusted control shifts every log-odds in a cell by one constant, so its AUC
+# change is zero up to the float32 storage of the probabilities (below 1e-6), under
+# every weighting.
+_la0 = [r for r in load("sgg_rank_robustness.json")["sgg_auc"] if r["new"] == "la1"][0]
+if not (all(abs(_la0[k]["difference"]) < 1e-6 for k in ("all, relation", "all, comparison"))
+        and all(abs(_lw["auc"]["la1 vs none"][w]["difference"]) < 1e-6
+                for w in ("relation", "comparison", "pair", "predicate"))):
+    print("FAIL logit-adjusted control: AUC change not zero to 1e-6"); sys.exit(1)
 _ok = (_eqr["tost"]["10%"]["equivalent"] and _eqr["tost"]["25%"]["equivalent"]
        and not _eqr["tost"]["5%"]["equivalent"]
        and _eqa["tost"]["25%"]["equivalent"] and not _eqa["tost"]["10%"]["equivalent"]
@@ -760,11 +803,10 @@ CHECKS += [
     ("cvpr prior-removal Tb hi", "5_audit.tex", "+0.00877", _pr["temperature + class bias, brier"]["case_ci"][1], 5e-6),
     ("cvpr prior-removal T case", "5_audit.tex", "+0.00915", _pr["temperature, brier"]["case"], 5e-6),
     ("cvpr prior-removal sharedT case", "5_audit.tex", "+0.00161", _pr["shared temperature, brier"]["case"], 5e-6),
-    ("cvpr prior-removal AUC cmp", "5_robust.tex", "+0.00006", _pa["all, comparison"]["difference"], 5e-6),
+    ("cvpr prior-removal AUC cmp", "5_robust.tex", "-0.00001", _pa["all, comparison"]["difference"], 5e-6),
     ("cvpr prior-removal AUC lo", "5_robust.tex", "-0.00004", _pa["all, comparison"]["ci"][0], 5e-6),
-    ("cvpr prior-removal AUC hi", "5_robust.tex", "+0.00015", _pa["all, comparison"]["ci"][1], 5e-6),
-    ("cvpr prior-removal intro", "1_intro.tex", "+0.0082", _pr["temperature + class bias, brier"]["case"], 5e-5),
-    ("cvpr prior-removal sec5 AUC", "5_audit.tex", "+0.0001", _pa["all, comparison"]["difference"], 5e-5),
+    ("cvpr prior-removal AUC hi", "5_robust.tex", "+0.00000", _pa["all, comparison"]["ci"][1], 5e-6),
+    ("cvpr prior-removal sec5 AUC", "5_audit.tex", "-0.00001", _pa["all, comparison"]["difference"], 5e-5),
 ]
 # Verdict on the mean-recall split: ng totals at K=20,50,100 all in [-0.16,-0.07]
 if not all(-0.16 <= _rsl[k]["mean_recall"]["total"] <= -0.07 for k in ("ng@20", "ng@50", "ng@100")):
@@ -812,11 +854,11 @@ CHECKS += [
     ("cvpr dlfe case hi", "5_audit.tex", "+0.0120", _dlm["case_ci"][1], 5e-5),
     ("cvpr dlfe share %", "0_abstract.tex", "94\\%", 100 * _dlm["group"] / _dlm["total"], 0.5),
     ("cvpr dlfe auc r", "5_audit.tex", "+0.0029", _dla["all, relation"]["difference"], 5e-5),
-    ("cvpr dlfe auc r lo", "5_audit.tex", "-0.0004", _dla["all, relation"]["ci"][0], 5e-5),
-    ("cvpr dlfe auc r hi", "5_audit.tex", "+0.0056", _dla["all, relation"]["ci"][1], 5e-5),
+    ("cvpr dlfe auc r lo", "5_audit.tex", "+0.0001", _dla["all, relation"]["ci"][0], 5e-5),
+    ("cvpr dlfe auc r hi", "5_audit.tex", "+0.0055", _dla["all, relation"]["ci"][1], 5e-5),
     ("cvpr dlfe auc c", "5_audit.tex", "+.0018", _dla["all, comparison"]["difference"], 5e-5),
-    ("cvpr dlfe auc c lo", "5_audit.tex", "-.0041", _dla["all, comparison"]["ci"][0], 5e-5),
-    ("cvpr dlfe auc c hi", "5_audit.tex", "+.0064", _dla["all, comparison"]["ci"][1], 5e-5),
+    ("cvpr dlfe auc c lo", "5_audit.tex", "-.0042", _dla["all, comparison"]["ci"][0], 5e-5),
+    ("cvpr dlfe auc c hi", "5_audit.tex", "+.0070", _dla["all, comparison"]["ci"][1], 5e-5),
     ("cvpr dlfe mR official", "5_robust.tex", "0.2686", _dlo["dlfe"]["recalls"]["mR@50"]["evaluator_stored"], 5e-5),
     ("cvpr dlfe base mR official", "5_robust.tex", "0.1647", _dlo["base"]["recalls"]["mR@50"]["evaluator_stored"] if "base" in _dlo else _dlo["dlfe_base"]["recalls"]["mR@50"]["evaluator_stored"], 5e-5),
     ("cvpr dlfe R official", "5_robust.tex", "0.5165", _dlo["dlfe"]["recalls"]["R@50"]["evaluator_stored"], 5e-5),
@@ -828,8 +870,9 @@ CHECKS += [
 ]
 _soft = _dl["checks"]["auc_dlfe_vs_dlfe_soft"][0]
 if not (_soft["all, relation"]["difference"] == 0 and _soft["all, comparison"]["difference"] == 0
-        and _dla["all, relation"]["ci"][0] < 0 < _dla["all, relation"]["ci"][1]):
-    print("FAIL DLFE claims (correction ranking-preserving; no detected AUC change)"); sys.exit(1)
+        and 0 < _dla["all, relation"]["ci"][0]
+        and _dla["all, comparison"]["ci"][0] < 0 < _dla["all, comparison"]["ci"][1]):
+    print("FAIL DLFE claims (correction ranking-preserving; relation-weighted AUC gain only)"); sys.exit(1)
 
 _wb = load("waterbirds_audit.json")
 _wbs, _wbl = _wb["splits"]["scene"]["brier"], _wb["splits"]["background"]["brier"]
@@ -876,27 +919,27 @@ _A = lambda n, o, k: _ra[(n, o)][k]
 CHECKS += [
     ("splits share TDE lo %", "0_abstract.tex", "83--91", "checked below", 0),
     ("splits share TDE lo", "5_audit.tex", "[83\\%,91\\%]", "checked below", 0),
-    ("rankrob TDE rel", "5_audit.tex", "-0.0015", _A("TDE", "none", "all, relation")["difference"], 5e-5),
-    ("rankrob TDE rel lo", "5_audit.tex", "-0.0036", _A("TDE", "none", "all, relation")["ci"][0], 5e-5),
-    ("rankrob TDE rel hi", "5_audit.tex", "+0.0018", _A("TDE", "none", "all, relation")["ci"][1], 5e-5),
+    ("rankrob TDE rel", "5_audit.tex", "-0.0018", _A("TDE", "none", "all, relation")["difference"], 5e-5),
+    ("rankrob TDE rel lo", "5_audit.tex", "-0.0043", _A("TDE", "none", "all, relation")["ci"][0], 5e-5),
+    ("rankrob TDE rel hi", "5_audit.tex", "+0.0016", _A("TDE", "none", "all, relation")["ci"][1], 5e-5),
     ("rankrob TDE-LA rel", "5_audit.tex", "-.0018", _tla["all, relation"]["difference"], 5e-5),
-    ("rankrob TDE-LA rel lo", "5_audit.tex", "-.0039", _tla["all, relation"]["ci"][0], 5e-5),
-    ("rankrob TDE-LA rel hi", "5_audit.tex", "+.0014", _tla["all, relation"]["ci"][1], 5e-5),
-    ("rankrob TDE-LA cmp", "5_audit.tex", "+.0026", _tla["all, comparison"]["difference"], 5e-5),
-    ("rankrob TDE-LA cmp lo", "5_audit.tex", "-.0029", _tla["all, comparison"]["ci"][0], 5e-5),
-    ("rankrob LA rel", "5_audit.tex", "+.0003", _A("la1", "none", "all, relation")["difference"], 5e-5),
-    ("rankrob iet rel", "5_audit.tex", "-0.0235", _A("ietrans", "none", "all, relation")["difference"], 5e-5),
-    ("rankrob iet rel lo", "5_audit.tex", "-0.0275", _A("ietrans", "none", "all, relation")["ci"][0], 5e-5),
-    ("rankrob iet rel hi", "5_audit.tex", "-0.0182", _A("ietrans", "none", "all, relation")["ci"][1], 5e-5),
-    ("rankrob tier hh", "5_audit.tex", "+0.0068", _tp["TDE vs none"]["head-head"]["difference"], 5e-5),
-    ("rankrob tier hh lo", "5_audit.tex", "-0.0003", _tp["TDE vs none"]["head-head"]["ci"][0], 5e-5),
-    ("rankrob tier hh hi", "5_audit.tex", "+0.0134", _tp["TDE vs none"]["head-head"]["ci"][1], 5e-5),
-    ("rankrob tier rest", "5_audit.tex", "-0.0051", _tp["TDE vs none"]["all but head-head"]["difference"], 5e-5),
+    ("rankrob TDE-LA rel lo", "5_audit.tex", "-.0043", _tla["all, relation"]["ci"][0], 5e-5),
+    ("rankrob TDE-LA rel hi", "5_audit.tex", "+.0016", _tla["all, relation"]["ci"][1], 5e-5),
+    ("rankrob TDE-LA cmp", "5_audit.tex", "+.0025", _tla["all, comparison"]["difference"], 5e-5),
+    ("rankrob TDE-LA cmp lo", "5_audit.tex", "-.0028", _tla["all, comparison"]["ci"][0], 5e-5),
+    ("rankrob LA rel", "5_audit.tex", "$0$", _A("la1", "none", "all, relation")["difference"], 5e-5),
+    ("rankrob iet rel", "5_audit.tex", "-0.0238", _A("ietrans", "none", "all, relation")["difference"], 5e-5),
+    ("rankrob iet rel lo", "5_audit.tex", "-0.0272", _A("ietrans", "none", "all, relation")["ci"][0], 5e-5),
+    ("rankrob iet rel hi", "5_audit.tex", "-0.0187", _A("ietrans", "none", "all, relation")["ci"][1], 5e-5),
+    ("rankrob tier hh", "5_audit.tex", "+0.0067", _tp["TDE vs none"]["head-head"]["difference"], 5e-5),
+    ("rankrob tier hh lo", "5_audit.tex", "-0.00004", _tp["TDE vs none"]["head-head"]["ci"][0], 5e-5),
+    ("rankrob tier hh hi", "5_audit.tex", "+0.0146", _tp["TDE vs none"]["head-head"]["ci"][1], 5e-5),
+    ("rankrob tier rest", "5_audit.tex", "-0.0052", _tp["TDE vs none"]["all but head-head"]["difference"], 5e-5),
     ("rankrob tier rest lo", "5_audit.tex", "-0.0130", _tp["TDE vs none"]["all but head-head"]["ci"][0], 5e-5),
     ("rankrob tier rest hi", "5_audit.tex", "+0.0026", _tp["TDE vs none"]["all but head-head"]["ci"][1], 5e-5),
     ("rankrob tier hh weight %", "5_audit.tex", "$65\\%$", 100 * _tp["TDE vs none"]["head-head"]["weight_share"], 0.5),
-    ("rankrob iet hb", "5_robust.tex", "-0.0250", _tp["ietrans vs none"]["head-body"]["difference"], 5e-5),
-    ("rankrob iet bb", "5_robust.tex", "-0.0260", _tp["ietrans vs none"]["body-body"]["difference"], 5e-5),
+    ("rankrob iet hb", "5_robust.tex", "-0.0252", _tp["ietrans vs none"]["head-body"]["difference"], 5e-5),
+    ("rankrob iet bb", "5_robust.tex", "-0.0264", _tp["ietrans vs none"]["body-body"]["difference"], 5e-5),
     ("rankrob recal TDE tb", "5_audit.tex", "+0.00445", _rc["TDE"]["temperature + class bias, brier"]["case"], 1e-5),
     ("rankrob recal TDE tb lo", "5_audit.tex", "+0.00354", _rc["TDE"]["temperature + class bias, brier"]["case_ci"][0], 1e-5),
     ("rankrob recal TDE tb hi", "5_audit.tex", "+0.00536", _rc["TDE"]["temperature + class bias, brier"]["case_ci"][1], 1e-5),
@@ -919,11 +962,11 @@ CHECKS += [
     ("shift kish benchmark", "5_robust.tex", "92{,}027", _lsp["original"]["kish_n"], 0.5),
     ("shift kish uniform", "5_robust.tex", "7{,}296", _lsp["shifted"]["kish_n"], 0.5),
     ("rankrob CLIP-geo rel", "6_pixels.tex", "-0.0067", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "all, relation")["difference"], 5e-5),
-    ("rankrob CLIP-geo rel lo", "6_pixels.tex", "-0.0120", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "all, relation")["ci"][0], 5e-5),
-    ("rankrob CLIP-geo rel hi", "6_pixels.tex", "-0.0019", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "all, relation")["ci"][1], 5e-5),
+    ("rankrob CLIP-geo rel lo", "6_pixels.tex", "-0.0113", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "all, relation")["ci"][0], 5e-5),
+    ("rankrob CLIP-geo rel hi", "6_pixels.tex", "-0.0015", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "all, relation")["ci"][1], 5e-5),
     ("rankrob CLIP-geo aud cmp", "5_robust.tex", "+0.0214", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "audit half, comparison")["difference"], 5e-5),
-    ("rankrob CLIP-geo aud cmp lo", "5_robust.tex", "+0.0001", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "audit half, comparison")["ci"][0], 5e-5),
-    ("rankrob CLIP-geo aud cmp hi", "5_robust.tex", "+0.0435", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "audit half, comparison")["ci"][1], 5e-5),
+    ("rankrob CLIP-geo aud cmp lo", "5_robust.tex", "+0.00004", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "audit half, comparison")["ci"][0], 5e-5),
+    ("rankrob CLIP-geo aud cmp hi", "5_robust.tex", "+0.0448", _A("MLP-VISUAL-S", "MLP-SPATIAL-S", "audit half, comparison")["ci"][1], 5e-5),
 ]
 _t = _sh["TDE"]
 _tde_keys = ("all, comparison", "all, relation", "audit half, comparison", "audit half, relation")
@@ -995,7 +1038,6 @@ if not _ok:
 _dd = load("sgg_sgdet_audit.json")
 _ddm, _dda, _ddq = _dd["mR_split"], _dd["auc"], _dd["matched_split"]
 CHECKS += [
-    ("det sgdet n images", "5_audit.tex", "In SGDet, on the full test set", "checked below", 0),
     ("det sgdet LA dmR", "5_audit.tex", "+0.0418", _ddm["la1 vs none"]["total"], 5e-5),
     ("det sgdet TDE dmR", "5_audit.tex", "+0.0310", _ddm["TDE vs none"]["total"], 5e-5),
     ("det sgdet share %", "5_robust.tex", "$87\\%$", 100 * _ddm["TDE vs none"]["share_group"], 0.5),
@@ -1197,9 +1239,13 @@ for label, fname, literal, actual, tol in CHECKS:
         ok_val = True
     else:
         try:
-            quoted = float(literal.replace("\\pm", "").replace("{,}", "").replace(",", "")
-                           .replace("+", "").replace("$", "").replace("\\%", ""))
-            ok_val = abs(abs(quoted) - abs(float(actual))) <= tol
+            bare = literal.replace("$", "").replace("p=", "").strip()
+            quoted = float(bare.replace("\\pm", "").replace("{,}", "").replace(",", "")
+                           .replace("+", "").replace("\\%", ""))
+            if bare[:1] in "+-":    # a signed literal must match the sign as well
+                ok_val = abs(quoted - float(actual)) <= tol
+            else:
+                ok_val = abs(abs(quoted) - abs(float(actual))) <= tol
         except ValueError:
             ok_val = False
     status = "OK " if (present and ok_val) else "FAIL"

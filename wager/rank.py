@@ -8,7 +8,7 @@ have a larger log-odds  log q(y) - log q(z)  than the relations labelled z.
 
     AUC_c(y, z) = P( s_i > s_j ),  s = log q(y) - log q(z),  y_i = y, y_j = z
 
-(ties count one half), averaged over cells and label pairs. Two weightings:
+(ties count one half), averaged over cells and label pairs. Three weightings:
 
   comparison  weight n_c(y) n_c(z), the number of comparisons. Within a cell this
               is the p(y) p(z) weighting of the pairwise form of the case-level
@@ -16,10 +16,17 @@ have a larger log-odds  log q(y) - log q(z)  than the relations labelled z.
               largest cells dominate.
   relation    weight n_c(y) n_c(z) / n_c = n_c p(y) p(z): the weighting of the
               case-level part itself, which combines cells in proportion to n_c.
+  pair        each unordered label pair {y, z} gets equal weight, and the cells
+              within a pair are combined by comparison count. It puts rare-label
+              pairs on the same footing as head pairs, as mean recall puts rare
+              labels on the footing of common ones.
 
 Within a cell a temperature T maps
 s to s / T and any change of the predicted prior adds a constant to s, so the
 statistic is unchanged by calibration and by every group-level adjustment.
+
+The AUC only needs log q to be finite and order-preserving, so clipping is set far
+below any stored probability (clipping at 1e-12 tied a fifth of the baseline's scores).
 
 Uncertainty comes from a cluster bootstrap over images; the sort order of each
 block is fixed, so a replicate only re-weights a segmented cumulative sum.
@@ -29,6 +36,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+
+AUC_EPS = 1e-300        # clipping floor for the AUC paths; far below any stored probability
 
 
 @dataclass
@@ -40,6 +49,7 @@ class _Blocks:
     tie: np.ndarray         # tie-group id (same block and score)
     n_blocks: int
     blk_cell: np.ndarray    # cell id of each block
+    blk_pair: np.ndarray    # unordered label pair id of each block: ly * K + lz
     row_cell: np.ndarray    # cell id of each input row
     n_cells: int
 
@@ -48,7 +58,8 @@ def _blocks(logq: np.ndarray, y: np.ndarray, phi: np.ndarray) -> _Blocks:
     _, inv = np.unique(phi, return_inverse=True)
     order = np.argsort(inv, kind="stable")
     bounds = np.flatnonzero(np.diff(inv[order])) + 1
-    elems, poss, blks, scores, bcell = [], [], [], [], []
+    K = int(y.max()) + 1
+    elems, poss, blks, scores, bcell, bpair = [], [], [], [], [], []
     b = 0
     for idx in np.split(order, bounds):
         labs, cnt = np.unique(y[idx], return_counts=True)
@@ -65,6 +76,7 @@ def _blocks(logq: np.ndarray, y: np.ndarray, phi: np.ndarray) -> _Blocks:
                 blks.append(np.full(len(m), b))
                 scores.append(s)
                 bcell.append(cell)
+                bpair.append(ly * K + lz)
                 b += 1
     if b == 0:
         raise ValueError("no cell holds two different labels")
@@ -74,7 +86,7 @@ def _blocks(logq: np.ndarray, y: np.ndarray, phi: np.ndarray) -> _Blocks:
     elem, pos, block, score = elem[o], pos[o], block[o], score[o]
     new_tie = np.r_[True, (np.diff(block) != 0) | (np.diff(score) != 0)]
     return _Blocks(elem, pos, block, np.cumsum(new_tie) - 1, b,
-                   np.asarray(bcell), inv, int(inv.max()) + 1)
+                   np.asarray(bcell), np.asarray(bpair), inv, int(inv.max()) + 1)
 
 
 def _auc(bl: _Blocks, w: np.ndarray, weighting: str = "comparison") -> float:
@@ -94,6 +106,12 @@ def _auc(bl: _Blocks, w: np.ndarray, weighting: str = "comparison") -> float:
     den = np.bincount(bl.block, wp, bl.n_blocks) * np.bincount(bl.block, wn, bl.n_blocks)
     if weighting == "comparison":
         return float(num.sum() / den.sum())
+    if weighting == "pair":
+        _, pair_index = np.unique(bl.blk_pair, return_inverse=True)
+        num_p = np.bincount(pair_index, num)
+        den_p = np.bincount(pair_index, den)
+        ok = den_p > 0          # a pair absent from a bootstrap replicate drops out of it
+        return float((num_p[ok] / den_p[ok]).mean())
     if weighting != "relation":
         raise ValueError(weighting)
     n_cell = np.bincount(bl.row_cell, w, bl.n_cells)[bl.blk_cell]
@@ -112,22 +130,33 @@ class AUCContrast:
     ci_old: tuple[float, float]
     n_blocks: int
     n_boot: int
+    draws: np.ndarray | None = None     # bootstrap differences (new - old), length n_boot
+
+
+def _logq(q, eps):
+    """log q for the AUC. Any positive clipping floor below every entry keeps the statistic
+    exactly invariant to per-cell log-odds shifts; an exact zero cannot be shifted, so it is
+    refused rather than silently clipped."""
+    q = np.asarray(q, dtype=np.float64)
+    if not (q > 0).all():
+        raise ValueError("within-cell AUC needs strictly positive probabilities")
+    return np.log(np.maximum(q, eps))
 
 
 def within_cell_auc(q: np.ndarray, y: np.ndarray, phi: np.ndarray,
-                    eps: float = 1e-12, weighting: str = "comparison") -> float:
+                    eps: float = AUC_EPS, weighting: str = "comparison") -> float:
     """Within-cell AUC of one model."""
-    logq = np.log(np.maximum(np.asarray(q, dtype=np.float64), eps))
+    logq = _logq(q, eps)
     return _auc(_blocks(logq, np.asarray(y), np.asarray(phi)), np.ones(len(y)), weighting)
 
 
 def within_cell_auc_contrast(q_new, q_old, y, phi, groups, *, n_boot=200,
-                             alpha=0.05, seed=0, eps=1e-12, weighting="comparison",
+                             alpha=0.05, seed=0, eps=AUC_EPS, weighting="comparison",
                              weights=None) -> AUCContrast:
     """AUC of each model and their difference, cluster bootstrap over groups."""
     y, phi = np.asarray(y), np.asarray(phi)
-    bn = _blocks(np.log(np.maximum(np.asarray(q_new, float), eps)), y, phi)
-    bo = _blocks(np.log(np.maximum(np.asarray(q_old, float), eps)), y, phi)
+    bn = _blocks(_logq(q_new, eps), y, phi)
+    bo = _blocks(_logq(q_old, eps), y, phi)
     base = np.ones(len(y)) if weights is None else np.asarray(weights, float)
     a_new, a_old = _auc(bn, base, weighting), _auc(bo, base, weighting)
     _, ginv = np.unique(groups, return_inverse=True)
@@ -143,4 +172,4 @@ def within_cell_auc_contrast(q_new, q_old, y, phi, groups, *, n_boot=200,
                        tuple(np.percentile(d, [lo, hi])),
                        tuple(np.percentile(draws[:, 0], [lo, hi])),
                        tuple(np.percentile(draws[:, 1], [lo, hi])),
-                       bn.n_blocks, n_boot)
+                       bn.n_blocks, n_boot, d)

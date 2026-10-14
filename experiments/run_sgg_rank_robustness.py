@@ -20,6 +20,7 @@ Run: python experiments/run_sgg_rank_robustness.py
 """
 from __future__ import annotations
 
+import os
 import json
 import pathlib
 import sys
@@ -31,13 +32,13 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "experiments"))
 from wager.antisymmetric import decompose_gain  # noqa: E402
-from wager.rank import _auc, _blocks, within_cell_auc_contrast  # noqa: E402
+from wager.rank import AUC_EPS, _auc, _blocks, within_cell_auc_contrast  # noqa: E402
 from sgg_variants import load_variant  # noqa: E402
 import run_sgg_audit_wager as AU  # noqa: E402
 
 OUT = ROOT / "results/sgg_rank_robustness.json"
 DDIR = ROOT / "data/vg_motifs/wager_sgg"
-N_BOOT = 200
+N_BOOT = int(os.environ.get("WAGER_N_BOOT", "1000"))
 EPS = 1e-12
 HEAD_MIN, TAIL_MAX = 10_000, 500
 
@@ -79,8 +80,8 @@ def auc_rows(Q, pairs, y, phi, image, aud):
 
 def tier_pair_auc(Q, new, old, y, phi, image, tier_of):
     """Comparison-weighted AUC change within each predicate-tier pair, image bootstrap."""
-    bn = _blocks(np.log(np.maximum(Q[new], EPS)), y, phi)
-    bo = _blocks(np.log(np.maximum(Q[old], EPS)), y, phi)
+    bn = _blocks(np.log(np.maximum(Q[new], AUC_EPS)), y, phi)
+    bo = _blocks(np.log(np.maximum(Q[old], AUC_EPS)), y, phi)
     # tier pair of each block, from the labels of its positive and negative elements
     def block_tiers(bl):
         ylab = y[bl.elem]
@@ -213,6 +214,30 @@ def pixel_data():
     return Q, y, phi, image, cal
 
 
+def refresh_auc():
+    """Recompute only the AUC entries (sgg_auc, tier_pair_auc, pixel_auc and, where
+    present, prior_removal_auc) and merge them into the existing results file; the
+    recalibration entries are left as they are."""
+    out = json.loads(OUT.read_text())
+    Q, raw, y, phi, image, cal = sgg_data(extra=("vis_ctx",) if "prior_removal_auc" in out else ())
+    out["n_boot"] = N_BOOT
+    out["sgg_auc"] = auc_rows(raw, [("TDE", "none"), ("la1", "none"), ("ietrans", "none")],
+                              y, phi, image, ~cal)
+    counts = np.asarray(json.loads((DDIR / "summary.json").read_text())["train_predicate_counts"])[1:]
+    tier_of = np.where(counts > HEAD_MIN, 0, np.where(counts < TAIL_MAX, 2, 1))
+    out["tier_pair_auc"] = {f"{n} vs none": tier_pair_auc(raw, n, "none", y, phi, image, tier_of)
+                            for n in ("TDE", "la1", "ietrans")}
+    if "prior_removal_auc" in out:
+        out["prior_removal_auc"] = auc_rows(raw, [("vis_ctx", "none")], y, phi, image, ~cal)
+    OUT.write_text(json.dumps(out, indent=1))
+    P, py, pphi, pimage, pcal = pixel_data()
+    out["pixel_auc"] = auc_rows(P, [("MLP-VISUAL-S", "MLP-SPATIAL-S"),
+                                    ("MLP-SPATIAL-S", "MLP-CLASS-S"),
+                                    ("MLP-VISUAL-S", "MLP-CLASS-S")], py, pphi, pimage, ~pcal)
+    OUT.write_text(json.dumps(out, indent=1))
+    print(f"refreshed AUC entries in {OUT.relative_to(ROOT)}")
+
+
 def main():
     out = {"n_boot": N_BOOT}
     Q, raw, y, phi, image, cal = sgg_data()
@@ -261,7 +286,9 @@ def add_prior_removal():
 
 
 if __name__ == "__main__":
-    if "--pixel-only" in sys.argv:
+    if "--auc-only" in sys.argv:
+        refresh_auc()
+    elif "--pixel-only" in sys.argv:
         add_pixel_recalibration()
     elif "--prior-removal" in sys.argv:
         add_prior_removal()

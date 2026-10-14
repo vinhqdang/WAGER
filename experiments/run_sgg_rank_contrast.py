@@ -12,6 +12,7 @@ Run: python experiments/run_sgg_rank_contrast.py
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import sys
 
@@ -26,7 +27,7 @@ from sgg_variants import load_variant  # noqa: E402
 DDIR = ROOT / "data/vg_motifs/wager_sgg"
 OUT = ROOT / "results/sgg_rank_contrast.json"
 N_OBJ = 151
-N_BOOT = 200
+N_BOOT = int(os.environ.get("WAGER_N_BOOT", "1000"))
 COMPARISONS = [("TDE", "none"), ("la1", "none"), ("la0.5", "none"),
                ("TDE", "la1"), ("TDE", "ctx"), ("vis_ctx", "none"),
                ("ctx", "none"), ("vis", "none")]

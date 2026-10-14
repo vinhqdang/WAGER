@@ -1,0 +1,109 @@
+{
+ "n_randomizations": 999,
+ "seed": 1,
+ "primary_family": "temperature + class bias",
+ "protocol": "temperature and per-class bias fitted per model on the calibration half, applied and tested on the audit half, renormalised probabilities",
+ "rows": [
+  {
+   "comparison": "TDE vs none",
+   "family": "temperature + class bias",
+   "score": "brier",
+   "case": 0.0044503013643690985,
+   "case_ci": [
+    0.0035442484483347103,
+    0.005356354280403487
+   ],
+   "total": -0.00951199531655796,
+   "group": -0.01396229668092706,
+   "randomization_p": 0.001,
+   "stored_case": 0.0044503013643690985,
+   "case_abs_diff_from_stored": 0.0
+  },
+  {
+   "comparison": "TDE vs none",
+   "family": "temperature + class bias",
+   "score": "log",
+   "case": 0.025432834985265215,
+   "case_ci": [
+    0.022866010716509132,
+    0.027999659254021297
+   ],
+   "total": -0.03317389241242777,
+   "group": -0.058606727397692994,
+   "randomization_p": 0.001,
+   "stored_case": 0.025432834985265215,
+   "case_abs_diff_from_stored": 0.0
+  },
+  {
+   "comparison": "la1 vs none",
+   "family": "temperature + class bias",
+   "score": "brier",
+   "case": 1.0834965317111089e-07,
+   "case_ci": [
+    -3.286739813301692e-07,
+    5.453732876723909e-07
+   ],
+   "total": -4.4792515184497836e-07,
+   "group": -5.562748050160889e-07,
+   "randomization_p": 0.236,
+   "stored_case": 1.0834965317111089e-07,
+   "case_abs_diff_from_stored": 0.0
+  },
+  {
+   "comparison": "la1 vs none",
+   "family": "temperature + class bias",
+   "score": "log",
+   "case": 7.631311061223843e-07,
+   "case_ci": [
+    -2.77848429598091e-06,
+    4.304746508225679e-06
+   ],
+   "total": 1.4926869304654509e-06,
+   "group": 7.295558243430662e-07,
+   "randomization_p": 0.523,
+   "stored_case": 7.631311061223843e-07,
+   "case_abs_diff_from_stored": 0.0
+  },
+  {
+   "comparison": "TDE vs la1",
+   "family": "temperature + class bias",
+   "score": "brier",
+   "case": 0.004450193014715928,
+   "case_ci": [
+    0.003544172858239402,
+    0.005356213171192455
+   ],
+   "total": -0.009511547391406115,
+   "group": -0.013961740406122043,
+   "randomization_p": 0.001
+  },
+  {
+   "comparison": "TDE vs la1",
+   "family": "temperature + class bias",
+   "score": "log",
+   "case": 0.025432071854159098,
+   "case_ci": [
+    0.02286513736835071,
+    0.027999006339967485
+   ],
+   "total": -0.03317538509935824,
+   "group": -0.05860745695351733,
+   "randomization_p": 0.001
+  }
+ ],
+ "temperature_check": {
+  "comparison": "TDE vs none",
+  "family": "temperature",
+  "score": "brier",
+  "case": -5.765411590412484e-05,
+  "case_ci": [
+   -0.0012049178262577356,
+   0.0010896095944494858
+  ],
+  "total": -0.18263980461754775,
+  "group": -0.18258215050164367,
+  "randomization_p": 0.555,
+  "stored_case": -5.765411590412484e-05,
+  "case_abs_diff_from_stored": 0.0
+ }
+}

@@ -32,7 +32,7 @@ import run_sgg_rank_robustness as RR  # noqa: E402
 RES = ROOT / "results"
 OUT = RES / "sgg_equivalence.json"
 Z90 = 1.644854
-SEED, N_BOOT = 0, 200                       # as auc_rows in run_sgg_rank_robustness.py
+SEED, N_BOOT = 0, 1000                      # 1,000 replicates for the tail quantiles of the 90% interval
 FRACTIONS = (0.05, 0.10, 0.25)
 WEIGHTINGS = ("comparison", "relation")
 

@@ -41,7 +41,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "experiments"))
 from wager.antisymmetric import gain_matrix  # noqa: E402
-from wager.rank import _auc, _blocks  # noqa: E402
+from wager.rank import AUC_EPS, _auc, _blocks  # noqa: E402
 from sgg_variants import load_variant  # noqa: E402
 import run_sgg_audit_wager as AU  # noqa: E402
 
@@ -155,7 +155,7 @@ def shifted_auc(n_boot=100, seed=0):
 
     def blocks(v):
         q = load_variant(v)["probs"][keep][:, 1:].astype(np.float64)
-        return _blocks(np.log(np.maximum(q, 1e-12)), y, phi)
+        return _blocks(np.log(np.maximum(q, AUC_EPS)), y, phi)
 
     base = blocks("none")
     out = {}

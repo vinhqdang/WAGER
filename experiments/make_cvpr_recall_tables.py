@@ -412,6 +412,32 @@ def rank_weighting():
     return "\n".join(lines)
 
 
+def label_weighting():
+    """Within-cell AUC change under four weightings (results/sgg_auc_label_weighting.json)."""
+    d = json.loads((RES / "sgg_auc_label_weighting.json").read_text())
+    wts = ("relation", "comparison", "predicate", "pair")
+    lines = [r"\begin{tabular}{@{}l" + "l" * len(wts) + r"@{}}", r"\toprule",
+             "Comparison & " + " & ".join(wts) + r" \\", r"\midrule"]
+    names = {"TDE vs none": "TDE vs base", "la1 vs none": r"LA$_{1}$ vs base",
+             "TDE vs la1": r"TDE vs LA$_{1}$", "ietrans vs none": "IETrans+Rwt vs base",
+             "dlfe vs dlfe_base": "DLFE vs its base"}
+    for k, lab in names.items():
+        r = d["auc"][k]
+        lines.append(lab + " & " + " & ".join(
+            f"${f4(r[w]['difference'])}$ {ci(r[w]['ci95'])}" for w in wts) + r" \\")
+    lines.append(r"\midrule")
+    lines.append(r"90\% bound, TDE vs base & " + " & ".join(
+        f"${d['auc']['TDE vs none'][w]['largest_change_excluded']:.4f}$" for w in wts) + r" \\")
+    lines.append(r"geometry vs class pair & " + " & ".join(
+        f"${f4(d['reference'][w])}$" for w in wts) + r" \\")
+    lines.append(r"\midrule")
+    for t in ("head-head", "head-body", "head-tail", "body-body", "body-tail", "tail-tail"):
+        lines.append(f"weight on {t} & " + " & ".join(
+            f"${d['weight_share'][w][t]:.3f}$" for w in wts) + r" \\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
 def tier_pair():
     d = json.loads((RES / "sgg_rank_robustness.json").read_text())["tier_pair_auc"]
     order = ["head-head", "head-body", "head-tail", "body-body", "body-tail", "tail-tail",
@@ -600,6 +626,7 @@ def main():
     (OUT / "tab_clip_zeroshot_L.tex").write_text(head + clip_zeroshot("clip_zeroshot_audit_L.json") + "\n")
     (OUT / "tab_rank_weighting.tex").write_text(head + rank_weighting() + "\n")
     (OUT / "tab_tier_pair_auc.tex").write_text(head + tier_pair() + "\n")
+    (OUT / "tab_label_weighting.tex").write_text(head + label_weighting() + "\n")
     (OUT / "tab_recalibration.tex").write_text(head + recalibration() + "\n")
     (OUT / "tab_label_shift_path.tex").write_text(head + label_shift_path() + "\n")
     (OUT / "tab_small_cells.tex").write_text(head + small_cells() + "\n")

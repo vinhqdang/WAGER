@@ -141,5 +141,21 @@ def main():
               f"[{r['case_ci'][0]:+.4f}, {r['case_ci'][1]:+.4f}] (share {r['share']:.3f})")
 
 
+def refresh_auc():
+    """Recompute only the within-cell AUC entries (auc and checks.auc_dlfe_vs_dlfe_soft)
+    and merge them into the existing results file."""
+    variants = sorted({v for p in PAIRS + CHECK_PAIRS for v in p})
+    out = json.loads(OUT.read_text())
+    _, raw, y, phi, image, cal = sgg_data(variants)
+    out["n_boot"] = N_BOOT
+    out["auc"] = RR.auc_rows(raw, PAIRS, y, phi, image, ~cal)
+    out["checks"]["auc_dlfe_vs_dlfe_soft"] = RR.auc_rows(raw, CHECK_PAIRS, y, phi, image, ~cal)
+    OUT.write_text(json.dumps(out, indent=1))
+    print(f"refreshed AUC entries in {OUT.relative_to(ROOT)}")
+
+
 if __name__ == "__main__":
-    main()
+    if "--auc-only" in sys.argv:
+        refresh_auc()
+    else:
+        main()
