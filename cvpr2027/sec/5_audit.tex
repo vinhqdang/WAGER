@@ -38,8 +38,8 @@ scaling of logits that barely moves SGG mean recall~\cite{liu2025causal}.)
 \setlength\tabcolsep{0pt}
 \caption{\textbf{Mean recall@50 split} (graph constraint, micro-pooled, class-pair cells)
 against the MOTIFS baseline, except TDE$-$LA. LA: the logit-adjusted baseline; DLFE: against
-its own released baseline; IETrans: the released IETrans+Rwt checkpoint against a separately
-trained baseline. Each model is one released training run; intervals (image-clustered) cover
+its own released baseline; IETrans, PE-Net: the released IETrans+Rwt and
+prototype-based checkpoints against the same, separately trained baseline. Each model is one released training run; intervals (image-clustered) cover
 test sampling only. $\Delta$AUC: within-cell AUC change, weighted as the split weights cells
 ($r$, primary) or by comparison ($c$), $1{,}000$ image-bootstrap replicates; no calibration or group-level shift
 moves it (LA's change is below $10^{-6}$, float32 storage). Lower panel: TDE with other cells, and the
@@ -60,6 +60,8 @@ DLFE & $+.1112$ & $+.1046$ & $+.0065$ & $+.0029$ & $+.0018$ \\
 & & & {\tiny$[+.0010,\!+.0120]$} & {\tiny$[+.0001,\!+.0055]$} & {\tiny$[-.0042,\!+.0070]$} \\
 IETrans & $+.2204$ & $+.2143$ & $+.0060$ & $-.0238$ & $-.0093$ \\
 & & & {\tiny$[-.0031,\!+.0151]$} & {\tiny$[-.0272,\!-.0187]$} & {\tiny$[-.0185,\!-.0001]$} \\
+PE-Net & $+.1703$ & $+.1460$ & $+.0243$ & $+.0050$ & $+.0055$ \\
+& & & {\tiny$[+.0197,\!+.0289]$} & {\tiny$[+.0008,\!+.0091]$} & {\tiny$[-.0033,\!+.0149]$} \\
 \midrule
 \multicolumn{6}{@{}l}{\emph{TDE, other cells or statistic}} \\
 subject & $+.0970$ & $+.0175$ & $+.0794$ & & \\
@@ -101,7 +103,7 @@ it group-level: TDE now says \textsf{parked on} for (\textsf{car}, \textsf{stree
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.76\linewidth]{figures/fig3_recall_by_predicate.pdf}
+\includegraphics[width=0.64\linewidth]{figures/fig3_recall_by_predicate.pdf}
 \caption{\textbf{Where TDE's mean recall went}, for every predicate whose recall@50 moved by
 at least $0.12$: group-level part (blue), case-level part (orange) with its image-clustered
 95\% interval, and the total under logit adjustment of the baseline (diamond), which
@@ -135,8 +137,7 @@ too wide to call it zero.
 \paragraph{The proper score, matched.} Under the primary protocol (\cref{sec:matching}),
 which makes the control identical to the baseline, TDE's quadratic-score change is
 $-0.00951$: $-0.01396$ group-level and $+0.00445$, $[+0.00354,+0.00536]$, $p=.001$, case-level
-($+0.02543$ in log score; \cref{fig:where}; cross-fitted over the two halves $+0.00399$,
-$[+0.00334,+0.00463]$). That part is not a ranking measure: removing
+(\cref{fig:where}; cross-fitted $+0.00399$). That part is not a ranking measure: removing
 TDE's frequency prior, which leaves every within-cell ranking as it was (AUC change
 $-0.00001$), gives $+0.00817$, $[+0.00757,+0.00877]$, under the same protocol, since a per-class
 bias cannot absorb a shift that differs from pair to pair; ranking is read from the AUC
@@ -178,14 +179,13 @@ image-clustered.}
 \resizebox{\linewidth}{!}{\input{supp/tab_protocols_main}}
 \end{table}
 
-\paragraph{Why.} Under the released SUM fusion TDE's change is three subtractions, and the
-split along them adds up exactly (\cref{app:tdepath}): subtracting the averaged context
-supplies $+0.0817$ of the $0.0972$, and that term is, to $99.96\%$ of its energy, one vector
-shared by every relation, correlated $+0.75$ with the log training prior. In PredCls TDE is
-to first order a learned logit adjustment, which is why the explicit one reproduces it. Where
-the two part, on zero-shot recall ($+0.035$ for TDE over the control), TDE's case-level part,
-$+0.013$, comes with an AUC that \emph{falls} on comparisons involving an unseen triplet,
-$-0.015$, $[-0.020,-0.006]$ (\cref{app:zeroshot}).
+\paragraph{Why.} TDE's change is three subtractions whose splits add up exactly
+(\cref{app:tdepath}); the averaged context supplies $+0.0817$ of the $0.0972$, and that term is,
+to $99.96\%$ of its energy, one vector shared by every relation, correlated $+0.75$ with the log
+training prior: in PredCls TDE is to first order a learned logit adjustment. On zero-shot
+recall, where TDE beats the control by $+0.035$, its case-level part, $+0.013$, comes with an AUC
+that \emph{falls} on comparisons involving an unseen triplet, $-0.015$, $[-0.020,-0.006]$
+(\cref{app:zeroshot}).
 
 \paragraph{Two more methods.} DLFE~\cite{chiou2021recovering} divides predicate
 probabilities by estimated label frequencies, a per-predicate log-odds shift, and is released
@@ -203,6 +203,15 @@ the recorded labels, and IETrans relabels general predicates as specific ones, s
 may be synonymy rather than lost discrimination. No IETrans baseline was released: this
 compares two separately trained models and does not isolate the effect of relabelling; merging
 synonymous predicates leaves the loss in place (\cref{app:ambiguity}).
+
+\paragraph{A method that is not a prior correction.} PE-Net~\cite{zheng2023prototype} scores a
+relation by its similarity to learned predicate prototypes, with no prior. Its released PredCls checkpoint, re-run and replayed like the others ($R@50=0.6523$,
+$mR@50=0.3142$, as published; \cref{app:penet}), gains $+0.1703$ of mean recall over the
+separately trained MOTIFS baseline: $+0.1460$ group-level ($86\%$) and $+0.0243$,
+$[+0.0197,+0.0289]$, case-level. Unlike TDE's, its within-cell AUC \emph{rises}, $+0.0050$,
+$[+0.0008,+0.0091]$, relation-weighted and $+0.0187$, $[+0.0037,+0.0337]$, per predicate pair,
+and matched, its quadratic gain is all case-level ($+0.00609$ of $+0.00634$). Where a method
+does gain discrimination, the split shows it, here a twelfth of what box geometry buys.
 
 \paragraph{Beyond PredCls.} The release's SGCls and SGDet checkpoints give all three
 models shared object predictions, so the ground-truth pair remains a common grouping

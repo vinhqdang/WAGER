@@ -2,7 +2,7 @@
 
 Each Colab rerun writes one directory under data/vg_motifs/ (wager_sgg for the
 causal MOTIFS checkpoint, wager_ietrans for IETrans, wager_dlfe for the DLFE
-release and its own baseline) holding meta.npz and one
+release and its own baseline, wager_penet for the PE-Net release) holding meta.npz and one
 variant_<name>.npz per model. Variant names are unique across directories, so a
 comparison can pair models from different checkpoints -- but only if both runs
 scored the same relations in the same order, which load_variant enforces against
@@ -17,7 +17,7 @@ import numpy as np
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 MDIR = ROOT / "data/vg_motifs"
 REFERENCE = MDIR / "wager_sgg"
-RUNS = (REFERENCE, MDIR / "wager_ietrans", MDIR / "wager_dlfe")
+RUNS = (REFERENCE, MDIR / "wager_ietrans", MDIR / "wager_dlfe", MDIR / "wager_penet")
 ALIGN_KEYS = ("image_index", "pred", "subj", "obj", "sbox", "obox")
 _checked: set[pathlib.Path] = set()
 

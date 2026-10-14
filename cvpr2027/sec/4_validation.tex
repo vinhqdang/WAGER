@@ -29,10 +29,9 @@ an MLP on class embeddings (MLP-CLASS), and MLPs adding twelve box-geometry feat
 (MLP-SPATIAL, MLP-SPATIAL+). The audit covers $227{,}337$ of $229{,}605$ test relations
 ($99.0\%$) in $6{,}346$ class-pair cells.
 
-MLP-CLASS beats FREQ by $0.03386$ of quadratic score and the split assigns \emph{all} of it
-to the group-level part: the case-level gain is $0.00000$ with a zero-width interval, an
-algebraic zero (both models are functions of the class pair, so \cref{thm:population} forces
-it) and the sharpest check that nothing is credited to case-level evidence when none exists.
+MLP-CLASS beats FREQ by $0.03386$ of quadratic score, all group-level: the case-level gain is
+$0.00000$ with a zero-width interval, as \cref{thm:population} forces for two functions of the
+class pair.
 Adding box geometry yields a case-level gain of $0.01439$ (CI $[0.01373,0.01504]$, $p=.002$)
 that no aggregate isolates; against MLP-CLASS the total gain of $0.00885$ even
 \emph{understates} it, because the group-level part falls by $0.00554$.

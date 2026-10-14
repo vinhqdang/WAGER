@@ -1,7 +1,7 @@
 #!/bin/bash
 # Get a Colab T4 on any of the stored accounts (retrying every 10 min), upload the
 # DLFE audit scripts and start the chain detached. SESSION names the session.
-export PATH="$HOME/.local/bin:$PATH"; D=~/.config/colab-cli; R=/home/user/WAGER/experiments; cd /tmp
+export PATH="$HOME/.local/bin:$PATH"; D=~/.config/colab-cli; R=$(cd "$(dirname "$0")" && pwd); cd /tmp
 SESSION=${SESSION:-dlfe}
 for i in $(seq 1 ${TRIES:-12}); do
   for acct in ${ACCOUNTS:-1 2 3}; do

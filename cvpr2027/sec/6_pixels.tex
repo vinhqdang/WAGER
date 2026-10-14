@@ -26,13 +26,10 @@ the sign reverses, $+0.0085$, $[-0.0062,+0.0237]$. Over five training seeds
 (\cref{app:vgseeds}) the CLIP model's temperature-matched advantage stays between $+0.00413$ and
 $+0.00474$, its accuracy below geometry's.
 
-\paragraph{Under a label shift.} A label shift moves group-level parts and only reweights
-case-level ones (\cref{sec:method}). Along a path to uniform predicate frequencies within each
+\paragraph{Under a label shift.} Along a path to uniform predicate frequencies within each
 pair (\cref{app:labelshift}), seven of the eight group-level parts of \cref{sec:sggaudit} and
-this section change sign, and the CLIP model beats geometry by $+0.02981$. Five of the six
-case-level parts that excluded zero keep their sign and grow; TDE's rises from $-0.00006$ to
-$+0.01430$, $[+0.01116,+0.01744]$, while the AUC separates it from the baseline at neither end:
-TDE gains discrimination between some predicate pairs and loses it between others.
+this section change sign, and the CLIP model beats geometry by $+0.02981$; five of the six
+case-level parts that excluded zero keep their sign and grow, as \cref{sec:method} predicts.
 
 \paragraph{A debiasing gain that is case-level.}\label{sec:further} On
 Waterbirds~\cite{sagawa2020distributionally}, with the background scene as the cell and linear

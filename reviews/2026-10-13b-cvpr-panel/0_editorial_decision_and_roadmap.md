@@ -315,3 +315,18 @@ We invite a revised manuscript that addresses the eight required items and state
 | R5-8 | Done | "How to read the split" paragraph in Sec. 5 (who wants which part; what would change the verdict; label-mix dependence with TDE's number); case-level glossed as a within-pair covariance; intro's question tied to TDE's stated motivation. |
 
 Page budget: the paper stays at 8 pages; offsetting cuts were made in Sec. 2-4, 6 and 7 (the worked example moved to the supplement's existing Appendix A). Verifier: all checks pass, with new checks for every number added, signed comparison for signed literals, and an assertion that the control's AUC change is zero to 1e-6.
+
+## Status after the should-fix pass (2026-10-14)
+
+| Ref | Status | What changed |
+|---|---|---|
+| R5-10 | Done (partly) | Abstract and intro shortened; related work, Sec. 4, Sec. 6 and the conclusion condensed; Fig. 3 reduced. Fig. 2b legend unchanged. Paper at eight pages. |
+| R5-11 | Done | `experiments/sgg_interval_and_diagnostics.py`: delete-a-group image jackknife SE 9-13% above the influence-function SE, headline interval [+0.0088, +0.0173] (in Sec. 5); image-bootstrap check on VG150 (1,000 replicates): SE/SD 0.97 but coverage of the full-sample value 88%, attributed to duplicated images forming zero-kernel pairs; reported as such in App. C, no claim of certified nominal coverage. |
+| R5-12 | Wording route | Sec. 5 states that a per-class bias cannot absorb a pair-varying shift and that ranking is read from the AUC alone; no pair-indexed family added. |
+| R5-13 | Wording route | Single released run stated in the abstract, Table 1 caption and limitations. |
+| R5-14 | Done | PE-Net (prototype-based, CVPR 2023) released PredCls checkpoint re-run on Colab, evaluator reproduces the published R@50 0.6523 / mR@50 0.3142; against the separately trained MOTIFS baseline its mR@50 gain is 86% group-level, case-level +0.0243 [+0.0197, +0.0289], and its within-cell AUC rises (+0.0050 [+0.0008, +0.0091] relation-weighted, +0.0187 per pair). New Table 1 row, Sec. 5 paragraph, App. `app:penet`. Deviation: relation NMS evaluated with a row-blocked re-implementation (memory), identical on 300 images. |
+| R5-15 | Done | Waterbirds contrast in Sec. 6 (group reweighting: worst-group accuracy 0.643 to 0.854, case-level +0.0914, AUC +0.0031). |
+| R5-16 | Done | `experiments/sgg_auc_label_ambiguity.py`, App. `app:ambiguity`: synonym merging leaves TDE's null and IETrans's loss in place; IETrans's loss concentrates in within-synonym-group pairs (-0.0177 vs -0.0071). |
+| R5-17 | Done | SQUAT, VRT and arXiv 2503.17862 cited; the control is distinguished from that paper's inverse-frequency logit scaling. App. `app:zeroshot` compares the split with head/body/tail and zero-shot recall: tiers cannot tell TDE from the control; zero-shot recall can (+0.033 vs -0.004), and its case-level part over the control (+0.0131) comes with an AUC that falls on unseen-triplet comparisons (-0.0149 [-0.0203, -0.0056]). |
+| R5-19 | Done | PredCls in the abstract's first sentence; SGDet matched fraction (65%) and a selection-effect note. |
+| R5-20 | Done | Declaration timing stated (post hoc for TDE and IETrans); multiplicity sentence pointing to the all-configurations table. |

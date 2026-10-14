@@ -1,0 +1,37 @@
+{
+ "model": "penet",
+ "checkpoint": "/content/penet_ckpt/pred_cls_model_final.pth",
+ "printed": [
+  "SGG eval:     R @ 20: 0.5821;     R @ 50: 0.6523;     R @ 100: 0.6735;  for mode=predcls, type=Recall(Main).",
+  "SGG eval:  ng-R @ 20: 0.6572;  ng-R @ 50: 0.8164;  ng-R @ 100: 0.8963;  for mode=predcls, type=No Graph Constraint Recall(Main).",
+  "SGG eval:    zR @ 20: 0.1061;    zR @ 50: 0.1713;    zR @ 100: 0.2108;  for mode=predcls, type=Zero Shot Recall.",
+  "SGG eval: ng-zR @ 20: 0.1213; ng-zR @ 50: 0.2420; ng-zR @ 100: 0.3725;  for mode=predcls, type=No Graph Constraint Zero Shot Recall.",
+  "SGG eval:    mR @ 20: 0.2583;    mR @ 50: 0.3142;    mR @ 100: 0.3348;  for mode=predcls, type=Mean Recall.",
+  "SGG eval: ng-mR @ 20: 0.3060; ng-mR @ 50: 0.4547; ng-mR @ 100: 0.5744;  for mode=predcls, type=No Graph Constraint Mean Recall.",
+  "SGG eval:     A @ 20: 0.5528;     A @ 50: 0.5540;     A @ 100: 0.5540;  for mode=predcls, type=TopK Accuracy."
+ ],
+ "values": {
+  "R@20": 0.5821,
+  "R@50": 0.6523,
+  "R@100": 0.6735,
+  "ng-R@20": 0.6572,
+  "ng-R@50": 0.8164,
+  "ng-R@100": 0.8963,
+  "zR@20": 0.1061,
+  "zR@50": 0.1713,
+  "zR@100": 0.2108,
+  "ng-zR@20": 0.1213,
+  "ng-zR@50": 0.242,
+  "ng-zR@100": 0.3725,
+  "mR@20": 0.2583,
+  "mR@50": 0.3142,
+  "mR@100": 0.3348,
+  "ng-mR@20": 0.306,
+  "ng-mR@50": 0.4547,
+  "ng-mR@100": 0.5744,
+  "A@20": 0.5528,
+  "A@50": 0.554,
+  "A@100": 0.554
+ },
+ "note": "evaluator re-run in cache mode after an OOM kill"
+}

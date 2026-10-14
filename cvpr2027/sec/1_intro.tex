@@ -44,8 +44,7 @@ constraint (\cref{tab:protocols} gives the protocols where the two diverge). TDE
 as removing the harmful part of the training bias while keeping the good
 context~\cite{tang2020unbiased}; on this checkpoint its gain is a change in which predicates
 are favoured within each pair, and DLFE~\cite{chiou2021recovering} and
-IETrans~\cite{zhang2022finegrained} show the same pattern. Debiasing can buy case-level gain:
-on Waterbirds group reweighting does (\cref{sec:further}).
+IETrans~\cite{zhang2022finegrained} show the same pattern.
 
 \paragraph{Contributions.} (i) An exact, model-free decomposition of the difference between
 two frozen models into a group-level part and a within-group covariance, the paired-gain form
@@ -55,14 +54,14 @@ operating-point control and a threshold-free within-group AUC. (ii) Validation t
 case-level part is zero when it should be and covers at the nominal rate under image
 clustering, with a map of what it does not separate: calibration, the operating point, the
 label mix and pair-varying prior shifts all move it, so ranking claims rest on the control and
-the AUC. (iii) Audits of three released prior-correcting checkpoints that split their
+the AUC. (iii) Audits of three released prior-correcting checkpoints and one prototype-based
+checkpoint that split their
 mean-recall gains exactly, with the mechanism behind TDE's.
 
-\paragraph{What is not claimed.} The audits cover three prior-correcting methods on one
-architecture family, one released training run each, in PredCls, where every model sees the
-cell (with a TDE replication in SGCls and SGDet, \cref{sec:sggaudit}); we expect the pattern to
-hold for other prior shifts and claim nothing about methods that change features, prototypes,
-one-stage detectors or vision--language models. The split is conditional on the declared
+\paragraph{What is not claimed.} The audits cover four released checkpoints, one training
+run each, in PredCls, where every model sees the cell (with a TDE replication in SGCls and SGDet,
+\cref{sec:sggaudit}): three prior corrections and one prototype-based model. We claim nothing
+about one-stage detectors or vision--language models. The split is conditional on the declared
 grouping, and $\hdR$, a covariance \emph{among relations sharing an object pair}, credits any
 signal varying inside a pair, a shortcut nobody recorded included. It is not invariant to
 recalibration, the operating point or the label mix, which is why confidence-matched

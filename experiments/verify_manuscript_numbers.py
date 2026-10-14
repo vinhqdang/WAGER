@@ -830,6 +830,41 @@ CHECKS += [
     ("cvpr amb within share %", "5_robust.tex", "$21\\%$", 100 * _amb["pair_type_auc"]["ietrans vs none"]["within-group"]["weight_share"], 0.5),
     ("cvpr amb iet merged rel", "5_robust.tex", "-0.0255", _amb["merged_auc"]["synonym"]["comparisons"]["ietrans vs none"]["relation"]["difference"], 5e-5),
 ]
+_pn = load("sgg_penet_audit.json")
+_pnm = load("sgg_recall_split_penet_vs_none.json")["results"]["gc@50"]["mean_recall"]
+_pno = load("penet_official_recall.json")
+_pnq = _pn["matched_split"]
+CHECKS += [
+    # R5-14: PE-Net, a method that is not a prior correction
+    ("cvpr penet dmR", "5_audit.tex", "$+0.1703$", _pnm["total"], 5e-5),
+    ("cvpr penet group", "5_audit.tex", "$+0.1460$", _pnm["group"], 5e-5),
+    ("cvpr penet case", "5_audit.tex", "$+0.0243$", _pnm["case"], 5e-5),
+    ("cvpr penet case lo", "5_audit.tex", "+0.0197", _pnm["case_ci"][0], 5e-5),
+    ("cvpr penet case hi", "5_audit.tex", "+0.0289", _pnm["case_ci"][1], 5e-5),
+    ("cvpr penet share %", "5_audit.tex", "$86\\%$", 100 * _pnm["group"] / _pnm["total"], 0.5),
+    ("cvpr penet auc r", "5_audit.tex", "$+0.0050$", _pn["auc"]["relation"]["difference"], 5e-5),
+    ("cvpr penet auc r lo", "5_audit.tex", "+0.0008,+0.0091", "checked by value below", 0),
+    ("cvpr penet auc r lo v", "5_robust.tex", "+0.0008", _pn["auc"]["relation"]["ci95"][0], 5e-5),
+    ("cvpr penet auc r hi v", "5_robust.tex", "+0.0091", _pn["auc"]["relation"]["ci95"][1], 5e-5),
+    ("cvpr penet auc pair", "5_audit.tex", "$+0.0187$", _pn["auc"]["pair"]["difference"], 5e-5),
+    ("cvpr penet auc pair lo", "5_audit.tex", "+0.0037", _pn["auc"]["pair"]["ci95"][0], 5e-5),
+    ("cvpr penet auc pair hi", "5_audit.tex", "+0.0337", _pn["auc"]["pair"]["ci95"][1], 5e-5),
+    ("cvpr penet auc c", "5_robust.tex", "$+0.0055$", _pn["auc"]["comparison"]["difference"], 5e-5),
+    ("cvpr penet auc c lo", "5_robust.tex", "-0.0033", _pn["auc"]["comparison"]["ci95"][0], 5e-5),
+    ("cvpr penet auc c hi", "5_robust.tex", "+0.0149", _pn["auc"]["comparison"]["ci95"][1], 5e-5),
+    ("cvpr penet auc pred", "5_robust.tex", "-0.0054", _pn["auc"]["predicate"]["difference"], 5e-5),
+    ("cvpr penet top1", "5_robust.tex", "$0.666$", _pn["top1_accuracy"]["penet"], 5e-4),
+    ("cvpr penet R50", "5_audit.tex", "$R@50=0.6523$", "checked by value below", 0),
+    ("cvpr penet R50 v", "5_robust.tex", "0.6523", _pno["models"]["penet"]["recalls"]["R@50"]["replayed"], 5e-5),
+    ("cvpr penet mR50 v", "5_robust.tex", "0.3142", _pno["models"]["penet"]["recalls"]["mR@50"]["replayed"], 5e-5),
+    ("cvpr penet tb total", "5_audit.tex", "$+0.00634$", _pnq[0]["temperature + class bias, brier"]["total"], 5e-6),
+    ("cvpr penet tb case", "5_audit.tex", "$+0.00609$", _pnq[0]["temperature + class bias, brier"]["case"], 5e-6),
+    ("cvpr penet tb group", "5_robust.tex", "$+0.00024$", _pnq[0]["temperature + class bias, brier"]["group"], 5e-6),
+    ("cvpr penet tb lo", "5_robust.tex", "+0.00493", _pnq[0]["temperature + class bias, brier"]["case_ci"][0], 5e-6),
+    ("cvpr penet tb hi", "5_robust.tex", "+0.00726", _pnq[0]["temperature + class bias, brier"]["case_ci"][1], 5e-6),
+    ("cvpr penet t case", "5_robust.tex", "$+0.00852$", _pnq[0]["temperature, brier"]["case"], 5e-6),
+    ("cvpr penet st case", "5_robust.tex", "$-0.00899$", _pnq[0]["shared temperature, brier"]["case"], 5e-6),
+]
 _ok = (_eqr["tost"]["10%"]["equivalent"] and _eqr["tost"]["25%"]["equivalent"]
        and not _eqr["tost"]["5%"]["equivalent"]
        and _eqa["tost"]["25%"]["equivalent"] and not _eqa["tost"]["10%"]["equivalent"]

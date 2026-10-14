@@ -228,6 +228,8 @@ data/vg_motifs/*
 !data/vg_motifs/wager_ietrans_raw/
 !data/vg_motifs/wager_dlfe/
 !data/vg_motifs/wager_dlfe_raw/
+!data/vg_motifs/wager_penet/
+!data/vg_motifs/wager_penet_raw/
 !data/vg_motifs/wager_sgcls/
 !data/vg_motifs/wager_sgdet/
 !data/vg_visual/

@@ -88,8 +88,25 @@ cvpr matched quad dR ci lo
 cvpr matched quad p
 cvpr official TDE-LA lo
 cvpr official perm case
-cvpr official perm case lo
 cvpr official perm share %
+cvpr penet R50
+cvpr penet R50 v
+cvpr penet auc pair
+cvpr penet auc pair hi
+cvpr penet auc pair lo
+cvpr penet auc r
+cvpr penet auc r hi v
+cvpr penet auc r lo
+cvpr penet auc r lo v
+cvpr penet case
+cvpr penet case hi
+cvpr penet case lo
+cvpr penet dmR
+cvpr penet group
+cvpr penet mR50 v
+cvpr penet share %
+cvpr penet tb case
+cvpr penet tb total
 cvpr primary p TDE
 cvpr prior-removal AUC cmp
 cvpr prior-removal Tb case
@@ -108,7 +125,6 @@ cvpr review oracle group
 cvpr review oracle total
 cvpr review share K20 %
 cvpr review tde auc bound
-cvpr robustness value
 cvpr sgdet matched %
 cvpr share K100 %
 cvpr sim calib matched sd
@@ -177,6 +193,7 @@ path avg dmR
 path avg-ctx corr log prior
 path avg-ctx global share, %
 path vis case
+path vis case hi
 ps LA quad case
 rankrob CLIP-geo rel
 rankrob CLIP-geo rel hi
@@ -201,11 +218,9 @@ rankrob recal TDE shared
 rankrob recal TDE tb
 rankrob recal TDE tb hi
 rankrob recal TDE tb lo
-rankrob recal TDE tb log
 rankrob small VG %
 rankrob small n2 %
 rankrob tier hh weight %
-rankrob two-case share %
 rec LA R@50
 rec LA case
 rec LA dmR
@@ -257,8 +272,6 @@ shift CLIP-geo case
 shift CLIP-geo total
 shift TDE auc original
 shift TDE case
-shift TDE case hi
-shift TDE case lo
 sim calib matched dR
 sim calib raw dR
 sim coverage clustered

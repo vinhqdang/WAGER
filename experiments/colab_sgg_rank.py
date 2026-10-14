@@ -110,6 +110,26 @@ MODES = {
             "dlfe_base": lambda b: b["out"],
         },
     },
+    # released PE-Net PredCls checkpoint (colab_penet_stage2.py): softmax of the
+    # cosine predicate logits. The evaluator's predcls graph-constrained recall applies
+    # rel_nms (sgg_eval.py, SGRecall) so each pair carries the one predicate rel_nms
+    # assigns; the variant's gc_rank follows that path, and the no-rel_nms replay
+    # (argmax predicate per pair) is kept in the summary as recalls_without_rel_nms.
+    "penet": {
+        "code": f"{ROOT}/penet",
+        "eval": f"{ROOT}/out_penet_predcls/inference/VG_stanford_filtered_with_attribute_test",
+        "dump": f"{ROOT}/dump_penet", "out": f"{ROOT}/wager_penet_raw/penet",
+        "keys": ("pairs", "soft", "out"),
+        "official": "penet",
+        "to_prob": lambda x: x,
+        "identity": lambda b: b["soft"],
+        "la_base": None,
+        "h5": "datasets/vg/VG-SGG-with-attri.h5",
+        "rel_nms": True,
+        "variants": {
+            "penet": lambda b: b["out"],
+        },
+    },
 }
 CFG = MODES[MODE]
 SGG = CFG["code"]
@@ -206,6 +226,56 @@ def relation_ranks(prob, order, cands):
             np.minimum(n_out, BIG).astype(np.uint8))
 
 
+def recall_summary(gc, ng, y, inv):
+    """Official-style R@K, mR@K (graph-constrained, and ng_ no-graph-constraint) from
+    per-relation ranks; the same arithmetic as the summary loop in main()."""
+    out = {}
+    for tag, rk in (("", gc), ("ng_", ng)):
+        own = rk[np.arange(len(y)), y]
+        for K in KS:
+            hit = (own < K).astype(np.float64)
+            per_img = np.bincount(inv, hit) / np.bincount(inv)
+            out[f"{tag}R@{K}"] = float(per_img.mean())
+            cell = inv * 51 + y
+            ch = np.bincount(cell, hit, minlength=(inv.max() + 1) * 51)
+            cn = np.bincount(cell, minlength=(inv.max() + 1) * 51)
+            ch, cn = ch.reshape(-1, 51), cn.reshape(-1, 51)
+            per = []
+            for q in range(1, 51):
+                msk = cn[:, q] > 0
+                per.append(float((ch[msk, q] / cn[msk, q]).mean()) if msk.any() else 0.0)
+            out[f"{tag}mR@{K}"] = float(np.mean(per))
+    return out
+
+
+def gc_from(top, pair_rank, cands):
+    """Graph-constrained first-hit ranks when each pair carries one predicate `top`
+    and sits at position `pair_rank` in the evaluator's order."""
+    g_out = np.full((len(cands), 51), BIG, dtype=np.int64)
+    for r, cc in enumerate(cands):
+        if len(cc):
+            np.minimum.at(g_out[r], top[cc], pair_rank[cc])
+    return np.minimum(g_out, BIG).astype(np.uint8)
+
+
+def nms_predcls_ranks(pr, off_pairs, off_scores, off_order):
+    """The evaluator's predcls path (sgg_eval.SGRecall.calculate_recall) with rel_nms,
+    replayed on the official per-image arrays: returns, in dump order, the predicate
+    rel_nms assigns to each pair and the pair's position in the sorted order."""
+    from maskrcnn_benchmark.data.datasets.evaluation.vg.sgg_eval import rel_nms
+    boxes = pr.convert("xyxy").bbox.detach().cpu().numpy()
+    labels = pr.get_field("pred_labels").long().detach().cpu().numpy()
+    obj_scores = pr.get_field("pred_scores").detach().cpu().numpy()
+    pred_rels, pred_scores = rel_nms(boxes, labels, off_pairs, off_scores, 0.6)
+    sort_idx = np.argsort(-(pred_scores * obj_scores[off_pairs[:, 0]] * obj_scores[off_pairs[:, 0]]))
+    m = len(off_order)
+    top = np.empty(m, dtype=np.int64)
+    top[off_order] = pred_rels
+    rank = np.empty(m, dtype=np.int64)
+    rank[off_order[sort_idx]] = np.arange(m)
+    return top, rank
+
+
 def main():
     import torch
     from maskrcnn_benchmark.utils.miscellaneous import bbox_overlaps
@@ -230,6 +300,7 @@ def main():
            "rel_without_gt_pair": 0, "top100_ties": {v: 0 for v in VARIANTS},
            "order_mismatch_TDE": 0}
     seen = set()
+    extra_gc = []                     # penet: graph ranks without rel_nms (summary only)
 
     for cf in sorted(glob.glob(f"{DUMP}/chunk_*.npz")):
         if cf.endswith(".tmp.npz"):
@@ -283,6 +354,9 @@ def main():
             p_off = np.empty_like(p_tde)
             p_off[off_order] = off_scores          # the evaluated TDE scores
 
+            nms_top = nms_rank = None
+            if CFG.get("rel_nms"):
+                nms_top, nms_rank = nms_predcls_ranks(pr, off_pairs, off_scores, off_order)
             for v, f in VARIANTS.items():
                 if v == OFFICIAL:
                     p, order = p_off, off_order     # the evaluated order
@@ -293,6 +367,9 @@ def main():
                     srt = p[order][:, 1:].max(1)[:101]
                     chk["top100_ties"][v] += int((np.diff(srt) == 0).sum())
                 g_out, n_out = relation_ranks(p, order, cands)
+                if nms_top is not None and v == OFFICIAL:
+                    extra_gc.append(g_out)          # argmax predicate per pair, no rel_nms
+                    g_out = gc_from(nms_top, nms_rank, cands)
                 gc[v].append(g_out)
                 ng[v].append(n_out)
                 own = lut[rel[:, 0], rel[:, 1]]
@@ -352,6 +429,15 @@ def main():
         summary["recalls"][v] = out
         log(f"{v}: " + ", ".join(f"{k} {val:.4f}" for k, val in out.items()
                                   if k.endswith("@50")))
+    if extra_gc:
+        # PE-Net: the same official model replayed with the argmax predicate per pair,
+        # i.e. the evaluator without rel_nms, for the record
+        gcx = np.concatenate(extra_gc)
+        ngx = np.load(f"{OUT}/variant_{OFFICIAL}.npz")["ng_rank"]
+        summary["recalls_without_rel_nms"] = {OFFICIAL: recall_summary(gcx, ngx, y, inv)}
+        log("without rel_nms: " + ", ".join(f"{k} {val:.4f}" for k, val in
+                                           summary["recalls_without_rel_nms"][OFFICIAL].items()
+                                           if k.endswith("@50")))
     rd = f"{EVAL}/result_dict.pytorch"
     if os.path.exists(rd):
         r = torch.load(rd, map_location="cpu", weights_only=False)

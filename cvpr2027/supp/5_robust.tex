@@ -353,6 +353,35 @@ DLFE's top-1 predicate accuracy is $0.543$ against $0.692$ for its baseline. The
 TDE's: a large group-level gain bought with recall; the within-pair ranking gains slightly,
 by $0.003$, under the split's weighting only, a twentieth of what box geometry buys.
 
+\subsection{A method that is not a prior correction: PE-Net}\label{app:penet}
+
+PE-Net~\cite{zheng2023prototype} embeds each relation and each predicate prototype in a common
+space and scores a predicate by scaled cosine similarity; it adds no frequency prior. Its authors
+release a VG150 PredCls checkpoint built on the same benchmark code. We ran it once on the
+canonical test split (\texttt{colab\_penet\_stage1.py}, \texttt{colab\_penet\_stage2.py},
+\texttt{expand\_penet\_to\_standard.py}, \texttt{run\_sgg\_penet\_audit.py}), dumping the
+predicate distribution the evaluator ranks for every ground-truth relation. Its evaluator applies
+a relation-level non-maximum suppression in PredCls; the shipped implementation forms an
+$N\times N\times51$ array per image and exhausted memory on the densest images, so we evaluated
+with a row-blocked version computing the same quantities (\texttt{penet\_rel\_nms\_chunked.py},
+identical to the original on 300 random images). The evaluator then prints $R@50=0.6523$ and
+$mR@50=0.3142$, the published values, and the replay from the dumped ranks equals it exactly; the
+same $183{,}642$ relations are scored as in every other audit.
+
+No PE-Net baseline was released, so the comparison is against the MOTIFS baseline of the TDE
+release, a separately trained model of another architecture. Top-1 predicate accuracy is $0.666$
+against $0.698$. The mean-recall@50 gain, $+0.1703$, is $+0.1460$ group-level and $+0.0243$,
+$[+0.0197,+0.0289]$, case-level; the case-level share is $14\%$ to $25\%$ across the six recall
+protocols, against $13\%$ for TDE at $K=50$. The within-cell AUC rises under the split's weighting,
+$+0.0050$, $[+0.0008,+0.0091]$, and per predicate pair, $+0.0187$, $[+0.0037,+0.0337]$; by comparison,
+$+0.0055$, $[-0.0033,+0.0149]$, and per predicate, $-0.0054$, $[-0.0435,+0.0256]$, the intervals
+cover zero. Matched by a temperature and a per-class bias, its quadratic gain is $+0.00634$:
+$+0.00024$ group-level and $+0.00609$, $[+0.00493,+0.00726]$, case-level ($+0.00852$ with a
+temperature alone, $-0.00899$ with one shared temperature: as for TDE, the proper-score part
+depends on the matching, and ranking is read from the AUC). Of the four audited
+checkpoints it is the only one whose within-pair ranking improves under two weightings, by about a
+twelfth of what box geometry buys.
+
 \subsection{Stratified and zero-shot recall}\label{app:zeroshot}
 
 Head/body/tail recall~\cite{li2021bgnn} and zero-shot recall~\cite{lu2016visual} are the usual

@@ -1,11 +1,9 @@
 \section{Related work}\label{sec:related}
 
 \paragraph{Bias and its evaluation in scene graph generation.}\label{sec:related-applied}
-Scene graph generation was posed as structured prediction over a whole image, solved by
-message passing between object and relation nodes~\cite{xu2017scene}; MOTIFS then showed a
-frequency predictor of the predicate given the object pair to be surprisingly
-competitive~\cite{zellers2018neural}. Mean recall became the headline metric, and debiasing
-methods now span the causal TDE intervention~\cite{tang2020unbiased}, class-balanced sampling
+Since MOTIFS showed a frequency predictor of the predicate given the object pair to be
+competitive~\cite{xu2017scene,zellers2018neural}, mean recall has become the headline metric,
+and debiasing methods span the causal TDE intervention~\cite{tang2020unbiased}, class-balanced sampling
 and group-wise learning~\cite{desai2021learning,dong2022stacked}, predicate-rebalancing message
 passing~\cite{li2021bgnn}, predicate-correlation and hierarchical
 losses~\cite{yan2020pcpl,yu2021cogtree,lyu2022fine}, prototype embeddings~\cite{zheng2023prototype}, edge-selective and relation-aware transformers~\cite{jung2023devil,sudhakaran2023vision}, and
