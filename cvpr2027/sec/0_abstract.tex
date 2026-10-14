@@ -1,21 +1,24 @@
 \begin{abstract}
 Debiasing methods for scene graph generation are judged by mean recall, and one of the best
-known, Total Direct Effect (TDE), raises it on Visual Genome from 14.6 to 24.8. What did
-those ten points buy? A model raises mean recall either by predicting rare predicates more
-often within each subject--object pair, or by telling which individual relations carry
-them, and the metric credits both alike. Scoring each prediction against the label of
-another relation from the same pair keeps the pair's predicate frequencies but breaks the
-link between each relation and its own label. This splits the difference between two frozen
-models, in a proper score or in mean recall itself, exactly into a group-level part and a
-case-level covariance, in $O(NK)$ time with image-clustered intervals. We audit three released
-Neural-Motifs checkpoints in PredCls. For TDE, 87\% of the mean-recall@50 gain (graph-constrained,
-micro-pooled; interval 83--91\%) is group-level when cells are subject--object class pairs, and
-a logit adjustment that changes no ranking within any pair recovers $+0.094$ of its $+0.097$ at
-under a tenth of TDE's cost in recall. The within-pair AUC excludes a change in TDE's ranking
-larger than $0.0034$ with cells weighted as in the split, but only one larger than $0.0077$ when
-every comparison counts once, and TDE's case-level part grows when the label mix is made
-uniform within pairs. DLFE, against its own released baseline, gains 11 points, 94\% group-level, and its
-within-pair ranking does not move detectably; IETrans, against a separately trained baseline,
-gains 21 points, 97\% group-level, and its within-pair ranking falls. SGCls and SGDet
-replications of TDE agree.
+known, Total Direct Effect (TDE), raises it in Visual Genome PredCls from 14.6 to 24.8. What
+did those ten points buy? A model raises mean recall either by predicting rare predicates more
+often within each subject--object pair, or by telling which individual relations carry them,
+and the metric credits both alike. Scoring each prediction against the label of another
+relation from the same pair keeps the pair's predicate frequencies but breaks the link between
+each relation and its own label. This splits the difference between two frozen models, in a
+proper score or in mean recall itself, exactly into a group-level part and a within-pair
+covariance, in $O(NK)$ time with image-clustered intervals. We audit three released
+Neural-Motifs PredCls checkpoints of prior-correcting methods, one training run each. With
+subject--object class pairs as cells, 87\% of TDE's mean-recall@50 gain (graph-constrained,
+micro-pooled; interval 83--91\%) is group-level, 84\% of the official per-image statistic; with
+subject classes alone as cells it is 18\%. At $K=50$ with the graph constraint, a logit
+adjustment that changes no ranking within any pair recovers $+0.094$ of TDE's $+0.097$; at
+other cut-offs, or without the constraint, the two differ by $0.02$ to $0.15$. No
+weighting of the within-pair AUC shows TDE gaining discrimination: it excludes a change larger
+than $0.0038$ with cells weighted as in the split, $0.0077$ with every comparison weighted once
+and $0.028$ with every predicate weighted equally, and with every predicate pair weighted
+equally it falls by $0.015$. DLFE,
+against its own released baseline, gains 11 points, 94\% group-level, its ranking
+gaining $0.003$ under one weighting; IETrans, against a separately trained baseline, gains 21 points, 97\%
+group-level. SGCls and SGDet replications of TDE agree.
 \end{abstract}

@@ -47,17 +47,12 @@ due to Yates~\cite{yates1982external} and generalises: for every Bregman score, 
 log score, $\dR_c$ is the same covariance with $\Delta q_y$ replaced by the contrast of the
 $y$-th gradient coordinate (\cref{thm:bregman}). All proofs are in the supplementary.
 
-\paragraph{Why it matters which part a gain is in.} In one cell with three cases labelled 1
-and one labelled 2, against an old model predicting $(\tfrac12,\tfrac12)$, a model predicting
-the cell's frequencies $(\tfrac34,\tfrac14)$ for every case gains $+\tfrac18$ of quadratic
-score, all group-level; a model equally far from the old one but pointed at each case's own
-label gains $+\tfrac38$, all case-level. Shift the cell's labels to
-$(\tfrac14,\tfrac34)$ and the first falls to $-\tfrac38$, worse than the model it replaced,
-while the second stays at $+\tfrac38$. In general, with
+\paragraph{Why it matters which part a gain is in.} With
 $m_y(z)=\mathbb E[H_X(z)\mid Y=y,C=c]$, $\dR_c=\sum_{y<z}p(y)p(z)\,D(y,z)$ where
 $D(y,z)=m_y(y)-m_y(z)+m_z(z)-m_z(y)$: a label shift fixes every $D$ and moves only the
-weights, so a case-level gain is less exposed to a shift than a group-level one, though with
-three or more labels it can still reverse (\cref{app:worked}).
+weights, whereas a group-level gain can turn into a loss, so a case-level gain is less exposed
+to a shift, though with three or more labels it can still reverse (\cref{app:worked} works a
+two-label example).
 
 \paragraph{Estimator.} In a cell with $n_c\ge2$ cases, write $H_i(y)=H_{x_i}(y)$ and estimate
 \begin{gather}

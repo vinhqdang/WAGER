@@ -33,12 +33,12 @@ cvpr Tb group
 cvpr Tb total
 cvpr VG coverage
 cvpr VG identified cells
+cvpr base auc cmp
+cvpr base auc rel
 cvpr base ng-mR@50
 cvpr clip Tb case
 cvpr clip Tb hi
 cvpr clip Tb lo
-cvpr cross TDE mR case
-cvpr cross TDE mR sec5
 cvpr cross TDE-la1 hi
 cvpr dlfe auc c
 cvpr dlfe auc c hi
@@ -52,12 +52,9 @@ cvpr dlfe case lo
 cvpr dlfe group
 cvpr dlfe share %
 cvpr dlfe total
-cvpr eq ci90 cmp hi
-cvpr eq ci90 cmp lo
-cvpr eq ci90 rel hi
-cvpr eq ci90 rel lo
 cvpr eq largest cmp
 cvpr eq largest rel
+cvpr eq mR ci90 lo
 cvpr eq mR largest
 cvpr geometry accuracy
 cvpr geometry-class dR
@@ -68,20 +65,32 @@ cvpr grp subj share %
 cvpr hit cov case %
 cvpr identified cells
 cvpr identified share of relations
+cvpr lw dlfe rel lo
+cvpr lw pair diff
+cvpr lw pair fall
+cvpr lw pair hi
+cvpr lw pair lo
+cvpr lw pred largest
+cvpr lw ref pred
+cvpr lw share hh cmp %
+cvpr lw share hh rel %
+cvpr lw tt diff
+cvpr lw tt hi
+cvpr lw tt lo
 cvpr mR TDE, points
 cvpr mR base, points
 cvpr matched quad dR ci hi
 cvpr matched quad dR ci lo
-cvpr official TDE-LA case
+cvpr matched quad p
 cvpr official TDE-LA lo
 cvpr official perm case
-cvpr official perm case hi
 cvpr official perm case lo
 cvpr official perm share %
+cvpr primary p TDE
+cvpr prior-removal AUC cmp
 cvpr prior-removal Tb case
 cvpr prior-removal Tb hi
 cvpr prior-removal Tb lo
-cvpr prior-removal intro
 cvpr prior-removal sec5 AUC
 cvpr review ietrans auc c
 cvpr review ietrans auc c hi
@@ -90,8 +99,6 @@ cvpr review micro total
 cvpr review no-gc K100
 cvpr review no-gc K100 hi
 cvpr review no-gc K100 lo
-cvpr review no-gc K50
-cvpr review official
 cvpr review oracle case
 cvpr review oracle group
 cvpr review oracle total
@@ -105,13 +112,18 @@ cvpr sim shortcut sd
 cvpr sim type-I
 cvpr split gc100 total
 cvpr split gc20 total
+cvpr t1 img group
+cvpr t1 img total
+cvpr t1 pos group
+cvpr t1 pos total
+cvpr t1 subj group
+cvpr t1 subj total
+cvpr temp p TDE
 cvpr train subsample
 det sgcls LA R@50
 det sgcls LA dmR
 det sgcls TDE R@50
-det sgcls auc cmp
 det sgcls auc cmp hi
-det sgcls auc cmp lo
 det sgcls auc rel
 det sgcls auc rel hi
 det sgcls auc rel lo
@@ -123,7 +135,6 @@ det sgdet TDE dmR
 det sgdet TDE-LA case
 det sgdet auc rel
 det sgdet case
-det sgdet n images
 det sgdet share %
 iet auc
 iet auc hi
@@ -141,16 +152,8 @@ path avg AUC
 path avg dmR
 path avg-ctx corr log prior
 path avg-ctx global share, %
-path avg-ctx non-global rms
-path frq dmR
 path vis case
-path vis case hi
-path vis case lo
-path vis dmR
 ps LA quad case
-ps TDE-LA quad case
-rankrob CLIP-geo aud cmp
-rankrob CLIP-geo aud cmp lo
 rankrob CLIP-geo rel
 rankrob CLIP-geo rel hi
 rankrob CLIP-geo rel lo
@@ -177,8 +180,7 @@ rankrob recal TDE tb lo
 rankrob recal TDE tb log
 rankrob small VG %
 rankrob small n2 %
-rankrob tier hh lo
-rankrob tier rest hi
+rankrob tier hh weight %
 rankrob two-case share %
 rec LA R@50
 rec LA case
@@ -206,7 +208,7 @@ rec n body
 rec n head
 rec n relations
 rec n tail
-rec ng TDE-LA case
+rec ng TDE-LA case lo
 rec on loss
 rec parked on after
 rec parked on before
@@ -229,13 +231,10 @@ sgg n images
 sgg tde mR@50
 shift CLIP-geo case
 shift CLIP-geo total
-shift TDE auc hi
 shift TDE auc original
 shift TDE case
 shift TDE case hi
 shift TDE case lo
-shift TDE-LA case
-shift TDE-LA case shifted
 sim calib matched dR
 sim calib raw dR
 sim coverage clustered
@@ -245,6 +244,5 @@ sim shortcut dR
 splits share TDE lo
 splits share TDE lo %
 vrank diff
-vrank diff hi
 vrank diff lo
 zs wb auc diff

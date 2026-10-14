@@ -34,47 +34,41 @@ image-clustered intervals.
 
 \paragraph{What it finds.} We re-ran TDE's released checkpoint, replayed the official
 evaluator exactly so that recall can be computed under any labelling, and split mean recall
-itself (\cref{sec:sggaudit}). Of the ten points, $87\%$ is group-level (of the micro-pooled
-recall, $+0.0972$; the official statistic moves $+0.1017$); the fifteen rarest predicates
-contribute almost nothing. A thresholded metric also earns case-level credit when its
-operating point moves, so we read the remainder against a control: subtracting the training
-predicate prior from the baseline's logits~\cite{menon2021long}, a correction known to rival
-debiasing~\cite{chiou2021recovering,teng2022structured} that changes no ranking within any group, recovers $+0.0941$ of the $+0.0972$ with the same split at under a tenth of
-TDE's cost in $R@50$, and against it TDE's case-level part is $-0.0008$, straddling zero
-(at $K=50$; the control's match is specific to that cut-off). The within-group AUC excludes a
-change in TDE's ranking larger than $0.0034$ under the split's weighting and larger than
-$0.0077$ when every comparison counts once. A proper score's case-level part is no ranking
-measure: TDE's is $+0.0045$ under the pre-declared matching protocol, but removing the
-frequency prior, which ranks every pair as before, gives $+0.0082$, and the part changes sign
-with the protocol and the label mix. DLFE~\cite{chiou2021recovering}, released with its own
-baseline, gains 11 points, $94\%$ group-level, with no detected change in within-pair ranking;
-IETrans~\cite{zhang2022finegrained}, which relabels training data within object pairs, gains 21
-points against a separately trained baseline, $97\%$ group-level, and its relation-weighted AUC
-falls. The converse appears in a controlled illustration on real pixels, not an SGG system
-(\cref{sec:vgvisual}): a predictor reading frozen CLIP~\cite{radford2021learning} crops, ranked
-last by every aggregate, carries $+0.0033$ more case-level covariance than a geometry model,
-yet ranks worse under the relation-weighted AUC (better, not significantly, by comparison).
+itself (\cref{sec:sggaudit}). With subject--object class pairs as cells, $87\%$ of the ten
+points is group-level. A thresholded metric also earns case-level credit when its operating
+point moves, so we read the remainder against a control: subtracting the training predicate
+prior from the baseline's logits~\cite{menon2021long}, a correction known to rival
+debiasing~\cite{chiou2021recovering,teng2022structured} that changes no ranking within any
+group, recovers $+0.0941$ of the $+0.0972$ with the same split, at $K=50$ under the graph
+constraint (\cref{tab:protocols} gives the other protocols, where the two diverge). The
+within-group AUC bounds the change in TDE's ranking under three weightings
+(\cref{sec:sggaudit}). TDE is motivated as removing the harmful part of the training bias while keeping the
+good context~\cite{tang2020unbiased}; on this checkpoint its gain is a change in which
+predicates are favoured within each pair. DLFE~\cite{chiou2021recovering}
+and IETrans~\cite{zhang2022finegrained}, two other released prior-correcting checkpoints,
+show the same pattern (\cref{tab:sggaudit}). On real pixels (\cref{sec:vgvisual}),
+a frozen-CLIP~\cite{radford2021learning} predictor ranked last by every aggregate carries more
+case-level covariance than a geometry model.
 
 \paragraph{Contributions.} (i) An exact, model-free decomposition of the difference between
 two frozen models into a group-level part and a within-group covariance, the paired-gain form
 of Yates's covariance decomposition~\cite{yates1982external}, for every Bregman score and for
 label-weighted hit rates such as mean recall, with cluster-robust inference, an
-operating-point control and a threshold-free AUC. (ii) Validation that the case-level part is
-zero when it should be, covers at the nominal rate under image clustering, and separates
-calibration, prior and shortcut effects, with protocols for the confounds it does not. (iii)
-Audits of three released debiasing checkpoints that split their mean-recall gains exactly,
-with the mechanism behind TDE's.
+operating-point control and a threshold-free within-group AUC. (ii) Validation that the
+case-level part is zero when it should be and covers at the nominal rate under image
+clustering, with a map of what it does not separate: calibration, the operating point, the
+label mix and pair-varying prior shifts all move it, so ranking claims rest on the control and
+the AUC. (iii) Audits of three released prior-correcting checkpoints that split their
+mean-recall gains exactly, with the mechanism behind TDE's.
 
-\paragraph{What is not claimed.} The scene-graph audits are PredCls, where every model sees
-the cell, except a replication of TDE in SGCls and SGDet
-(\cref{sec:sggaudit}), where the two models share every predicted object. The split is conditional on the declared grouping: $\hdR$
-measures case-level discrimination \emph{among relations sharing an object pair}, and
-credits any signal varying inside a pair, including a shortcut nobody recorded. It is not
-invariant to recalibration --- rescaling a model's confidence moves score between the two
-parts while changing no ranking --- which is why the comparisons whose models differ visibly in
-confidence, TDE's and the CLIP model's, are read confidence-matched.
-For mean recall the split is of the micro-averaged version, which pools relations
-across images; it tracks the official per-image average but is not it. And a proper-score
-case-level part near zero can depend on the calibration protocol and on the label mix;
-\cref{app:recall,app:robust} report every configuration. These limits are taken up
-in \cref{sec:discussion}.
+\paragraph{What is not claimed.} The audits cover three prior-correcting methods on one
+architecture family, one released training run each, in PredCls, where every model sees the
+cell (with a TDE replication in SGCls and SGDet, \cref{sec:sggaudit}); we expect the pattern to
+hold for other prior shifts and claim nothing about methods that change features, prototypes,
+one-stage detectors or vision--language models. The split is conditional on the declared
+grouping, and $\hdR$, a covariance \emph{among relations sharing an object pair}, credits any
+signal varying inside a pair, a shortcut nobody recorded included. It is not invariant to
+recalibration, the operating point or the label mix, which is why confidence-matched
+comparisons and the AUC carry the ranking claims. For mean recall the split is of the
+micro-pooled version; the official per-image statistic is split separately
+(\cref{app:splits}). \Cref{sec:discussion} takes up these limits.

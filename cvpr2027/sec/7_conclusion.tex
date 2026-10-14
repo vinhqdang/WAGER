@@ -1,28 +1,21 @@
 \section{Limitations and conclusion}\label{sec:discussion}
 
-\paragraph{Limitations.} Six bound what the split can say. \emph{It is conditional on the grouping}:
-two equally fine partitions of the same cases can disagree about whether a gain is case-level
-(\cref{app:partition}), so declaring $\phi$ is a modelling decision the benchmark should make
-before a leaderboard opens: refining the class pair by position or size leaves the share at
-$90\%$, dropping the object class takes it to $18\%$. \emph{It credits any within-cell signal}, shortcuts included: an
-unrecorded covariate correlated at $0.061$ with both parts would account for the entire
-case-level gain of \cref{sec:data} (\cref{app:sensitivity}). \emph{It is not invariant to
-recalibration, the operating point or the label mix}, so we report two matching protocols; the
-within-cell AUC, invariant to the first two, gives up exact additivity. \emph{Its interval
-assumes cells that are not tiny}: with every cell holding two cases it covers $81.5\%$, from
-three up it is nominal (\cref{app:clt}), and $1.0\%$ of audited relations sit in two-case
-cells. And \emph{it needs scores for every label}, which most benchmarks do not archive;
-recovering them took a rerun of the released checkpoint. \emph{Each released model is one
-training run}: the intervals cover test sampling, not training variability, and the matching is
-fitted on half of the test images, as no validation outputs were released.
+\paragraph{Limitations.} \emph{The split is conditional on the grouping}: two equally fine
+partitions can disagree (\cref{app:partition}), so the benchmark should declare $\phi$ before a
+leaderboard opens. \emph{It credits any within-cell signal}: an unrecorded covariate
+correlated at $0.061$ with both parts would account for the case-level gain of
+\cref{sec:data} (\cref{app:sensitivity}). \emph{It moves with recalibration, the operating
+point and the label mix}; the AUC is invariant to the first two but gives up exact
+additivity. \emph{Its interval needs cells that are not tiny}: with two cases in every cell it
+covers $81.5\%$ (\cref{app:clt}); $1.0\%$ of audited relations sit in such cells.
+\emph{It needs scores for every label}. And \emph{each model is one released run}:
+intervals cover test sampling, not training; the matching uses half the test images.
 
-\paragraph{Conclusion.} A ten-point mean-recall gain is two achievements summed, and mean
-recall reports the sum; scoring each prediction against another case's label from the
-same group separates them exactly. On three released Neural-Motifs checkpoints on Visual Genome
-the gains are almost entirely group-level: TDE's is matched by a ranking-preserving logit
-adjustment and its within-group ranking moves by less than $0.0034$ under the split's
-weighting, DLFE's does not move detectably, IETrans's (against a separately trained
-baseline) falls; we audit no later method. We suggest
-reporting, beside the headline metric, the declared grouping, both parts with intervals, the
-within-group AUC under both weightings and, for a thresholded metric, the operating-point
-control; archived top-$k$ logits suffice for the AUC and the control, not for the exact split.
+\paragraph{Conclusion.} Mean recall reports the sum of two achievements; scoring each
+prediction against another case's label from the same group separates them exactly. On three
+released prior-correcting PredCls checkpoints the gains are almost entirely group-level: TDE's
+is matched by a ranking-preserving logit adjustment at $K=50$ under the graph constraint, and
+no weighting of its within-pair AUC shows a gain. We audit no method that changes features
+rather than the prior. We propose reporting, beside mean recall, the declared grouping, both
+parts with intervals, the within-group AUC and, for a thresholded metric, the
+operating-point control.

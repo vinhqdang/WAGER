@@ -298,3 +298,20 @@ Use `templates/revision_response_template.md` to respond to every item R5-1 to R
 We invite a revised manuscript that addresses the eight required items and states a decision on each suggested item. The audit is careful and candid, and most of the revision is making the abstract, Sec. 5 and the conclusion say what the evidence supports, plus one re-analysis (R5-4) and one small rerun (R5-7). A further review will be needed after the revision.
 
 *Synthesis scope note: this letter synthesizes and arbitrates the five Phase 1 reports; it adds no new review comments. The checks above were used only to adjudicate claims the seats made. Effort and feasibility figures are the synthesizer's estimates.*
+
+---
+
+## Status after the must-fix revision (2026-10-14)
+
+| Ref | Status | What changed |
+|---|---|---|
+| R5-1 | Done | Abstract, intro ("What is not claimed") and conclusion scope the audit to three released Neural-Motifs PredCls checkpoints of prior-correcting methods, one run each; no claim about feature-, prototype-, one-stage or VLM-based methods. |
+| R5-2 | Done | Abstract and intro state that the LA match holds at K=50 under the graph constraint and that the two differ by 0.02 to 0.15 elsewhere; a "Protocol" paragraph opens the Sec. 5 results; the official per-image share (84%) is in the abstract and Table 1; shares are not reported when the total gain is negative. |
+| R5-3 | Done | Table 1 has a lower panel for TDE under subject-class cells (18%), class pair x position (90%) and the official per-image statistic (84%); the range is in the abstract. |
+| R5-4 | Done (re-analysis) | New `pair` weighting in `wager/rank.py`, `experiments/sgg_auc_label_weighting.py`, supp Table `tab:labelweighting`, 1,000 replicates. While doing it we found that clipping log q at 1e-12 tied about a fifth of the baseline's stored probabilities, so the ranking-preserving control showed a spurious AUC change; the floor is now 1e-300 and every AUC was recomputed (Table 1 and all AUC tables at 1,000 replicates). Result: TDE's 90% bounds are 0.0038 (relation), 0.0077 (comparison), 0.028 (predicate); under the pair weighting TDE's AUC falls, -0.0153 [-0.0249, -0.0004]. R1's exploratory values are superseded. DLFE's relation-weighted AUC now excludes zero narrowly (+0.0029 [+0.0001, +0.0055]); the text says so. |
+| R5-5 | Done | Bounds stated as "excludes a change larger than X under weighting W"; margins against the geometry gain under each weighting; baseline AUC levels (0.61, 0.57) given as headroom; the primary protocol is declared post hoc for TDE and IETrans. |
+| R5-6 | Done | Table 1 caption: one released run each, intervals cover test sampling only. IETrans: separately trained baseline, relabelling confound, synonymy caveat; the abstract no longer states its ranking change. DLFE: covariance and the small AUC gain stated separately. |
+| R5-7 | Done | +0.0045 removed from the abstract and intro; contribution (ii) no longer claims to separate calibration, prior and shortcut effects; randomization p under the primary protocol is .001 (control .236), and the .555 is labelled as the temperature-only protocol (`experiments/run_sgg_primary_randomization.py`). |
+| R5-8 | Done | "How to read the split" paragraph in Sec. 5 (who wants which part; what would change the verdict; label-mix dependence with TDE's number); case-level glossed as a within-pair covariance; intro's question tied to TDE's stated motivation. |
+
+Page budget: the paper stays at 8 pages; offsetting cuts were made in Sec. 2-4, 6 and 7 (the worked example moved to the supplement's existing Appendix A). Verifier: all checks pass, with new checks for every number added, signed comparison for signed literals, and an assertion that the control's AUC change is zero to 1e-6.

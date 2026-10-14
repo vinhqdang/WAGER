@@ -71,15 +71,14 @@ ctx, vis+ctx: the baseline's context branch alone and without the frequency bran
 
 \begin{table}[t]
 \centering\footnotesize
-\caption{Within-cell AUC (comparison-weighted), image bootstrap with 200 replicates.}
+\caption{Within-cell AUC (comparison-weighted), image bootstrap with $1{,}000$ replicates.}
 \label{tab:recall-auc}
 \input{supp/tab_recall_auc}
 \end{table}
 
 \paragraph{Reading the case-level part of a thresholded metric.} Every change that adds a
 constant to all log-odds within a cell --- logit adjustment at any $\tau$, or dropping the
-frequency branch --- leaves the within-cell AUC where it was (\cref{tab:recall-auc}; the
-residue of $10^{-4}$ is float32 rounding of the stored probabilities) and still shows a
+frequency branch --- leaves the within-cell AUC where it was, to $10^{-4}$ (\cref{tab:recall-auc}), and still shows a
 significant case-level part of mean recall (\cref{tab:recall-split}): $+0.0064$ and $+0.0139$
 for LA$_{.5}$ and LA$_1$, $+0.0053$ for removing the frequency branch. The reason is the
 threshold. A relation is a hit when its own label wins a comparison, and moving the boundary
@@ -106,7 +105,9 @@ the $183{,}639$ relations whose pair was scored. Top-1 predicate accuracy is $0.
 the baseline, $0.5577$ for TDE and $0.6820$ for LA$_1$; TDE also raises zero-shot recall to
 $zR@50=0.1432$. \Cref{tab:proper-configs} lists the proper-score split of
 \cref{sec:sggaudit} in every configuration we ran; the matched quadratic case-level part
-of TDE against the baseline has a cyclic randomization $p=.555$. Raw outputs
+of TDE against the baseline has a cyclic randomization $p=.555$ under a temperature alone
+($999$ randomizations) and $p=.001$, the smallest attainable, under the primary temperature
+and per-class bias, where the control's part is exactly zero ($p=.236$). Raw outputs
 give a significant case-level \emph{loss}; \cref{sec:simulation} showed that a calibration
 difference alone manufactures one. Grouping by subject alone reverses the sign of the
 group-level part (\cref{prop:coarsen}). Matched, the quadratic and log scores disagree on

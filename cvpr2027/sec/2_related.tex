@@ -16,11 +16,10 @@ Sparse R-CNN~\cite{teng2022structured} applies logit adjustment~\cite{menon2021l
 training, RTPB~\cite{chen2022resistance} resists a prior bias. The
 metrics themselves have been shown to reward pathologies~\cite{li2022rethinking}, and
 open-vocabulary methods inherit them~\cite{li2024pixels}. These works compare methods by their
-metrics; we ask which part of a metric's change is group-level. Benchmark audits outside scene graphs find the
-same pattern: VQA models collapse when answer priors change~\cite{agrawal2018dont},
-multimodal models exploit non-visual shortcuts~\cite{geirhos2020shortcut,zhou2025shortcut},
-and gains are credited to mechanisms that did not produce
-them~\cite{shrestha2020negative,teney2020value}. Long-tailed recognition faces the
+metrics; we ask which part of a metric's change is group-level. Outside scene graphs, VQA models collapse when answer
+priors change~\cite{agrawal2018dont}, models exploit non-visual
+shortcuts~\cite{geirhos2020shortcut,zhou2025shortcut}, and gains are credited to mechanisms
+that did not produce them~\cite{shrestha2020negative,teney2020value}. Long-tailed recognition faces the
 same question for re-weighting and logit adjustment~\cite{cao2019learning,menon2021long}.
 All of these characterise a \emph{single} model; we account for the gain \emph{between} two.
 
@@ -41,10 +40,8 @@ non-grouping part of its input, and the case-level part of a gain is the differe
 models' (\cref{prop:reliance}). What the split adds is the exact additive accounting of a
 paired gain, including thresholded metrics, and paired inference for it.
 
-\paragraph{Comparing two predictors.} Inference on a paired score difference is the
-Diebold--Mariano test~\cite{diebold1995comparing,giacomini2006tests}; at a single group our
-total-gain interval is its clustered form (\cref{cor:dm}), so the decomposition adds a split
-to what it reports. DeLong \etal~\cite{delong1988comparing} compare correlated ROC areas with
-a paired U-statistic, the device we use for a group-conditional gain; the case-level term is
-an order-two U-statistic~\cite{hoeffding1948class} with a H\'ajek
+\paragraph{Comparing two predictors.} At a single group our total-gain interval is the
+clustered Diebold--Mariano test~\cite{diebold1995comparing,giacomini2006tests}
+(\cref{cor:dm}); the case-level term is a paired order-two U-statistic, as in DeLong
+\etal's comparison of ROC areas~\cite{delong1988comparing,hoeffding1948class}, with a H\'ajek
 projection~\cite{serfling1980approximation} as its influence function.

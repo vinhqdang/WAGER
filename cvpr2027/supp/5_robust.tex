@@ -179,8 +179,8 @@ $\alpha=\tfrac14$ ($+0.00238$, $[+0.00092,+0.00385]$): its null holds at the ben
 mix and nowhere near it. Both exceptions mean that TDE's $D(y,z)$ have mixed signs: it gains
 within-cell discrimination between some pairs of predicates and loses it between others,
 consistent with the tier pattern of \cref{app:rankrob}. The threshold-free AUC does not
-separate TDE from the baseline at either end: $+0.0026$ on the benchmark, $-0.0183$, interval
-$[-0.0684,+0.0082]$, under uniform labels.
+separate TDE from the baseline at either end: $+0.0025$ on the benchmark, $-0.0209$, interval
+$[-0.0705,+0.0062]$, under uniform labels.
 
 \begin{table*}[t]
 \centering
@@ -214,18 +214,46 @@ weights a cell by about $n_c^2$: the largest cell carries $27\%$ of the weight, 
 of the relations. Weighting by $n_c(y)n_c(z)/n_c$ instead combines cells as the case-level
 part does. \Cref{tab:rankweighting} gives both, on all identified relations and on the audit
 half on which the matched split is computed. TDE's change covers zero under all four. The
-logit-adjusted control's moves by float32 rounding only. IETrans+Rwt's loss excludes zero
-under the split's weighting ($-0.0235$, $[-0.0275,-0.0182]$) though not by comparison. CLIP
+logit-adjusted control's change is below $10^{-6}$. IETrans+Rwt's loss excludes zero
+under the split's weighting ($-0.0238$, $[-0.0272,-0.0187]$) and, barely, by comparison
+($-0.0093$, $[-0.0185,-0.0001]$). CLIP
 against geometry is the case the weighting decides: by comparison it favours CLIP on the audit
-half ($+0.0214$, $[+0.0001,+0.0435]$), by relation it favours geometry on all relations
-($-0.0067$, $[-0.0120,-0.0019]$), and the other two estimates cover zero.
+half ($+0.0214$, $[+0.00004,+0.0448]$), by relation it favours geometry on all relations
+($-0.0067$, $[-0.0113,-0.0015]$), and the other two estimates cover zero.
+
+\paragraph{Weightings aligned with mean recall.} Both weightings above put most of their
+weight on head predicates: $65\%$ (comparison) and $57\%$ (relation) on head--head label pairs
+and almost none on tail--tail pairs, the predicates mean recall rewards. \Cref{tab:labelweighting}
+adds two weightings that do not. \emph{Predicate}: each relation weighted by $1/n_y$, the
+inverse test count of its label, so that each predicate carries equal total weight, as in mean
+recall. \emph{Pair}: each unordered predicate pair equally weighted, cells within a pair by
+comparison count. All four use $1{,}000$ image-bootstrap replicates (seed 0); the logit-adjusted
+control's change is below $10^{-6}$ under each (float32 storage). Under the predicate weighting TDE's change,
+$-0.0038$, $[-0.0339,+0.0211]$, covers zero and its $90\%$ interval excludes only changes above
+$0.028$, two fifths of the geometry gain under the same weighting: the tail comparisons are too
+few to bound tightly (tail--tail $-0.097$, $[-0.228,+0.024]$, at $11\%$ of the weight). Under the
+pair weighting TDE's ranking falls, $-0.0153$, $[-0.0249,-0.0004]$, as does IETrans+Rwt's. No
+weighting shows TDE gaining discrimination. The margins of \cref{sec:sggaudit} were chosen after
+TDE's results were seen.
+
+\begin{table}[h]
+\centering
+\scriptsize
+\caption{\textbf{Within-cell AUC change under four weightings} (all identified relations,
+$1{,}000$ image-bootstrap replicates, $95\%$ intervals). Predicate: each predicate equal total
+weight, as in mean recall; pair: each predicate pair equal weight. Lower rows: TDE's $90\%$
+bound, the geometry-over-class-pair gain of \cref{sec:vgvisual} under the same weighting, and
+each weighting's share on each predicate-tier pair.}
+\label{tab:labelweighting}
+\resizebox{\linewidth}{!}{\input{supp/tab_label_weighting}}
+\end{table}
 
 \paragraph{Where TDE's discrimination moved.} \Cref{tab:tierpair} restricts the
 comparison-weighted AUC change to label pairs by predicate tier. $65\%$ of the weight sits on
-head--head pairs, where TDE's change is $+0.0068$, $[-0.0003,+0.0134]$; on all other pairs it is
-$-0.0051$, $[-0.0130,+0.0026]$. Neither excludes zero, so we read it as a pattern consistent with
+head--head pairs, where TDE's change is $+0.0067$, $[-0.00004,+0.0146]$; on all other pairs it is
+$-0.0052$, $[-0.0130,+0.0026]$. Neither excludes zero, so we read it as a pattern consistent with
 the label-shift result rather than as a finding. IETrans+Rwt's loss is concentrated on
-head--body ($-0.0250$) and body--body ($-0.0260$) pairs, both excluding zero.
+head--body ($-0.0252$) and body--body ($-0.0264$) pairs, both excluding zero.
 
 \paragraph{Recalibration family.} \Cref{tab:recalibration} repeats the matched split under
 three families, each fitted on the calibration half and each preserving every model's
@@ -243,23 +271,23 @@ $+0.00331$, $[+0.00185,+0.00477]$, all excluding zero.
 
 \paragraph{Bounds on the ranking nulls.} A non-detection is bounded by the largest change its
 interval excludes (\texttt{sgg\_equivalence.py}). We use $90\%$ percentile intervals from the
-same image bootstrap as the $95\%$ ones (200 replicates, seed 0, which reproduce the stored
-$95\%$ intervals exactly), so that the two one-sided tests at $5\%$ have a margin to compare
-against. For TDE against the baseline the relation-weighted interval is $[-0.0034,+0.0015]$
-and the comparison-weighted one $[-0.0022,+0.0077]$; against the control $[-0.0037,+0.0012]$
-and $[-0.0022,+0.0077]$. As a scale we take the AUC that box geometry buys over the class pair
+same image bootstrap as the $95\%$ ones ($1{,}000$ replicates, seed 0), so that the two
+one-sided tests at $5\%$ have a margin to compare against. For TDE against the baseline the
+relation-weighted interval is $[-0.0038,+0.0012]$ and the comparison-weighted one
+$[-0.0019,+0.0077]$; against the control, whose AUC equals the baseline's, they are the same. As a scale we take the AUC that box geometry buys over the class pair
 under the same weighting ($0.0626$ relation, $0.0323$ comparison): with margins at $5\%$, $10\%$
 and $25\%$ of it, TDE's ranking is equivalent to the baseline's at $10\%$ and $25\%$ under the
 relation weighting and only at $25\%$ by comparison. IETrans+Rwt's relation-weighted
-interval, $[-0.0266,-0.0192]$, lies outside every margin on the negative side: a detected loss.
+interval, $[-0.0268,-0.0192]$, lies outside every margin on the negative side: a detected loss.
 TDE's mean-recall case-level part against the control has $90\%$ interval $[-0.0043,+0.0027]$;
 measured against TDE's own case-level part over the baseline ($+0.0130$) it is not equivalent
 to zero even at a $25\%$ margin. No margin was registered before the audit; the grid shows
-how the verdict depends on it.
+how the verdict depends on it, and \cref{tab:labelweighting} gives the bounds under the
+predicate and pair weightings.
 
 \paragraph{The frequency prior under the primary protocol.} The baseline with its frequency
 branch removed differs from it by a log-prior shift indexed by the subject--object pair, which
-leaves every within-cell ranking unchanged (AUC change $+0.00006$, $[-0.00004,+0.00015]$, by
+leaves every within-cell ranking unchanged (AUC change $-0.00001$, $[-0.00004,+0.00000]$, by
 comparison). Its quadratic case-level part against the baseline is nevertheless $+0.00915$
 under a temperature, $+0.00161$ under a shared temperature and $+0.00817$,
 $[+0.00757,+0.00877]$, under a temperature with a per-class bias: a per-class bias absorbs a
@@ -272,7 +300,7 @@ reads ranking from the within-cell AUC only.
 \scriptsize
 \setlength\tabcolsep{2pt}
 \caption{\textbf{Within-cell AUC change under both weightings}, on all identified relations
-and on the audit half; image bootstrap, 200 replicates. Lower block: the real-pixel study
+and on the audit half; image bootstrap, $1{,}000$ replicates. Lower block: the real-pixel study
 (seed 0).}
 \label{tab:rankweighting}
 \input{supp/tab_rank_weighting}
@@ -283,7 +311,7 @@ and on the audit half; image bootstrap, 200 replicates. Lower block: the real-pi
 \footnotesize
 \caption{\textbf{Comparison-weighted AUC change by predicate-tier pair} (head: more than
 10{,}000 training instances; tail: fewer than 500), with each tier pair's share of the
-comparison weight; image bootstrap, 200 replicates.}
+comparison weight; image bootstrap, $1{,}000$ replicates.}
 \label{tab:tierpair}
 \input{supp/tab_tier_pair_auc}
 \end{table*}
@@ -314,14 +342,16 @@ float precision: DLFE $R@50=0.5165$, $mR@50=0.2686$; its baseline $0.6549$ and $
 
 Against its own baseline DLFE's $mR@50$ gain is $+0.1112$: $+0.1046$ group-level ($94\%$) and
 $+0.0065$, $[+0.0010,+0.0120]$, case-level. The within-cell AUC moves by $+0.0029$,
-$[-0.0004,+0.0056]$, relation-weighted, and $+0.0018$, $[-0.0041,+0.0064]$, by comparison. The
+$[+0.0001,+0.0055]$, relation-weighted, and $+0.0018$, $[-0.0042,+0.0070]$, by comparison
+($1{,}000$ replicates; \cref{tab:labelweighting} adds the predicate and pair weightings, both
+covering zero). The
 correction is exactly ranking-preserving: against the same network before the correction the
 AUC change is $0$ under both weightings and, under the primary matching protocol, so is the
 case-level part. Under that protocol DLFE's quadratic case-level part against its baseline is
 $+0.00249$, $[+0.00191,+0.00307]$, which by \cref{sec:sggaudit} is not a ranking measure.
 DLFE's top-1 predicate accuracy is $0.543$ against $0.692$ for its baseline. The pattern is
-TDE's: a large group-level gain bought with recall, with no detected change in within-pair
-ranking.
+TDE's: a large group-level gain bought with recall; the within-pair ranking gains slightly,
+by $0.003$, under the split's weighting only, a twentieth of what box geometry buys.
 
 \subsection{Beyond PredCls: SGCls and SGDet}\label{app:det}
 

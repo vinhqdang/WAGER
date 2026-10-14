@@ -21,22 +21,18 @@ intervals.
 A larger case-level part is not the same as better ranking, and here the two disagree. With
 each model's prior matched within cells, the CLIP model still ranks the correct predicate
 first less often (top-1 accuracy $2.17$ points lower, MRR $1.67$ lower), and under the primary
-weighting the within-cell AUC favours geometry, $-0.0067$, $[-0.0120,-0.0019]$; by comparison
-the sign reverses, $+0.0085$, $[-0.0062,+0.0214]$. Over five training seeds
+weighting the within-cell AUC favours geometry, $-0.0067$, $[-0.0113,-0.0015]$; by comparison
+the sign reverses, $+0.0085$, $[-0.0062,+0.0237]$. Over five training seeds
 (\cref{app:vgseeds}) the CLIP model's temperature-matched advantage stays between $+0.00413$ and
-$+0.00474$, its accuracy below geometry's. (It also reads a wider input: two pipelines, not
-encoders alone.)
+$+0.00474$, its accuracy below geometry's.
 
 \paragraph{Under a label shift.} A label shift moves group-level parts and only reweights
-case-level ones (\cref{sec:method}). Along a path from the benchmark's predicate mix to
-uniform frequencies within each pair (\cref{app:labelshift}), seven of the eight group-level
-parts of \cref{sec:sggaudit} and this section change sign and the CLIP model beats geometry
-by $+0.02981$ at the uniform end. Five of the six case-level parts that excluded zero keep
-their sign and grow; the exceptions are TDE's, which rises against the baseline from
-$-0.00006$ to $+0.01430$, $[+0.01116,+0.01744]$, and against the control from $-0.00398$ to
-$+0.00723$, while the AUC separates it from the baseline at neither end: TDE gains
-discrimination between some predicate pairs and loses it between others, and the benchmark's
-mix weights the two to zero.
+case-level ones (\cref{sec:method}). Along a path to uniform predicate frequencies within each
+pair (\cref{app:labelshift}), seven of the eight group-level parts of \cref{sec:sggaudit} and
+this section change sign, and the CLIP model beats geometry by $+0.02981$. Five of the six
+case-level parts that excluded zero keep their sign and grow; TDE's rises from $-0.00006$ to
+$+0.01430$, $[+0.01116,+0.01744]$, while the AUC separates it from the baseline at neither end:
+TDE gains discrimination between some predicate pairs and loses it between others.
 
 \paragraph{Beyond scene graphs.}\label{sec:further} The supplement applies the split to
 CIFAR-100-LT, long-tailed text and Waterbirds (cells: background scenes); there the fine class
