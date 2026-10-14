@@ -353,6 +353,53 @@ DLFE's top-1 predicate accuracy is $0.543$ against $0.692$ for its baseline. The
 TDE's: a large group-level gain bought with recall; the within-pair ranking gains slightly,
 by $0.003$, under the split's weighting only, a twentieth of what box geometry buys.
 
+\subsection{Stratified and zero-shot recall}\label{app:zeroshot}
+
+Head/body/tail recall~\cite{li2021bgnn} and zero-shot recall~\cite{lu2016visual} are the usual
+evidence for what a debiasing method buys. \Cref{tab:diagnostics} gives them for the audited
+comparisons (graph constraint, $K=50$; a tier's change is the mean over its predicates; zero-shot
+recall over the $8{,}845$ test relations whose subject--predicate--object triplet never occurs in
+training, per image as the official evaluator, whose values the replay reproduces exactly:
+$0.1102$ for the baseline, $0.1432$ for TDE). Read alone, the tiers say TDE trades head recall
+for body recall, and the control does nearly the same ($+0.179$ against TDE's $+0.235$ per body
+predicate): stratified recall cannot tell TDE from a prior shift. Zero-shot recall can. TDE raises
+it by $+0.033$; the control lowers it by $0.004$.
+
+Zero-shot status is a function of the cell and the label, so the zero-shot indicator is a valid
+label weight and the split applies exactly (\cref{sec:hitrate}). Against the control, TDE's
+micro-pooled zero-shot gain of $+0.0352$ is $+0.0207$ group-level, $+0.0131$,
+$[+0.0093,+0.0169]$, case-level, and $+0.0014$ from zero-shot relations in single-relation cells,
+which no split can identify. A case-level part of a hit rate is not discrimination by itself, so we
+read it against the threshold-free test. On the comparisons in which either label forms an unseen
+triplet in that cell ($11\%$ of the relation weight), TDE's AUC change against the control is
+$-0.0149$, $[-0.0203,-0.0056]$, relation-weighted ($-0.0127$, $[-0.0343,+0.0097]$, by comparison);
+on all other comparisons it is $-0.0001$, $[-0.0033,+0.0032]$. TDE's zero-shot advantage is an
+operating point that happens to favour unseen triplets, not a better ranking of them.
+
+\begin{table}[h]
+\centering
+\scriptsize
+\caption{\textbf{Stratified and zero-shot recall@50} (graph constraint). $\Delta mR$: micro-pooled
+mean recall; head, body, tail: mean change over the tier's predicates; $\Delta zR$: per-image
+zero-shot recall, as the official evaluator.}
+\label{tab:diagnostics}
+\input{supp/tab_diagnostics}
+\end{table}
+
+\subsection{Label ambiguity}\label{app:ambiguity}
+
+The AUC is measured against one recorded label per relation, and Visual Genome's predicates
+overlap (\textsf{on}, \textsf{sitting on}; \textsf{has}, \textsf{with}). With the synonym groups
+of \cref{app:merge} merged (32 classes; probabilities summed within a group), TDE's AUC change is
+$-0.0049$, $[-0.0084,-0.0008]$, relation-weighted and $-0.0001$, $[-0.0079,+0.0076]$, by
+comparison: merging does not turn TDE's null into a gain. IETrans's loss concentrates in
+comparisons between labels of one synonym group, $-0.0177$, $[-0.0335,-0.0020]$, against
+$-0.0071$, $[-0.0183,+0.0036]$, across groups ($21\%$ and $79\%$ of the comparison weight), which
+fits its relabelling of general into specific predicates; but with the groups merged its loss
+remains, $-0.0255$, $[-0.0298,-0.0194]$, relation-weighted, so synonymy does not explain it.
+Summing probabilities within a group breaks the exact invariance of the control, whose merged
+AUC changes reach $0.0013$; differences of that size are not read.
+
 \subsection{Beyond PredCls: SGCls and SGDet}\label{app:det}
 
 The causal MOTIFS-SUM release includes SGCls and SGDet checkpoints alongside the PredCls one.

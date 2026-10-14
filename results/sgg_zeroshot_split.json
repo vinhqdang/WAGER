@@ -1,0 +1,121 @@
+{
+ "definition": {
+  "zero_shot": "(subject class, predicate, object class) in the benchmark zero-shot list, evaluated at the (cell, label) of each relation and of each transported label",
+  "weight": "w(c, y) = 1{(c, y) zero-shot} / n_zs, micro-pooled over all test relations",
+  "hits": "graph-constrained recall@50 (gc@50)",
+  "contrast": "h_i(y) = (n_e / n_zs) * 1{(phi_i, y) zero-shot} * [hit_new_i(y) - hit_old_i(y)], n_e = relations in cells with >= 2 relations",
+  "estimator": "decompose_gain_matrix(score='hit', groups=image) over identified relations; singleton-cell zero-shot relations enter as a separate unidentified remainder"
+ },
+ "n_relations": 183642,
+ "n_zero_shot_relations": 8845,
+ "zero_shot_share_of_relations": 0.04816436327201838,
+ "n_zero_shot_identified": 7461,
+ "n_zero_shot_unidentified_singleton": 1384,
+ "n_eligible_relations": 181559,
+ "n_cells_ge2": 5044,
+ "n_cells_with_zero_shot_and_ge2": 2980,
+ "share_of_cells_ge2_with_zero_shot": 0.5908009516256939,
+ "n_zero_shot_relations_in_those_cells": 7461,
+ "comparisons": {
+  "TDE vs none": {
+   "zR50_new_micro": 0.15172413793103448,
+   "zR50_old_micro": 0.11780667043527417,
+   "direct_change": 0.033917467495760314,
+   "identified_change": 0.03685698134539288,
+   "unidentified_singleton_change": -0.002939513849632561,
+   "group_level": 0.01828225994712818,
+   "group_level_ci_image_clustered": [
+    0.00907921349650838,
+    0.02748530639774798
+   ],
+   "case_level": 0.018574721398264694,
+   "case_level_ci_image_clustered": [
+    0.014199115685856571,
+    0.022950327110672818
+   ],
+   "identified_total_ci_image_clustered": [
+    0.026451918217317377,
+    0.04726204447346838
+   ],
+   "case_share_of_identified": 0.5039675176921816,
+   "case_share_of_identified_ci_image_clustered": [
+    0.36799246368538807,
+    0.6399425716989752
+   ],
+   "case_share_of_direct": 0.5476447025588375,
+   "identity_residual": 0.0,
+   "n_eligible_relations": 181559,
+   "n_zs_identified": 7461,
+   "n_zs_unidentified_singleton": 1384,
+   "matches_diagnostics_file": true,
+   "runtime_seconds": 1.4366823619998286
+  },
+  "la1 vs none": {
+   "zR50_new_micro": 0.11656302996042962,
+   "zR50_old_micro": 0.11780667043527417,
+   "direct_change": -0.0012436404748445429,
+   "identified_change": 0.003052572074618428,
+   "unidentified_singleton_change": -0.004296212549462973,
+   "group_level": -0.002415287929485465,
+   "group_level_ci_image_clustered": [
+    -0.00900836185529995,
+    0.004177785996329019
+   ],
+   "case_level": 0.005467860004103894,
+   "case_level_ci_image_clustered": [
+    0.0026763401642688435,
+    0.008259379843938944
+   ],
+   "identified_total_ci_image_clustered": [
+    -0.004306321984698089,
+    0.010411466133934944
+   ],
+   "case_share_of_identified": 1.7912304346777388,
+   "case_share_of_identified_ci_image_clustered": [
+    -2.2001166060094373,
+    5.782577475364915
+   ],
+   "case_share_of_direct": -4.396656521481729,
+   "identity_residual": -1.3010426069826053e-18,
+   "n_eligible_relations": 181559,
+   "n_zs_identified": 7461,
+   "n_zs_unidentified_singleton": 1384,
+   "matches_diagnostics_file": true,
+   "runtime_seconds": 1.6549763349999012
+  },
+  "TDE vs la1": {
+   "zR50_new_micro": 0.15172413793103448,
+   "zR50_old_micro": 0.11656302996042962,
+   "direct_change": 0.03516110797060486,
+   "identified_change": 0.03380440927077445,
+   "unidentified_singleton_change": 0.0013566986998304127,
+   "group_level": 0.02069754787661365,
+   "group_level_ci_image_clustered": [
+    0.014098512283856578,
+    0.027296583469370722
+   ],
+   "case_level": 0.013106861394160802,
+   "case_level_ci_image_clustered": [
+    0.009310840186826692,
+    0.01690288260149491
+   ],
+   "identified_total_ci_image_clustered": [
+    0.026114923575474597,
+    0.04149389496607431
+   ],
+   "case_share_of_identified": 0.38772638472024173,
+   "case_share_of_identified_ci_image_clustered": [
+    0.28666849913621184,
+    0.48878427030427163
+   ],
+   "case_share_of_direct": 0.3727658811297502,
+   "identity_residual": 6.938893903907228e-18,
+   "n_eligible_relations": 181559,
+   "n_zs_identified": 7461,
+   "n_zs_unidentified_singleton": 1384,
+   "matches_diagnostics_file": true,
+   "runtime_seconds": 1.6453414889997475
+  }
+ },
+ "runtime_seconds": 6.847261484999763
+}

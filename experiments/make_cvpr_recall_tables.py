@@ -438,6 +438,24 @@ def label_weighting():
     return "\n".join(lines)
 
 
+def diagnostics():
+    """Stratified and zero-shot recall@50 (results/sgg_interval_and_diagnostics.json)."""
+    d = json.loads((RES / "sgg_interval_and_diagnostics.json").read_text())["part3_diagnostics"]
+    names = {"TDE vs none": "TDE vs base", "la1 vs none": r"LA$_{1}$ vs base",
+             "TDE vs la1": r"TDE vs LA$_{1}$", "ietrans vs none": "IETrans+Rwt vs base",
+             "dlfe vs dlfe_base": "DLFE vs its base"}
+    lines = [r"\begin{tabular}{@{}lrrrrr@{}}", r"\toprule",
+             r"Comparison & $\Delta mR$ & head & body & tail & $\Delta zR$ \\", r"\midrule"]
+    for k, lab in names.items():
+        r = d["comparisons"][k]
+        t = r["mR50_change_by_tier"]
+        lines.append(lab + f" & ${f4(r['mR50_change_overall'])}$ & "
+                     + " & ".join(f"${f4(t[x]['mean_change_within_tier'])}$" for x in ("head", "body", "tail"))
+                     + f" & ${f4(r['zR50_change_per_image'])}$ \\\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
 def tier_pair():
     d = json.loads((RES / "sgg_rank_robustness.json").read_text())["tier_pair_auc"]
     order = ["head-head", "head-body", "head-tail", "body-body", "body-tail", "tail-tail",
@@ -627,6 +645,7 @@ def main():
     (OUT / "tab_rank_weighting.tex").write_text(head + rank_weighting() + "\n")
     (OUT / "tab_tier_pair_auc.tex").write_text(head + tier_pair() + "\n")
     (OUT / "tab_label_weighting.tex").write_text(head + label_weighting() + "\n")
+    (OUT / "tab_diagnostics.tex").write_text(head + diagnostics() + "\n")
     (OUT / "tab_recalibration.tex").write_text(head + recalibration() + "\n")
     (OUT / "tab_label_shift_path.tex").write_text(head + label_shift_path() + "\n")
     (OUT / "tab_small_cells.tex").write_text(head + small_cells() + "\n")

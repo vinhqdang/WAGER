@@ -758,6 +758,19 @@ plainly hypothetical. The reported $94.0\%$ empirical coverage against a nominal
 (Section~\ref{sec:simulation}), not this theorem directly, is therefore the evidence that
 the interval remains a good approximation well short of the idealization.
 
+\paragraph{The headline interval on VG150 itself.} The theorem does not cover the audited data,
+so we check the headline interval directly (\texttt{sgg\_interval\_and\_diagnostics.py}). TDE's
+mean-recall case-level part, $+0.0130$, has influence-function standard error $0.00193$ and
+interval $[+0.0093,+0.0168]$. A delete-a-group jackknife over images gives a standard error
+$9\%$ to $13\%$ larger ($50$ or $100$ groups) and interval $[+0.0088,+0.0173]$ ($100$ groups); the
+conclusion is unchanged. Resampling VG150's own images $1{,}000$ times, the influence-function
+standard error tracks the spread of the replicate estimates (ratio $0.97$), but the interval
+covers the full-sample value in only $88\%$ of replicates: a resampled image enters twice, and the
+two copies of a relation form a within-cell pair whose kernel is zero, to which we attribute the
+average shortfall of the replicate estimates, $0.0014$. That is a property of resampling a U-statistic,
+not of the interval, but it means this check cannot certify nominal coverage; the simulation of
+\cref{sec:simulation} and the jackknife are the evidence we have.
+
 \section{Choice of the grouping variable}\label{app:partition}
 
 \paragraph{The headline share under other groupings.} We recompute the graph-constrained

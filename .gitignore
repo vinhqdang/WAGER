@@ -232,6 +232,8 @@ data/vg_motifs/*
 !data/vg_motifs/wager_sgdet/
 !data/vg_visual/
 !data/vg_motifs/motifs_*_recalls.json
+# Scene-Graph-Benchmark.pytorch zero-shot triplet list (evaluation/vg/zeroshot_triplet.pytorch)
+!data/vg_motifs/zeroshot_triplet.pytorch
 results/*.npz
 scratchpad/
 

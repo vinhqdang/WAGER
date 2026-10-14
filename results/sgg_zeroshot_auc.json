@@ -1,0 +1,454 @@
+{
+ "definition": {
+  "block": "(cell c = (subject, object) class pair, unordered label pair {y, z}) as in wager.rank._blocks",
+  "zero_shot_block": "(c, y) or (c, z) is a zero-shot triplet (subject, predicate, object class absent from training)",
+  "seen_block": "complement of zero_shot_block",
+  "change": "AUC(new) - AUC(old) over the blocks of the subset, with num and den summed over the subset",
+  "weightings": {
+   "comparison": "n_c(y) n_c(z) per block (library default)",
+   "relation": "as comparison, each block scaled by 1 / n_c (library _auc)"
+  },
+  "interval": "image-cluster bootstrap, 1000 replicates, seed 0, 95% percentile",
+  "probabilities": "raw (unrenormalised) stored probabilities from run_sgg_rank_robustness.sgg_data()"
+ },
+ "n_relations": 183639,
+ "n_images": 26446,
+ "n_zero_shot_relations": 8844,
+ "n_blocks": {
+  "total": 29256,
+  "zero_shot": 12316,
+  "seen": 16940
+ },
+ "by_weighting": {
+  "comparison": {
+   "baseline_auc": {
+    "none": {
+     "overall": {
+      "auc": 0.5705442258866708,
+      "ci": [
+       0.5611974192196276,
+       0.5796992024247806
+      ],
+      "n_nan_boot": 0
+     },
+     "zero_shot": {
+      "auc": 0.637982501435973,
+      "ci": [
+       0.6039557678475289,
+       0.6688604175134961
+      ],
+      "n_nan_boot": 0
+     },
+     "seen": {
+      "auc": 0.5692381851548369,
+      "ci": [
+       0.5598748759379696,
+       0.5784356234207083
+      ],
+      "n_nan_boot": 0
+     }
+    },
+    "TDE": {
+     "overall": {
+      "auc": 0.5730801809432841,
+      "ci": [
+       0.5642509262802123,
+       0.5820669940452876
+      ],
+      "n_nan_boot": 0
+     },
+     "zero_shot": {
+      "auc": 0.6252415045515993,
+      "ci": [
+       0.5925785598575138,
+       0.6550099853435155
+      ],
+      "n_nan_boot": 0
+     },
+     "seen": {
+      "auc": 0.5720700007050746,
+      "ci": [
+       0.562961813076373,
+       0.581287440825966
+      ],
+      "n_nan_boot": 0
+     }
+    },
+    "la1": {
+     "overall": {
+      "auc": 0.5705441707727886,
+      "ci": [
+       0.5611978412878693,
+       0.5796988656243098
+      ],
+      "n_nan_boot": 0
+     },
+     "zero_shot": {
+      "auc": 0.6379766995248235,
+      "ci": [
+       0.6039377869902262,
+       0.6688604175134961
+      ],
+      "n_nan_boot": 0
+     },
+     "seen": {
+      "auc": 0.5692382413360798,
+      "ci": [
+       0.5598749890388331,
+       0.5784359438056892
+      ],
+      "n_nan_boot": 0
+     }
+    }
+   },
+   "weight_share": {
+    "zero_shot": {
+     "weight_share": 0.018998526750817847,
+     "ci_not_computed": true
+    },
+    "seen": {
+     "weight_share": 0.9810014732491822,
+     "ci_not_computed": true
+    }
+   },
+   "contrasts": {
+    "TDE vs none": {
+     "overall": {
+      "change": 0.0025359550566133038,
+      "ci": [
+       -0.00277966494095723,
+       0.008694899514917767
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.5730801809432841,
+      "auc_old": 0.5705442258866708,
+      "library_point": 0.0025359550566133038
+     },
+     "zero_shot": {
+      "change": -0.01274099688437369,
+      "ci": [
+       -0.03428078593177135,
+       0.009712590822626556
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.6252415045515993,
+      "auc_old": 0.637982501435973,
+      "weight_share": 0.018998526750817847,
+      "contribution_to_overall": -0.0002420601701398604
+     },
+     "seen": {
+      "change": 0.002831815550237704,
+      "ci": [
+       -0.0025457587500850865,
+       0.008957833984979978
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.5720700007050746,
+      "auc_old": 0.5692381851548369,
+      "weight_share": 0.9810014732491822,
+      "contribution_to_overall": 0.002778015226753131
+     },
+     "decomposition_residual": -3.2959746043559335e-17,
+     "library_point_residual": 0.0
+    },
+    "la1 vs none": {
+     "overall": {
+      "change": -5.511388212475765e-08,
+      "ci": [
+       -9.589350652955409e-07,
+       6.555161621291096e-07
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.5705441707727886,
+      "auc_old": 0.5705442258866708,
+      "library_point": -5.511388212475765e-08
+     },
+     "zero_shot": {
+      "change": -5.80191114951667e-06,
+      "ci": [
+       -5.132974680185365e-05,
+       1.6421597350499415e-05
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.6379766995248235,
+      "auc_old": 0.637982501435973,
+      "weight_share": 0.018998526750817847,
+      "contribution_to_overall": -1.1022776417996078e-07
+     },
+     "seen": {
+      "change": 5.618124288009341e-08,
+      "ci": [
+       -4.0090461607966695e-07,
+       6.12244724859656e-07
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.5692382413360798,
+      "auc_old": 0.5692381851548369,
+      "weight_share": 0.9810014732491822,
+      "contribution_to_overall": 5.511388203434176e-08
+     },
+     "decomposition_residual": -2.086136931713425e-17,
+     "library_point_residual": 0.0
+    },
+    "TDE vs la1": {
+     "overall": {
+      "change": 0.0025360101704954285,
+      "ci": [
+       -0.002779668975395194,
+       0.008695390466376166
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.5730801809432841,
+      "auc_old": 0.5705441707727886,
+      "library_point": 0.0025360101704954285
+     },
+     "zero_shot": {
+      "change": -0.012735194973224173,
+      "ci": [
+       -0.03427578431586469,
+       0.009731437593546414
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.6252415045515993,
+      "auc_old": 0.6379766995248235,
+      "weight_share": 0.018998526750817847,
+      "contribution_to_overall": -0.00024194994237568043
+     },
+     "seen": {
+      "change": 0.002831759368994824,
+      "ci": [
+       -0.0025460740672515387,
+       0.008957623934742158
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.5720700007050746,
+      "auc_old": 0.5692382413360798,
+      "weight_share": 0.9810014732491822,
+      "contribution_to_overall": 0.002777960112871097
+     },
+     "decomposition_residual": -1.214306433183765e-17,
+     "library_point_residual": 0.0
+    }
+   }
+  },
+  "relation": {
+   "baseline_auc": {
+    "none": {
+     "overall": {
+      "auc": 0.6136220517641954,
+      "ci": [
+       0.6056808932755128,
+       0.6146348829758859
+      ],
+      "n_nan_boot": 0
+     },
+     "zero_shot": {
+      "auc": 0.697870480618999,
+      "ci": [
+       0.6782242226035873,
+       0.7011689950054567
+      ],
+      "n_nan_boot": 0
+     },
+     "seen": {
+      "auc": 0.6029489847087505,
+      "ci": [
+       0.5964364057176429,
+       0.6060252221725243
+      ],
+      "n_nan_boot": 0
+     }
+    },
+    "TDE": {
+     "overall": {
+      "auc": 0.6118313900508543,
+      "ci": [
+       0.6043060650491711,
+       0.6129943769957369
+      ],
+      "n_nan_boot": 0
+     },
+     "zero_shot": {
+      "auc": 0.6830023761461218,
+      "ci": [
+       0.6645967118534781,
+       0.6877233893212161
+      ],
+      "n_nan_boot": 0
+     },
+     "seen": {
+      "auc": 0.602815047344855,
+      "ci": [
+       0.5963374980446491,
+       0.6056225209161106
+      ],
+      "n_nan_boot": 0
+     }
+    },
+    "la1": {
+     "overall": {
+      "auc": 0.6136220663229544,
+      "ci": [
+       0.6056809177479019,
+       0.614635452392399
+      ],
+      "n_nan_boot": 0
+     },
+     "zero_shot": {
+      "auc": 0.6978694718305425,
+      "ci": [
+       0.6782243399156628,
+       0.7011688755963157
+      ],
+      "n_nan_boot": 0
+     },
+     "seen": {
+      "auc": 0.6029491289109179,
+      "ci": [
+       0.5964366262945413,
+       0.6060255113258645
+      ],
+      "n_nan_boot": 0
+     }
+    }
+   },
+   "weight_share": {
+    "zero_shot": {
+     "weight_share": 0.11244099087456808,
+     "ci_not_computed": true
+    },
+    "seen": {
+     "weight_share": 0.8875590091254321,
+     "ci_not_computed": true
+    }
+   },
+   "contrasts": {
+    "TDE vs none": {
+     "overall": {
+      "change": -0.0017906617133410796,
+      "ci": [
+       -0.0042855184262633374,
+       0.001617878185638257
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.6118313900508543,
+      "auc_old": 0.6136220517641954,
+      "library_point": -0.0017906617133410796
+     },
+     "zero_shot": {
+      "change": -0.01486810447287723,
+      "ci": [
+       -0.020297792276348873,
+       -0.005609807931356817
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.6830023761461218,
+      "auc_old": 0.697870480618999,
+      "weight_share": 0.11244099087456808,
+      "contribution_to_overall": -0.0016717843993569134
+     },
+     "seen": {
+      "change": -0.0001339373638954422,
+      "ci": [
+       -0.003254561054221708,
+       0.003196075028182868
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.602815047344855,
+      "auc_old": 0.6029489847087505,
+      "weight_share": 0.8875590091254321,
+      "contribution_to_overall": -0.00011887731398391109
+     },
+     "decomposition_residual": 2.5522119140308774e-16,
+     "library_point_residual": 0.0
+    },
+    "la1 vs none": {
+     "overall": {
+      "change": 1.4558758976157549e-08,
+      "ci": [
+       -6.107589917120348e-07,
+       6.515857328387437e-07
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.6136220663229544,
+      "auc_old": 0.6136220517641954,
+      "library_point": 1.4558758976157549e-08
+     },
+     "zero_shot": {
+      "change": -1.0087884565468386e-06,
+      "ci": [
+       -6.792426706977994e-06,
+       3.5582559498037455e-07
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.6978694718305425,
+      "auc_old": 0.697870480618999,
+      "weight_share": 0.11244099087456808,
+      "contribution_to_overall": -1.1342917363695269e-07
+     },
+     "seen": {
+      "change": 1.442021674291638e-07,
+      "ci": [
+       -5.538994360398952e-08,
+       8.781189744955231e-07
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.6029491289109179,
+      "auc_old": 0.6029489847087505,
+      "weight_share": 0.8875590091254321,
+      "contribution_to_overall": 1.2798793283716828e-07
+     },
+     "decomposition_residual": 2.240580419453242e-16,
+     "library_point_residual": 0.0
+    },
+    "TDE vs la1": {
+     "overall": {
+      "change": -0.0017906762721000558,
+      "ci": [
+       -0.0042856840675212365,
+       0.0016176243199138925
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.6118313900508543,
+      "auc_old": 0.6136220663229544,
+      "library_point": -0.0017906762721000558
+     },
+     "zero_shot": {
+      "change": -0.014867095684420684,
+      "ci": [
+       -0.020297792276348873,
+       -0.005608698684808261
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.6830023761461218,
+      "auc_old": 0.6978694718305425,
+      "weight_share": 0.11244099087456808,
+      "contribution_to_overall": -0.0016716709701832765
+     },
+     "seen": {
+      "change": -0.00013408156606287136,
+      "ci": [
+       -0.0032545400551969804,
+       0.0031960759851384635
+      ],
+      "n_nan_boot": 0,
+      "auc_new": 0.602815047344855,
+      "auc_old": 0.6029491289109179,
+      "weight_share": 0.8875590091254321,
+      "contribution_to_overall": -0.00011900530191674826
+     },
+     "decomposition_residual": 3.1008182133085427e-17,
+     "library_point_residual": 0.0
+    }
+   }
+  }
+ },
+ "checks": {
+  "la1_vs_none_max_abs_overall_change": 5.511388212475765e-08,
+  "decomposition_tolerance": 1e-09,
+  "decomposition_max_residual": 2.5522119140308774e-16,
+  "overall_bootstrap_matches_library_ci": true,
+  "blocks_identical_across_models": true
+ },
+ "runtime_seconds": 1982.5630241069998
+}

@@ -778,6 +778,58 @@ CHECKS += [
     ("cvpr wb auc hi", "6_pixels.tex", "+0.0056", _wba["ci"][1], 5e-5),
     ("cvpr sgdet matched %", "5_audit.tex", "$65\\%$", 100 * _sgd["matched_fraction"], 0.5),
 ]
+_dg = load("sgg_interval_and_diagnostics.json")
+_jk = _dg["part1_headline_interval"]["jackknife"]["G100"]
+_cov = _dg["part2_coverage"]
+_zsr = _dg["part3_diagnostics"]["zR50_replay"]
+_zsc = _dg["part3_diagnostics"]["comparisons"]
+_zss = load("sgg_zeroshot_split.json")["comparisons"]["TDE vs la1"]
+_zsa = load("sgg_zeroshot_auc.json")["by_weighting"]
+_amb = load("sgg_auc_label_ambiguity.json")
+CHECKS += [
+    # R5-11: headline interval on VG150
+    ("cvpr jk lo", "5_audit.tex", "+0.0088", _jk["ci"][0], 5e-5),
+    ("cvpr jk hi", "5_audit.tex", "+0.0173", _jk["ci"][1], 5e-5),
+    ("cvpr hajek se", "2_appendix.tex", "$0.00193$", _dg["part1_headline_interval"]["case_se_hajek"], 5e-6),
+    ("cvpr boot cov %", "2_appendix.tex", "$88\\%$", 100 * _cov["case"]["coverage"], 0.5),
+    ("cvpr boot se/sd", "2_appendix.tex", "$0.97$", _cov["case"]["mean_se_over_sd"], 5e-3),
+    ("cvpr boot bias", "2_appendix.tex", "$0.0014$", _cov["case"]["bias_vs_truth"], 5e-5),
+    # R5-17: stratified and zero-shot recall
+    ("cvpr zs base", "5_robust.tex", "$0.1102$", _zsr["none"]["per_image"], 5e-5),
+    ("cvpr zs tde", "5_robust.tex", "$0.1432$", _zsr["TDE"]["per_image"], 5e-5),
+    ("cvpr zs tde gain", "5_robust.tex", "$+0.033$", _zsc["TDE vs none"]["zR50_change_per_image"], 5e-4),
+    ("cvpr zs la drop", "5_robust.tex", "$0.004$", _zsc["la1 vs none"]["zR50_change_per_image"], 5e-4),
+    ("cvpr zs body la", "5_robust.tex", "$+0.179$", _zsc["la1 vs none"]["mR50_change_by_tier"]["body"]["mean_change_within_tier"], 5e-4),
+    ("cvpr zs body tde", "5_robust.tex", "$+0.235$", _zsc["TDE vs none"]["mR50_change_by_tier"]["body"]["mean_change_within_tier"], 5e-4),
+    ("cvpr zs split total", "5_robust.tex", "$+0.0352$", _zss["direct_change"], 5e-5),
+    ("cvpr zs split group", "5_robust.tex", "$+0.0207$", _zss["group_level"], 5e-5),
+    ("cvpr zs split case", "5_robust.tex", "$+0.0131$", _zss["case_level"], 5e-5),
+    ("cvpr zs split case lo", "5_robust.tex", "+0.0093,+0.0169", "checked by value below", 0),
+    ("cvpr zs split single", "5_robust.tex", "$+0.0014$", _zss["unidentified_singleton_change"], 5e-5),
+    ("cvpr zs body case", "5_audit.tex", "$+0.013$", _zss["case_level"], 5e-4),
+    ("cvpr zs body gain", "5_audit.tex", "$+0.035$", _zss["direct_change"], 5e-4),
+    ("cvpr zs n", "5_robust.tex", "$8{,}845$", 8845, 0),
+    ("cvpr zs split case ci lo", "5_robust.tex", "+0.0093", _zss["case_level_ci_image_clustered"][0], 5e-5),
+    ("cvpr zs split case ci hi", "5_robust.tex", "+0.0169", _zss["case_level_ci_image_clustered"][1], 5e-5),
+    ("cvpr zs auc rel", "5_robust.tex", "-0.0149", _zsa["relation"]["contrasts"]["TDE vs la1"]["zero_shot"]["change"], 5e-5),
+    ("cvpr zs auc rel lo", "5_robust.tex", "-0.0203", _zsa["relation"]["contrasts"]["TDE vs la1"]["zero_shot"]["ci"][0], 5e-5),
+    ("cvpr zs auc rel hi", "5_robust.tex", "-0.0056", _zsa["relation"]["contrasts"]["TDE vs la1"]["zero_shot"]["ci"][1], 5e-5),
+    ("cvpr zs auc body", "5_audit.tex", "-0.015", _zsa["relation"]["contrasts"]["TDE vs la1"]["zero_shot"]["change"], 5e-4),
+    ("cvpr zs auc body lo", "5_audit.tex", "-0.020", _zsa["relation"]["contrasts"]["TDE vs la1"]["zero_shot"]["ci"][0], 5e-4),
+    ("cvpr zs auc body hi", "5_audit.tex", "-0.006", _zsa["relation"]["contrasts"]["TDE vs la1"]["zero_shot"]["ci"][1], 5e-4),
+    ("cvpr zs auc cmp", "5_robust.tex", "-0.0127", _zsa["comparison"]["contrasts"]["TDE vs la1"]["zero_shot"]["change"], 5e-5),
+    ("cvpr zs auc seen", "5_robust.tex", "-0.0001", _zsa["relation"]["contrasts"]["TDE vs la1"]["seen"]["change"], 5e-5),
+    ("cvpr zs share %", "5_robust.tex", "$11\\%$", 100 * _zsa["relation"]["weight_share"]["zero_shot"]["weight_share"], 0.5),
+    # R5-16: label ambiguity
+    ("cvpr amb tde rel", "5_robust.tex", "-0.0049", _amb["merged_auc"]["synonym"]["comparisons"]["TDE vs none"]["relation"]["difference"], 5e-5),
+    ("cvpr amb tde rel lo", "5_robust.tex", "-0.0084", _amb["merged_auc"]["synonym"]["comparisons"]["TDE vs none"]["relation"]["ci95"][0], 5e-5),
+    ("cvpr amb tde rel hi", "5_robust.tex", "-0.0008", _amb["merged_auc"]["synonym"]["comparisons"]["TDE vs none"]["relation"]["ci95"][1], 5e-5),
+    ("cvpr amb tde cmp", "5_robust.tex", "-0.0001", _amb["merged_auc"]["synonym"]["comparisons"]["TDE vs none"]["comparison"]["difference"], 5e-5),
+    ("cvpr amb iet within", "5_robust.tex", "-0.0177", _amb["pair_type_auc"]["ietrans vs none"]["within-group"]["difference"], 5e-5),
+    ("cvpr amb iet across", "5_robust.tex", "-0.0071", _amb["pair_type_auc"]["ietrans vs none"]["across-group"]["difference"], 5e-5),
+    ("cvpr amb within share %", "5_robust.tex", "$21\\%$", 100 * _amb["pair_type_auc"]["ietrans vs none"]["within-group"]["weight_share"], 0.5),
+    ("cvpr amb iet merged rel", "5_robust.tex", "-0.0255", _amb["merged_auc"]["synonym"]["comparisons"]["ietrans vs none"]["relation"]["difference"], 5e-5),
+]
 _ok = (_eqr["tost"]["10%"]["equivalent"] and _eqr["tost"]["25%"]["equivalent"]
        and not _eqr["tost"]["5%"]["equivalent"]
        and _eqa["tost"]["25%"]["equivalent"] and not _eqa["tost"]["10%"]["equivalent"]

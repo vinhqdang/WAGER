@@ -1,0 +1,312 @@
+{
+ "n_relations": 183642,
+ "n_images": 26446,
+ "part1_headline_interval": {
+  "headline": {
+   "total": 0.09715431789483334,
+   "group": 0.08410656187889232,
+   "case": 0.013047756015941023,
+   "case_ci_hajek": [
+    0.009260033057559023,
+    0.016835478974323026
+   ],
+   "matches_results_file": [
+    0.009260033057559023,
+    0.016835478974323026
+   ]
+  },
+  "case_se_hajek": 0.0019325472244689588,
+  "case_ci_hajek": [
+   0.009260033057559023,
+   0.016835478974323026
+  ],
+  "jackknife": {
+   "G100": {
+    "groups": 100,
+    "se": 0.002187689871873206,
+    "ci": [
+     0.008759962657726494,
+     0.017335549374155552
+    ],
+    "ratio_to_hajek_se": 1.1320240168901214,
+    "mean_leave_group_out": 0.013037309360602297,
+    "min_leave_group_out": 0.01245659596321799,
+    "max_leave_group_out": 0.013476923813833632
+   },
+   "G50": {
+    "groups": 50,
+    "se": 0.002109072539361641,
+    "ci": [
+     0.008914049798009773,
+     0.017181462233872274
+    ],
+    "ratio_to_hajek_se": 1.0913433382934221,
+    "mean_leave_group_out": 0.013025487214859794,
+    "min_leave_group_out": 0.012148444449872944,
+    "max_leave_group_out": 0.013603501408293127
+   }
+  },
+  "runtime_seconds": 233.94605456300002
+ },
+ "part2_coverage": {
+  "n_replicates": 1000,
+  "seed": 0,
+  "dgp": "cluster bootstrap of images from the real data (real y, phi, image, TDE and MOTIFS hit matrices)",
+  "truth": {
+   "case": 0.013047756015941023,
+   "case_share": 0.1342992910522498,
+   "group_share": 0.8657007089477502,
+   "total": 0.09715431789483334
+  },
+  "case": {
+   "coverage": 0.88,
+   "coverage_mc_se": 0.010276186062932104,
+   "mean_estimate": 0.01162511161239983,
+   "bias_vs_truth": -0.0014226444035411942,
+   "mean_se": 0.0018182681081410064,
+   "sd_estimates": 0.001873694599286048,
+   "mean_se_over_sd": 0.9704186097530721
+  },
+  "case_share": {
+   "coverage": 0.885,
+   "mean_estimate": 0.11959926562862812,
+   "bias_vs_truth": -0.014700025423621685,
+   "mean_se": 0.01742493860796778,
+   "sd_estimates": 0.01736339938804699,
+   "mean_se_over_sd": 1.0035441919261014
+  },
+  "group_share": {
+   "coverage": 0.885,
+   "note": "group share = 1 - case share; the interval is the reflection of the case-share interval"
+  },
+  "total": {
+   "mean_estimate": 0.09699333719377111,
+   "bias_vs_truth": -0.00016098070106222717
+  },
+  "mean_rows_per_replicate": 183683.795,
+  "mean_unique_images_fraction": 0.6321065567571655,
+  "runtime_seconds": 1683.6869321569998
+ },
+ "part3_diagnostics": {
+  "zero_shot_triplets": 5971,
+  "zero_shot_relations": 8845,
+  "zero_shot_images": 5161,
+  "tier_sizes_predicates": {
+   "head": 9,
+   "body": 26,
+   "tail": 15
+  },
+  "zR50_replay": {
+   "none": {
+    "micro": 0.11780667043527417,
+    "per_image": 0.11017652878241911,
+    "n_relations": 8845,
+    "n_images": 5161
+   },
+   "TDE": {
+    "micro": 0.15172413793103448,
+    "per_image": 0.14322880880234107,
+    "n_relations": 8845,
+    "n_images": 5161
+   },
+   "la1": {
+    "micro": 0.11656302996042962,
+    "per_image": 0.1064933247552895,
+    "n_relations": 8845,
+    "n_images": 5161
+   },
+   "ietrans": {
+    "micro": 0.03697003957037875,
+    "per_image": 0.03223057701840884,
+    "n_relations": 8845,
+    "n_images": 5161
+   },
+   "dlfe": {
+    "micro": 0.005087620124364048,
+    "per_image": 0.005486662791448686,
+    "n_relations": 8845,
+    "n_images": 5161
+   },
+   "dlfe_base": {
+    "micro": 0.03810062182023742,
+    "per_image": 0.03335937512938094,
+    "n_relations": 8845,
+    "n_images": 5161
+   }
+  },
+  "zR50_validation": {
+   "none": {
+    "replayed_per_image": 0.11017652878241911,
+    "official": 0.11017652878241911,
+    "source": "results/sgg_audit_motifs.json recalls.MOTIFS predcls_zeroshot_recall@50",
+    "tolerance": 1e-09,
+    "matches": true,
+    "abs_diff": 0.0
+   },
+   "TDE": {
+    "replayed_per_image": 0.14322880880234107,
+    "official": 0.14322880880234107,
+    "source": "results/sgg_audit_motifs.json recalls.MOTIFS-TDE predcls_zeroshot_recall@50",
+    "tolerance": 1e-09,
+    "matches": true,
+    "abs_diff": 0.0
+   },
+   "dlfe": {
+    "replayed_per_image": 0.005486662791448686,
+    "official": 0.0055,
+    "source": "results/dlfe_official_recall.json models.dlfe printed line",
+    "tolerance": 5e-05,
+    "matches": true,
+    "abs_diff": 1.333720855131379e-05
+   },
+   "dlfe_base": {
+    "replayed_per_image": 0.03335937512938094,
+    "official": 0.0334,
+    "source": "results/dlfe_official_recall.json models.dlfe_base printed line",
+    "tolerance": 5e-05,
+    "matches": true,
+    "abs_diff": 4.0624870619059006e-05
+   }
+  },
+  "comparisons": {
+   "TDE vs none": {
+    "mR50_change_overall": 0.09715431789483335,
+    "mR50_change_by_tier": {
+     "head": {
+      "n_predicates": 9,
+      "mean_change_within_tier": -0.1418454971995282,
+      "contribution_to_overall": -0.025532189495915073
+     },
+     "body": {
+      "n_predicates": 26,
+      "mean_change_within_tier": 0.23542616678557066,
+      "contribution_to_overall": 0.12242160672849675
+     },
+     "tail": {
+      "n_predicates": 15,
+      "mean_change_within_tier": 0.0008830022075055188,
+      "contribution_to_overall": 0.00026490066225165563
+     }
+    },
+    "zR50_change_per_image": 0.033052280019921956,
+    "zR50_change_micro": 0.033917467495760314,
+    "zR50_new_per_image": 0.14322880880234107,
+    "zR50_old_per_image": 0.11017652878241911,
+    "zR50_new_micro": 0.15172413793103448,
+    "zR50_old_micro": 0.11780667043527417,
+    "matches_existing_split_file": "sgg_recall_split.json"
+   },
+   "la1 vs none": {
+    "mR50_change_overall": 0.0940901142716167,
+    "mR50_change_by_tier": {
+     "head": {
+      "n_predicates": 9,
+      "mean_change_within_tier": 0.005016134551261385,
+      "contribution_to_overall": 0.0009029042192270492
+     },
+     "body": {
+      "n_predicates": 26,
+      "mean_change_within_tier": 0.17920617317767243,
+      "contribution_to_overall": 0.09318721005238967
+     },
+     "tail": {
+      "n_predicates": 15,
+      "mean_change_within_tier": 0.0,
+      "contribution_to_overall": 0.0
+     }
+    },
+    "zR50_change_per_image": -0.0036832040271296135,
+    "zR50_change_micro": -0.0012436404748445429,
+    "zR50_new_per_image": 0.1064933247552895,
+    "zR50_old_per_image": 0.11017652878241911,
+    "zR50_new_micro": 0.11656302996042962,
+    "zR50_old_micro": 0.11780667043527417,
+    "matches_existing_split_file": "sgg_recall_split_la1_vs_none.json"
+   },
+   "TDE vs la1": {
+    "mR50_change_overall": 0.003064203623216617,
+    "mR50_change_by_tier": {
+     "head": {
+      "n_predicates": 9,
+      "mean_change_within_tier": -0.1468616317507896,
+      "contribution_to_overall": -0.026435093715142126
+     },
+     "body": {
+      "n_predicates": 26,
+      "mean_change_within_tier": 0.05621999360789824,
+      "contribution_to_overall": 0.029234396676107086
+     },
+     "tail": {
+      "n_predicates": 15,
+      "mean_change_within_tier": 0.0008830022075055188,
+      "contribution_to_overall": 0.00026490066225165563
+     }
+    },
+    "zR50_change_per_image": 0.03673548404705157,
+    "zR50_change_micro": 0.03516110797060486,
+    "zR50_new_per_image": 0.14322880880234107,
+    "zR50_old_per_image": 0.1064933247552895,
+    "zR50_new_micro": 0.15172413793103448,
+    "zR50_old_micro": 0.11656302996042962,
+    "matches_existing_split_file": "sgg_recall_split_TDE_vs_la1.json"
+   },
+   "ietrans vs none": {
+    "mR50_change_overall": 0.22035717846923775,
+    "mR50_change_by_tier": {
+     "head": {
+      "n_predicates": 9,
+      "mean_change_within_tier": -0.09410491176997778,
+      "contribution_to_overall": -0.016938884118596
+     },
+     "body": {
+      "n_predicates": 26,
+      "mean_change_within_tier": 0.2853519335166714,
+      "contribution_to_overall": 0.1483830054286691
+     },
+     "tail": {
+      "n_predicates": 15,
+      "mean_change_within_tier": 0.2963768571972156,
+      "contribution_to_overall": 0.08891305715916469
+     }
+    },
+    "zR50_change_per_image": -0.07794595176401027,
+    "zR50_change_micro": -0.08083663086489543,
+    "zR50_new_per_image": 0.03223057701840884,
+    "zR50_old_per_image": 0.11017652878241911,
+    "zR50_new_micro": 0.03697003957037875,
+    "zR50_old_micro": 0.11780667043527417,
+    "matches_existing_split_file": "sgg_recall_split_ietrans_vs_none.json"
+   },
+   "dlfe vs dlfe_base": {
+    "mR50_change_overall": 0.11115548752248278,
+    "mR50_change_by_tier": {
+     "head": {
+      "n_predicates": 9,
+      "mean_change_within_tier": -0.11002688207506006,
+      "contribution_to_overall": -0.019804838773510813
+     },
+     "body": {
+      "n_predicates": 26,
+      "mean_change_within_tier": 0.1582735629024123,
+      "contribution_to_overall": 0.0823022527092544
+     },
+     "tail": {
+      "n_predicates": 15,
+      "mean_change_within_tier": 0.162193578622464,
+      "contribution_to_overall": 0.0486580735867392
+     }
+    },
+    "zR50_change_per_image": -0.027872712337932253,
+    "zR50_change_micro": -0.03301300169587337,
+    "zR50_new_per_image": 0.005486662791448686,
+    "zR50_old_per_image": 0.03335937512938094,
+    "zR50_new_micro": 0.005087620124364048,
+    "zR50_old_micro": 0.03810062182023742,
+    "matches_existing_split_file": "sgg_recall_split_dlfe_vs_dlfe_base.json"
+   }
+  },
+  "notes": "mR change is micro-pooled over eligible relations (cells with >= 2 relations), as the split. Tier 'mean_change_within_tier' averages the per-predicate change over the tier's predicates; 'contribution_to_overall' is the tier's share of the 50-predicate average and sums to the overall change.",
+  "runtime_seconds": 0.6159070250000696
+ },
+ "runtime_seconds_total": 1918.600257664
+}

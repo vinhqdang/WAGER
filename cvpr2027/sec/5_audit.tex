@@ -84,7 +84,8 @@ configurations, one secondary interval excluding zero is not read as a finding.
 
 \paragraph{Mean recall, split.} Pooled over identified relations, mean recall@50 rises by
 $0.0972$ ($0.1017$ on the official per-image average). Of that, $+0.0841$ is group-level
-and $+0.0130$ case-level, interval $[+0.0093,+0.0168]$ (\cref{tab:sggaudit}): $87\%$ of the
+and $+0.0130$ case-level, interval $[+0.0093,+0.0168]$ ($[+0.0088,+0.0173]$ by an image
+jackknife; \cref{tab:sggaudit,app:clt}): $87\%$ of the
 gain, interval $[83\%,91\%]$, survives shuffling every label among the relations that share
 its object pair. The share is a property of the declared cells, not of TDE alone
 (\cref{tab:sggaudit}, lower panel): refining the pair by the object's position or the subject's
@@ -156,13 +157,12 @@ constraint: TDE leads it by $+0.0300$ at $K=100$ and trails it by $0.0234$ at $K
 $0.08$--$0.15$ without the constraint. Where the total gain is negative, as without the
 constraint, a share is undefined and we report the parts only.
 
-\paragraph{How to read the split.} Group-level is not a lesser gain: a user who needs rare
-predicates named more often for a given object pair (retrieval by predicate, say) wants it,
-and mean recall rewards it by design. A user who needs the right predicate on the right
-relation (captioning or question answering about one image) wants case-level gain. The
-case-level part, a within-pair covariance, also credits shortcuts, operating-point movement
-and label noise, so discrimination claims rest on the control and the AUC. What would change
-TDE's verdict is an AUC gain beyond the bounds above, or a case-level part over the control that excludes zero. Nor is the share forced by
+\paragraph{How to read the split.} Group-level is not a lesser gain: retrieval by predicate
+wants rare predicates named more often for a pair, and mean recall rewards that by design;
+captioning or question answering about one image wants the right predicate on the right
+relation, a case-level gain. The case-level part also credits shortcuts, operating-point
+movement and label noise, so discrimination claims rest on the control and the AUC; an AUC
+gain beyond the bounds above would change TDE's verdict. Nor is the share forced by
 the metric: an oracle gains $+0.5068$ in quadratic score, all case-level ($+0.8041$ against
 $-0.2973$). And it depends on the label mix: along a path to uniform predicate frequencies
 within each pair, TDE's temperature-matched quadratic case-level part rises from $-0.00006$ to $+0.01430$
@@ -182,7 +182,10 @@ image-clustered.}
 split along them adds up exactly (\cref{app:tdepath}): subtracting the averaged context
 supplies $+0.0817$ of the $0.0972$, and that term is, to $99.96\%$ of its energy, one vector
 shared by every relation, correlated $+0.75$ with the log training prior. In PredCls TDE is
-to first order a learned logit adjustment, which is why the explicit one reproduces it.
+to first order a learned logit adjustment, which is why the explicit one reproduces it. Where
+the two part, on zero-shot recall ($+0.035$ for TDE over the control), TDE's case-level part,
+$+0.013$, comes with an AUC that \emph{falls} on comparisons involving an unseen triplet,
+$-0.015$, $[-0.020,-0.006]$ (\cref{app:zeroshot}).
 
 \paragraph{Two more methods.} DLFE~\cite{chiou2021recovering} divides predicate
 probabilities by estimated label frequencies, a per-predicate log-odds shift, and is released
@@ -198,12 +201,12 @@ case-level. Its relation-weighted AUC falls by $-0.0238$, $[-0.0272,-0.0187]$, a
 comparison barely, $-0.0093$, $[-0.0185,-0.0001]$. A fall measures agreement with
 the recorded labels, and IETrans relabels general predicates as specific ones, so part of it
 may be synonymy rather than lost discrimination. No IETrans baseline was released: this
-compares two separately trained models and does not isolate the effect of relabelling.
+compares two separately trained models and does not isolate the effect of relabelling; merging
+synonymous predicates leaves the loss in place (\cref{app:ambiguity}).
 
 \paragraph{Beyond PredCls.} The release's SGCls and SGDet checkpoints give all three
 models shared object predictions, so the ground-truth pair remains a common grouping
 (\cref{app:det}). In SGCls, where $58\%$ of relations have a matched pair, TDE raises $mR@50$
 by $+0.0517$, $99\%$ group-level; the control gains $+0.0518$ at $R@50=0.384$ against TDE's
-$0.263$; TDE's relation-weighted AUC falls by $-0.0128$, $[-0.0171,-0.0074]$. In SGDet the
-control again gains more than TDE ($+0.0418$ against $+0.0310$) at nearly twice its $R@50$
-($65\%$ of relations matched; selection effects in \cref{app:det}).
+$0.263$; TDE's relation-weighted AUC falls by $-0.0128$, $[-0.0171,-0.0074]$. In SGDet ($65\%$ matched;
+\cref{app:det}) the control again gains more ($+0.0418$ against $+0.0310$).
