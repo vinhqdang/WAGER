@@ -91,6 +91,10 @@ cvpr grp pos share %
 cvpr grp size lo
 cvpr grp subj share %
 cvpr hit cov case %
+cvpr holm dlfe
+cvpr holm floor
+cvpr holm pair
+cvpr holm penet
 cvpr identified cells
 cvpr identified share of relations
 cvpr jk hi
@@ -114,6 +118,12 @@ cvpr mR base, points
 cvpr matched quad dR ci hi
 cvpr matched quad dR ci lo
 cvpr matched quad p
+cvpr mde cmp
+cvpr mde pair
+cvpr mde pred
+cvpr mde rel
+cvpr off share range hi
+cvpr off share range lo
 cvpr official TDE-LA lo
 cvpr official perm case
 cvpr official perm share %
@@ -160,6 +170,7 @@ cvpr sim type-I
 cvpr soft case
 cvpr soft case hi
 cvpr soft case lo
+cvpr soft group %
 cvpr split gc100 total
 cvpr split gc20 total
 cvpr t1 img group
@@ -176,6 +187,7 @@ cvpr wb auc lo
 cvpr wb case
 cvpr wb case hi
 cvpr wb case lo
+cvpr wb erm recal
 cvpr wb group
 cvpr wb total
 cvpr wb wga erm
@@ -188,19 +200,10 @@ cvpr zs body case
 cvpr zs body gain
 cvpr zs la drop
 cvpr zs split case ci lo
-det sgcls LA R@50
-det sgcls LA dmR
-det sgcls TDE R@50
+cvpr zsm penet case
+cvpr zsm penet case lo
 det sgcls auc cmp hi
-det sgcls auc rel
-det sgcls auc rel hi
-det sgcls auc rel lo
 det sgcls case
-det sgcls dmR
-det sgcls matched %
-det sgcls share %
-det sgdet LA dmR
-det sgdet TDE dmR
 det sgdet TDE-LA case
 det sgdet TDE-LA hi
 det sgdet auc rel
@@ -301,7 +304,6 @@ sgg n images
 sgg n relations
 sgg tde mR@50
 shift CLIP-geo case
-shift CLIP-geo total
 shift TDE auc original
 shift TDE case
 sim calib matched dR

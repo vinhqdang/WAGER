@@ -336,3 +336,20 @@ We invite a revised manuscript that addresses the five required items and states
 | R7-3 | Done | The two-baseline comparison is called "one observed cross-release difference, not a noise bound" in Table 1 and the supplement; all four AUC signs are given; "four times" is restricted to the relation weighting (1.5x per pair, 1.4x per predicate, overlapping intervals). |
 | R7-4 | Done | IETrans is no longer called a prior correction in the abstract, intro or conclusion (relabelling and reweighting). |
 | R7-5 | Partly | Abstract rewritten: four checkpoints, 87% conditioned on class-pair cells and K=50 with the graph constraint, 84% and 18% alongside, caveats for PE-Net; N = 183,639 for AUC and proper scores stated in Sec. 5 next to 183,642. A grouping profile across a hierarchy of cells is not added. |
+
+## Status after the round-4 should-fix pass (2026-10-28)
+
+| Ref | Status | What changed |
+|---|---|---|
+| R7-6 | Partly | Control at tau = 0.5 and 1 reported (+0.0419 and +0.0941 of TDE's +0.0972); a tau tuned per cut-off or a control matched on R@50 needs an evaluator replay and was not run, so the text says the control matches TDE's kind of gain, not its operating point, outside K = 50 with the graph constraint. |
+| R7-7 | Not done | PE-Net's per-pair dump is not in the repository, so no operating-point control for PE-Net; stated in Sec. 5. |
+| R7-8 | Done | Confirmatory set declared; six secondary AUC results with Holm-adjusted p (under 0.001 for IETrans and the unseen-triplet fall, 0.028 to 0.043 for the other four, not read as findings). `experiments/sgg_secondary_adjust.py`. |
+| R7-9 | Done (analytic) | Detectable changes at 80% power from the bootstrap standard errors (0.0042, 0.0082, 0.018, 0.039) beside baseline AUCs; head-head subgroup interval in the supplement. A planted-signal simulation was not run. |
+| R7-10 | Not done | No training seeds (GPU days); stated in the limitations and the abstract. |
+| R7-11 | Partly | Limitations name the absence of one-stage and vision-language models; title unchanged. |
+| R7-12 | Done | `experiments/sgg_zeroshot_more.py`: PE-Net's zero-shot recall rises (+0.0611 per image) with AUC on unseen-triplet comparisons -0.0027 [-0.0116, +0.0097]; DLFE and IETrans fall; TDE's raw zero-shot gain is 55% case-level (37% against the control); the comparison-weighted unseen-triplet AUC covers zero and the text says so. |
+| R7-13 | Partly | Main text states the Waterbirds AUC gain (+0.0031), the dependence on recalibration (-0.0456) and one probe pair and seed; CIFAR-100-LT and text described as estimator checks. No worst-group decomposition or per-background prior control. |
+| R7-14 | Done | Oaxaca-Blinder and bias-corrected Brier decompositions in related work (Blinder 1973; Ferro and Fricker 2012, no page range given); Knyazev et al. (BMVC 2020) and Tang et al. (NeurIPS 2020) added; arXiv:2308.05286 not cited. |
+| R7-15 | Partly | `experiments/sgg_official_split_all.py`: official per-image split for all eight comparisons in one supplementary table (group shares 0.82 to 0.95 outside TDE and LA, 0.84 for both); intervals above 1 clipped. The jackknife is not made the primary interval. |
+| R7-16 | Partly | Three-step reporting list with "undetermined" as an admissible outcome in the conclusion; no decision table. |
+| R7-17 | Not done | Figure sizes unchanged; body still not self-contained beyond what the page limit allows. |

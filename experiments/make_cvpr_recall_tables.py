@@ -456,6 +456,25 @@ def diagnostics():
     return "\n".join(lines)
 
 
+def official_all():
+    """Official per-image statistic split for every comparison (results/sgg_official_split_all.json)."""
+    d = json.loads((RES / "sgg_official_split_all.json").read_text())["comparisons"]
+    names = {"TDE vs none": "TDE vs base", "la1 vs none": r"LA$_{1}$ vs base",
+             "TDE vs la1": r"TDE vs LA$_{1}$", "ietrans vs none": "IETrans+Rwt vs base",
+             "dlfe vs dlfe_base": "DLFE vs its base", "penet vs none": "PE-Net vs base",
+             "penet vs dlfe_base": r"PE-Net vs base$_\mathrm{D}$",
+             "dlfe_base vs none": r"base$_\mathrm{D}$ vs base"}
+    lines = [r"\begin{tabular}{@{}lrrrr@{}}", r"\toprule",
+             r"Comparison & total & group & case [CI] & group share [CI] \\", r"\midrule"]
+    for k, lab in names.items():
+        r = d[k]
+        sh = r["share_ci"]
+        lines.append(f"{lab} & ${f4(r['total'])}$ & ${f4(r['group'])}$ & ${f4(r['case'])}$ {ci(r['case_ci'])} & "
+                     f"${r['share']:.2f}$ {{\\scriptsize$[{sh[0]:.2f},{min(sh[1], 1.0):.2f}]$}} \\\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(lines)
+
+
 def tier_pair():
     d = json.loads((RES / "sgg_rank_robustness.json").read_text())["tier_pair_auc"]
     order = ["head-head", "head-body", "head-tail", "body-body", "body-tail", "tail-tail",
@@ -646,6 +665,7 @@ def main():
     (OUT / "tab_tier_pair_auc.tex").write_text(head + tier_pair() + "\n")
     (OUT / "tab_label_weighting.tex").write_text(head + label_weighting() + "\n")
     (OUT / "tab_diagnostics.tex").write_text(head + diagnostics() + "\n")
+    (OUT / "tab_official_all.tex").write_text(head + official_all() + "\n")
     (OUT / "tab_recalibration.tex").write_text(head + recalibration() + "\n")
     (OUT / "tab_label_shift_path.tex").write_text(head + label_shift_path() + "\n")
     (OUT / "tab_small_cells.tex").write_text(head + small_cells() + "\n")

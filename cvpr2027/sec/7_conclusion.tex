@@ -7,11 +7,12 @@ leaderboard opens. \emph{It credits any within-cell signal}, shortcuts included
 mix}; the AUC is invariant to the first two but not additive. \emph{Its interval needs cells
 that are not tiny}: with two cases per cell it covers $81.5\%$ (\cref{app:clt}). \emph{It needs
 scores for every label}. And \emph{each model is one released run}: intervals cover test
-sampling, not training.
+sampling, not training, and no one-stage or vision--language model is audited.
 
 \paragraph{Conclusion.} Scoring each prediction against another case's label from the same group
 separates the two achievements mean recall sums. On released TDE, DLFE and IETrans PredCls
 checkpoints the gains are almost entirely group-level, and no weighting of TDE's within-pair AUC
 shows a gain; PE-Net's case-level part exceeds the spread between baselines, though its AUC gain
-cannot be separated from it. We propose reporting the declared grouping, both parts with intervals, the
-within-group AUC and, for thresholded metrics, the operating-point control.
+cannot be separated from it. We propose reporting (1) the declared grouping, (2) both parts with intervals and
+(3) the within-group AUC and, for thresholded metrics, the operating-point control, with
+\emph{undetermined} an admissible outcome, as for TDE per predicate and for PE-Net here.

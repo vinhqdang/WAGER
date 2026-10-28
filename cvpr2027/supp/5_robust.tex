@@ -282,7 +282,21 @@ interval, $[-0.0268,-0.0192]$, lies outside every margin on the negative side: a
 TDE's mean-recall case-level part against the control has $90\%$ interval $[-0.0043,+0.0027]$;
 measured against TDE's own case-level part over the baseline ($+0.0130$) it is not equivalent
 to zero even at a $25\%$ margin. On the harmonic mean $F@50$ of $R@50$ and $mR@50$~\cite{zhang2022finegrained} the control also
-leads TDE, $0.344$ against $0.322$. No margin was registered before the audit; the grid shows
+leads TDE, $0.344$ against $0.322$. Halving the control's $\tau$ to $0.5$ recovers $+0.0419$ of
+TDE's $+0.0972$ ($+0.0941$ at $\tau=1$). A $\tau$ tuned per cut-off or a control matched on
+$R@50$ needs a replay of the evaluator that we did not run, so outside $K=50$ with the graph
+constraint the control matches TDE's kind of gain, not its operating point. \emph{Detectable changes.} From the bootstrap standard errors of TDE's contrasts, $0.0015$, $0.0029$,
+$0.0063$ and $0.0140$ (relation, comparison, pair, predicate weighting), a change is detected with
+$80\%$ power at a two-sided $5\%$ level only above $0.0042$, $0.0082$, $0.018$ and $0.039$, against
+baseline AUCs of $0.614$, $0.571$, $0.706$ and $0.653$ (\texttt{sgg\_secondary\_adjust.py}); the
+head-head pairs alone, $65\%$ of the comparison weight, give $+0.0067$, $[-0.00004,+0.0146]$.
+\emph{Multiplicity.} The confirmatory quantities are the graph-constrained $mR@50$ split and the
+relation-weighted AUC of TDE. For the six secondary AUC results quoted in Sec.~\ref{sec:sggaudit},
+normal-approximation $p$-values from the same intervals and Holm's step-down adjustment give
+$<0.001$ (IETrans, $-0.0238$), $0.0004$ (TDE on unseen triplets, defined after the recall
+result), $0.028$ (the two baselines, $-0.0060$) and $0.043$ for TDE per pair ($-0.0153$), PE-Net
+($+0.0050$) and DLFE ($+0.0029$), which we therefore do not read as findings.
+No margin was registered before the audit; the grid shows
 how the verdict depends on it, and \cref{tab:labelweighting} gives the bounds under the
 predicate and pair weightings.
 
@@ -424,6 +438,19 @@ $-0.0149$, $[-0.0203,-0.0056]$, relation-weighted ($-0.0127$, $[-0.0343,+0.0097]
 on all other comparisons it is $-0.0001$, $[-0.0033,+0.0032]$. TDE's zero-shot advantage is an
 operating point that happens to favour unseen triplets, not a better ranking of them.
 
+The same split for the other methods (\texttt{sgg\_zeroshot\_more.py}): PE-Net's zero-shot
+recall rises, per image from $0.110$ to $0.171$ ($+0.0674$ micro-pooled, $+0.0148$,
+$[+0.0109,+0.0187]$, case-level, $22\%$ of the raw gain), but its AUC on comparisons involving an
+unseen triplet changes by $-0.0027$, $[-0.0116,+0.0097]$ (relation-weighted; $+0.0195$ against
+the other baseline), so this too is not shown to be better ranking; DLFE's ($-0.0279$ per image) and
+IETrans's ($-0.0779$) zero-shot recall fall, with case-level parts $-0.0039$ and $-0.0105$. TDE's
+raw zero-shot gain is $55\%$ case-level ($37\%$ against the control), the largest share among the
+methods, and its comparison-weighted unseen-triplet AUC change, $-0.0127$, $[-0.0343,+0.0097]$,
+covers zero, so the fall in the text rests on the relation weighting. The benchmark's list of
+unseen triplets, fixed by the standard training split, is used for every model; the stored
+IETrans files give predicate counts only, so a list for its own relabelled training subset cannot
+be re-derived.
+
 \begin{table}[h]
 \centering
 \scriptsize
@@ -432,6 +459,23 @@ mean recall; head, body, tail: mean change over the tier's predicates; $\Delta z
 zero-shot recall, as the official evaluator.}
 \label{tab:diagnostics}
 \input{supp/tab_diagnostics}
+\end{table}
+
+\subsection{The official statistic for every comparison}\label{app:officialall}
+
+\Cref{tab:officialall} splits the official per-image mean recall@50, by within-cell label
+permutations (200, as in \cref{app:splits}), for every comparison of the main text. The
+group-level share is $0.84$ for TDE and for the control, $0.94$ for DLFE, $0.95$ for IETrans and
+$0.82$ for PE-Net, close to the micro-pooled shares of Table~\ref{tab:sggaudit}; share intervals
+that pass $1$ are clipped there, being ratios of noisy parts.
+
+\begin{table}[h]
+\centering
+\scriptsize
+\caption{\textbf{Official per-image mean recall@50 split} (graph constraint; case-level
+intervals by an image jackknife; group share with its jackknife interval, clipped at $1$).}
+\label{tab:officialall}
+\input{supp/tab_official_all}
 \end{table}
 
 \subsection{Label ambiguity}\label{app:ambiguity}

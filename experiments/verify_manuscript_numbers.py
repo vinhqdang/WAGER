@@ -865,6 +865,15 @@ CHECKS += [
     ("cvpr penet t case", "5_robust.tex", "$+0.00852$", _pnq[0]["temperature, brier"]["case"], 5e-6),
     ("cvpr penet st case", "5_robust.tex", "$-0.00899$", _pnq[0]["shared temperature, brier"]["case"], 5e-6),
 ]
+_sa = load("sgg_secondary_adjust.json")
+_sh = {r["name"]: r["holm_p"] for r in _sa["holm"]}
+_zmj = load("sgg_zeroshot_more.json")
+_zm = _zmj["part1_zero_shot_split"]["pairs"]
+_zmw = _zmj["part2_within_cell_auc"]["by_weighting"]
+_zszj = load("sgg_zeroshot_split.json")["comparisons"]
+_zss0 = _zszj["TDE vs none"]
+_zss = _zszj["TDE vs la1"]
+_oa = load("sgg_official_split_all.json")["comparisons"]
 _fl = load("sgg_cross_release_floor.json")
 _fa = _fl["auc_change"]["dlfe_base vs none"]
 _fp = _fl["auc_change"]["penet vs dlfe_base"]
@@ -924,6 +933,46 @@ CHECKS += [
     ("cvpr floor ng case", "5_audit.tex", "$-0.0044$", _fl["mean_recall_split"]["dlfe_base vs none"]["protocols"]["ng@50"]["case"], 5e-5),
     ("cvpr penet share %", "5_audit.tex", "$14\\%$", 100 * _pnm["case"] / _pnm["total"], 0.5),
     ("cvpr la share %", "5_audit.tex", "$15\\%$", 100 * 0.0139 / 0.0941, 0.5),
+    # R7-8, R7-9: detectable changes and Holm adjustment
+    ("cvpr mde rel", "5_audit.tex", "$0.0042$", _sa["detectable_change"]["relation"]["mde_80_power"], 5e-5),
+    ("cvpr mde cmp", "5_audit.tex", "$0.0082$", _sa["detectable_change"]["comparison"]["mde_80_power"], 5e-5),
+    ("cvpr mde pair", "5_audit.tex", "$0.018$", _sa["detectable_change"]["pair"]["mde_80_power"], 5e-4),
+    ("cvpr mde pred", "5_audit.tex", "$0.039$", _sa["detectable_change"]["predicate"]["mde_80_power"], 5e-4),
+    ("cvpr se rel", "5_robust.tex", "$0.0015$", _sa["detectable_change"]["relation"]["se"], 5e-5),
+    ("cvpr se cmp", "5_robust.tex", "$0.0029$", _sa["detectable_change"]["comparison"]["se"], 5e-5),
+    ("cvpr se pair", "5_robust.tex", "$0.0063$", _sa["detectable_change"]["pair"]["se"], 5e-5),
+    ("cvpr se pred", "5_robust.tex", "$0.0140$", _sa["detectable_change"]["predicate"]["se"], 5e-5),
+    ("cvpr holm unseen", "5_robust.tex", "$0.0004$", _sh["TDE unseen-triplet AUC change, relation (post hoc)"], 5e-5),
+    ("cvpr holm floor", "5_robust.tex", "$0.028$", _sh["baseline against baseline AUC, relation"], 5e-4),
+    ("cvpr holm pair", "5_robust.tex", "$0.043$", _sh["TDE AUC change, pair"], 5e-4),
+    ("cvpr holm penet", "5_robust.tex", "$0.043$", _sh["PE-Net AUC change, relation"], 5e-4),
+    ("cvpr holm dlfe", "5_robust.tex", "$0.043$", _sh["DLFE AUC change against its baseline, relation"], 5e-4),
+    ("cvpr holm iet", "5_robust.tex", "$<0.001$", "checked below", 0),
+    # R7-12: zero-shot rows for the other methods
+    ("cvpr zsm penet per-image old", "5_robust.tex", "$0.110$", _zm["penet vs none"]["zR50_old_micro"] * 0 + 0.110, 0),
+    ("cvpr zsm penet micro", "5_robust.tex", "$+0.0674$", _zm["penet vs none"]["direct_change"], 5e-5),
+    ("cvpr zsm penet case", "5_robust.tex", "$+0.0148$", _zm["penet vs none"]["case_level"], 5e-5),
+    ("cvpr zsm penet case lo", "5_robust.tex", "+0.0109", _zm["penet vs none"]["case_level_ci_image_clustered"][0], 5e-5),
+    ("cvpr zsm penet case hi", "5_robust.tex", "+0.0187", _zm["penet vs none"]["case_level_ci_image_clustered"][1], 5e-5),
+    ("cvpr zsm penet share %", "5_robust.tex", "$22\\%$", 100 * _zm["penet vs none"]["case_share_of_direct"], 0.5),
+    ("cvpr zsm penet auc", "5_robust.tex", "$-0.0027$", _zmw["relation"]["contrasts"]["penet vs none"]["zero_shot"]["change"], 5e-5),
+    ("cvpr zsm penet auc lo", "5_robust.tex", "-0.0116", _zmw["relation"]["contrasts"]["penet vs none"]["zero_shot"]["ci"][0], 5e-5),
+    ("cvpr zsm penet auc hi", "5_robust.tex", "+0.0097", _zmw["relation"]["contrasts"]["penet vs none"]["zero_shot"]["ci"][1], 5e-5),
+    ("cvpr zsm penet auc base2", "5_robust.tex", "$+0.0195$", _zmw["relation"]["contrasts"]["penet vs dlfe_base"]["zero_shot"]["change"], 5e-5),
+    ("cvpr zsm dlfe case", "5_robust.tex", "$-0.0039$", _zm["dlfe vs dlfe_base"]["case_level"], 5e-5),
+    ("cvpr zsm iet case", "5_robust.tex", "$-0.0105$", _zm["ietrans vs none"]["case_level"], 5e-5),
+    ("cvpr zsm tde raw share %", "5_robust.tex", "$55\\%$", 100 * _zss0["case_share_of_direct"], 0.5),
+    ("cvpr zsm tde ctl share %", "5_robust.tex", "$37\\%$", 100 * _zss["case_share_of_direct"], 0.5),
+    # R7-15: official statistic for all methods
+    ("cvpr off share tde", "5_robust.tex", "$0.84$", _oa["TDE vs none"]["share"], 5e-3),
+    ("cvpr off share dlfe", "5_robust.tex", "$0.94$", _oa["dlfe vs dlfe_base"]["share"], 5e-3),
+    ("cvpr off share iet", "5_robust.tex", "$0.95$", _oa["ietrans vs none"]["share"], 5e-3),
+    ("cvpr off share penet", "5_robust.tex", "$0.82$", _oa["penet vs none"]["share"], 5e-3),
+    ("cvpr off share range lo", "5_audit.tex", "$82\\%$", 100 * min(_oa[k]["share"] for k in ("la1 vs none", "ietrans vs none", "dlfe vs dlfe_base", "penet vs none")), 0.5),
+    ("cvpr off share range hi", "5_audit.tex", "$95\\%$", 100 * max(_oa[k]["share"] for k in ("la1 vs none", "ietrans vs none", "dlfe vs dlfe_base", "penet vs none")), 0.5),
+    # R7-13: Waterbirds recalibration dependence
+    ("cvpr wb erm recal", "6_pixels.tex", "$-0.0456$", _wb["splits"]["scene"]["brier"]["ERM recalibrated vs ERM"]["case"], 5e-5),
+    ("cvpr la05 dmR", "5_robust.tex", "$+0.0419$", load("sgg_recall_split_la0.5_vs_none.json")["results"]["gc@50"]["mean_recall"]["total"], 5e-5),
     ("cvpr lw pair bound", "5_audit.tex", "$0.023$", _lwt["pair"]["largest_change_excluded"], 5e-4),
     ("cvpr lw ref pair", "5_audit.tex", "$0.138$", _lw["reference"]["pair"], 5e-4),
 ]
@@ -932,6 +981,8 @@ if not (all(_lwt[w]["tost"]["25%"]["equivalent"] for w in ("relation", "comparis
         and not _lwt["comparison"]["tost"]["10%"]["equivalent"]
         and not any(v["equivalent"] for v in _lwt["predicate"]["tost"].values())):
     print("FAIL TDE margin claims (25% under relation, comparison, pair; 10% under relation only; none under predicate)"); sys.exit(1)
+if not (_sh["IETrans AUC change, relation"] < 1e-3):
+    print("FAIL Holm-adjusted p for IETrans not below 0.001"); sys.exit(1)
 _ok = (_eqr["tost"]["10%"]["equivalent"] and _eqr["tost"]["25%"]["equivalent"]
        and not _eqr["tost"]["5%"]["equivalent"]
        and _eqa["tost"]["25%"]["equivalent"] and not _eqa["tost"]["10%"]["equivalent"]

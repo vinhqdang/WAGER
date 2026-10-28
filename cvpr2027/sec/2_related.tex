@@ -3,9 +3,9 @@
 \paragraph{Bias and its evaluation in scene graph generation.}\label{sec:related-applied}
 Since MOTIFS showed a frequency predictor of the predicate given the object pair to be
 competitive~\cite{xu2017scene,zellers2018neural}, mean recall has become the headline metric,
-and debiasing methods span the causal TDE intervention~\cite{tang2020unbiased}, class-balanced sampling
+and debiasing methods span the causal TDE intervention~\cite{tang2020unbiased,tang2020long}, class-balanced sampling
 and group-wise learning~\cite{desai2021learning,dong2022stacked}, predicate-rebalancing message
-passing~\cite{li2021bgnn}, predicate-correlation and hierarchical
+passing~\cite{li2021bgnn}, density-aware losses~\cite{knyazev2020graph}, predicate-correlation and hierarchical
 losses~\cite{yan2020pcpl,yu2021cogtree,lyu2022fine}, prototype embeddings~\cite{zheng2023prototype}, edge-selective and relation-aware transformers~\cite{jung2023devil,sudhakaran2023vision}, and
 correction or relabelling of the training labels~\cite{li2022devil,zhang2022finegrained}.
 Correction by the predicate prior is known to rival them: post hoc, DLFE~\cite{chiou2021recovering}
@@ -31,9 +31,10 @@ decompositions~\cite{siegert2014variance}, not for a contrast between two models
 loss~\cite{perezlebel2023beyond} is the single-model relative of our case-level part. Transporting
 labels within a group permutes the input--label pairing, so one model's case-level part is a
 conditional permutation importance~\cite{strobl2008conditional,fisher2019all} of the non-grouping
-part of its input and a gain's is the difference of two models' (\cref{prop:reliance}). What the
-split adds is the exact additive accounting of a paired gain, including thresholded metrics, and
-paired inference for it.
+part of its input and a gain's is the difference of two models' (\cref{prop:reliance}). The parts echo the explained and unexplained shares of
+Oaxaca--Blinder decompositions~\cite{blinder1973wage}, and bias-corrected Brier
+decompositions exist~\cite{ferro2012bias}; what the split adds is the exact additive accounting
+of a paired gain, including thresholded metrics, and paired inference for it.
 
 \paragraph{Comparing two predictors.} At a single group our total-gain interval is the
 clustered Diebold--Mariano test~\cite{diebold1995comparing,giacomini2006tests}

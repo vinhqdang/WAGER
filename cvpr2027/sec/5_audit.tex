@@ -40,9 +40,9 @@ against the MOTIFS baseline, except TDE$-$LA. LA: the logit-adjusted baseline; D
 own released baseline; IETrans, PE-Net: released checkpoints against this baseline, separately
 trained; base$_\mathrm{D}$: the baseline released with DLFE against this one, one observed
 cross-release difference. One released run each; intervals (image-clustered) cover test sampling only.
-$\Delta$AUC: within-cell AUC change, weighted as the split weights cells ($r$, primary) or by
-comparison ($c$), $1{,}000$ replicates; LA's is below $10^{-6}$. Lower panel: TDE with other
-cells, and the official per-image statistic split by label permutations within cells.}
+$\Delta$AUC: within-cell AUC change, relation- ($r$, primary) or comparison-weighted ($c$),
+$1{,}000$ replicates; LA's is below $10^{-6}$. Lower panel: TDE with other cells and the official
+per-image statistic.}
 \label{tab:sggaudit}
 \begin{tabular}{@{}l@{\hspace{2pt}}r@{\hspace{4pt}}r@{\hspace{1.5pt}}r@{\hspace{1.5pt}}r@{\hspace{1.5pt}}r@{}}
 \toprule
@@ -83,8 +83,10 @@ per model, fitted on half the test images; the AUC is relation-weighted. These t
 and the protocol were declared after the TDE and IETrans results were seen and before the DLFE
 outputs existed, so for TDE and IETrans they are a post-hoc choice and for DLFE and PE-Net a
 prior one; every other protocol,
-score and weighting is collected in \cref{tab:tdesummary}, where, with that many
-configurations, one secondary interval excluding zero is not read as a finding.
+score and weighting is secondary (\cref{tab:tdesummary}). Of the six secondary AUC results
+quoted below, Holm-adjusted $p$ is under $0.001$ for IETrans and for the unseen-triplet fall and
+$0.028$ to $0.043$ for the other four (the two baselines, TDE per pair, PE-Net, DLFE), which we
+do not read as findings (\cref{app:rankrob}).
 
 \paragraph{Mean recall, split.} Pooled over identified relations, mean recall@50 rises by
 $0.0972$ ($0.1017$ on the official per-image average). Of that, $+0.0841$ is group-level
@@ -93,7 +95,8 @@ jackknife; \cref{tab:sggaudit,app:clt}): $87\%$ of the
 gain, interval $[83\%,91\%]$, survives shuffling every label among the relations that share
 its object pair. The share is a property of the declared cells, not of TDE alone
 (\cref{tab:sggaudit}, lower panel): refining the pair by the object's position or the subject's
-size leaves it at $90\%$, the official per-image statistic gives $84\%$, but cells of the
+size leaves it at $90\%$, the official per-image statistic gives $84\%$, other methods give $82\%$ to $95\%$ on it
+(\cref{app:officialall}), but cells of the
 subject class alone, which no longer hold the object's identity fixed, give $18\%$
 (\cref{app:partition,app:splits}).
 It lives in the body of the distribution: by training frequency (9 head predicates above
@@ -131,8 +134,10 @@ $0.138$ and $0.069$ over the class pair under the four (\cref{sec:vgvisual}); th
 $25\%$ margin of that under the first three and a $10\%$ one under the primary weighting only,
 and the per-predicate weighting, the closest to mean recall, passes none: tail--tail
 comparisons are too few to decide ($-0.097$, $[-0.228,+0.024]$). The two narrow bounds rest on
-head-heavy weightings, and the margins were set after TDE's results were seen. No weighting
-shows TDE gaining discrimination (the baseline's AUC, $0.61$ and $0.57$, left room); per pair
+head-heavy weightings, and the margins were set after TDE's results were seen. A change is
+detected with $80\%$ power only above $0.0042$, $0.0082$, $0.018$ and $0.039$ under the four
+weightings. No weighting shows TDE gaining discrimination (the baseline's AUC, $0.61$ and
+$0.57$, left room); per pair
 it falls, $-0.0153$, $[-0.0249,-0.0004]$, an exploratory result smaller than the $0.018$ by
 which two separately trained baselines differ under that weighting. Against the control
 the mean-recall case-level part excludes only changes above $0.0043$, a third of TDE's own,
@@ -162,7 +167,7 @@ the total gain is negative and we report parts only.
 \paragraph{How to read the split.} The AUC audits the order of predicates for a labelled pair;
 a hit also depends on how the pair ranks among an image's pairs and on the mass given to
 \emph{no relation} ($0.855$ for the baseline, $0.021$ for TDE, $0.651$ for the control), so the
-case-level part of mean recall can move with those too. Group-level is not a lesser gain: retrieval by predicate wants rare predicates named more often for a pair, captioning the right one on the right relation. The case-level part also credits shortcuts, operating-point
+case-level part of mean recall can move with those too. Group-level is not a lesser gain (retrieval wants rare predicates named more often, captioning the right one on the right relation). The case-level part also credits shortcuts, operating-point
 movement and label noise, so discrimination claims rest on the control and the AUC; an AUC gain
 beyond the bounds above would change TDE's verdict. Nor is the share forced by
 the metric: an oracle gains $+0.5068$ in quadratic score, all case-level ($+0.8041$ against
@@ -222,8 +227,3 @@ relation-weighted AUC by $-0.0060$, $[-0.0099,-0.0011]$, against PE-Net's $+0.00
 $[+0.0008,+0.0091]$, which becomes $+0.0110$ against the second baseline, so we claim no AUC
 gain. We have no operating-point control for PE-Net, whose case-level share, $14\%$, is that
 of the logit-adjusted control on TDE, $15\%$.
-
-\paragraph{Beyond PredCls.} In SGCls ($58\%$ of relations matched; \cref{app:det}) TDE raises
-$mR@50$ by $+0.0517$, $99\%$ group-level, against the control's $+0.0518$ at $R@50=0.384$
-(TDE's $0.263$), and its relation-weighted AUC falls, $-0.0128$, $[-0.0171,-0.0074]$. In SGDet
-($65\%$ matched) the control again gains more ($+0.0418$ against $+0.0310$).
