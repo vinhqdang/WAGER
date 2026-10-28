@@ -33,15 +33,27 @@ cvpr Tb group
 cvpr Tb total
 cvpr VG coverage
 cvpr VG identified cells
+cvpr abs dlfe dmR
+cvpr abs floor auc
+cvpr abs floor case
+cvpr abs penet auc
+cvpr abs penet case
+cvpr abs penet dmR
+cvpr abs tde bound hi
+cvpr abs tde bound lo
 cvpr amb tde cmp
 cvpr amb tde rel hi
 cvpr base auc cmp
 cvpr base auc rel
 cvpr base ng-mR@50
+cvpr bg la
+cvpr bg none
+cvpr bg tde
 cvpr clip Tb case
 cvpr clip Tb hi
 cvpr clip Tb lo
 cvpr cross TDE-la1 hi
+cvpr cross TDE-la1 lo
 cvpr dlfe auc c
 cvpr dlfe auc c hi
 cvpr dlfe auc c lo
@@ -58,6 +70,21 @@ cvpr eq largest cmp
 cvpr eq largest rel
 cvpr eq mR ci90 lo
 cvpr eq mR largest
+cvpr floor auc c
+cvpr floor auc c hi
+cvpr floor auc c lo
+cvpr floor auc pair
+cvpr floor auc r
+cvpr floor auc r hi
+cvpr floor auc r lo
+cvpr floor case
+cvpr floor case hi
+cvpr floor case lo
+cvpr floor dmR
+cvpr floor group
+cvpr floor penet case
+cvpr floor penet rel
+cvpr floor pred hi
 cvpr geometry accuracy
 cvpr geometry-class dR
 cvpr grp pos lo
@@ -70,11 +97,12 @@ cvpr identified share of relations
 cvpr jk hi
 cvpr jk lo
 cvpr lw dlfe rel lo
+cvpr lw pair bound
 cvpr lw pair diff
-cvpr lw pair fall
 cvpr lw pair hi
 cvpr lw pair lo
 cvpr lw pred largest
+cvpr lw ref pair
 cvpr lw ref pred
 cvpr lw share hh cmp %
 cvpr lw share hh rel %
@@ -89,11 +117,6 @@ cvpr matched quad p
 cvpr official TDE-LA lo
 cvpr official perm case
 cvpr official perm share %
-cvpr penet R50
-cvpr penet R50 v
-cvpr penet auc pair
-cvpr penet auc pair hi
-cvpr penet auc pair lo
 cvpr penet auc r
 cvpr penet auc r hi v
 cvpr penet auc r lo
@@ -103,7 +126,6 @@ cvpr penet case hi
 cvpr penet case lo
 cvpr penet dmR
 cvpr penet group
-cvpr penet mR50 v
 cvpr penet share %
 cvpr penet tb case
 cvpr penet tb total
@@ -131,6 +153,9 @@ cvpr sim calib matched sd
 cvpr sim prior-only sd
 cvpr sim shortcut sd
 cvpr sim type-I
+cvpr soft case
+cvpr soft case hi
+cvpr soft case lo
 cvpr split gc100 total
 cvpr split gc20 total
 cvpr t1 img group
@@ -173,7 +198,9 @@ det sgcls share %
 det sgdet LA dmR
 det sgdet TDE dmR
 det sgdet TDE-LA case
+det sgdet TDE-LA hi
 det sgdet auc rel
+det sgdet auc rel hi
 det sgdet case
 det sgdet share %
 iet auc
@@ -183,23 +210,21 @@ iet case
 iet case hi
 iet case lo
 iet dmR
+iet dmR abstract
 iet group
 iet group share
 iet mR@50 standard
-iet points
 merge LA auc max
 path avg AUC
 path avg dmR
 path avg-ctx corr log prior
 path avg-ctx global share, %
+path avg-ctx non-global rms
 path vis case
-path vis case hi
 ps LA quad case
 rankrob CLIP-geo rel
 rankrob CLIP-geo rel hi
 rankrob CLIP-geo rel lo
-rankrob F@50 LA
-rankrob F@50 TDE
 rankrob LA rel
 rankrob TDE rel
 rankrob TDE rel hi

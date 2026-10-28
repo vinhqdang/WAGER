@@ -443,8 +443,7 @@ CHECKS += [
     ("iet auc", "5_audit.tex", "-.0093", _ia["difference"], 5e-5),
     ("iet auc lo", "5_audit.tex", "-.0185", _ia["ci"][0], 5e-5),
     ("iet auc hi", "5_audit.tex", "-.0001", _ia["ci"][1], 5e-5),
-    ("iet points", "0_abstract.tex", "21 points",
-     "checked below", 0),
+    ("iet dmR abstract", "0_abstract.tex", "$+0.220$", _ie["mean_recall"]["total"], 5e-4),
     ("iet group share", "0_abstract.tex", "97\\%", "checked below", 0),
     ("iet own test relations", "3_recall.tex", "152{,}226", _ies["ietrans_relations"], 0),
     ("iet prior cost", "3_recall.tex", "0.0133", -_iec["total"], 5e-5),
@@ -726,7 +725,8 @@ _iw = load("sgg_image_weighted.json")["comparisons"]["TDE vs none"]["gc@50"]["pe
 CHECKS += [
     # R5-4: within-cell AUC under the predicate and pair weightings (1,000 replicates)
     ("cvpr lw pred largest", "0_abstract.tex", "$0.028$", _lwt["predicate"]["largest_change_excluded"], 5e-4),
-    ("cvpr lw pair fall", "0_abstract.tex", "$0.015$", _lwt["pair"]["difference"], 5e-4),
+    ("cvpr abs tde bound lo", "0_abstract.tex", "$0.0038$", _lwt["relation"]["largest_change_excluded"], 5e-5),
+    ("cvpr abs tde bound hi", "0_abstract.tex", "$0.028$", _lwt["predicate"]["largest_change_excluded"], 5e-4),
     ("cvpr lw pair diff", "5_audit.tex", "-0.0153", _lwt["pair"]["difference"], 5e-5),
     ("cvpr lw pair lo", "5_audit.tex", "-0.0249", _lwt["pair"]["ci95"][0], 5e-5),
     ("cvpr lw pair hi", "5_audit.tex", "-0.0004", _lwt["pair"]["ci95"][1], 5e-5),
@@ -846,15 +846,14 @@ CHECKS += [
     ("cvpr penet auc r lo", "5_audit.tex", "+0.0008,+0.0091", "checked by value below", 0),
     ("cvpr penet auc r lo v", "5_robust.tex", "+0.0008", _pn["auc"]["relation"]["ci95"][0], 5e-5),
     ("cvpr penet auc r hi v", "5_robust.tex", "+0.0091", _pn["auc"]["relation"]["ci95"][1], 5e-5),
-    ("cvpr penet auc pair", "5_audit.tex", "$+0.0187$", _pn["auc"]["pair"]["difference"], 5e-5),
-    ("cvpr penet auc pair lo", "5_audit.tex", "+0.0037", _pn["auc"]["pair"]["ci95"][0], 5e-5),
-    ("cvpr penet auc pair hi", "5_audit.tex", "+0.0337", _pn["auc"]["pair"]["ci95"][1], 5e-5),
+    ("cvpr penet auc pair", "5_robust.tex", "$+0.0187$", _pn["auc"]["pair"]["difference"], 5e-5),
+    ("cvpr penet auc pair lo", "5_robust.tex", "+0.0037", _pn["auc"]["pair"]["ci95"][0], 5e-5),
+    ("cvpr penet auc pair hi", "5_robust.tex", "+0.0337", _pn["auc"]["pair"]["ci95"][1], 5e-5),
     ("cvpr penet auc c", "5_robust.tex", "$+0.0055$", _pn["auc"]["comparison"]["difference"], 5e-5),
     ("cvpr penet auc c lo", "5_robust.tex", "-0.0033", _pn["auc"]["comparison"]["ci95"][0], 5e-5),
     ("cvpr penet auc c hi", "5_robust.tex", "+0.0149", _pn["auc"]["comparison"]["ci95"][1], 5e-5),
     ("cvpr penet auc pred", "5_robust.tex", "-0.0054", _pn["auc"]["predicate"]["difference"], 5e-5),
     ("cvpr penet top1", "5_robust.tex", "$0.666$", _pn["top1_accuracy"]["penet"], 5e-4),
-    ("cvpr penet R50", "5_audit.tex", "$R@50=0.6523$", "checked by value below", 0),
     ("cvpr penet R50 v", "5_robust.tex", "0.6523", _pno["models"]["penet"]["recalls"]["R@50"]["replayed"], 5e-5),
     ("cvpr penet mR50 v", "5_robust.tex", "0.3142", _pno["models"]["penet"]["recalls"]["mR@50"]["replayed"], 5e-5),
     ("cvpr penet tb total", "5_audit.tex", "$+0.00634$", _pnq[0]["temperature + class bias, brier"]["total"], 5e-6),
@@ -865,6 +864,62 @@ CHECKS += [
     ("cvpr penet t case", "5_robust.tex", "$+0.00852$", _pnq[0]["temperature, brier"]["case"], 5e-6),
     ("cvpr penet st case", "5_robust.tex", "$-0.00899$", _pnq[0]["shared temperature, brier"]["case"], 5e-6),
 ]
+_fl = load("sgg_cross_release_floor.json")
+_fa = _fl["auc_change"]["dlfe_base vs none"]
+_fp = _fl["auc_change"]["penet vs dlfe_base"]
+_fm = _fl["mean_recall_split"]["dlfe_base vs none"]["protocols"]["gc@50"]
+_fpm = _fl["mean_recall_split"]["penet vs dlfe_base"]["protocols"]["gc@50"]
+_fs = _fl["mean_recall_split"]["dlfe vs dlfe_soft"]["protocols"]["gc@50"]
+_fbm = _fl["background_mass"]
+CHECKS += [
+    # R6-1: cross-release training spread beside the PE-Net, DLFE and IETrans claims
+    ("cvpr floor dmR", "5_audit.tex", "+.0206", _fm["total"], 5e-5),
+    ("cvpr floor group", "5_audit.tex", "+.0199", _fm["group"], 5e-5),
+    ("cvpr floor case", "5_audit.tex", "+.0007", _fm["case"], 5e-5),
+    ("cvpr floor case lo", "5_audit.tex", "-.0016", _fm["case_ci"][0], 5e-5),
+    ("cvpr floor case hi", "5_audit.tex", "+.0030", _fm["case_ci"][1], 5e-5),
+    ("cvpr floor auc r", "5_audit.tex", "-.0060", _fa["relation"]["difference"], 5e-5),
+    ("cvpr floor auc r lo", "5_audit.tex", "-.0099", _fa["relation"]["ci95"][0], 5e-5),
+    ("cvpr floor auc r hi", "5_audit.tex", "-.0011", _fa["relation"]["ci95"][1], 5e-5),
+    ("cvpr floor auc c", "5_audit.tex", "+.0017", _fa["comparison"]["difference"], 5e-5),
+    ("cvpr floor auc c lo", "5_audit.tex", "-.0072", _fa["comparison"]["ci95"][0], 5e-5),
+    ("cvpr floor auc c hi", "5_audit.tex", "+.0109", _fa["comparison"]["ci95"][1], 5e-5),
+    ("cvpr floor auc pair", "5_audit.tex", "$0.018$", _fa["pair"]["difference"], 5e-4),
+    ("cvpr floor pair lo", "5_robust.tex", "-0.0356", _fa["pair"]["ci95"][0], 5e-5),
+    ("cvpr floor pair hi", "5_robust.tex", "-0.0058", _fa["pair"]["ci95"][1], 5e-5),
+    ("cvpr floor pred", "5_robust.tex", "$-0.0256$", _fa["predicate"]["difference"], 5e-5),
+    ("cvpr floor pred lo", "5_robust.tex", "-0.0557", _fa["predicate"]["ci95"][0], 5e-5),
+    ("cvpr floor pred hi", "5_robust.tex", "+0.0075", _fa["predicate"]["ci95"][1], 5e-5),
+    ("cvpr floor penet rel", "5_audit.tex", "+0.0110", _fp["relation"]["difference"], 5e-5),
+    ("cvpr floor penet pair", "5_robust.tex", "+0.0368", _fp["pair"]["difference"], 5e-5),
+    ("cvpr floor penet case", "5_audit.tex", "+0.0236", _fpm["case"], 5e-5),
+    ("cvpr floor penet case lo", "5_robust.tex", "+0.0189", _fpm["case_ci"][0], 5e-5),
+    ("cvpr floor penet case hi", "5_robust.tex", "+0.0282", _fpm["case_ci"][1], 5e-5),
+    ("cvpr soft total", "5_robust.tex", "+0.1128", _fs["total"], 5e-5),
+    ("cvpr soft group", "5_robust.tex", "+0.1074", _fs["group"], 5e-5),
+    ("cvpr soft group %", "5_robust.tex", "$95\\%$", 100 * _fs["group"] / _fs["total"], 0.5),
+    ("cvpr soft case", "5_audit.tex", "+0.0054", _fs["case"], 5e-5),
+    ("cvpr soft case lo", "5_audit.tex", "-0.0001", _fs["case_ci"][0], 5e-5),
+    ("cvpr soft case hi", "5_audit.tex", "+0.0109", _fs["case_ci"][1], 5e-5),
+    ("cvpr bg none", "5_audit.tex", "$0.855$", _fbm["none"]["mean_normalised_p0"], 5e-4),
+    ("cvpr bg tde", "5_audit.tex", "$0.021$", _fbm["TDE"]["mean_normalised_p0"], 5e-4),
+    ("cvpr bg la", "5_audit.tex", "$0.651$", _fbm["la1"]["mean_normalised_p0"], 5e-4),
+    ("cvpr bg dlfe base", "5_robust.tex", "$0.682$", _fbm["dlfe_base"]["mean_normalised_p0"], 5e-4),
+    ("cvpr bg penet", "5_robust.tex", "$0.560$", _fbm["penet"]["mean_normalised_p0"], 5e-4),
+    ("cvpr abs dlfe dmR", "0_abstract.tex", "$+0.111$", _fl["mean_recall_split"]["dlfe vs dlfe_base"]["protocols"]["gc@50"]["total"], 5e-4),
+    ("cvpr abs penet dmR", "0_abstract.tex", "$+0.170$", _pnm["total"], 5e-4),
+    ("cvpr abs penet case", "0_abstract.tex", "$+0.024$", _pnm["case"], 5e-4),
+    ("cvpr abs floor case", "0_abstract.tex", "$+0.001$", _fm["case"], 5e-4),
+    ("cvpr abs penet auc", "0_abstract.tex", "$+0.005$", _pn["auc"]["relation"]["difference"], 5e-4),
+    ("cvpr abs floor auc", "0_abstract.tex", "$0.006$", _fa["relation"]["difference"], 5e-4),
+    ("cvpr lw pair bound", "5_audit.tex", "$0.023$", _lwt["pair"]["largest_change_excluded"], 5e-4),
+    ("cvpr lw ref pair", "5_audit.tex", "$0.138$", _lw["reference"]["pair"], 5e-4),
+]
+if not (all(_lwt[w]["tost"]["25%"]["equivalent"] for w in ("relation", "comparison", "pair"))
+        and _lwt["relation"]["tost"]["10%"]["equivalent"]
+        and not _lwt["comparison"]["tost"]["10%"]["equivalent"]
+        and not any(v["equivalent"] for v in _lwt["predicate"]["tost"].values())):
+    print("FAIL TDE margin claims (25% under relation, comparison, pair; 10% under relation only; none under predicate)"); sys.exit(1)
 _ok = (_eqr["tost"]["10%"]["equivalent"] and _eqr["tost"]["25%"]["equivalent"]
        and not _eqr["tost"]["5%"]["equivalent"]
        and _eqa["tost"]["25%"]["equivalent"] and not _eqa["tost"]["10%"]["equivalent"]
@@ -1053,8 +1108,8 @@ CHECKS += [
     ("rankrob recal iet tb", "5_robust.tex", "-0.01679", _rc["ietrans"]["temperature + class bias, brier"]["case"], 5e-5),
     ("rankrob recal iet tb log", "5_robust.tex", "-0.06609", _rc["ietrans"]["temperature + class bias, log"]["case"], 1e-5),
     ("rankrob recal LA temp", "5_robust.tex", "+0.00392", _rc["la1"]["temperature, brier"]["case"], 1e-5),
-    ("rankrob F@50 LA", "5_audit.tex", "0.344", _fk["la1"], 5e-4),
-    ("rankrob F@50 TDE", "5_audit.tex", "0.322", _fk["TDE"], 5e-4),
+    ("rankrob F@50 LA", "5_robust.tex", "0.344", _fk["la1"], 5e-4),
+    ("rankrob F@50 TDE", "5_robust.tex", "0.322", _fk["TDE"], 5e-4),
     ("rankrob classwise temp", "4_validation.tex", "+0.0106", _cw["temperature matched"]["mean"], 5e-5),
     ("rankrob classwise tb sd", "4_validation.tex", "sd $0.0003$", "checked below", 0),
     ("rankrob small n2 %", "4_validation.tex", "$81.5\\%$", 100 * _sc["n_c=2"]["coverage"], 0.05),

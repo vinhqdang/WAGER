@@ -368,3 +368,16 @@ Not checked:
 | Body | 662 | Not defined | IJCAI | 1 |
 | Body | 690 | Not defined | BMC | 1 |
 ```
+
+
+## Status after the round-3 revision (2026-10-28)
+
+| Ref | Status | What changed |
+|---|---|---|
+| R6-1 | Done | `experiments/sgg_cross_release_floor.py` measures the two releases' MOTIFS baselines against each other (mean recall: +0.0206, case-level +0.0007 [-0.0016, +0.0030]; relation-weighted AUC -0.0060 [-0.0099, -0.0011]; pair -0.0181). PE-Net's case-level part (+0.0243; +0.0236 against the other baseline) stands; its AUC change (+0.0050; +0.0110 against the other baseline) is not claimed as a gain. DLFE's AUC gain is described as a training difference, with the same-network contrast `dlfe` against `dlfe_soft` (AUC 0; mean recall +0.1128, case-level +0.0054 [-0.0001, +0.0109]). The floor is a new Table 1 row; "its within-pair AUC rises" and "where a method does gain discrimination, the split shows it" are gone. |
+| R6-2 | Done | Sec. 5 states each bound with its weighting (0.0038, 0.0077, 0.023, 0.028) and which margin it passes (25% under relation, comparison, pair; 10% under relation only; none under predicate), the post-hoc margins, and calls the pair-weighted fall exploratory. |
+| R6-3 | Done | Sec. 3 no longer says the family was fixed before any gain was read; Sec. 5 says post hoc for TDE and IETrans, prior for DLFE and PE-Net. |
+| R6-4 | Done | Sec. 5 says the AUC audits predicate order for a labelled pair and gives the mass given to no relation (0.855 baseline, 0.021 TDE, 0.651 control). The pair-ranking audit (R6-10) is not done. |
+| R6-5 | Done | Abstract says four checkpoints and no longer says Neural-Motifs; DLFE's high group-level share is stated as expected for a per-predicate correction. |
+| R6-6 | Partly | Abstract shortened, one basis for gains (micro-pooled, as decimals), acronyms defined at first use; N = 183,642 versus 183,639 still not unified. |
+| CVPR rules | Done | 2027 author-kit style, LLM Usage Statement before the references, page counter fixed, references verified. |

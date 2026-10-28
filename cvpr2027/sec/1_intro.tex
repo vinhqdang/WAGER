@@ -60,15 +60,11 @@ the AUC. (iii) Audits of three released prior-correcting checkpoints and one pro
 checkpoint that split their
 mean-recall gains exactly, with the mechanism behind TDE's.
 
-\paragraph{What is not claimed.} The audits cover four released checkpoints, one training
-run each, in predicate classification (PredCls), where boxes and object labels are given and
-every model sees the cell (with a TDE replication in scene graph classification and detection,
-SGCls and SGDet,
-\cref{sec:sggaudit}): three prior corrections and one prototype-based model. We claim nothing
-about one-stage detectors or vision--language models. The split is conditional on the declared
-grouping, and $\hdR$, a covariance \emph{among relations sharing an object pair}, credits any
-signal varying inside a pair, a shortcut nobody recorded included. It is not invariant to
-recalibration, the operating point or the label mix, which is why confidence-matched
-comparisons and the AUC carry the ranking claims. For mean recall the split is of the
-micro-pooled version; the official per-image statistic is split separately
-(\cref{app:splits}). \Cref{sec:discussion} takes up these limits.
+\paragraph{What is not claimed.} The audits cover four released checkpoints, one run each, in
+predicate classification (PredCls: boxes and object labels are given, so every model sees the
+cell), with a TDE replication in scene graph classification and detection (SGCls, SGDet;
+\cref{sec:sggaudit}): three prior corrections and one prototype-based model, nothing on
+one-stage or vision--language models. The split is conditional on the declared grouping, credits
+any signal varying inside a pair, shortcuts included, and moves with recalibration, the
+operating point and the label mix (\cref{sec:discussion}); the official per-image statistic is
+split separately (\cref{app:splits}).
