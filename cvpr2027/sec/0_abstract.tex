@@ -6,14 +6,16 @@ relations carry them, and the metric credits both alike. Scoring each prediction
 label of another relation from the same pair breaks the link between a relation and its own
 label but keeps the pair's label frequencies; this splits the difference between two frozen
 models, in a proper score or in mean recall, exactly into a group-level part and a within-pair
-covariance, with image-clustered intervals. On four released PredCls checkpoints, one run each,
-with class pairs as cells, 87\% of TDE's mean-recall@50 gain (interval 83--91\%; 84\% of the
-official statistic; 18\% with subject classes as cells) is group-level. At $K=50$ with the graph
-constraint a logit adjustment that changes no within-pair ranking recovers $+0.094$ of TDE's
-$+0.097$; elsewhere the two differ by $0.02$ to $0.15$. TDE's within-pair AUC shows no gain: it
-excludes changes above $0.0038$ to $0.028$ under four weightings, tightly only under the two
-that favour head predicates. DLFE and IETrans, also prior corrections, gain $+0.111$ and
-$+0.220$, $94\%$ and $97\%$ group-level. PE-Net, a prototype-based method, gains $+0.170$, $86\%$
-group-level; its case-level part, $+0.024$, far exceeds the $+0.001$ between two separately
-trained baselines, but its AUC change, $+0.005$, does not exceed their $0.006$ spread.
+covariance, with image-clustered intervals. We audit four released PredCls checkpoints, one run
+each. With class pairs as cells, 87\% of TDE's mean-recall@50 gain (graph-constrained,
+micro-pooled; interval 83--91\%) is group-level; the share is 84\% for the official statistic and
+18\% with subject classes as cells. At $K=50$ with the graph constraint a logit adjustment that
+changes no within-pair ranking recovers $+0.094$ of TDE's $+0.097$; at other cut-offs, or
+without the constraint, the two differ by $0.02$ to $0.15$. TDE's within-pair AUC shows no gain:
+four weightings exclude changes above $0.0038$ to $0.028$, tightly only under the two that favour
+head predicates. DLFE (a prior correction) and IETrans (relabelling and reweighting) gain
+$+0.111$ and $+0.220$, $94\%$ and $97\%$ group-level. PE-Net, a prototype-based model, gains
+$+0.170$, $86\%$ group-level; its case-level part, $+0.024$, exceeds the $+0.001$ between two
+separately trained baselines, but its AUC change, $+0.005$, does not exceed their $0.006$ spread,
+and without relation-level suppression its mean recall falls from $0.314$ to $0.296$.
 \end{abstract}

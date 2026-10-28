@@ -39,6 +39,8 @@ cvpr abs floor case
 cvpr abs penet auc
 cvpr abs penet case
 cvpr abs penet dmR
+cvpr abs penet mR nms
+cvpr abs penet mR no nms
 cvpr abs tde bound hi
 cvpr abs tde bound lo
 cvpr amb tde cmp

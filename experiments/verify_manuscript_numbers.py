@@ -912,6 +912,8 @@ CHECKS += [
     ("cvpr abs floor case", "0_abstract.tex", "$+0.001$", _fm["case"], 5e-4),
     ("cvpr abs penet auc", "0_abstract.tex", "$+0.005$", _pn["auc"]["relation"]["difference"], 5e-4),
     ("cvpr abs floor auc", "0_abstract.tex", "$0.006$", _fa["relation"]["difference"], 5e-4),
+    ("cvpr abs penet mR nms", "0_abstract.tex", "$0.314$", _pno["models"]["penet"]["recalls"]["mR@50"]["replayed"], 5e-4),
+    ("cvpr abs penet mR no nms", "0_abstract.tex", "$0.296$", _pno["models"]["penet"]["replayed_without_rel_nms"]["mR@50"], 5e-4),
     ("cvpr lw pair bound", "5_audit.tex", "$0.023$", _lwt["pair"]["largest_change_excluded"], 5e-4),
     ("cvpr lw ref pair", "5_audit.tex", "$0.138$", _lw["reference"]["pair"], 5e-4),
 ]
