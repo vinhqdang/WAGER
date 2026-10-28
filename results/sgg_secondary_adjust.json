@@ -1,0 +1,77 @@
+{
+ "method": "normal approximation from the bootstrap 95% intervals; Holm step-down over the six rows",
+ "detectable_change": {
+  "relation": {
+   "difference": -0.0017906617133410796,
+   "se": 0.0015059961845986952,
+   "mde_80_power": 0.004219176320828935,
+   "baseline_auc": 0.6136220517641954,
+   "geometry_gain": 0.06260645968807366
+  },
+  "comparison": {
+   "difference": 0.0025359550566133038,
+   "se": 0.002927238575778687,
+   "mde_80_power": 0.008200907685322932,
+   "baseline_auc": 0.5705442258866708,
+   "geometry_gain": 0.032302576949800654
+  },
+  "pair": {
+   "difference": -0.015304831849355716,
+   "se": 0.006253247084381923,
+   "mde_80_power": 0.017519003232898133,
+   "baseline_auc": 0.7057819961559448,
+   "geometry_gain": 0.13806153992925707
+  },
+  "predicate": {
+   "difference": -0.0037597042215425924,
+   "se": 0.014040951158236647,
+   "mde_80_power": 0.03933691815064842,
+   "baseline_auc": 0.6531240642828873,
+   "geometry_gain": 0.06939271724281282
+  }
+ },
+ "holm": [
+  {
+   "name": "IETrans AUC change, relation",
+   "difference": -0.023798719421073478,
+   "z": -10.948054716449072,
+   "p": 0.0,
+   "holm_p": 0.0
+  },
+  {
+   "name": "TDE unseen-triplet AUC change, relation (post hoc)",
+   "difference": -0.014867095684420684,
+   "z": -3.9674295959011268,
+   "p": 7.265196433037246e-05,
+   "holm_p": 0.0003632598216518623
+  },
+  {
+   "name": "baseline against baseline AUC, relation",
+   "difference": -0.006032311505445698,
+   "z": -2.693825901546105,
+   "p": 0.007063705068054205,
+   "holm_p": 0.02825482027221682
+  },
+  {
+   "name": "TDE AUC change, pair",
+   "difference": -0.015304831849355716,
+   "z": -2.447501536854506,
+   "p": 0.014385051170760832,
+   "holm_p": 0.043155153512282496
+  },
+  {
+   "name": "PE-Net AUC change, relation",
+   "difference": 0.004965304463180664,
+   "z": 2.3642669665306273,
+   "p": 0.01806578891642996,
+   "holm_p": 0.043155153512282496
+  },
+  {
+   "name": "DLFE AUC change against its baseline, relation",
+   "difference": 0.0028717773261806023,
+   "z": 2.077967581038117,
+   "p": 0.03771234517334077,
+   "holm_p": 0.043155153512282496
+  }
+ ]
+}
