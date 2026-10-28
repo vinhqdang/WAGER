@@ -44,7 +44,8 @@ lay = subprocess.run(["pdftotext", "-f", str(refs), "-l", str(refs), "-layout", 
                      capture_output=True, text=True).stdout.splitlines()
 row = next(k for k, l in enumerate(lay) if re.search(r"(^|\s)" + head + r"\s*($|\s{2})", l))
 col = lay[row].index(head)
-noise = re.compile(r"\d+|CVPR|#\*+|CVPR \d{4} Submission.*")
+# the running header is cut by the column slice below, so match its start only
+noise = re.compile(r"\d+|#\*+|CVPR.*")
 if col > 40:
     content_pages = refs
 else:

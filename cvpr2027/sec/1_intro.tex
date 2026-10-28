@@ -43,14 +43,16 @@ and recovers $+0.0941$ of the $+0.0972$ with the same split at $K=50$ under the 
 constraint (\cref{tab:protocols} gives the protocols where the two diverge). TDE is motivated
 as removing the harmful part of the training bias while keeping the good
 context~\cite{tang2020unbiased}; on this checkpoint its gain is a change in which predicates
-are favoured within each pair, and DLFE~\cite{chiou2021recovering} and
-IETrans~\cite{zhang2022finegrained} show the same pattern.
+are favoured within each pair, and DLFE (dynamic label frequency
+estimation)~\cite{chiou2021recovering} and IETrans (internal and external data
+transfer)~\cite{zhang2022finegrained} show the same pattern.
 
 \paragraph{Contributions.} (i) An exact, model-free decomposition of the difference between
 two frozen models into a group-level part and a within-group covariance, the paired-gain form
 of Yates's covariance decomposition~\cite{yates1982external}, for every Bregman score and for
 label-weighted hit rates such as mean recall, with cluster-robust inference, an
-operating-point control and a threshold-free within-group AUC. (ii) Validation that the
+operating-point control and a threshold-free within-group AUC (area under the
+ROC curve). (ii) Validation that the
 case-level part is zero when it should be and covers at the nominal rate under image
 clustering, with a map of what it does not separate: calibration, the operating point, the
 label mix and pair-varying prior shifts all move it, so ranking claims rest on the control and
@@ -59,7 +61,9 @@ checkpoint that split their
 mean-recall gains exactly, with the mechanism behind TDE's.
 
 \paragraph{What is not claimed.} The audits cover four released checkpoints, one training
-run each, in PredCls, where every model sees the cell (with a TDE replication in SGCls and SGDet,
+run each, in predicate classification (PredCls), where boxes and object labels are given and
+every model sees the cell (with a TDE replication in scene graph classification and detection,
+SGCls and SGDet,
 \cref{sec:sggaudit}): three prior corrections and one prototype-based model. We claim nothing
 about one-stage detectors or vision--language models. The split is conditional on the declared
 grouping, and $\hdR$, a covariance \emph{among relations sharing an object pair}, credits any

@@ -24,12 +24,11 @@ $mR@50=0.1459$, TDE $0.4588$ and $0.2476$; without the graph constraint TDE's me
 \emph{falls}, from $0.3260$ to $0.2981$. The audit covers $183{,}642$ relations over $26{,}446$
 images in $7{,}127$ cells; $98.9\%$ fall in the $5{,}044$ cells holding at least two.
 
-\paragraph{An operating-point control.} We add one model that needs no training: the
+\paragraph{An operating-point control.} We add one model that needs no training, LA: the
 baseline's logits minus $\tau\log\pi(y)$, the training predicate prior, with
 $\tau=1$~\cite{menon2021long}. Within a cell this adds the same constant to every
-log-odds $\log q(y)-\log q(z)$, so it changes no within-cell ranking: whatever case-level
-part it shows is existing discrimination spent at a new operating point, not new
-discrimination. It reaches $mR@50=0.2343$ at $R@50=0.6437$. (It is not the inverse-frequency
+log-odds $\log q(y)-\log q(z)$, so it changes no within-cell ranking of predicates: whatever
+case-level part it shows comes from a moved operating point, not from new discrimination. It reaches $mR@50=0.2343$ at $R@50=0.6437$. (It is not the inverse-frequency
 scaling of logits that barely moves SGG mean recall~\cite{liu2025causal}.)
 
 \begin{table}[t]
@@ -80,7 +79,8 @@ $mR@50$ with the graph constraint, micro-pooled over identified relations; inter
 image-clustered; proper scores are matched by a temperature and a per-class bias per model,
 fitted on half the test images; the AUC is relation-weighted. These two primary quantities
 and the protocol were declared after the TDE and IETrans results were seen and before the DLFE
-outputs existed, so for TDE and IETrans they are a post-hoc choice; every other protocol,
+outputs existed, so for TDE and IETrans they are a post-hoc choice and for DLFE and PE-Net a
+prior one; every other protocol,
 score and weighting is collected in \cref{tab:tdesummary}, where, with that many
 configurations, one secondary interval excluding zero is not read as a finding.
 
@@ -158,12 +158,14 @@ constraint: TDE leads it by $+0.0300$ at $K=100$ and trails it by $0.0234$ at $K
 $0.08$--$0.15$ without the constraint. Where the total gain is negative, as without the
 constraint, a share is undefined and we report the parts only.
 
-\paragraph{How to read the split.} Group-level is not a lesser gain: retrieval by predicate
-wants rare predicates named more often for a pair, and mean recall rewards that by design;
-captioning or question answering about one image wants the right predicate on the right
-relation, a case-level gain. The case-level part also credits shortcuts, operating-point
-movement and label noise, so discrimination claims rest on the control and the AUC; an AUC
-gain beyond the bounds above would change TDE's verdict. Nor is the share forced by
+\paragraph{How to read the split.} The AUC audits the order of predicates for a labelled pair;
+a hit also depends on how the pair ranks among an image's pairs and on the mass given to
+\emph{no relation} ($0.855$ for the baseline, $0.021$ for TDE, $0.651$ for the control), so the
+case-level part of mean recall can move with those too. Group-level is not a lesser gain:
+retrieval by predicate wants rare predicates named more often for a pair, captioning wants the
+right predicate on the right relation. The case-level part also credits shortcuts, operating-point
+movement and label noise, so discrimination claims rest on the control and the AUC; an AUC gain
+beyond the bounds above would change TDE's verdict. Nor is the share forced by
 the metric: an oracle gains $+0.5068$ in quadratic score, all case-level ($+0.8041$ against
 $-0.2973$). And it depends on the label mix: along a path to uniform predicate frequencies
 within each pair, TDE's temperature-matched quadratic case-level part rises from $-0.00006$ to $+0.01430$

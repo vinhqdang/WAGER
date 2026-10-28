@@ -89,7 +89,8 @@ probability \emph{movements} and labels, rescaling a model's confidence moves sc
 two parts while changing no ranking (\cref{sec:simulation}), so models that differ in
 calibration are not compared on raw outputs. We split the images at random, fit each model a
 recalibration by maximum likelihood on one half, and split the gain on the other. The family
-is fixed before any gain is read, by one criterion: it must be rich enough that a model
+is chosen by one criterion stated in advance of the comparison it serves (\cref{sec:sggaudit}
+dates the declaration): it must be rich enough that a model
 differing from another by a shift of each label's log-odds that is the same in every cell,
 which changes no ranking, has no case-level part under it. A temperature alone fails this, a temperature with
 a per-class bias meets it exactly and still preserves every within-cell ranking, so the
