@@ -28,6 +28,12 @@ def text(p):
                           capture_output=True, text=True).stdout
 supp = next(p for p in range(1, n + 1) if "Supplementary Material" in text(p))
 refs = next(p for p in range(1, supp) if "\nReferences\n" in "\n" + text(p))
+# The LLM Usage Statement sits between the paper and the references and, like them, is
+# outside the eight-page limit; the paper ends where it starts.
+llm = next((p for p in range(1, supp) if "LLM Usage Statement" in text(p)), None)
+head = "References"
+if llm is not None and llm <= refs:
+    refs, head = llm, "LLM Usage Statement"
 # The reference list may start part-way down a page; that page counts towards the eight
 # only if paper text sits above the heading. pdftotext's plain mode does not keep column
 # order, so read the page in layout mode: a heading in the right column means the left
@@ -36,8 +42,8 @@ refs = next(p for p in range(1, supp) if "\nReferences\n" in "\n" + text(p))
 import re
 lay = subprocess.run(["pdftotext", "-f", str(refs), "-l", str(refs), "-layout", "main.pdf", "-"],
                      capture_output=True, text=True).stdout.splitlines()
-row = next(k for k, l in enumerate(lay) if re.search(r"(^|\s)References\s*($|\s{2})", l))
-col = lay[row].index("References")
+row = next(k for k, l in enumerate(lay) if re.search(r"(^|\s)" + head + r"\s*($|\s{2})", l))
+col = lay[row].index(head)
 noise = re.compile(r"\d+|CVPR|#\*+|CVPR \d{4} Submission.*")
 if col > 40:
     content_pages = refs
