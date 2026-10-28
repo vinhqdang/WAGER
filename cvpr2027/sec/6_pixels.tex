@@ -14,9 +14,7 @@ reading either number would discard it. The split disagrees. Matched under the p
 protocol, the CLIP model \emph{gains} $0.00331$ of case-level score against the geometry
 model, interval $[+0.00185,+0.00477]$ ($+0.00464$, $[+0.00311,+0.00618]$, by temperature
 alone; on raw outputs $0.00640$, $[0.00513,0.00767]$), while losing $0.04705$ of group-level
-score under temperature matching. Its whole deficit is group-level (\cref{fig:where}). Against the class-only model, pixels buy $0.01663$
-of case-level score on raw outputs where box geometry buys $0.01023$, with well-separated
-intervals.
+score under temperature matching. Its whole deficit is group-level (\cref{fig:where}).
 
 A larger case-level part is not the same as better ranking, and here the two disagree. With
 each model's prior matched within cells, the CLIP model still ranks the correct predicate
@@ -35,6 +33,5 @@ Waterbirds~\cite{sagawa2020distributionally}, with the background scene as the c
 probes on frozen CLIP features (\cref{app:waterbirds}), group reweighting against ERM raises
 worst-group accuracy from $0.643$ to $0.854$ and the quadratic score by $+0.0637$: a
 group-level loss of $-0.0277$ and a case-level gain of $+0.0914$, $[+0.0849,+0.0979]$, with the
-within-scene AUC up by $+0.0031$, $[+0.0008,+0.0056]$. Here debiasing buys what TDE does not,
-better discrimination inside each group. The supplement also splits CIFAR-100-LT and
-long-tailed text, where the fine label cannot be the cell: it forces the case-level part to zero.
+within-scene AUC up by $+0.0031$, $[+0.0008,+0.0056]$. Here debiasing buys what TDE does not, better
+discrimination inside each group (CIFAR-100-LT and text are in the supplement).

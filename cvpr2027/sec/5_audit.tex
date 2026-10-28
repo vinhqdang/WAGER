@@ -38,8 +38,8 @@ scaling of logits that barely moves SGG mean recall~\cite{liu2025causal}.)
 \caption{\textbf{Mean recall@50 split} (graph constraint, micro-pooled, class-pair cells)
 against the MOTIFS baseline, except TDE$-$LA. LA: the logit-adjusted baseline; DLFE: against its
 own released baseline; IETrans, PE-Net: released checkpoints against this baseline, separately
-trained; base$_\mathrm{D}$: the baseline released with DLFE against this one, a floor for such
-comparisons. One released run each; intervals (image-clustered) cover test sampling only.
+trained; base$_\mathrm{D}$: the baseline released with DLFE against this one, one observed
+cross-release difference. One released run each; intervals (image-clustered) cover test sampling only.
 $\Delta$AUC: within-cell AUC change, weighted as the split weights cells ($r$, primary) or by
 comparison ($c$), $1{,}000$ replicates; LA's is below $10^{-6}$. Lower panel: TDE with other
 cells, and the official per-image statistic split by label permutations within cells.}
@@ -76,7 +76,8 @@ per-image & $+.1024$ & $+.0855$ & $+.0168$ & & \\
 \end{table}
 
 \paragraph{Protocol.} Unless a number says otherwise: cells are subject--object class pairs;
-mean recall is $mR@50$ with the graph constraint, micro-pooled over identified relations;
+mean recall is $mR@50$ with the graph constraint, micro-pooled over identified relations (the AUC and proper scores use the $183{,}639$ whose
+pair was scored);
 intervals are image-clustered; proper scores are matched by a temperature and a per-class bias
 per model, fitted on half the test images; the AUC is relation-weighted. These two primary quantities
 and the protocol were declared after the TDE and IETrans results were seen and before the DLFE
@@ -161,9 +162,7 @@ the total gain is negative and we report parts only.
 \paragraph{How to read the split.} The AUC audits the order of predicates for a labelled pair;
 a hit also depends on how the pair ranks among an image's pairs and on the mass given to
 \emph{no relation} ($0.855$ for the baseline, $0.021$ for TDE, $0.651$ for the control), so the
-case-level part of mean recall can move with those too. Group-level is not a lesser gain:
-retrieval by predicate wants rare predicates named more often for a pair, captioning wants the
-right predicate on the right relation. The case-level part also credits shortcuts, operating-point
+case-level part of mean recall can move with those too. Group-level is not a lesser gain: retrieval by predicate wants rare predicates named more often for a pair, captioning the right one on the right relation. The case-level part also credits shortcuts, operating-point
 movement and label noise, so discrimination claims rest on the control and the AUC; an AUC gain
 beyond the bounds above would change TDE's verdict. Nor is the share forced by
 the metric: an oracle gains $+0.5068$ in quadratic score, all case-level ($+0.8041$ against
@@ -209,15 +208,20 @@ compares two separately trained models and does not isolate the effect of relabe
 synonymous predicates leaves the loss in place (\cref{app:ambiguity}).
 
 \paragraph{A method that is not a prior correction.} PE-Net~\cite{zheng2023prototype} scores a
-relation by its similarity to learned predicate prototypes, with no prior. Its released checkpoint, re-run and replayed like the others
-(\cref{app:penet}), gains $+0.1703$ of mean recall over the
-separately trained MOTIFS baseline: $+0.1460$ group-level ($86\%$) and $+0.0243$,
-$[+0.0197,+0.0289]$, case-level. The MOTIFS baselines of two releases differ by $+0.0206$ in $mR@50$ with a case-level part of
-$+0.0007$, $[-0.0016,+0.0030]$ (last row of \cref{tab:sggaudit}), so PE-Net's case-level part
-is not training noise; against the other baseline it is $+0.0236$. Its AUC is another matter:
-$+0.0050$, $[+0.0008,+0.0091]$, relation-weighted, but those baselines differ by $-0.0060$,
-$[-0.0099,-0.0011]$, and against the second PE-Net gains $+0.0110$, so we claim no AUC gain.
-Matched, its quadratic gain is almost all case-level ($+0.00609$ of $+0.00634$).
+relation by its similarity to learned predicate prototypes, with no prior. Its released
+checkpoint, re-run and replayed like the others (\cref{app:penet}), gains $+0.1703$ of mean
+recall over the separately trained MOTIFS baseline: $+0.1460$ group-level ($86\%$) and
+$+0.0243$, $[+0.0197,+0.0289]$, case-level. Two cautions apply. First, PE-Net is evaluated with
+the relation-level non-maximum suppression its authors prescribe, which the baselines do not
+use; without it $mR@50$ is $0.2961$ rather than $0.3142$. Suppression plays no part without the
+graph constraint, where PE-Net's case-level part is $+0.0216$ at $K=50$, $[+0.0148,+0.0285]$,
+against $-0.0044$ between the baselines. Second, the baselines of two releases are one observed
+cross-release difference, not a noise bound: they differ by $+0.0206$ in $mR@50$ with a
+case-level part of $+0.0007$, $[-0.0016,+0.0030]$ (last row of \cref{tab:sggaudit}), but in
+relation-weighted AUC by $-0.0060$, $[-0.0099,-0.0011]$, against PE-Net's $+0.0050$,
+$[+0.0008,+0.0091]$, which becomes $+0.0110$ against the second baseline, so we claim no AUC
+gain. We have no operating-point control for PE-Net, whose case-level share, $14\%$, is that
+of the logit-adjusted control on TDE, $15\%$.
 
 \paragraph{Beyond PredCls.} In SGCls ($58\%$ of relations matched; \cref{app:det}) TDE raises
 $mR@50$ by $+0.0517$, $99\%$ group-level, against the control's $+0.0518$ at $R@50=0.384$

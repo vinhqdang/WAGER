@@ -21,22 +21,19 @@ that did not produce them~\cite{shrestha2020negative,teney2020value}. Long-taile
 same question for re-weighting and logit adjustment~\cite{cao2019learning,menon2021long}.
 All of these characterise a \emph{single} model; we account for the gain \emph{between} two.
 
-\paragraph{Proper-score decompositions.} Conditional on a grouping, a proper score splits
-into reliability and resolution terms~\cite{murphy1973vector,degroot1983comparison}, for
-general proper scores~\cite{brocker2009reliability}. Our case-level term is not that
-resolution term: it descends from the \emph{covariance} decomposition of the Brier score
-due to Yates~\cite{yates1982external}, which a monotone recalibration moves while the
-classical resolution is invariant to it. The two coincide only when both models are
+\paragraph{Proper-score decompositions.} Conditional on a grouping, a proper score splits into
+reliability and resolution~\cite{murphy1973vector,degroot1983comparison,brocker2009reliability}.
+Our case-level term is not the resolution term: it descends from the \emph{covariance}
+decomposition of the Brier score due to Yates~\cite{yates1982external}, which a monotone
+recalibration moves while the resolution is invariant to it; the two coincide only for models
 calibrated within every group. Variance estimators exist for single-model
-decompositions~\cite{siegert2014variance}, not for a contrast between two models. The grouping loss~\cite{perezlebel2023beyond} is the
-single-model relative of our case-level part: what calibration leaves behind because
-inputs sharing a confidence level differ; ours contrasts two models within groups
-declared in advance. Transporting labels within a group is a within-group permutation of
-the input--label pairing, so one model's case-level part is a conditional permutation
-importance~\cite{strobl2008conditional} or model reliance~\cite{fisher2019all} of the
-non-grouping part of its input, and the case-level part of a gain is the difference of the two
-models' (\cref{prop:reliance}). What the split adds is the exact additive accounting of a
-paired gain, including thresholded metrics, and paired inference for it.
+decompositions~\cite{siegert2014variance}, not for a contrast between two models, and the grouping
+loss~\cite{perezlebel2023beyond} is the single-model relative of our case-level part. Transporting
+labels within a group permutes the input--label pairing, so one model's case-level part is a
+conditional permutation importance~\cite{strobl2008conditional,fisher2019all} of the non-grouping
+part of its input and a gain's is the difference of two models' (\cref{prop:reliance}). What the
+split adds is the exact additive accounting of a paired gain, including thresholded metrics, and
+paired inference for it.
 
 \paragraph{Comparing two predictors.} At a single group our total-gain interval is the
 clustered Diebold--Mariano test~\cite{diebold1995comparing,giacomini2006tests}

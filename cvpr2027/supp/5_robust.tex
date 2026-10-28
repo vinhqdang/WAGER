@@ -368,7 +368,10 @@ predicate distribution the evaluator ranks for every ground-truth relation. Its 
 a relation-level non-maximum suppression in PredCls; the shipped implementation forms an
 $N\times N\times51$ array per image and exhausted memory on the densest images, so we evaluated
 with a row-blocked version computing the same quantities (\texttt{penet\_rel\_nms\_chunked.py},
-identical to the original on 300 random images). The evaluator then prints $R@50=0.6523$ and
+identical to the original on 300 random images). The other models, scored by argmax per pair,
+are evaluated without it; with it switched off PE-Net's replayed recalls are $R@50=0.6302$ and
+$mR@50=0.2961$ ($0.6523$ and $0.3142$ with it), unchanged without the graph constraint, and the
+mean-recall split of this section uses the suppressed ranks. The evaluator then prints $R@50=0.6523$ and
 $mR@50=0.3142$, the published values, and the replay from the dumped ranks equals it exactly; the
 same $183{,}642$ relations are scored as in every other audit.
 
@@ -385,8 +388,7 @@ temperature alone, $-0.00899$ with one shared temperature: as for TDE, the prope
 depends on the matching, and ranking is read from the AUC).
 
 \paragraph{Training spread.} Two MOTIFS baselines trained by different releases, DLFE's and
-the TDE release's, give a floor for such comparisons (one realised difference, not a variance
-estimate). Their $mR@50$ differ by $+0.0206$, of which $+0.0199$ is group-level and $+0.0007$,
+the TDE release's, give one observed cross-release difference (not a noise bound or a variance estimate). Their $mR@50$ differ by $+0.0206$, of which $+0.0199$ is group-level and $+0.0007$,
 $[-0.0016,+0.0030]$, case-level, so PE-Net's case-level part is not training noise: against the
 second baseline it is $+0.0236$, $[+0.0189,+0.0282]$. Their AUC differs by $-0.0060$,
 $[-0.0099,-0.0011]$ (relation), $+0.0017$, $[-0.0072,+0.0109]$ (comparison), $-0.0181$,
@@ -394,7 +396,8 @@ $[-0.0356,-0.0058]$ (pair) and $-0.0256$, $[-0.0557,+0.0075]$ (predicate); PE-Ne
 second baseline gains $+0.0110$ (relation) and $+0.0368$ (pair). The sign of the spread
 depends on the baseline, so PE-Net's AUC change and DLFE's over its own baseline, both of
 the size of the spread, are not read as discrimination. IETrans's relation-weighted fall,
-$-0.0238$, is four times it. The background mass the models give to \emph{no relation} is
+$-0.0238$, is four times the relation-weighted difference, but only $1.5$ times it per pair and
+$1.4$ per predicate, where the intervals overlap. The background mass the models give to \emph{no relation} is
 $0.855$ for the TDE release's baseline, $0.682$ for DLFE's, $0.560$ for PE-Net, $0.651$ for the
 control and $0.021$ for TDE.
 

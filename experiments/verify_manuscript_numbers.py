@@ -834,6 +834,7 @@ _pn = load("sgg_penet_audit.json")
 _pnm = load("sgg_recall_split_penet_vs_none.json")["results"]["gc@50"]["mean_recall"]
 _pno = load("penet_official_recall.json")
 _pnq = _pn["matched_split"]
+_png = load("sgg_penet_audit.json")["mean_recall_split"]["penet vs none"]["protocols"]["ng@50"]
 CHECKS += [
     # R5-14: PE-Net, a method that is not a prior correction
     ("cvpr penet dmR", "5_audit.tex", "$+0.1703$", _pnm["total"], 5e-5),
@@ -914,6 +915,15 @@ CHECKS += [
     ("cvpr abs floor auc", "0_abstract.tex", "$0.006$", _fa["relation"]["difference"], 5e-4),
     ("cvpr abs penet mR nms", "0_abstract.tex", "$0.314$", _pno["models"]["penet"]["recalls"]["mR@50"]["replayed"], 5e-4),
     ("cvpr abs penet mR no nms", "0_abstract.tex", "$0.296$", _pno["models"]["penet"]["replayed_without_rel_nms"]["mR@50"], 5e-4),
+    ("cvpr penet nms mR", "5_audit.tex", "$0.2961$", _pno["models"]["penet"]["replayed_without_rel_nms"]["mR@50"], 5e-5),
+    ("cvpr penet nms R", "5_robust.tex", "$R@50=0.6302$", "checked by value below", 0),
+    ("cvpr penet nms R v", "5_robust.tex", "0.6302", _pno["models"]["penet"]["replayed_without_rel_nms"]["R@50"], 5e-5),
+    ("cvpr penet ng case", "5_audit.tex", "$+0.0216$", _png["case"], 5e-5),
+    ("cvpr penet ng case lo", "5_audit.tex", "+0.0148", _png["case_ci"][0], 5e-5),
+    ("cvpr penet ng case hi", "5_audit.tex", "+0.0285", _png["case_ci"][1], 5e-5),
+    ("cvpr floor ng case", "5_audit.tex", "$-0.0044$", _fl["mean_recall_split"]["dlfe_base vs none"]["protocols"]["ng@50"]["case"], 5e-5),
+    ("cvpr penet share %", "5_audit.tex", "$14\\%$", 100 * _pnm["case"] / _pnm["total"], 0.5),
+    ("cvpr la share %", "5_audit.tex", "$15\\%$", 100 * 0.0139 / 0.0941, 0.5),
     ("cvpr lw pair bound", "5_audit.tex", "$0.023$", _lwt["pair"]["largest_change_excluded"], 5e-4),
     ("cvpr lw ref pair", "5_audit.tex", "$0.138$", _lw["reference"]["pair"], 5e-4),
 ]

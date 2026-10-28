@@ -10,9 +10,8 @@ scores for every label}. And \emph{each model is one released run}: intervals co
 sampling, not training.
 
 \paragraph{Conclusion.} Scoring each prediction against another case's label from the same group
-separates the two achievements mean recall sums. On three released prior-correcting PredCls
-checkpoints the gains are almost entirely group-level, and no weighting of TDE's within-pair
-AUC shows a gain; PE-Net, which changes features instead, has a case-level part well above the spread between
-separately trained baselines, though no AUC gain we can separate from it. We propose reporting, beside mean recall, the declared grouping, both
-parts with intervals, the within-group AUC and, for a thresholded metric, the operating-point
-control.
+separates the two achievements mean recall sums. On released TDE, DLFE and IETrans PredCls
+checkpoints the gains are almost entirely group-level, and no weighting of TDE's within-pair AUC
+shows a gain; PE-Net's case-level part exceeds the spread between baselines, though its AUC gain
+cannot be separated from it. We propose reporting the declared grouping, both parts with intervals, the
+within-group AUC and, for thresholded metrics, the operating-point control.

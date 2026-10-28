@@ -8,7 +8,6 @@ auc TDE-base
 auc TDE-base hi
 auc TDE-base lo
 bridge clip pm acc drop
-bridge spatial dR
 consequence cal-matched dR
 cvpr CLASS-FREQ dR
 cvpr CLASS-FREQ dT
@@ -19,7 +18,6 @@ cvpr CLIP matched dP
 cvpr CLIP matched dR
 cvpr CLIP prior-matched MRR gap, points
 cvpr CLIP prior-matched acc gap, points
-cvpr CLIP-class dR
 cvpr CLIP-geometry dR ci hi
 cvpr CLIP-geometry dR ci lo
 cvpr CLIP-geometry p
@@ -84,11 +82,10 @@ cvpr floor case hi
 cvpr floor case lo
 cvpr floor dmR
 cvpr floor group
-cvpr floor penet case
+cvpr floor ng case
 cvpr floor penet rel
 cvpr floor pred hi
 cvpr geometry accuracy
-cvpr geometry-class dR
 cvpr grp pos lo
 cvpr grp pos share %
 cvpr grp size lo
@@ -98,6 +95,7 @@ cvpr identified cells
 cvpr identified share of relations
 cvpr jk hi
 cvpr jk lo
+cvpr la share %
 cvpr lw dlfe rel lo
 cvpr lw pair bound
 cvpr lw pair diff
@@ -128,9 +126,13 @@ cvpr penet case hi
 cvpr penet case lo
 cvpr penet dmR
 cvpr penet group
+cvpr penet mR50 v
+cvpr penet ng case
+cvpr penet ng case hi
+cvpr penet ng case lo
+cvpr penet nms mR
 cvpr penet share %
-cvpr penet tb case
-cvpr penet tb total
+cvpr penet share %
 cvpr primary p TDE
 cvpr prior-removal AUC cmp
 cvpr prior-removal Tb case
@@ -217,12 +219,14 @@ iet group
 iet group share
 iet mR@50 standard
 merge LA auc max
+merge relations n
 path avg AUC
 path avg dmR
 path avg-ctx corr log prior
 path avg-ctx global share, %
 path avg-ctx non-global rms
 path vis case
+ps LA log case
 ps LA quad case
 rankrob CLIP-geo rel
 rankrob CLIP-geo rel hi
@@ -294,6 +298,7 @@ sgg base mR@50
 sgg cal dR
 sgg n cells
 sgg n images
+sgg n relations
 sgg tde mR@50
 shift CLIP-geo case
 shift CLIP-geo total

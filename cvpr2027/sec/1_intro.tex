@@ -43,9 +43,8 @@ and recovers $+0.0941$ of the $+0.0972$ with the same split at $K=50$ under the 
 constraint (\cref{tab:protocols} gives the protocols where the two diverge). TDE is motivated
 as removing the harmful part of the training bias while keeping the good
 context~\cite{tang2020unbiased}; on this checkpoint its gain is a change in which predicates
-are favoured within each pair, and DLFE (dynamic label frequency
-estimation)~\cite{chiou2021recovering} and IETrans (internal and external data
-transfer)~\cite{zhang2022finegrained} show the same pattern.
+are favoured within each pair, as do DLFE~\cite{chiou2021recovering} and
+IETrans~\cite{zhang2022finegrained}.
 
 \paragraph{Contributions.} (i) An exact, model-free decomposition of the difference between
 two frozen models into a group-level part and a within-group covariance, the paired-gain form
@@ -56,14 +55,14 @@ ROC curve). (ii) Validation that the
 case-level part is zero when it should be and covers at the nominal rate under image
 clustering, with a map of what it does not separate: calibration, the operating point, the
 label mix and pair-varying prior shifts all move it, so ranking claims rest on the control and
-the AUC. (iii) Audits of three released prior-correcting checkpoints and one prototype-based
-checkpoint that split their
+the AUC. (iii) Audits of four released checkpoints (TDE, DLFE, IETrans, PE-Net) that split their
 mean-recall gains exactly, with the mechanism behind TDE's.
 
 \paragraph{What is not claimed.} The audits cover four released checkpoints, one run each, in
 predicate classification (PredCls: boxes and object labels are given, so every model sees the
 cell), with a TDE replication in scene graph classification and detection (SGCls, SGDet;
-\cref{sec:sggaudit}): three prior corrections and one prototype-based model, nothing on
+\cref{sec:sggaudit}): two prior corrections (TDE, DLFE), a relabelling and reweighting method (IETrans) and a
+prototype-based model (PE-Net), nothing on
 one-stage or vision--language models. The split is conditional on the declared grouping, credits
 any signal varying inside a pair, shortcuts included, and moves with recalibration, the
 operating point and the label mix (\cref{sec:discussion}); the official per-image statistic is

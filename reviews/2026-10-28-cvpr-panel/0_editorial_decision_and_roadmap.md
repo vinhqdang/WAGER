@@ -326,3 +326,13 @@ Use `templates/revision_response_template.md` to respond to every item R7-1 to R
 We invite a revised manuscript that addresses the five required items and states a decision on each suggested item. The audit is careful and candid, and the instrument holds on every number we rechecked. The revision is mostly a matter of making the abstract and Sec. 5 say what the evidence supports about the one method that is not a prior correction: which of PE-Net's recall figures depend on its evaluator path (R7-1), what a single cross-release difference can and cannot bound (R7-2, R7-3), and what the released IETrans checkpoint is (R7-4). A further review will be needed after the revision.
 
 *Synthesis scope note: this letter synthesizes and arbitrates the five Phase 1 reports; it adds no new review comments beyond the verification of claims the seats made. Checks (a) to (e) are reads of stored results and code plus arithmetic on stored values, no checkpoint was rerun, and implications are the synthesizer's reading and are labelled as such. Effort and feasibility figures are the synthesizer's estimates.*
+
+## Status after the round-4 must-fix revision (2026-10-28)
+
+| Ref | Status | What changed |
+|---|---|---|
+| R7-1 | Done (text); NMS-free graph-constrained split not recomputed | Sec. 5 says PE-Net is evaluated with the relation-level NMS its authors prescribe, which the baselines do not use, and gives the NMS-free mR@50 (0.2961 against 0.3142); supplement `app:penet` gives the NMS-free R@50 and mR@50 and says the split uses the suppressed ranks. Without the graph constraint, where NMS plays no part, PE-Net's case-level part is +0.0216 at K=50 against -0.0044 between the two baselines. Abstract mentions the 0.314 to 0.296 drop. |
+| R7-2 | Done | PE-Net's case-level part is stated together with the absence of an operating-point control and the fact that its case-level share (14%) equals the logit-adjusted control's on TDE (15%); no AUC gain is claimed. |
+| R7-3 | Done | The two-baseline comparison is called "one observed cross-release difference, not a noise bound" in Table 1 and the supplement; all four AUC signs are given; "four times" is restricted to the relation weighting (1.5x per pair, 1.4x per predicate, overlapping intervals). |
+| R7-4 | Done | IETrans is no longer called a prior correction in the abstract, intro or conclusion (relabelling and reweighting). |
+| R7-5 | Partly | Abstract rewritten: four checkpoints, 87% conditioned on class-pair cells and K=50 with the graph constraint, 84% and 18% alongside, caveats for PE-Net; N = 183,639 for AUC and proper scores stated in Sec. 5 next to 183,642. A grouping profile across a hierarchy of cells is not added. |
